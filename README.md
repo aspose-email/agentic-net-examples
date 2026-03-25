@@ -7,6 +7,7 @@ This repository provides working code examples demonstrating Aspose.Email for .N
 
 ## Repository Structure
 Examples are organized by feature category:
+- `programming-email-verification/` - 12 example(s)
 - `working-with-amp-html-emails/` - 16 example(s)
 
 Each category contains standalone `.cs` files that can be compiled and run independently.
