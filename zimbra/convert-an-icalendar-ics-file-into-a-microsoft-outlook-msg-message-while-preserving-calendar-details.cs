@@ -1,10 +1,9 @@
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailIcsToMsg
+namespace CalendarToMsgConverter
 {
     class Program
     {
@@ -12,51 +11,60 @@ namespace AsposeEmailIcsToMsg
         {
             try
             {
-                string icsFilePath = "sample.ics";
-                string msgFilePath = "output.msg";
+                string icsPath = "sample.ics";
+                string msgPath = "output.msg";
 
-                // Verify input file exists
-                if (!File.Exists(icsFilePath))
+                // Ensure the input .ics file exists
+                if (!File.Exists(icsPath))
                 {
-                    Console.Error.WriteLine($"Input file '{icsFilePath}' does not exist.");
-                    return;
+                    try
+                    {
+                        File.WriteAllText(icsPath, "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR");
+                        Console.WriteLine($"Created placeholder iCalendar file at '{icsPath}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create placeholder iCalendar file: {ex.Message}");
+                        return;
+                    }
                 }
 
-                // Load the iCalendar file into an Appointment object
-                Appointment appointment = null;
+                // Load the appointment from the .ics file
+                Appointment appointment;
                 try
                 {
-                    appointment = Appointment.Load(icsFilePath);
+                    appointment = Appointment.Load(icsPath);
                 }
-                catch (Exception loadEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to load iCalendar file: {loadEx.Message}");
+                    Console.Error.WriteLine($"Failed to load iCalendar file: {ex.Message}");
                     return;
                 }
 
-                // Convert the Appointment to a MapiMessage
-                MapiMessage mapiMessage = null;
+                // Convert the appointment to a MAPI message
+                MapiMessage mapiMessage;
                 try
                 {
                     mapiMessage = appointment.ToMapiMessage();
                 }
-                catch (Exception convertEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to convert appointment to MAPI message: {convertEx.Message}");
+                    Console.Error.WriteLine($"Failed to convert appointment to MAPI message: {ex.Message}");
                     return;
                 }
 
-                // Save the MapiMessage as a .msg file
+                // Save the MAPI message as a .msg file
                 try
                 {
-                    using (MapiMessage messageToSave = mapiMessage)
+                    using (MapiMessage disposableMessage = mapiMessage)
                     {
-                        messageToSave.Save(msgFilePath);
+                        disposableMessage.Save(msgPath);
                     }
+                    Console.WriteLine($"MSG file saved to '{msgPath}'.");
                 }
-                catch (Exception saveEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save MSG file: {saveEx.Message}");
+                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
                 }
             }
             catch (Exception ex)
