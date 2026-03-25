@@ -21,19 +21,25 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - `using System;` (1 file(s))
 - `using System.IO;` (1 file(s))
 - `using Aspose.Email;` (1 file(s))
+- `using System.Collections.Generic;` (1 file(s))
 - `using Aspose.Email.Storage.Zimbra;` (1 file(s))
 - `using Aspose.Email.Mapi;` (1 file(s))
-- `using System.Collections.Generic;` (1 file(s))
 - `using Aspose.Email.Calendar;` (1 file(s))
-- `using Aspose.Email.Clients;` (1 file(s))
-- `using Aspose.Email.Clients.Activity;` (1 file(s))
 - `using System.Text;` (1 file(s))
 - `using System.Net;` (1 file(s))
 - `using Aspose.Email.Storage.Pst;` (1 file(s))
+- `using Aspose.Email.Clients;` (1 file(s))
+- `using Aspose.Email.Clients.Activity;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
+| [13259.cs](./13259.cs) | 13259 |
+| [13260.cs](./13260.cs) | 13260 |
+| [13262.cs](./13262.cs) | 13262 |
+| [13263.cs](./13263.cs) | 13263 |
+| [13264.cs](./13264.cs) | 13264 |
+| [13265.cs](./13265.cs) | 13265 |
 | [calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs](./calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs) | calculate the total number of items contained within each zimbra tgz archive without extracting files |
 | [configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs](./configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs) | configure zimbra to receive product update notifications by enabling the subscription service and specifying update channels |
 | [convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs](./convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs) | convert an icalendar ics file into a microsoft outlook msg message while preserving calendar details |
@@ -44,7 +50,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-within-the-interface.cs](./render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-within-the-interface.cs) | render a consolidated view of email calendar entries and tgz file handling within the interface |
 
 ## Category Statistics
-- Total examples: 8
+- Total examples: 14
 
 ## General Tips
 - Follow root boundaries and testing guide.

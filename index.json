@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 36,
+  "total_examples": 42,
   "total_categories": 3,
   "last_updated": "2026-03-25",
   "categories": [
@@ -69,8 +69,14 @@
     },
     {
       "name": "zimbra",
-      "file_count": 8,
+      "file_count": 14,
       "files": [
+        "13259.cs",
+        "13260.cs",
+        "13262.cs",
+        "13263.cs",
+        "13264.cs",
+        "13265.cs",
         "calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs",
         "configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs",
         "convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs",
@@ -84,15 +90,15 @@
         "System",
         "System.IO",
         "Aspose.Email",
+        "System.Collections.Generic",
         "Aspose.Email.Storage.Zimbra",
         "Aspose.Email.Mapi",
-        "System.Collections.Generic",
         "Aspose.Email.Calendar",
-        "Aspose.Email.Clients",
-        "Aspose.Email.Clients.Activity",
         "System.Text",
         "System.Net",
-        "Aspose.Email.Storage.Pst"
+        "Aspose.Email.Storage.Pst",
+        "Aspose.Email.Clients",
+        "Aspose.Email.Clients.Activity"
       ],
       "key_apis": []
     }
