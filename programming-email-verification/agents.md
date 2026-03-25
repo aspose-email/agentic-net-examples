@@ -25,18 +25,18 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 ## Files in this folder
 | File | Description |
 |------|-------------|
-| [13296.cs](./13296.cs) | 13296 |
-| [13297.cs](./13297.cs) | 13297 |
-| [13298.cs](./13298.cs) | 13298 |
-| [13299.cs](./13299.cs) | 13299 |
-| [13300.cs](./13300.cs) | 13300 |
-| [13301.cs](./13301.cs) | 13301 |
-| [13302.cs](./13302.cs) | 13302 |
-| [13303.cs](./13303.cs) | 13303 |
-| [13304.cs](./13304.cs) | 13304 |
-| [13305.cs](./13305.cs) | 13305 |
-| [13306.cs](./13306.cs) | 13306 |
-| [13307.cs](./13307.cs) | 13307 |
+| [verify-domain-name-validity-using-aspose-email-verifications.cs](./verify-domain-name-validity-using-aspose-email-verifications.cs) | verify domain name validity using aspose email verifications |
+| [verify-domain-names-validating-domain-using-aspose-email-verifications.cs](./verify-domain-names-validating-domain-using-aspose-email-verifications.cs) | verify domain names validating domain using aspose email verifications |
+| [verify-email-address-by-connecting-to-the-mail-server-using-mailserver-validation.cs](./verify-email-address-by-connecting-to-the-mail-server-using-mailserver-validation.cs) | verify email address by connecting to the mail server using mailserver validation |
+| [verify-email-address-syntax-and-domain-using-syntaxanddomain-validation.cs](./verify-email-address-syntax-and-domain-using-syntaxanddomain-validation.cs) | verify email address syntax and domain using syntaxanddomain validation |
+| [verify-email-address-syntax-only-using-syntaxonly-validation.cs](./verify-email-address-syntax-only-using-syntaxonly-validation.cs) | verify email address syntax only using syntaxonly validation |
+| [verify-email-addresses-as-demonstrated-in-the-programming-email-verification-guide.cs](./verify-email-addresses-as-demonstrated-in-the-programming-email-verification-guide.cs) | verify email addresses as demonstrated in the programming email verification guide |
+| [verify-email-addresses-by-building-a-sample-application.cs](./verify-email-addresses-by-building-a-sample-application.cs) | verify email addresses by building a sample application |
+| [verify-email-addresses-using-aspose-email-verifications-library.cs](./verify-email-addresses-using-aspose-email-verifications-library.cs) | verify email addresses using aspose email verifications library |
+| [verify-email-addresses-using-basic-validation-functionality.cs](./verify-email-addresses-using-basic-validation-functionality.cs) | verify email addresses using basic validation functionality |
+| [verify-email-addresses-validating-emails-using-the-provided-examples.cs](./verify-email-addresses-validating-emails-using-the-provided-examples.cs) | verify email addresses validating emails using the provided examples |
+| [verify-mail-server-connectivity-validating-mail-server-using-aspose-email-verifications.cs](./verify-mail-server-connectivity-validating-mail-server-using-aspose-email-verifications.cs) | verify mail server connectivity validating mail server using aspose email verifications |
+| [verify-mail-server-validity-using-aspose-email-verifications.cs](./verify-mail-server-validity-using-aspose-email-verifications.cs) | verify mail server validity using aspose email verifications |
 
 ## Category Statistics
 - Total examples: 12
