@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 30,
+  "total_examples": 36,
   "total_categories": 3,
   "last_updated": "2026-03-25",
   "categories": [
@@ -69,17 +69,31 @@
     },
     {
       "name": "zimbra",
-      "file_count": 2,
+      "file_count": 8,
       "files": [
+        "calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs",
+        "configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs",
         "convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs",
-        "implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs"
+        "convert-msg-email-files-to-html-format-preserving-message-content-attachments-and-original-structure.cs",
+        "export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hierarchy-and-directory-structure.cs",
+        "implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs",
+        "read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-processing-and-analysis.cs",
+        "render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-within-the-interface.cs"
       ],
       "required_namespaces": [
         "System",
         "System.IO",
         "Aspose.Email",
+        "Aspose.Email.Mapi",
+        "Aspose.Email.Storage.Zimbra",
+        "System.Net",
+        "Aspose.Email.Clients",
+        "Aspose.Email.Clients.Activity",
         "Aspose.Email.Calendar",
-        "Aspose.Email.Mapi"
+        "System.Text",
+        "Aspose.Email.Storage.Pst",
+        "System.IO.Compression",
+        "Aspose.Email.Clients.Google"
       ],
       "key_apis": []
     }
