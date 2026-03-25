@@ -19,19 +19,30 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 
 ## Required Namespaces
 - `using System;` (1 file(s))
-- `using System.IO;` (1 file(s))
 - `using Aspose.Email;` (1 file(s))
-- `using Aspose.Email.Calendar;` (1 file(s))
+- `using System.IO;` (1 file(s))
+- `using System.Net;` (1 file(s))
+- `using Aspose.Email.Storage.Zimbra;` (1 file(s))
+- `using System.Collections.Generic;` (1 file(s))
+- `using Aspose.Email.Clients;` (1 file(s))
+- `using Aspose.Email.Clients.Imap;` (1 file(s))
+- `using Aspose.Email.Tools.Search;` (1 file(s))
+- `using System.Text;` (1 file(s))
 - `using Aspose.Email.Mapi;` (1 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
+- `using Aspose.Email.PersonalInfo;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
-| [convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs](./convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs) | convert an icalendar ics file into a microsoft outlook msg message while preserving calendar details |
-| [implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs](./implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs) | implement conversion of msg email files to eml format programmatically using the provided api |
+| [calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs](./calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs) | calculate the total number of items contained within each zimbra tgz archive without extracting files |
+| [configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs](./configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs) | configure zimbra to receive product update notifications by enabling the subscription service and specifying update channels |
+| [convert-msg-email-files-to-html-format-preserving-message-content-attachments-and-original-structure.cs](./convert-msg-email-files-to-html-format-preserving-message-content-attachments-and-original-structure.cs) | convert msg email files to html format preserving message content attachments and original structure |
+| [read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-processing-and-analysis.cs](./read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-processing-and-analysis.cs) | read all email messages stored in zimbra tgz archives programmatically for processing and analysis |
+| [retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-data-from-the-hosted-mail-collaboration-server.cs](./retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-data-from-the-hosted-mail-collaboration-server.cs) | retrieve comprehensive configuration settings user statistics and service status data from the hosted mail collaboration server |
 
 ## Category Statistics
-- Total examples: 2
+- Total examples: 5
 
 ## General Tips
 - Follow root boundaries and testing guide.
