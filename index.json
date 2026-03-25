@@ -3,10 +3,34 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 16,
-  "total_categories": 1,
+  "total_examples": 28,
+  "total_categories": 2,
   "last_updated": "2026-03-25",
   "categories": [
+    {
+      "name": "programming-email-verification",
+      "file_count": 12,
+      "files": [
+        "13296.cs",
+        "13297.cs",
+        "13298.cs",
+        "13299.cs",
+        "13300.cs",
+        "13301.cs",
+        "13302.cs",
+        "13303.cs",
+        "13304.cs",
+        "13305.cs",
+        "13306.cs",
+        "13307.cs"
+      ],
+      "required_namespaces": [
+        "System",
+        "Aspose.Email.Tools.Verifications",
+        "Aspose.Email"
+      ],
+      "key_apis": []
+    },
     {
       "name": "working-with-amp-html-emails",
       "file_count": 16,
