@@ -12,56 +12,38 @@ namespace AsposeEmailIcsToMsg
         {
             try
             {
+                // Define input and output file paths
                 string icsFilePath = "sample.ics";
                 string msgFilePath = "output.msg";
 
-                // Verify input file exists
+                // Verify that the input .ics file exists
                 if (!File.Exists(icsFilePath))
                 {
                     Console.Error.WriteLine($"Input file '{icsFilePath}' does not exist.");
                     return;
                 }
 
-                // Load the iCalendar file into an Appointment object
-                Appointment appointment = null;
-                try
+                // Ensure the output directory exists
+                string outputDirectory = Path.GetDirectoryName(msgFilePath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
                 {
-                    appointment = Appointment.Load(icsFilePath);
-                }
-                catch (Exception loadEx)
-                {
-                    Console.Error.WriteLine($"Failed to load iCalendar file: {loadEx.Message}");
-                    return;
+                    Directory.CreateDirectory(outputDirectory);
                 }
 
-                // Convert the Appointment to a MapiMessage
-                MapiMessage mapiMessage = null;
-                try
+                // Load the appointment from the .ics file
+                Appointment appointment = Appointment.Load(icsFilePath);
+
+                // Convert the appointment to a MAPI message and save as .msg
+                using (MapiMessage mapiMessage = appointment.ToMapiMessage())
                 {
-                    mapiMessage = appointment.ToMapiMessage();
-                }
-                catch (Exception convertEx)
-                {
-                    Console.Error.WriteLine($"Failed to convert appointment to MAPI message: {convertEx.Message}");
-                    return;
+                    mapiMessage.Save(msgFilePath);
                 }
 
-                // Save the MapiMessage as a .msg file
-                try
-                {
-                    using (MapiMessage messageToSave = mapiMessage)
-                    {
-                        messageToSave.Save(msgFilePath);
-                    }
-                }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG file: {saveEx.Message}");
-                }
+                Console.WriteLine($"Successfully converted '{icsFilePath}' to '{msgFilePath}'.");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }
