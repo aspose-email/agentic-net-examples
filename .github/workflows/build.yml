@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build samples (if any csproj found)
+        run: |
+          shopt -s nullglob
+          projects=(**/*.csproj)
+          if [ ${#projects[@]} -eq 0 ]; then
+            echo "No csproj files found; skipping build.";
+            exit 0;
+          fi
+          for p in "${projects[@]}"; do
+            echo "Building $p";
+            dotnet restore "$p";
+            dotnet build "$p" --configuration Release;
+          done
