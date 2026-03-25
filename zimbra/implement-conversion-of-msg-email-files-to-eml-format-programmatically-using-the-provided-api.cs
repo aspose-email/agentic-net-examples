@@ -4,38 +4,53 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Input MSG file path
-            string inputPath = "sample.msg";
-            // Output EML file path
-            string outputPath = "sample.eml";
+            string inputMsgPath = "input.msg";
+            string outputEmlPath = "output.eml";
 
             // Verify input file exists
-            if (!File.Exists(inputPath))
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                Console.Error.WriteLine($"Error: Input file not found – {inputMsgPath}");
                 return;
             }
 
             // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
+            string outputDirectory = Path.GetDirectoryName(outputEmlPath);
             if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(outputDirectory);
+                try
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Error: Unable to create output directory – {dirEx.Message}");
+                    return;
+                }
             }
 
-            // Load MSG as MailMessage and save as EML
-            using (Aspose.Email.MailMessage message = Aspose.Email.MailMessage.Load(inputPath))
+            // Load MSG file and save as EML
+            try
             {
-                message.Save(outputPath, Aspose.Email.SaveOptions.DefaultEml);
+                using (MailMessage message = MailMessage.Load(inputMsgPath))
+                {
+                    message.Save(outputEmlPath, SaveOptions.DefaultEml);
+                }
+                Console.WriteLine($"Conversion successful: '{outputEmlPath}'");
+            }
+            catch (Exception ioEx)
+            {
+                Console.Error.WriteLine($"Error during conversion: {ioEx.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
