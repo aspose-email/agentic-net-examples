@@ -21,17 +21,22 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - `using System;` (1 file(s))
 - `using System.IO;` (1 file(s))
 - `using Aspose.Email;` (1 file(s))
-- `using Aspose.Email.Calendar;` (1 file(s))
+- `using Aspose.Email.Storage.Zimbra;` (1 file(s))
 - `using Aspose.Email.Mapi;` (1 file(s))
+- `using System.Net;` (1 file(s))
+- `using Aspose.Email.Clients;` (1 file(s))
+- `using Aspose.Email.Clients.Activity;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
-| [convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs](./convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs) | convert an icalendar ics file into a microsoft outlook msg message while preserving calendar details |
-| [implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs](./implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs) | implement conversion of msg email files to eml format programmatically using the provided api |
+| [13259.cs](./13259.cs) | 13259 |
+| [13262.cs](./13262.cs) | 13262 |
+| [13263.cs](./13263.cs) | 13263 |
+| [13265.cs](./13265.cs) | 13265 |
 
 ## Category Statistics
-- Total examples: 2
+- Total examples: 4
 
 ## General Tips
 - Follow root boundaries and testing guide.
