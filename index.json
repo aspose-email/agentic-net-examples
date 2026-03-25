@@ -1,0 +1,71 @@
+{
+  "product": "Aspose.Email",
+  "platform": "net",
+  "framework": "net8.0",
+  "package_version": "26.1.0",
+  "total_examples": 28,
+  "total_categories": 2,
+  "last_updated": "2026-03-25",
+  "categories": [
+    {
+      "name": "programming-email-verification",
+      "file_count": 12,
+      "files": [
+        "13296.cs",
+        "13297.cs",
+        "13298.cs",
+        "13299.cs",
+        "13300.cs",
+        "13301.cs",
+        "13302.cs",
+        "13303.cs",
+        "13304.cs",
+        "13305.cs",
+        "13306.cs",
+        "13307.cs"
+      ],
+      "required_namespaces": [
+        "System",
+        "Aspose.Email.Tools.Verifications",
+        "Aspose.Email"
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "working-with-amp-html-emails",
+      "file_count": 16,
+      "files": [
+        "add-plain-and-html-views-and-save-msg.cs",
+        "attach-msg-as-alternate-view-and-save-eml.cs",
+        "build-amp-message-and-save-to-msg.cs",
+        "convert-msg-to-amp-message-and-save.cs",
+        "create-amp-alternate-view-and-save-msg.cs",
+        "create-amp-email-and-save-msg.cs",
+        "create-amp-message-and-save-via-stream.cs",
+        "create-and-send-amp-email-via-smtp.cs",
+        "create-mailmessage-and-save-as-msg.cs",
+        "enumerate-mapi-message-capabilities.cs",
+        "import-amp-message-and-list-alternate-views.cs",
+        "import-amp-message-and-print-amp-html.cs",
+        "list-available-amp-components.cs",
+        "read-amp-alternate-view-from-msg.cs",
+        "send-amp-msg-via-smtp.cs",
+        "send-msg-file-via-smtp.cs"
+      ],
+      "required_namespaces": [
+        "System",
+        "Aspose.Email",
+        "System.IO",
+        "Aspose.Email.Amp",
+        "Aspose.Email.Mapi",
+        "Aspose.Email.Mime",
+        "System.Text",
+        "Aspose.Email.Clients",
+        "Aspose.Email.Clients.Smtp",
+        "System.Collections.Generic",
+        "System.Reflection"
+      ],
+      "key_apis": []
+    }
+  ]
+}
