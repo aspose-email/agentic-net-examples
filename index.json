@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 116,
+  "total_examples": 118,
   "total_categories": 5,
   "last_updated": "2026-03-26",
   "categories": [
@@ -53,18 +53,54 @@
         "read-a-msg-email-file-and-serialize-its-contents-into-an-mbox-mailbox-format.cs"
       ],
       "required_namespaces": [
-        "System",
-        "System.IO",
-        "Aspose.Email",
-        "Aspose.Email.Mapi",
-        "Aspose.Email.Storage.Pst",
-        "Aspose.Email.Storage.Mbox",
-        "Aspose.Email.Calendar",
-        "Aspose.Email.Storage",
-        "Aspose.Email.Mime",
-        "Aspose.Email.Tools.Search",
-        "System.Text.RegularExpressions",
-        "Aspose.Email.PersonalInfo"
+        {
+          "name": "System",
+          "count": 40
+        },
+        {
+          "name": "System.IO",
+          "count": 40
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 38
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 20
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Storage.Mbox",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Storage",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 1
+        },
+        {
+          "name": "System.Text.RegularExpressions",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
+          "count": 1
+        }
       ],
       "key_apis": []
     },
@@ -86,15 +122,24 @@
         "verify-mail-server-validity-using-aspose-email-verifications.cs"
       ],
       "required_namespaces": [
-        "System",
-        "Aspose.Email.Tools.Verifications",
-        "Aspose.Email"
+        {
+          "name": "System",
+          "count": 12
+        },
+        {
+          "name": "Aspose.Email.Tools.Verifications",
+          "count": 12
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 8
+        }
       ],
       "key_apis": []
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 39,
+      "file_count": 41,
       "files": [
         "add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs",
         "add-a-new-calendar-appointment-to-the-schedule-using-the-library-appointment-insertion-api.cs",
@@ -103,6 +148,7 @@
         "convert-an-mbox-archive-to-pst-format-while-stripping-any-email-signatures-from-the-messages.cs",
         "convert-an-mbox-mailbox-file-to-pst-format-optionally-retaining-or-stripping-message-signatures.cs",
         "create-and-insert-calendar-events-into-a-google-calendar-account-using-the-appropriate-api-calls.cs",
+        "create-and-manipulate-outlook-items-convert-ics-files-to-msg-handle-outlook-storage-files-and-process-smtp-communication.cs",
         "create-and-manipulate-outlook-items-converting-ics-calendar-files-to-msg-email-format-programmatically.cs",
         "create-retrieve-and-modify-gmail-calendar-events-programmatically-using-the-provided-api-endpoints-directly.cs",
         "create-update-retrieve-and-delete-google-calendar-appointments-programmatically-using-the-provided-api-endpoints.cs",
@@ -126,6 +172,7 @@
         "programmatically-convert-thunderbird-email-files-to-standard-formats-using-the-provided-api-for-application-integration.cs",
         "programmatically-retrieve-the-total-count-of-email-messages-stored-in-an-mbox-file-using-the-api.cs",
         "prompt-the-user-to-input-the-otp-received-via-mobile-sms-for-authentication-verification.cs",
+        "provision-a-new-google-developer-console-project-to-enable-authorized-api-access-for-the-application.cs",
         "register-to-receive-product-update-notifications-via-the-provided-subscription-service-to-stay-informed-about-new-releases.cs",
         "remove-designated-google-calendar-instances-programmatically-ensuring-only-the-targeted-calendars-are-permanently-deleted.cs",
         "retrieve-and-modify-the-client-configuration-settings-programmatically-within-the-net-library-for-authentication-and-behavior-control.cs",
@@ -137,28 +184,94 @@
         "transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs"
       ],
       "required_namespaces": [
-        "System",
-        "Aspose.Email",
-        "System.IO",
-        "Aspose.Email.Clients.Google",
-        "Aspose.Email.Calendar",
-        "Aspose.Email.Clients",
-        "System.Collections.Generic",
-        "Aspose.Email.Storage.Mbox",
-        "Aspose.Email.Storage",
-        "Aspose.Email.Storage.Pst",
-        "Aspose.Email.Mapi",
-        "Aspose.Email.Clients.Smtp",
-        "System.Threading.Tasks",
-        "System.Text",
-        "Aspose.Email.Calendar.Recurrences",
-        "System.Net.Http",
-        "System.Text.Json",
-        "System.Threading",
-        "System.Diagnostics",
-        "Aspose.Email.Clients.Graph",
-        "Aspose.Email.Clients.Activity",
-        "System.Net"
+        {
+          "name": "System",
+          "count": 41
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 36
+        },
+        {
+          "name": "System.IO",
+          "count": 18
+        },
+        {
+          "name": "Aspose.Email.Clients.Google",
+          "count": 17
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 12
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 10
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 7
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Storage.Mbox",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Storage",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 3
+        },
+        {
+          "name": "System.Net",
+          "count": 2
+        },
+        {
+          "name": "System.Threading.Tasks",
+          "count": 2
+        },
+        {
+          "name": "System.Text",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Calendar.Recurrences",
+          "count": 1
+        },
+        {
+          "name": "System.Net.Http",
+          "count": 1
+        },
+        {
+          "name": "System.Text.Json",
+          "count": 1
+        },
+        {
+          "name": "System.Threading",
+          "count": 1
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Graph",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Activity",
+          "count": 1
+        }
       ],
       "key_apis": []
     },
@@ -184,17 +297,50 @@
         "send-msg-file-via-smtp.cs"
       ],
       "required_namespaces": [
-        "System",
-        "Aspose.Email",
-        "System.IO",
-        "Aspose.Email.Amp",
-        "Aspose.Email.Mapi",
-        "Aspose.Email.Mime",
-        "System.Text",
-        "Aspose.Email.Clients",
-        "Aspose.Email.Clients.Smtp",
-        "System.Collections.Generic",
-        "System.Reflection"
+        {
+          "name": "System",
+          "count": 16
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 16
+        },
+        {
+          "name": "System.IO",
+          "count": 14
+        },
+        {
+          "name": "Aspose.Email.Amp",
+          "count": 9
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 4
+        },
+        {
+          "name": "System.Text",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 3
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 1
+        },
+        {
+          "name": "System.Reflection",
+          "count": 1
+        }
       ],
       "key_apis": []
     },
@@ -213,18 +359,54 @@
         "retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-data-from-the-hosted-mail-collaboration-server.cs"
       ],
       "required_namespaces": [
-        "System",
-        "System.IO",
-        "Aspose.Email",
-        "Aspose.Email.Storage.Zimbra",
-        "Aspose.Email.Mapi",
-        "Aspose.Email.Clients",
-        "Aspose.Email.Calendar",
-        "System.Collections.Generic",
-        "Aspose.Email.Clients.Activity",
-        "Aspose.Email.Storage.Pst",
-        "Aspose.Email.Clients.Google",
-        "Aspose.Email.Clients.Imap"
+        {
+          "name": "System",
+          "count": 9
+        },
+        {
+          "name": "System.IO",
+          "count": 7
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Storage.Zimbra",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 2
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Activity",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Google",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 1
+        }
       ],
       "key_apis": []
     }
