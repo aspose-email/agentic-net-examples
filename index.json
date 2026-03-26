@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 112,
+  "total_examples": 116,
   "total_categories": 5,
   "last_updated": "2026-03-26",
   "categories": [
@@ -94,8 +94,9 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 35,
+      "file_count": 39,
       "files": [
+        "add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs",
         "add-a-new-calendar-appointment-to-the-schedule-using-the-library-appointment-insertion-api.cs",
         "capture-the-user-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs",
         "convert-an-mbox-archive-to-pst-format-providing-the-option-to-strip-or-retain-email-signatures-as-required.cs",
@@ -110,6 +111,7 @@
         "fetch-existing-google-calendar-events-and-modify-their-properties-programmatically-using-the-appropriate-api-calls.cs",
         "generate-and-write-email-messages-to-an-mbox-file-adhering-to-the-standard-mailbox-format.cs",
         "implement-a-c-solution-to-convert-thunderbird-email-files-into-compatible-formats-while-preserving-message-integrity.cs",
+        "implement-a-googleuser-class-that-handles-oauth-2-0-authentication-flows-and-token-management-including-token-acquisition-refresh-and-user-profile-retrieval.cs",
         "implement-email-file-conversion-in-a-thunderbird-based-application-using-the-c-api-covering-zimbra-integration-overview.cs",
         "implement-functionality-to-programmatically-create-modify-and-remove-gmail-calendar-entries-via-the-api.cs",
         "implement-functionality-to-relocate-and-remove-calendar-events-within-a-google-calendar-using-the-api.cs",
@@ -120,6 +122,7 @@
         "obtain-the-color-attributes-embedded-within-an-email-content-for-processing-or-analysis-programmatically.cs",
         "perform-a-freebusy-query-against-google-calendar-to-retrieve-availability-information-for-specified-users-and-time-range.cs",
         "perform-google-calendar-operations-through-the-gmail-client-api-enabling-creation-retrieval-and-modification-of-events.cs",
+        "perform-oauth-2-0-authentication-using-the-tokenresponse-class-and-configure-the-client-for-subsequent-api-requests.cs",
         "programmatically-convert-thunderbird-email-files-to-standard-formats-using-the-provided-api-for-application-integration.cs",
         "programmatically-retrieve-the-total-count-of-email-messages-stored-in-an-mbox-file-using-the-api.cs",
         "prompt-the-user-to-input-the-otp-received-via-mobile-sms-for-authentication-verification.cs",
@@ -130,13 +133,14 @@
         "retrieve-the-current-email-message-size-in-bytes-enabling-size-based-processing-and-conditional-handling.cs",
         "set-up-oauth-2-0-authentication-to-authorize-api-calls-to-google-services-within-your-net-application.cs",
         "specify-load-options-to-control-how-messages-are-read-from-an-mbox-file-during-the-import-process.cs",
+        "specify-the-desired-text-encoding-to-use-when-loading-mbox-files-for-reading-operations.cs",
         "transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs"
       ],
       "required_namespaces": [
         "System",
         "Aspose.Email",
-        "Aspose.Email.Clients.Google",
         "System.IO",
+        "Aspose.Email.Clients.Google",
         "Aspose.Email.Calendar",
         "Aspose.Email.Clients",
         "System.Collections.Generic",
@@ -146,13 +150,15 @@
         "Aspose.Email.Mapi",
         "Aspose.Email.Clients.Smtp",
         "System.Threading.Tasks",
+        "System.Text",
+        "Aspose.Email.Calendar.Recurrences",
         "System.Net.Http",
         "System.Text.Json",
         "System.Threading",
         "System.Diagnostics",
+        "Aspose.Email.Clients.Graph",
         "Aspose.Email.Clients.Activity",
-        "System.Net",
-        "System.Text"
+        "System.Net"
       ],
       "key_apis": []
     },
