@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 118,
+  "total_examples": 120,
   "total_categories": 5,
   "last_updated": "2026-03-26",
   "categories": [
@@ -139,8 +139,9 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 41,
+      "file_count": 43,
       "files": [
+        "access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs",
         "add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs",
         "add-a-new-calendar-appointment-to-the-schedule-using-the-library-appointment-insertion-api.cs",
         "capture-the-user-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs",
@@ -178,6 +179,7 @@
         "retrieve-and-modify-the-client-configuration-settings-programmatically-within-the-net-library-for-authentication-and-behavior-control.cs",
         "retrieve-specific-email-messages-from-an-mbox-archive-by-their-unique-identifiers-for-processing.cs",
         "retrieve-the-current-email-message-size-in-bytes-enabling-size-based-processing-and-conditional-handling.cs",
+        "select-i-have-read-and-agree-to-all-terms-of-service-for-the-google-cloud-platform-products-checkbox-click-create.cs",
         "set-up-oauth-2-0-authentication-to-authorize-api-calls-to-google-services-within-your-net-application.cs",
         "specify-load-options-to-control-how-messages-are-read-from-an-mbox-file-during-the-import-process.cs",
         "specify-the-desired-text-encoding-to-use-when-loading-mbox-files-for-reading-operations.cs",
@@ -186,11 +188,11 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 41
+          "count": 43
         },
         {
           "name": "Aspose.Email",
-          "count": 36
+          "count": 38
         },
         {
           "name": "System.IO",
@@ -198,7 +200,7 @@
         },
         {
           "name": "Aspose.Email.Clients.Google",
-          "count": 17
+          "count": 18
         },
         {
           "name": "Aspose.Email.Calendar",
@@ -206,11 +208,11 @@
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 10
+          "count": 11
         },
         {
           "name": "System.Collections.Generic",
-          "count": 7
+          "count": 8
         },
         {
           "name": "Aspose.Email.Storage.Pst",
@@ -229,12 +231,12 @@
           "count": 5
         },
         {
-          "name": "Aspose.Email.Clients.Smtp",
+          "name": "System.Net",
           "count": 3
         },
         {
-          "name": "System.Net",
-          "count": 2
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 3
         },
         {
           "name": "System.Threading.Tasks",
@@ -243,6 +245,14 @@
         {
           "name": "System.Text",
           "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange",
+          "count": 1
         },
         {
           "name": "Aspose.Email.Calendar.Recurrences",

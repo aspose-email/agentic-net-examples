@@ -18,21 +18,23 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (41 file(s))
-- `using Aspose.Email;` (36 file(s))
+- `using System;` (43 file(s))
+- `using Aspose.Email;` (38 file(s))
 - `using System.IO;` (18 file(s))
-- `using Aspose.Email.Clients.Google;` (17 file(s))
+- `using Aspose.Email.Clients.Google;` (18 file(s))
 - `using Aspose.Email.Calendar;` (12 file(s))
-- `using Aspose.Email.Clients;` (10 file(s))
-- `using System.Collections.Generic;` (7 file(s))
+- `using Aspose.Email.Clients;` (11 file(s))
+- `using System.Collections.Generic;` (8 file(s))
 - `using Aspose.Email.Storage.Pst;` (6 file(s))
 - `using Aspose.Email.Storage.Mbox;` (6 file(s))
 - `using Aspose.Email.Storage;` (5 file(s))
 - `using Aspose.Email.Mapi;` (5 file(s))
+- `using System.Net;` (3 file(s))
 - `using Aspose.Email.Clients.Smtp;` (3 file(s))
-- `using System.Net;` (2 file(s))
 - `using System.Threading.Tasks;` (2 file(s))
 - `using System.Text;` (2 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
+- `using Aspose.Email.Clients.Exchange;` (1 file(s))
 - `using Aspose.Email.Calendar.Recurrences;` (1 file(s))
 - `using System.Net.Http;` (1 file(s))
 - `using System.Text.Json;` (1 file(s))
@@ -44,6 +46,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 ## Files in this folder
 | File | Description |
 |------|-------------|
+| [access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs](./access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs) | access and obtain the metadata fields of an email message programmatically for further processing |
 | [add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs](./add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs) | add a new appointment entry to the calendar store with specified details and recurrence settings |
 | [add-a-new-calendar-appointment-to-the-schedule-using-the-library-appointment-insertion-api.cs](./add-a-new-calendar-appointment-to-the-schedule-using-the-library-appointment-insertion-api.cs) | add a new calendar appointment to the schedule using the library appointment insertion api |
 | [capture-the-user-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs](./capture-the-user-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs) | capture the user country and mobile number inputs then trigger the send verification code action |
@@ -81,13 +84,14 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [retrieve-and-modify-the-client-configuration-settings-programmatically-within-the-net-library-for-authentication-and-behavior-control.cs](./retrieve-and-modify-the-client-configuration-settings-programmatically-within-the-net-library-for-authentication-and-behavior-control.cs) | retrieve and modify the client configuration settings programmatically within the net library for authentication and behavior control |
 | [retrieve-specific-email-messages-from-an-mbox-archive-by-their-unique-identifiers-for-processing.cs](./retrieve-specific-email-messages-from-an-mbox-archive-by-their-unique-identifiers-for-processing.cs) | retrieve specific email messages from an mbox archive by their unique identifiers for processing |
 | [retrieve-the-current-email-message-size-in-bytes-enabling-size-based-processing-and-conditional-handling.cs](./retrieve-the-current-email-message-size-in-bytes-enabling-size-based-processing-and-conditional-handling.cs) | retrieve the current email message size in bytes enabling size based processing and conditional handling |
+| [select-i-have-read-and-agree-to-all-terms-of-service-for-the-google-cloud-platform-products-checkbox-click-create.cs](./select-i-have-read-and-agree-to-all-terms-of-service-for-the-google-cloud-platform-products-checkbox-click-create.cs) | select i have read and agree to all terms of service for the google cloud platform products checkbox click create |
 | [set-up-oauth-2-0-authentication-to-authorize-api-calls-to-google-services-within-your-net-application.cs](./set-up-oauth-2-0-authentication-to-authorize-api-calls-to-google-services-within-your-net-application.cs) | set up oauth 2 0 authentication to authorize api calls to google services within your net application |
 | [specify-load-options-to-control-how-messages-are-read-from-an-mbox-file-during-the-import-process.cs](./specify-load-options-to-control-how-messages-are-read-from-an-mbox-file-during-the-import-process.cs) | specify load options to control how messages are read from an mbox file during the import process |
 | [specify-the-desired-text-encoding-to-use-when-loading-mbox-files-for-reading-operations.cs](./specify-the-desired-text-encoding-to-use-when-loading-mbox-files-for-reading-operations.cs) | specify the desired text encoding to use when loading mbox files for reading operations |
 | [transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs](./transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs) | transform an icalendar ics file into an outlook msg message handling associated outlook items and storage files |
 
 ## Category Statistics
-- Total examples: 41
+- Total examples: 43
 
 ## General Tips
 - Follow root boundaries and testing guide.
