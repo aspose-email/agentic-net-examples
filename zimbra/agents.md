@@ -18,14 +18,14 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (1 file(s))
-- `using System.IO;` (1 file(s))
-- `using Aspose.Email;` (1 file(s))
-- `using Aspose.Email.Storage.Zimbra;` (1 file(s))
-- `using Aspose.Email.Mapi;` (1 file(s))
-- `using Aspose.Email.Clients;` (1 file(s))
-- `using Aspose.Email.Calendar;` (1 file(s))
-- `using System.Collections.Generic;` (1 file(s))
+- `using System;` (9 file(s))
+- `using System.IO;` (7 file(s))
+- `using Aspose.Email;` (6 file(s))
+- `using Aspose.Email.Storage.Zimbra;` (3 file(s))
+- `using Aspose.Email.Mapi;` (3 file(s))
+- `using Aspose.Email.Clients;` (2 file(s))
+- `using Aspose.Email.Calendar;` (2 file(s))
+- `using System.Collections.Generic;` (2 file(s))
 - `using Aspose.Email.Clients.Activity;` (1 file(s))
 - `using Aspose.Email.Storage.Pst;` (1 file(s))
 - `using Aspose.Email.Clients.Google;` (1 file(s))
