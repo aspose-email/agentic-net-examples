@@ -8,9 +8,10 @@ This repository provides working code examples demonstrating Aspose.Email for .N
 ## Repository Structure
 Examples are organized by feature category:
 - `convert-between-formats/` - 40 example(s)
-- `programming-email-verification/` - 12 example(s)
+- `programming-email-verification/` - 24 example(s)
 - `programming-with-gmail/` - 43 example(s)
-- `working-with-amp-html-emails/` - 16 example(s)
+- `working-with-amp-html-emails/` - 33 example(s)
+- `working-with-exchange-ews-client/` - 125 example(s)
 - `working-with-smtp-client/` - 2 example(s)
 - `zimbra/` - 9 example(s)
 
