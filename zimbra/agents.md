@@ -22,10 +22,12 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - `using System.IO;` (1 file(s))
 - `using Aspose.Email;` (1 file(s))
 - `using Aspose.Email.Storage.Zimbra;` (1 file(s))
-- `using Aspose.Email.Calendar;` (1 file(s))
 - `using Aspose.Email.Mapi;` (1 file(s))
+- `using Aspose.Email.Calendar;` (1 file(s))
 - `using Aspose.Email.Clients;` (1 file(s))
 - `using Aspose.Email.Clients.Activity;` (1 file(s))
+- `using System.Collections.Generic;` (1 file(s))
+- `using Aspose.Email.Storage.Pst;` (1 file(s))
 - `using Aspose.Email.Clients.Google;` (1 file(s))
 
 ## Files in this folder
@@ -35,12 +37,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs](./configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs) | configure zimbra to receive product update notifications by enabling the subscription service and specifying update channels |
 | [convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs](./convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs) | convert an icalendar ics file into a microsoft outlook msg message while preserving calendar details |
 | [convert-msg-email-files-to-html-format-preserving-message-content-attachments-and-original-structure.cs](./convert-msg-email-files-to-html-format-preserving-message-content-attachments-and-original-structure.cs) | convert msg email files to html format preserving message content attachments and original structure |
+| [export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hierarchy-and-directory-structure.cs](./export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hierarchy-and-directory-structure.cs) | export mailbox messages to msg files while maintaining the original folder hierarchy and directory structure |
 | [implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs](./implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs) | implement conversion of msg email files to eml format programmatically using the provided api |
 | [read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-processing-and-analysis.cs](./read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-processing-and-analysis.cs) | read all email messages stored in zimbra tgz archives programmatically for processing and analysis |
 | [render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-within-the-interface.cs](./render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-within-the-interface.cs) | render a consolidated view of email calendar entries and tgz file handling within the interface |
 
 ## Category Statistics
-- Total examples: 7
+- Total examples: 8
 
 ## General Tips
 - Follow root boundaries and testing guide.
