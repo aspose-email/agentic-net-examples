@@ -1,0 +1,54 @@
+name: dotnet-pr-check
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-run-examples:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Find example files
+        id: files
+        run: |
+          MAP=$(find agentic-net-examples -type f -name '*.cs' | tr '\n' ' ')
+          if [ -z "$MAP" ]; then
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "No .cs examples found." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          echo "found=true" >> $GITHUB_OUTPUT
+          echo "files=$MAP" >> $GITHUB_OUTPUT
+          echo "Examples to test:" >> $GITHUB_STEP_SUMMARY
+          printf "%s\n" $MAP >> $GITHUB_STEP_SUMMARY
+
+      - name: Test each example (temp project)
+        if: steps.files.outputs.found == 'true'
+        run: |
+          set -euo pipefail
+          PKG_VERSION=26.1.0
+          for f in ${{ steps.files.outputs.files }}; do
+            echo "\n=== Testing $f ==="
+            workdir=$(mktemp -d)
+            dotnet new console --framework net8.0 --no-restore --output "$workdir" >/dev/null
+            rm "$workdir/Program.cs"
+            cp "$f" "$workdir/Program.cs"
+            pushd "$workdir" >/dev/null
+            dotnet add package Aspose.Email --version "$PKG_VERSION" >/dev/null
+            dotnet restore >/dev/null
+            dotnet build -c Release >/dev/null
+            dotnet run -c Release --no-build >/dev/null
+            popd >/dev/null
+            rm -rf "$workdir"
+          done
