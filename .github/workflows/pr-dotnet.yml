@@ -22,7 +22,7 @@ jobs:
       - name: Find example files
         id: files
         run: |
-          MAP=$(find agentic-net-examples -type f -name '*.cs' | tr '\n' ' ')
+          MAP=$(find . -type f -name '*.cs' | tr '\n' ' ')
           if [ -z "$MAP" ]; then
             echo "found=false" >> $GITHUB_OUTPUT
             echo "No .cs examples found." >> $GITHUB_STEP_SUMMARY
