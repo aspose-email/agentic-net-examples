@@ -18,9 +18,9 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (1 file(s))
-- `using Aspose.Email.Tools.Verifications;` (1 file(s))
-- `using Aspose.Email;` (1 file(s))
+- `using System;` (12 file(s))
+- `using Aspose.Email.Tools.Verifications;` (12 file(s))
+- `using Aspose.Email;` (8 file(s))
 
 ## Files in this folder
 | File | Description |
