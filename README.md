@@ -11,7 +11,7 @@ Examples are organized by feature category:
 - `programming-email-verification/` - 12 example(s)
 - `programming-with-gmail/` - 43 example(s)
 - `working-with-amp-html-emails/` - 16 example(s)
-- `working-with-smtp-client/` - 1 example(s)
+- `working-with-smtp-client/` - 2 example(s)
 - `zimbra/` - 9 example(s)
 
 Each category contains standalone `.cs` files that can be compiled and run independently.

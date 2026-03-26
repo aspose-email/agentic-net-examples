@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 121,
+  "total_examples": 122,
   "total_categories": 6,
   "last_updated": "2026-03-26",
   "categories": [
@@ -356,30 +356,31 @@
     },
     {
       "name": "working-with-smtp-client",
-      "file_count": 1,
+      "file_count": 2,
       "files": [
-        "configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loaded-from-an-msg-file.cs"
+        "configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loaded-from-an-msg-file.cs",
+        "set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitting-an-msg-formatted-email.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 1
+          "count": 2
         },
         {
           "name": "System.IO",
-          "count": 1
+          "count": 2
         },
         {
           "name": "Aspose.Email",
-          "count": 1
+          "count": 2
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 1
+          "count": 2
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
-          "count": 1
+          "count": 2
         }
       ],
       "key_apis": []
