@@ -18,18 +18,19 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (39 file(s))
-- `using Aspose.Email;` (34 file(s))
-- `using System.IO;` (17 file(s))
-- `using Aspose.Email.Clients.Google;` (16 file(s))
-- `using Aspose.Email.Calendar;` (11 file(s))
-- `using Aspose.Email.Clients;` (9 file(s))
+- `using System;` (41 file(s))
+- `using Aspose.Email;` (36 file(s))
+- `using System.IO;` (18 file(s))
+- `using Aspose.Email.Clients.Google;` (17 file(s))
+- `using Aspose.Email.Calendar;` (12 file(s))
+- `using Aspose.Email.Clients;` (10 file(s))
 - `using System.Collections.Generic;` (7 file(s))
+- `using Aspose.Email.Storage.Pst;` (6 file(s))
 - `using Aspose.Email.Storage.Mbox;` (6 file(s))
 - `using Aspose.Email.Storage;` (5 file(s))
-- `using Aspose.Email.Storage.Pst;` (5 file(s))
-- `using Aspose.Email.Mapi;` (4 file(s))
-- `using Aspose.Email.Clients.Smtp;` (2 file(s))
+- `using Aspose.Email.Mapi;` (5 file(s))
+- `using Aspose.Email.Clients.Smtp;` (3 file(s))
+- `using System.Net;` (2 file(s))
 - `using System.Threading.Tasks;` (2 file(s))
 - `using System.Text;` (2 file(s))
 - `using Aspose.Email.Calendar.Recurrences;` (1 file(s))
@@ -39,7 +40,6 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - `using System.Diagnostics;` (1 file(s))
 - `using Aspose.Email.Clients.Graph;` (1 file(s))
 - `using Aspose.Email.Clients.Activity;` (1 file(s))
-- `using System.Net;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
@@ -51,6 +51,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [convert-an-mbox-archive-to-pst-format-while-stripping-any-email-signatures-from-the-messages.cs](./convert-an-mbox-archive-to-pst-format-while-stripping-any-email-signatures-from-the-messages.cs) | convert an mbox archive to pst format while stripping any email signatures from the messages |
 | [convert-an-mbox-mailbox-file-to-pst-format-optionally-retaining-or-stripping-message-signatures.cs](./convert-an-mbox-mailbox-file-to-pst-format-optionally-retaining-or-stripping-message-signatures.cs) | convert an mbox mailbox file to pst format optionally retaining or stripping message signatures |
 | [create-and-insert-calendar-events-into-a-google-calendar-account-using-the-appropriate-api-calls.cs](./create-and-insert-calendar-events-into-a-google-calendar-account-using-the-appropriate-api-calls.cs) | create and insert calendar events into a google calendar account using the appropriate api calls |
+| [create-and-manipulate-outlook-items-convert-ics-files-to-msg-handle-outlook-storage-files-and-process-smtp-communication.cs](./create-and-manipulate-outlook-items-convert-ics-files-to-msg-handle-outlook-storage-files-and-process-smtp-communication.cs) | create and manipulate outlook items convert ics files to msg handle outlook storage files and process smtp communication |
 | [create-and-manipulate-outlook-items-converting-ics-calendar-files-to-msg-email-format-programmatically.cs](./create-and-manipulate-outlook-items-converting-ics-calendar-files-to-msg-email-format-programmatically.cs) | create and manipulate outlook items converting ics calendar files to msg email format programmatically |
 | [create-retrieve-and-modify-gmail-calendar-events-programmatically-using-the-provided-api-endpoints-directly.cs](./create-retrieve-and-modify-gmail-calendar-events-programmatically-using-the-provided-api-endpoints-directly.cs) | create retrieve and modify gmail calendar events programmatically using the provided api endpoints directly |
 | [create-update-retrieve-and-delete-google-calendar-appointments-programmatically-using-the-provided-api-endpoints.cs](./create-update-retrieve-and-delete-google-calendar-appointments-programmatically-using-the-provided-api-endpoints.cs) | create update retrieve and delete google calendar appointments programmatically using the provided api endpoints |
@@ -74,6 +75,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [programmatically-convert-thunderbird-email-files-to-standard-formats-using-the-provided-api-for-application-integration.cs](./programmatically-convert-thunderbird-email-files-to-standard-formats-using-the-provided-api-for-application-integration.cs) | programmatically convert thunderbird email files to standard formats using the provided api for application integration |
 | [programmatically-retrieve-the-total-count-of-email-messages-stored-in-an-mbox-file-using-the-api.cs](./programmatically-retrieve-the-total-count-of-email-messages-stored-in-an-mbox-file-using-the-api.cs) | programmatically retrieve the total count of email messages stored in an mbox file using the api |
 | [prompt-the-user-to-input-the-otp-received-via-mobile-sms-for-authentication-verification.cs](./prompt-the-user-to-input-the-otp-received-via-mobile-sms-for-authentication-verification.cs) | prompt the user to input the otp received via mobile sms for authentication verification |
+| [provision-a-new-google-developer-console-project-to-enable-authorized-api-access-for-the-application.cs](./provision-a-new-google-developer-console-project-to-enable-authorized-api-access-for-the-application.cs) | provision a new google developer console project to enable authorized api access for the application |
 | [register-to-receive-product-update-notifications-via-the-provided-subscription-service-to-stay-informed-about-new-releases.cs](./register-to-receive-product-update-notifications-via-the-provided-subscription-service-to-stay-informed-about-new-releases.cs) | register to receive product update notifications via the provided subscription service to stay informed about new releases |
 | [remove-designated-google-calendar-instances-programmatically-ensuring-only-the-targeted-calendars-are-permanently-deleted.cs](./remove-designated-google-calendar-instances-programmatically-ensuring-only-the-targeted-calendars-are-permanently-deleted.cs) | remove designated google calendar instances programmatically ensuring only the targeted calendars are permanently deleted |
 | [retrieve-and-modify-the-client-configuration-settings-programmatically-within-the-net-library-for-authentication-and-behavior-control.cs](./retrieve-and-modify-the-client-configuration-settings-programmatically-within-the-net-library-for-authentication-and-behavior-control.cs) | retrieve and modify the client configuration settings programmatically within the net library for authentication and behavior control |
@@ -85,7 +87,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs](./transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs) | transform an icalendar ics file into an outlook msg message handling associated outlook items and storage files |
 
 ## Category Statistics
-- Total examples: 39
+- Total examples: 41
 
 ## General Tips
 - Follow root boundaries and testing guide.
