@@ -3,8 +3,8 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 120,
-  "total_categories": 5,
+  "total_examples": 121,
+  "total_categories": 6,
   "last_updated": "2026-03-26",
   "categories": [
     {
@@ -349,6 +349,36 @@
         },
         {
           "name": "System.Reflection",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "working-with-smtp-client",
+      "file_count": 1,
+      "files": [
+        "configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loaded-from-an-msg-file.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 1
+        },
+        {
+          "name": "System.IO",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
           "count": 1
         }
       ],
