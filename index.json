@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 122,
+  "total_examples": 123,
   "total_categories": 6,
   "last_updated": "2026-03-26",
   "categories": [
@@ -139,7 +139,7 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 43,
+      "file_count": 44,
       "files": [
         "access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs",
         "add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs",
@@ -164,6 +164,7 @@
         "implement-functionality-to-relocate-and-remove-calendar-events-within-a-google-calendar-using-the-api.cs",
         "implement-functionality-to-split-an-mbox-storage-file-into-separate-messages-and-provide-the-ability-to-abort-the-splitting-process.cs",
         "implement-handling-of-calendar-client-configuration-and-associated-color-metadata-properly-within-the-application.cs",
+        "implement-oauth-2-0-authentication-flow-utilizing-the-googleoauthhelper-class-to-obtain-valid-access-tokens.cs",
         "implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs",
         "navigate-to-the-given-url-complete-all-required-actions-and-retrieve-the-resulting-authorization-code.cs",
         "obtain-the-color-attributes-embedded-within-an-email-content-for-processing-or-analysis-programmatically.cs",
@@ -188,18 +189,18 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 43
+          "count": 44
         },
         {
           "name": "Aspose.Email",
           "count": 38
         },
         {
-          "name": "System.IO",
-          "count": 18
+          "name": "Aspose.Email.Clients.Google",
+          "count": 19
         },
         {
-          "name": "Aspose.Email.Clients.Google",
+          "name": "System.IO",
           "count": 18
         },
         {
@@ -208,7 +209,7 @@
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 11
+          "count": 12
         },
         {
           "name": "System.Collections.Generic",
