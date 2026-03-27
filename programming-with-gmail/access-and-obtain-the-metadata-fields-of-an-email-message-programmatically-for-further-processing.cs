@@ -1,42 +1,44 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace EmailMetadataSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-        try
+        static void Main(string[] args)
         {
-            // Create and connect to the Exchange server
-            using (IEWSClient client = EWSClient.GetEWSClient("https://example.com/EWS/Exchange.asmx", new NetworkCredential("username", "password")))
+            try
             {
-                // Get the Inbox folder URI
-                string inboxUri = client.MailboxInfo.InboxUri;
+                // EWS service URL and credentials
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                NetworkCredential credential = new NetworkCredential("username", "password");
 
-                // Retrieve message metadata from the Inbox
-                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
-
-                // Process each message's metadata
-                foreach (ExchangeMessageInfo info in messages)
+                // Create and connect the EWS client
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
                 {
-                    Console.WriteLine("Subject: " + info.Subject);
-                    Console.WriteLine("From: " + (info.From != null ? info.From.ToString() : string.Empty));
-                    Console.WriteLine("Date: " + info.Date);
-                    Console.WriteLine("To: " + (info.To != null ? info.To.ToString() : string.Empty));
-                    Console.WriteLine("Size: " + info.Size);
-                    Console.WriteLine("Has Attachments: " + info.HasAttachments);
-                    Console.WriteLine(new string('-', 40));
+                    // Retrieve messages from the Inbox folder
+                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+
+                    // Iterate through each message and output metadata fields
+                    foreach (ExchangeMessageInfo info in messages)
+                    {
+                        Console.WriteLine("Subject: " + info.Subject);
+                        Console.WriteLine("From: " + (info.From != null ? info.From.ToString() : string.Empty));
+                        Console.WriteLine("Date: " + info.Date);
+                        Console.WriteLine("Sender: " + (info.Sender != null ? info.Sender.ToString() : string.Empty));
+                        Console.WriteLine("Size: " + info.Size);
+                        Console.WriteLine("Message ID: " + info.MessageId);
+                        Console.WriteLine(new string('-', 40));
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Error: " + ex.Message);
+            }
         }
     }
 }
