@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 276,
-  "total_categories": 7,
-  "last_updated": "2026-03-26",
+  "total_examples": 320,
+  "total_categories": 8,
+  "last_updated": "2026-03-27",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -401,23 +401,30 @@
     },
     {
       "name": "working-with-exchange-ews-client",
-      "file_count": 125,
+      "file_count": 148,
       "files": [
+        "acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs",
+        "activate-comprehensive-logging-to-capture-detailed-diagnostic-information-for-troubleshooting-and-performance-analysis-within-the-application.cs",
         "add-contacts-to-an-existing-distribution-list-by-specifying-member-identifiers-and-updating-the-list-accordingly.cs",
+        "add-custom-metadata-properties-to-the-target-object-to-enable-extended-attribute-storage-for-downstream-processing.cs",
         "add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs",
         "apply-a-date-range-filter-using-the-expression-received-2023-01-01-to-select-items-from-that-date-onward.cs",
         "apply-advanced-query-syntax-to-retrieve-specific-messages-from-an-exchange-mailbox-based-on-defined-criteria.cs",
         "apply-and-chain-multiple-filters-sequentially-to-process-email-data-according-to-combined-criteria.cs",
         "apply-modifications-to-an-existing-inbox-rule-by-invoking-the-service-updateinboxrule-method-within-your-application.cs",
         "archive-email-messages-older-than-a-specified-date-into-a-compressed-archive-for-long-term-storage.cs",
+        "archive-exchange-email-messages-via-the-ews-api-ensuring-they-are-stored-securely-and-indexed-appropriately.cs",
         "configure-and-apply-a-custom-email-header-to-outgoing-messages-using-the-provided-api.cs",
         "configure-authentication-by-assigning-a-networkcredential-instance-containing-the-required-username-password-and-domain.cs",
         "configure-authentication-credentials-for-the-email-service-to-establish-secure-connections-and-authorize-requests.cs",
+        "configure-exchangeservice-tracelistener-to-direct-logging-output-to-a-designated-log-file-location-on-disk.cs",
         "configure-retrieve-and-update-user-mail-settings-and-preferences-on-an-exchange-server-programmatically.cs",
+        "configure-the-ews-client-in-c-to-record-activity-logs-for-debugging-and-monitoring-purposes.cs",
         "configure-the-exchange-server-endpoint-by-providing-its-url-correctly-in-the-client-settings.cs",
         "configure-the-exchangeservice-impersonateduserid-property-to-operate-under-the-shared-mailbox-context-for-authenticated-actions.cs",
         "configure-the-exchangeservice-object-with-appropriate-authentication-credentials-to-enable-authorized-connections-for-mailbox-operations.cs",
         "configure-the-service-authentication-credentials-to-enable-authorized-access-for-subsequent-programmatic-api-operations.cs",
+        "configure-the-service-tracelistener-property-by-assigning-a-new-textwritertracelistener-instance-for-output-handling.cs",
         "configure-the-shared-mailbox-address-for-email-operations-to-direct-messages-to-the-designated-shared-account.cs",
         "connect-to-the-mail-server-and-retrieve-items-from-a-specific-mailbox-folder-using-the-provided-api.cs",
         "construct-a-searchfiltercollection-that-merges-several-individual-filters-by-applying-the-logicaloperator-and-operator-to-refine-query-results.cs",
@@ -438,8 +445,11 @@
         "create-calendar-event-objects-with-specified-properties-and-add-them-to-a-calendar-store-programmatically.cs",
         "create-modify-or-delete-distribution-lists-on-an-exchange-server-using-the-provided-api.cs",
         "delete-selected-email-messages-from-a-mailbox-ensuring-they-are-permanently-removed-and-synchronization-updates-accordingly.cs",
+        "display-the-generated-log-output-in-the-console-or-designated-ui-component-for-diagnostic-review.cs",
         "enable-creation-retrieval-updating-and-deletion-of-exchange-server-mailbox-rules-through-the-exchange-web-services-interface.cs",
+        "enable-diagnostic-tracing-for-the-service-at-runtime-by-assigning-true-to-its-traceenabled-property.cs",
         "enable-optional-impersonation-settings-to-execute-mail-server-operations-under-alternative-user-credentials-when-needed.cs",
+        "enable-runtime-tracing-for-the-exchange-service-by-programmatically-setting-the-traceenabled-property-to-true.cs",
         "ensure-required-permissions-proper-authentication-and-appropriate-mailbox-delegation-settings-are-configured-before-accessing-shared-mailboxes.cs",
         "establish-a-programmatic-connection-to-an-exchange-server-to-access-mailbox-and-communication-services.cs",
         "establish-a-secure-session-to-an-exchange-server-using-the-net-client-api-with-appropriate-credentials.cs",
@@ -458,27 +468,32 @@
         "implement-functionality-to-access-and-manipulate-exchange-mailboxes-and-their-messages-using-the-provided-api.cs",
         "implement-functionality-to-generate-a-user-configuration-based-on-specified-settings-and-preferences-and-store-it-securely.cs",
         "implement-functionality-to-parse-and-load-user-configuration-settings-from-the-designated-configuration-file.cs",
+        "implement-functionality-to-persist-user-defined-configuration-values-within-the-application-settings-storage-for-later-retrieval.cs",
         "implement-functionality-to-programmatically-create-an-email-auto-forward-rule-with-specified-criteria-and-target-address.cs",
         "implement-impersonation-so-the-application-can-perform-actions-as-a-different-user-with-appropriate-credentials.cs",
         "implement-impersonation-to-execute-email-operations-under-alternate-user-credentials-ensuring-proper-security-context-handling-throughout-the-process.cs",
         "implement-operations-to-create-retrieve-update-and-delete-conversation-items-within-the-email-messaging-system.cs",
         "implement-restriction-filters-to-control-access-permissions-and-enforce-content-constraints-within-email-processing-workflows.cs",
         "implement-subject-based-filtering-to-retrieve-email-messages-that-match-specified-subject-criteria-within-a-mailbox.cs",
+        "inspect-the-generated-log-to-thoroughly-analyze-all-request-and-response-data-for-debugging-purposes.cs",
         "instantiate-a-distribution-list-object-and-populate-it-with-specified-contacts-using-the-provided-api-methods.cs",
         "instantiate-a-folderinfo-object-and-assign-the-desired-value-to-its-displayname-property-programmatically.cs",
         "instantiate-a-new-contact-entity-populate-required-fields-and-add-it-to-the-address-book-collection.cs",
         "instantiate-an-exchange-service-object-configured-for-the-target-server-authentication-parameters-and-session-settings.cs",
         "instantiate-an-exchangeservice-object-to-interact-with-the-mail-server-programmatically-within-your-application.cs",
         "instantiate-an-oauthcredentials-object-by-supplying-the-access-token-enabling-secure-authenticated-api-requests.cs",
+        "instantiate-and-configure-a-new-task-object-to-perform-the-desired-operation-within-the-library.cs",
         "instantiate-the-exchangeservice-class-configure-its-credentials-and-establish-a-connection-to-the-exchange-server.cs",
         "interpret-and-manipulate-extended-properties-of-email-messages-to-access-additional-metadata-and-custom-fields.cs",
         "interpret-and-retrieve-conversation-threads-from-email-messages-preserving-hierarchical-relationships-and-metadata-for-proper-analysis.cs",
         "invoke-deleteitem-for-every-message-to-permanently-delete-each-item-from-the-mailbox-store.cs",
+        "invoke-finditems-to-programmatically-extract-email-messages-from-all-folders-within-a-shared-mailbox.cs",
         "invoke-service-deleteitem-method-to-permanently-remove-a-specified-task-entity-from-the-system-storage.cs",
         "invoke-service-deleteitem-to-permanently-remove-a-specified-contact-from-the-data-store-and-clear-related-references.cs",
         "invoke-the-createinboxrule-method-on-the-service-object-to-configure-and-add-a-new-inbox-rule.cs",
         "invoke-the-createitem-method-on-the-service-object-to-persist-the-appointment-data-in-the-system.cs",
         "invoke-the-createitem-method-on-the-service-object-to-upload-the-contact-to-the-server.cs",
+        "invoke-the-findfolders-method-to-search-for-and-retrieve-the-target-folder-within-the-mailbox-hierarchy.cs",
         "invoke-the-finditems-method-to-retrieve-all-matching-message-objects-from-the-mailbox-collection.cs",
         "invoke-the-service-createfolder-method-to-create-a-new-folder-within-the-target-storage.cs",
         "invoke-the-service-deleteitem-operation-to-permanently-remove-the-specified-list-from-the-collection.cs",
@@ -489,10 +504,13 @@
         "modify-and-persist-configuration-data-within-the-application-using-appropriate-api-calls-and-data-validation.cs",
         "modify-existing-calendar-entries-programmatically-adjusting-properties-such-as-date-time-and-attendees-as-required.cs",
         "modify-existing-contact-entries-by-updating-their-fields-ensuring-changes-are-persisted-across-the-data-store.cs",
+        "modify-the-existing-task-properties-to-reflect-updated-details-and-metadata-within-the-application.cs",
+        "modify-the-task-properties-by-invoking-the-service-updateitem-method-with-the-required-parameters-in-code.cs",
         "optionally-configure-an-inbox-rule-that-automatically-archives-received-messages-based-on-defined-criteria.cs",
         "perform-an-aqs-query-against-the-data-source-to-retrieve-matching-items-using-specified-criteria.cs",
         "perform-contact-management-operations-on-an-exchange-server-via-the-exchange-web-services-protocol.cs",
         "perform-creation-retrieval-updating-and-deletion-of-calendar-items-through-the-exchange-web-services-api.cs",
+        "perform-creation-retrieval-updating-and-deletion-of-exchange-server-tasks-via-the-ews-api.cs",
         "perform-folder-operations-on-an-exchange-server-including-creation-retrieval-updating-and-deletion-via-api.cs",
         "programmatically-define-and-configure-inbox-rules-to-automate-email-handling-based-on-specified-criteria.cs",
         "remove-a-contact-entry-from-the-address-book-programmatically-using-the-appropriate-net-api-method.cs",
@@ -506,7 +524,9 @@
         "remove-existing-email-processing-rules-programmatically-from-the-mailbox-ensuring-cleanup-of-associated-configurations.cs",
         "remove-extended-properties-from-an-email-message-to-eliminate-unnecessary-metadata-and-streamline-storage.cs",
         "remove-specific-conversation-items-from-a-mailbox-programmatically-ensuring-associated-metadata-is-completely-cleared.cs",
+        "remove-specified-calendar-events-from-a-mailbox-using-appropriate-api-calls-ensuring-proper-synchronization.cs",
         "remove-specified-items-from-the-collection-supporting-both-single-item-and-batch-deletion-operations-programmatically.cs",
+        "remove-unwanted-email-messages-from-a-mailbox-programmatically-ensuring-clean-storage-and-efficient-processing.cs",
         "rename-the-specified-directory-to-a-new-name-updating-all-relevant-file-system-references-accordingly.cs",
         "retrieve-a-user-configuration-settings-by-invoking-the-getuserconfiguration-method-on-the-service-instance.cs",
         "retrieve-all-messages-belonging-to-a-specific-conversation-thread-by-invoking-the-findconversationitems-operation.cs",
@@ -522,6 +542,9 @@
         "retrieve-the-shared-mailbox-inbox-folder-reference-to-enable-further-email-processing-and-folder-management-tasks.cs",
         "review-and-evaluate-the-available-archiving-configurations-to-determine-optimal-storage-and-retrieval-strategies.cs",
         "set-the-service-impersonateduserid-property-to-the-shared-mailbox-smtp-address-to-enable-impersonation.cs",
+        "set-up-and-customize-logging-parameters-to-control-output-verbosity-format-and-destination-for-email-operations.cs",
+        "specify-the-file-system-location-where-the-application-will-write-its-log-output-during-execution.cs",
+        "specify-the-file-system-location-where-the-library-writes-its-log-files-for-troubleshooting-and-diagnostics.cs",
         "transfer-a-directory-and-its-contents-to-a-new-location-updating-all-internal-file-references-accordingly.cs",
         "update-or-customize-predefined-validation-rules-within-the-library-rule-engine-to-meet-specific-requirements.cs",
         "use-the-addmember-method-to-insert-new-members-into-the-collection-ensuring-proper-initialization-and-validation.cs",
@@ -532,39 +555,39 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 125
+          "count": 148
         },
         {
           "name": "Aspose.Email",
-          "count": 111
+          "count": 132
         },
         {
           "name": "System.Net",
-          "count": 106
+          "count": 124
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 104
+          "count": 122
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 75
+          "count": 87
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 34
+          "count": 40
         },
         {
           "name": "System.IO",
-          "count": 16
+          "count": 26
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 8
+          "count": 9
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 7
+          "count": 9
         },
         {
           "name": "Aspose.Email.Calendar",
@@ -572,15 +595,15 @@
         },
         {
           "name": "System.Collections.Generic",
-          "count": 6
+          "count": 7
+        },
+        {
+          "name": "System.Text",
+          "count": 4
         },
         {
           "name": "Aspose.Email.PersonalInfo",
           "count": 4
-        },
-        {
-          "name": "System.Text",
-          "count": 3
         },
         {
           "name": "System.Threading.Tasks",
@@ -603,11 +626,105 @@
           "count": 1
         },
         {
+          "name": "System.Diagnostics",
+          "count": 1
+        },
+        {
           "name": "Aspose.Email.Storage.Pst",
           "count": 1
         },
         {
           "name": "Aspose.Email.Clients.Imap",
+          "count": 1
+        },
+        {
+          "name": "System.Threading",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService.Models",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "working-with-exchange-webdav-client",
+      "file_count": 21,
+      "files": [
+        "access-and-retrieve-messages-from-a-different-user-mailbox-programmatically-handling-authentication-and-permissions-appropriately.cs",
+        "apply-message-filtering-criteria-to-retrieve-or-exclude-specific-email-items-based-on-defined-parameters.cs",
+        "compose-and-send-email-messages-programmatically-managing-recipients-subject-line-message-body-and-file-attachments.cs",
+        "create-and-edit-outlook-items-from-an-ics-file-then-convert-and-save-as-msg-via-outlook-storage-and-smtp.cs",
+        "implement-case-sensitive-filtering-of-email-messages-based-on-specified-criteria-to-match-exact-character-cases.cs",
+        "implement-functionality-to-persist-email-messages-to-a-storage-medium-supporting-various-output-formats-such-as-eml-msg-and-mhtml.cs",
+        "implement-functionality-to-serialize-email-messages-into-msg-files-preserving-all-headers-attachments-and-properties.cs",
+        "load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-updated-data-to-msg-format.cs",
+        "perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-webdav-protocol-for-communication.cs",
+        "programmatically-retrieve-all-email-messages-from-a-specified-exchange-server-mailbox-handling-authentication-and-pagination.cs",
+        "register-for-release-notifications-to-receive-automatic-updates-about-new-library-features-and-enhancements.cs",
+        "remove-email-messages-from-a-mailbox-programmatically-ensuring-permanent-deletion-and-appropriate-synchronization-across-folders.cs",
+        "retrieve-a-collection-of-email-messages-from-the-store-by-supplying-their-unique-identifier-values.cs",
+        "retrieve-a-collection-of-plain-text-email-messages-and-present-them-as-a-simple-list.cs",
+        "retrieve-and-enumerate-email-messages-from-a-store-returning-their-metadata-and-content-as-needed.cs",
+        "retrieve-and-filter-exchange-mailbox-messages-via-webdav-based-on-specified-criteria-such-as-date-sender-or-subject.cs",
+        "retrieve-comprehensive-mailbox-metadata-through-webdav-calls-to-query-folder-properties-and-message-counts.cs",
+        "save-email-messages-to-the-eml-format-while-preserving-all-header-and-body-information.cs",
+        "send-email-messages-through-an-exchange-server-using-the-appropriate-client-apis-and-authentication-mechanisms.cs",
+        "serialize-email-messages-into-a-memory-stream-for-efficient-in-memory-processing-manipulation-and-transmission.cs",
+        "transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-source-and-saving-the-result.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 21
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 21
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 13
+        },
+        {
+          "name": "System.Net",
+          "count": 12
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange",
+          "count": 10
+        },
+        {
+          "name": "System.IO",
+          "count": 8
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 2
+        },
+        {
+          "name": "System.Text",
+          "count": 1
+        },
+        {
+          "name": "System.Collections.Generic",
           "count": 1
         }
       ],
