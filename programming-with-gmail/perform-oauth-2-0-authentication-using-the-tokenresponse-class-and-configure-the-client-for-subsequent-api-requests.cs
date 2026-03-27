@@ -2,55 +2,46 @@ using System;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-class Program
+namespace AsposeEmailGraphExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Obtain OAuth 2.0 tokens (replace with real implementation)
-            TokenResponse tokenResponse = GetOAuthToken();
-
-            // Create a token provider (Outlook example)
-            TokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                clientId: "your-client-id",
-                clientSecret: "your-client-secret",
-                refreshToken: tokenResponse.RefreshToken);
-
-            // Initialize Graph client with the token provider
-            using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId: "your-tenant-id"))
+            try
             {
-                // Example API request (commented out – replace with actual usage)
-                // var messages = graphClient.ListMessages("Inbox");
-                // foreach (var msg in messages)
-                // {
-                //     Console.WriteLine(msg.Subject);
-                // }
+                // Dummy OAuth credentials – replace with real values.
+                string clientId = "your-client-id";
+                string clientSecret = "your-client-secret";
+                string refreshToken = "your-refresh-token";
+                string tenantId = "your-tenant-id";
 
-                Console.WriteLine("Graph client configured successfully.");
+                // Create a token provider for Google (used here as an example OAuth provider).
+                TokenProvider tokenProvider = TokenProvider.Google.GetInstance(clientId, clientSecret, refreshToken);
+
+                // Initialize the Graph client using the token provider.
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
+                {
+                    // The client is now authenticated and ready for API calls.
+                    // Example: list the user's mail folders (replace with actual calls as needed).
+                    try
+                    {
+                        var folders = client.ListFolders();
+                        foreach (var folder in folders)
+                        {
+                            Console.WriteLine($"Folder: {folder.DisplayName}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error while accessing Graph API: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
-        }
     }
-
-    // Mock method to simulate obtaining an OAuth token response
-    static TokenResponse GetOAuthToken()
-    {
-        // Replace this stub with actual OAuth 2.0 flow to retrieve tokens
-        return new TokenResponse
-        {
-            AccessToken = "access-token-placeholder",
-            RefreshToken = "refresh-token-placeholder"
-        };
-    }
-}
-
-// Simple representation of an OAuth token response
-class TokenResponse
-{
-    public string AccessToken { get; set; }
-    public string RefreshToken { get; set; }
 }
