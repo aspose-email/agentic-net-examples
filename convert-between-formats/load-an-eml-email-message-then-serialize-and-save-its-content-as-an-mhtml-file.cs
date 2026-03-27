@@ -4,7 +4,7 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
@@ -14,26 +14,35 @@ class Program
             // Ensure the input EML file exists; create a minimal placeholder if missing.
             if (!File.Exists(inputPath))
             {
-                string placeholder = "From: example@example.com\r\nSubject: Test\r\n\r\nThis is a test email.";
-                File.WriteAllText(inputPath, placeholder);
-            }
-
-            // Ensure the output directory exists.
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
+                try
+                {
+                    const string placeholder = "Subject: Placeholder\r\n\r\nThis is a placeholder email.";
+                    File.WriteAllText(inputPath, placeholder);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    return;
+                }
             }
 
             // Load the EML message and save it as MHTML.
-            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+            try
             {
-                mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
+                using (MailMessage mailMessage = MailMessage.Load(inputPath))
+                {
+                    mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing email files: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
