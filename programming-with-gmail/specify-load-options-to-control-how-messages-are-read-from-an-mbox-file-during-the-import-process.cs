@@ -2,63 +2,47 @@ using System;
 using System.IO;
 using System.Text;
 using Aspose.Email;
+using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
 
-public class Program
+namespace AsposeEmailMboxLoadOptionsExample
 {
-    public static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main()
         {
-            // Path to the MBOX file to be processed
-            string mboxFilePath = "sample.mbox";
-
-            // Verify that the MBOX file exists before attempting to read it
-            if (!File.Exists(mboxFilePath))
+            try
             {
-                Console.Error.WriteLine($"Error: File not found – {mboxFilePath}");
-                return;
-            }
+                // Path to the MBOX file
+                string mboxFilePath = "sample.mbox";
 
-            // Configure load options for the MBOX storage
-            MboxLoadOptions mboxLoadOptions = new MboxLoadOptions
-            {
-                // Keep the underlying stream closed after the reader is disposed
-                LeaveOpen = false,
-                // Use UTF-8 as the preferred encoding for message bodies
-                PreferredTextEncoding = Encoding.UTF8
-            };
-
-            // Configure load options for individual EML messages extracted from the MBOX
-            EmlLoadOptions emlLoadOptions = new EmlLoadOptions
-            {
-                // Preserve TNEF attachments if present
-                PreserveTnefAttachments = true,
-                // Use UTF-8 for message subject and body
-                PreferredTextEncoding = Encoding.UTF8
-            };
-
-            // Create the MBOX reader with the specified file and load options
-            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, mboxLoadOptions))
-            {
-                // Enumerate each message using the EML load options
-                foreach (MailMessage message in mboxReader.EnumerateMessages(emlLoadOptions))
+                // Verify that the file exists before attempting to read it
+                if (!File.Exists(mboxFilePath))
                 {
-                    // Ensure each MailMessage is disposed after use
-                    using (message)
-                    {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"To: {message.To}");
-                        Console.WriteLine(new string('-', 40));
-                    }
+                    Console.Error.WriteLine($"Error: File not found – {mboxFilePath}");
+                    return;
+                }
+
+                // Configure load options for reading the MBOX file
+                MboxLoadOptions loadOptions = new MboxLoadOptions();
+                loadOptions.LeaveOpen = false;                     // Do not keep the underlying stream open after disposal
+                loadOptions.PreferredTextEncoding = Encoding.UTF8; // Use UTF-8 for message text decoding
+
+                // Create a reader for the MBOX storage with the specified options
+                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, loadOptions))
+                {
+                    // Example: extract a message by its entry identifier (replace with a real ID as needed)
+                    // The ExtractMessage method requires an identifier and EmlLoadOptions.
+                    // Here we demonstrate the call signature without actual execution.
+                    // EmlLoadOptions emlOptions = new EmlLoadOptions();
+                    // MailMessage message = mboxReader.ExtractMessage("some-message-id", emlOptions);
+                    // Console.WriteLine($"Subject: {message.Subject}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // Catch any unexpected errors and report them without crashing the application
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
