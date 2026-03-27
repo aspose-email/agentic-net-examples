@@ -5,11 +5,11 @@ using Aspose.Email.Amp;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgPath = "message.msg";
+            string msgPath = @"C:\Emails\amp_email.msg";
 
             if (!File.Exists(msgPath))
             {
@@ -17,50 +17,27 @@ class Program
                 return;
             }
 
-            try
+            // Load the MSG file as a MailMessage, then cast to AmpMessage if possible
+            using (MailMessage baseMessage = MailMessage.Load(msgPath))
             {
-                using (FileStream fileStream = new FileStream(msgPath, FileMode.Open, FileAccess.Read))
+                AmpMessage ampMessage = baseMessage as AmpMessage;
+                if (ampMessage == null)
                 {
-                    using (AmpMessage ampMessage = new AmpMessage())
-                    {
-                        ampMessage.Import(fileStream);
-
-                        // Basic properties
-                        Console.WriteLine("Subject: " + ampMessage.Subject);
-                        Console.WriteLine("From: " + (ampMessage.From != null ? ampMessage.From.ToString() : "N/A"));
-                        Console.WriteLine("To: " + (ampMessage.To != null ? ampMessage.To.ToString() : "N/A"));
-
-                        // AMP HTML body
-                        Console.WriteLine("AMP HTML Body:");
-                        Console.WriteLine(ampMessage.AmpHtmlBody ?? "[None]");
-
-                        // Alternate views (e.g., plain text, HTML)
-                        if (ampMessage.AlternateViews != null && ampMessage.AlternateViews.Count > 0)
-                        {
-                            Console.WriteLine("Alternate Views:");
-                            foreach (AlternateView view in ampMessage.AlternateViews)
-                            {
-                                string content = ampMessage.GetAlternateViewContent(view.ContentId);
-                                Console.WriteLine($"- Content ID: {view.ContentId}");
-                                Console.WriteLine(content);
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("No alternate views found.");
-                        }
-                    }
+                    Console.Error.WriteLine("The loaded message is not an AMP message.");
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing file: {ex.Message}");
-                return;
+
+                // Access structured AMP content
+                Console.WriteLine($"Subject: {ampMessage.Subject}");
+                Console.WriteLine($"From: {ampMessage.From}");
+                Console.WriteLine($"To: {ampMessage.To}");
+                Console.WriteLine($"AMP HTML Body:\n{ampMessage.AmpHtmlBody}");
+                Console.WriteLine($"Plain Text Body:\n{ampMessage.Body}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
