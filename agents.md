@@ -18,14 +18,11 @@ When working in this repository:
 - Follow the conventions and anti-patterns below exactly.
 
 ## Repository Overview
-This repository currently contains **502** working code examples across **14** categories.
+This repository currently contains **444** working code examples across **11** categories.
 
 ### Category Details
 - **convert-between-formats** — 40 examples. Guide: [agents.md](./convert-between-formats/agents.md)
-- **general** — 1 examples. Guide: [agents.md](./general/agents.md)
-- **programming-email-verification** — 24 examples. Guide: [agents.md](./programming-email-verification/agents.md)
 - **programming-with-gmail** — 48 examples. Guide: [agents.md](./programming-with-gmail/agents.md)
-- **working-with-amp-html-emails** — 33 examples. Guide: [agents.md](./working-with-amp-html-emails/agents.md)
 - **working-with-exchange-ews-client** — 148 examples. Guide: [agents.md](./working-with-exchange-ews-client/agents.md)
 - **working-with-exchange-webdav-client** — 21 examples. Guide: [agents.md](./working-with-exchange-webdav-client/agents.md)
 - **working-with-imap-client** — 38 examples. Guide: [agents.md](./working-with-imap-client/agents.md)

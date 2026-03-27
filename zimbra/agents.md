@@ -23,11 +23,11 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - `using Aspose.Email;` (6 file(s))
 - `using Aspose.Email.Storage.Zimbra;` (3 file(s))
 - `using Aspose.Email.Mapi;` (3 file(s))
-- `using Aspose.Email.Clients;` (2 file(s))
 - `using Aspose.Email.Calendar;` (2 file(s))
 - `using System.Collections.Generic;` (2 file(s))
-- `using Aspose.Email.Clients.Activity;` (1 file(s))
+- `using Aspose.Email.Clients;` (2 file(s))
 - `using Aspose.Email.Storage.Pst;` (1 file(s))
+- `using Aspose.Email.Clients.Activity;` (1 file(s))
 - `using Aspose.Email.Clients.Google;` (1 file(s))
 - `using Aspose.Email.Clients.Imap;` (1 file(s))
 
