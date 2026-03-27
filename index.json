@@ -1,4 +1,11 @@
 {
+  "product": "Aspose.Email",
+  "platform": "net",
+  "framework": "net8.0",
+  "package_version": "26.1.0",
+  "total_examples": 461,
+  "total_categories": 12,
+  "last_updated": "2026-03-27",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -204,6 +211,10 @@
           "count": 3
         },
         {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 2
+        },
+        {
           "name": "System.Net.Http",
           "count": 2
         },
@@ -216,10 +227,6 @@
           "count": 2
         },
         {
-          "name": "Aspose.Email.Clients.Imap",
-          "count": 2
-        },
-        {
           "name": "Aspose.Email.Clients.Exchange",
           "count": 1
         },
@@ -228,15 +235,11 @@
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients.Graph",
+          "name": "Aspose.Email.Calendar.Recurrences",
           "count": 1
         },
         {
           "name": "System.Text.Json",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Calendar.Recurrences",
           "count": 1
         },
         {
@@ -248,7 +251,85 @@
           "count": 1
         },
         {
+          "name": "RangeAlias = Aspose.Email.Clients.Google.Range",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Graph",
+          "count": 1
+        },
+        {
           "name": "Aspose.Email.Clients.Activity",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "working-with-amp-html-emails",
+      "file_count": 17,
+      "files": [
+        "assign-values-to-standard-email-fields-such-as-from-to-subject-and-others-when-generating-an-msg-file.cs",
+        "during-msg-file-parsing-examine-each-alternateview-for-mime-type-text-x-amp-html-to-extract-the-amp-content.cs",
+        "embed-amp-html-content-into-an-msg-email-message-to-enable-dynamic-interactive-email-rendering.cs",
+        "enumerate-all-supported-capabilities-and-functionalities-available-for-handling-the-msg-file-format-within-the-library.cs",
+        "examine-the-principles-for-handling-amp-html-email-content-stored-in-msg-files-using-the-available-api.cs",
+        "extract-and-parse-the-amp-body-from-an-msg-email-file-to-retrieve-its-dynamic-content.cs",
+        "generate-an-alternateview-containing-amp-content-and-assign-the-mime-type-text-x-amp-html-for-msg-files.cs",
+        "generate-an-amp-html-string-and-embed-it-within-a-standard-msg-file-representation-for-email-messages.cs",
+        "include-an-optional-plain-text-or-html-alternateview-to-ensure-fallback-rendering-when-generating-msg-files.cs",
+        "insert-an-alternateview-of-msg-format-into-the-mailmessage-alternateviews-collection-to-ensure-proper-multipart-render.cs",
+        "instantiate-a-mailmessage-object-and-serialize-it-to-the-msg-file-format-for-email-storage.cs",
+        "parse-an-amp-email-contained-in-an-msg-file-to-access-its-structured-content.cs",
+        "programmatically-generate-an-amp-email-message-and-serialize-it-into-an-msg-file-for-outlook-compatibility.cs",
+        "provide-a-comprehensive-list-of-all-amp-components-supported-for-processing-email-messages-saved-in-msg-format.cs",
+        "transmit-an-amp-email-message-saved-as-an-msg-file-using-the-library-messaging-api.cs",
+        "transmit-an-amp-formatted-email-as-a-msg-file-using-the-smtpclient-class-with-appropriate-authentication.cs",
+        "utilize-smtpclient-to-transmit-an-email-message-saved-in-msg-format-via-the-configured-smtp-server.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 17
+        },
+        {
+          "name": "System.IO",
+          "count": 15
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 15
+        },
+        {
+          "name": "Aspose.Email.Amp",
+          "count": 11
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 3
+        },
+        {
+          "name": "System.Reflection",
+          "count": 2
+        },
+        {
+          "name": "System.Text",
+          "count": 1
+        },
+        {
+          "name": "System.Net",
           "count": 1
         }
       ],
@@ -422,11 +503,11 @@
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 123
+          "count": 122
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 88
+          "count": 87
         },
         {
           "name": "Aspose.Email.Tools.Search",
@@ -437,27 +518,27 @@
           "count": 26
         },
         {
-          "name": "Aspose.Email.Mapi",
-          "count": 9
-        },
-        {
           "name": "Aspose.Email.Clients",
           "count": 9
         },
         {
-          "name": "System.Collections.Generic",
-          "count": 7
+          "name": "Aspose.Email.Mapi",
+          "count": 9
         },
         {
           "name": "Aspose.Email.Calendar",
           "count": 7
         },
         {
-          "name": "Aspose.Email.PersonalInfo",
-          "count": 4
+          "name": "System.Collections.Generic",
+          "count": 7
         },
         {
           "name": "System.Text",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
           "count": 4
         },
         {
@@ -473,15 +554,19 @@
           "count": 2
         },
         {
-          "name": "Aspose.Email.Storage.Pst",
-          "count": 1
-        },
-        {
           "name": "System.IO.Compression",
           "count": 1
         },
         {
           "name": "Aspose.Email.Mime",
+          "count": 1
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
           "count": 1
         },
         {
@@ -494,10 +579,6 @@
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService.Models",
-          "count": 1
-        },
-        {
-          "name": "System.Diagnostics",
           "count": 1
         }
       ],
@@ -563,11 +644,11 @@
           "count": 4
         },
         {
-          "name": "Aspose.Email.Calendar",
+          "name": "Aspose.Email.Clients",
           "count": 3
         },
         {
-          "name": "Aspose.Email.Clients",
+          "name": "Aspose.Email.Calendar",
           "count": 3
         },
         {
@@ -1069,6 +1150,10 @@
           "count": 3
         },
         {
+          "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
           "name": "Aspose.Email.Calendar",
           "count": 2
         },
@@ -1077,15 +1162,11 @@
           "count": 2
         },
         {
-          "name": "Aspose.Email.Clients",
-          "count": 2
-        },
-        {
-          "name": "Aspose.Email.Storage.Pst",
+          "name": "Aspose.Email.Clients.Activity",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients.Activity",
+          "name": "Aspose.Email.Storage.Pst",
           "count": 1
         },
         {
