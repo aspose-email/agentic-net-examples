@@ -18,44 +18,44 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (21 file(s))
 - `using Aspose.Email;` (21 file(s))
+- `using System;` (21 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService;` (13 file(s))
 - `using System.Net;` (12 file(s))
 - `using Aspose.Email.Clients.Exchange;` (10 file(s))
 - `using System.IO;` (8 file(s))
 - `using Aspose.Email.Mapi;` (5 file(s))
 - `using Aspose.Email.Tools.Search;` (4 file(s))
-- `using Aspose.Email.Clients;` (3 file(s))
 - `using Aspose.Email.Calendar;` (3 file(s))
+- `using Aspose.Email.Clients;` (3 file(s))
 - `using Aspose.Email.Clients.Smtp;` (2 file(s))
-- `using System.Text;` (1 file(s))
 - `using System.Collections.Generic;` (1 file(s))
+- `using System.Text;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
-| [access-and-retrieve-messages-from-a-different-user-mailbox-programmatically-hand-68d34306.cs](./access-and-retrieve-messages-from-a-different-user-mailbox-programmatically-hand-68d34306.cs) | access and retrieve messages from a different user mailbox programmatically hand 68d34306 |
-| [apply-message-filtering-criteria-to-retrieve-or-exclude-specific-email-items-bas-0d005b0b.cs](./apply-message-filtering-criteria-to-retrieve-or-exclude-specific-email-items-bas-0d005b0b.cs) | apply message filtering criteria to retrieve or exclude specific email items bas 0d005b0b |
-| [compose-and-send-email-messages-programmatically-managing-recipients-subject-lin-826e8fc9.cs](./compose-and-send-email-messages-programmatically-managing-recipients-subject-lin-826e8fc9.cs) | compose and send email messages programmatically managing recipients subject lin 826e8fc9 |
-| [create-and-edit-outlook-items-from-an-ics-file-then-convert-and-save-as-msg-via-51bd557c.cs](./create-and-edit-outlook-items-from-an-ics-file-then-convert-and-save-as-msg-via-51bd557c.cs) | create and edit outlook items from an ics file then convert and save as msg via 51bd557c |
-| [implement-case-sensitive-filtering-of-email-messages-based-on-specified-criteria-b1fc4db5.cs](./implement-case-sensitive-filtering-of-email-messages-based-on-specified-criteria-b1fc4db5.cs) | implement case sensitive filtering of email messages based on specified criteria b1fc4db5 |
-| [implement-functionality-to-persist-email-messages-to-a-storage-medium-supporting-4a6eb7ba.cs](./implement-functionality-to-persist-email-messages-to-a-storage-medium-supporting-4a6eb7ba.cs) | implement functionality to persist email messages to a storage medium supporting 4a6eb7ba |
-| [implement-functionality-to-serialize-email-messages-into-msg-files-preserving-al-773776c4.cs](./implement-functionality-to-serialize-email-messages-into-msg-files-preserving-al-773776c4.cs) | implement functionality to serialize email messages into msg files preserving al 773776c4 |
-| [load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-u-47ac924a.cs](./load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-u-47ac924a.cs) | load an icalendar ics file modify the outlook items as required and export the u 47ac924a |
-| [perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-we-db389960.cs](./perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-we-db389960.cs) | perform crud operations on an exchange mailbox and its messages utilizing the we db389960 |
-| [programmatically-retrieve-all-email-messages-from-a-specified-exchange-server-ma-1fa0a874.cs](./programmatically-retrieve-all-email-messages-from-a-specified-exchange-server-ma-1fa0a874.cs) | programmatically retrieve all email messages from a specified exchange server ma 1fa0a874 |
-| [register-for-release-notifications-to-receive-automatic-updates-about-new-librar-8e129974.cs](./register-for-release-notifications-to-receive-automatic-updates-about-new-librar-8e129974.cs) | register for release notifications to receive automatic updates about new librar 8e129974 |
-| [remove-email-messages-from-a-mailbox-programmatically-ensuring-permanent-deletio-4ba9322e.cs](./remove-email-messages-from-a-mailbox-programmatically-ensuring-permanent-deletio-4ba9322e.cs) | remove email messages from a mailbox programmatically ensuring permanent deletio 4ba9322e |
-| [retrieve-a-collection-of-email-messages-from-the-store-by-supplying-their-unique-98806e15.cs](./retrieve-a-collection-of-email-messages-from-the-store-by-supplying-their-unique-98806e15.cs) | retrieve a collection of email messages from the store by supplying their unique 98806e15 |
-| [retrieve-a-collection-of-plain-text-email-messages-and-present-them-as-a-simple-dc439350.cs](./retrieve-a-collection-of-plain-text-email-messages-and-present-them-as-a-simple-dc439350.cs) | retrieve a collection of plain text email messages and present them as a simple dc439350 |
-| [retrieve-and-enumerate-email-messages-from-a-store-returning-their-metadata-and-24a57a53.cs](./retrieve-and-enumerate-email-messages-from-a-store-returning-their-metadata-and-24a57a53.cs) | retrieve and enumerate email messages from a store returning their metadata and 24a57a53 |
-| [retrieve-and-filter-exchange-mailbox-messages-via-webdav-based-on-specified-crit-f47b0235.cs](./retrieve-and-filter-exchange-mailbox-messages-via-webdav-based-on-specified-crit-f47b0235.cs) | retrieve and filter exchange mailbox messages via webdav based on specified crit f47b0235 |
-| [retrieve-comprehensive-mailbox-metadata-through-webdav-calls-to-query-folder-pro-b0484499.cs](./retrieve-comprehensive-mailbox-metadata-through-webdav-calls-to-query-folder-pro-b0484499.cs) | retrieve comprehensive mailbox metadata through webdav calls to query folder pro b0484499 |
-| [save-email-messages-to-the-eml-format-while-preserving-all-header-and-body-infor-39b1827d.cs](./save-email-messages-to-the-eml-format-while-preserving-all-header-and-body-infor-39b1827d.cs) | save email messages to the eml format while preserving all header and body infor 39b1827d |
-| [send-email-messages-through-an-exchange-server-using-the-appropriate-client-apis-ce4c7e07.cs](./send-email-messages-through-an-exchange-server-using-the-appropriate-client-apis-ce4c7e07.cs) | send email messages through an exchange server using the appropriate client apis ce4c7e07 |
-| [serialize-email-messages-into-a-memory-stream-for-efficient-in-memory-processing-466ec964.cs](./serialize-email-messages-into-a-memory-stream-for-efficient-in-memory-processing-466ec964.cs) | serialize email messages into a memory stream for efficient in memory processing 466ec964 |
-| [transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-sourc-b3d64a8c.cs](./transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-sourc-b3d64a8c.cs) | transform an ics calendar file into a msg outlook storage item loading the sourc b3d64a8c |
+| [access-and-retrieve-messages-from-a-different-user-mailbox-programmatically-hand.cs](./access-and-retrieve-messages-from-a-different-user-mailbox-programmatically-hand.cs) | access and retrieve messages from a different user mailbox programmatically hand |
+| [apply-message-filtering-criteria-to-retrieve-or-exclude-specific-email-items-bas.cs](./apply-message-filtering-criteria-to-retrieve-or-exclude-specific-email-items-bas.cs) | apply message filtering criteria to retrieve or exclude specific email items bas |
+| [compose-and-send-email-messages-programmatically-managing-recipients-subject-lin.cs](./compose-and-send-email-messages-programmatically-managing-recipients-subject-lin.cs) | compose and send email messages programmatically managing recipients subject lin |
+| [create-and-edit-outlook-items-from-an-ics-file-then-convert-and-save-as-msg-via.cs](./create-and-edit-outlook-items-from-an-ics-file-then-convert-and-save-as-msg-via.cs) | create and edit outlook items from an ics file then convert and save as msg via |
+| [implement-case-sensitive-filtering-of-email-messages-based-on-specified-criteria.cs](./implement-case-sensitive-filtering-of-email-messages-based-on-specified-criteria.cs) | implement case sensitive filtering of email messages based on specified criteria |
+| [implement-functionality-to-persist-email-messages-to-a-storage-medium-supporting.cs](./implement-functionality-to-persist-email-messages-to-a-storage-medium-supporting.cs) | implement functionality to persist email messages to a storage medium supporting |
+| [implement-functionality-to-serialize-email-messages-into-msg-files-preserving-al.cs](./implement-functionality-to-serialize-email-messages-into-msg-files-preserving-al.cs) | implement functionality to serialize email messages into msg files preserving al |
+| [load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-u.cs](./load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-u.cs) | load an icalendar ics file modify the outlook items as required and export the u |
+| [perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-we.cs](./perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-we.cs) | perform crud operations on an exchange mailbox and its messages utilizing the we |
+| [programmatically-retrieve-all-email-messages-from-a-specified-exchange-server-ma.cs](./programmatically-retrieve-all-email-messages-from-a-specified-exchange-server-ma.cs) | programmatically retrieve all email messages from a specified exchange server ma |
+| [register-for-release-notifications-to-receive-automatic-updates-about-new-librar.cs](./register-for-release-notifications-to-receive-automatic-updates-about-new-librar.cs) | register for release notifications to receive automatic updates about new librar |
+| [remove-email-messages-from-a-mailbox-programmatically-ensuring-permanent-deletio.cs](./remove-email-messages-from-a-mailbox-programmatically-ensuring-permanent-deletio.cs) | remove email messages from a mailbox programmatically ensuring permanent deletio |
+| [retrieve-a-collection-of-email-messages-from-the-store-by-supplying-their-unique.cs](./retrieve-a-collection-of-email-messages-from-the-store-by-supplying-their-unique.cs) | retrieve a collection of email messages from the store by supplying their unique |
+| [retrieve-a-collection-of-plain-text-email-messages-and-present-them-as-a-simple.cs](./retrieve-a-collection-of-plain-text-email-messages-and-present-them-as-a-simple.cs) | retrieve a collection of plain text email messages and present them as a simple |
+| [retrieve-and-enumerate-email-messages-from-a-store-returning-their-metadata-and.cs](./retrieve-and-enumerate-email-messages-from-a-store-returning-their-metadata-and.cs) | retrieve and enumerate email messages from a store returning their metadata and |
+| [retrieve-and-filter-exchange-mailbox-messages-via-webdav-based-on-specified-crit.cs](./retrieve-and-filter-exchange-mailbox-messages-via-webdav-based-on-specified-crit.cs) | retrieve and filter exchange mailbox messages via webdav based on specified crit |
+| [retrieve-comprehensive-mailbox-metadata-through-webdav-calls-to-query-folder-pro.cs](./retrieve-comprehensive-mailbox-metadata-through-webdav-calls-to-query-folder-pro.cs) | retrieve comprehensive mailbox metadata through webdav calls to query folder pro |
+| [save-email-messages-to-the-eml-format-while-preserving-all-header-and-body-infor.cs](./save-email-messages-to-the-eml-format-while-preserving-all-header-and-body-infor.cs) | save email messages to the eml format while preserving all header and body infor |
+| [send-email-messages-through-an-exchange-server-using-the-appropriate-client-apis.cs](./send-email-messages-through-an-exchange-server-using-the-appropriate-client-apis.cs) | send email messages through an exchange server using the appropriate client apis |
+| [serialize-email-messages-into-a-memory-stream-for-efficient-in-memory-processing.cs](./serialize-email-messages-into-a-memory-stream-for-efficient-in-memory-processing.cs) | serialize email messages into a memory stream for efficient in memory processing |
+| [transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-sourc.cs](./transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-sourc.cs) | transform an ics calendar file into a msg outlook storage item loading the sourc |
 
 ## Category Statistics
 - Total examples: 21
