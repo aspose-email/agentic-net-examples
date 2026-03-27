@@ -18,25 +18,26 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (43 file(s))
-- `using Aspose.Email;` (38 file(s))
-- `using System.IO;` (18 file(s))
-- `using Aspose.Email.Clients.Google;` (18 file(s))
-- `using Aspose.Email.Calendar;` (12 file(s))
-- `using Aspose.Email.Clients;` (11 file(s))
-- `using System.Collections.Generic;` (8 file(s))
-- `using Aspose.Email.Storage.Pst;` (6 file(s))
-- `using Aspose.Email.Storage.Mbox;` (6 file(s))
-- `using Aspose.Email.Storage;` (5 file(s))
-- `using Aspose.Email.Mapi;` (5 file(s))
+- `using System;` (48 file(s))
+- `using Aspose.Email;` (41 file(s))
+- `using Aspose.Email.Clients;` (26 file(s))
+- `using Aspose.Email.Clients.Google;` (23 file(s))
+- `using System.IO;` (17 file(s))
+- `using Aspose.Email.Calendar;` (13 file(s))
+- `using Aspose.Email.Storage.Mbox;` (8 file(s))
+- `using Aspose.Email.Storage;` (7 file(s))
+- `using Aspose.Email.Storage.Pst;` (7 file(s))
+- `using System.Collections.Generic;` (6 file(s))
+- `using Aspose.Email.Clients.Smtp;` (4 file(s))
 - `using System.Net;` (3 file(s))
-- `using Aspose.Email.Clients.Smtp;` (3 file(s))
+- `using Aspose.Email.Mapi;` (3 file(s))
+- `using Aspose.Email.Clients.Imap;` (2 file(s))
+- `using System.Net.Http;` (2 file(s))
 - `using System.Threading.Tasks;` (2 file(s))
 - `using System.Text;` (2 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
 - `using Aspose.Email.Clients.Exchange;` (1 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
 - `using Aspose.Email.Calendar.Recurrences;` (1 file(s))
-- `using System.Net.Http;` (1 file(s))
 - `using System.Text.Json;` (1 file(s))
 - `using System.Threading;` (1 file(s))
 - `using System.Diagnostics;` (1 file(s))
@@ -69,9 +70,14 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [implement-functionality-to-relocate-and-remove-calendar-events-within-a-google-calendar-using-the-api.cs](./implement-functionality-to-relocate-and-remove-calendar-events-within-a-google-calendar-using-the-api.cs) | implement functionality to relocate and remove calendar events within a google calendar using the api |
 | [implement-functionality-to-split-an-mbox-storage-file-into-separate-messages-and-provide-the-ability-to-abort-the-splitting-process.cs](./implement-functionality-to-split-an-mbox-storage-file-into-separate-messages-and-provide-the-ability-to-abort-the-splitting-process.cs) | implement functionality to split an mbox storage file into separate messages and provide the ability to abort the splitting process |
 | [implement-handling-of-calendar-client-configuration-and-associated-color-metadata-properly-within-the-application.cs](./implement-handling-of-calendar-client-configuration-and-associated-color-metadata-properly-within-the-application.cs) | implement handling of calendar client configuration and associated color metadata properly within the application |
+| [implement-oauth-2-0-authentication-flow-utilizing-the-googleoauthhelper-class-to-obtain-valid-access-tokens.cs](./implement-oauth-2-0-authentication-flow-utilizing-the-googleoauthhelper-class-to-obtain-valid-access-tokens.cs) | implement oauth 2 0 authentication flow utilizing the googleoauthhelper class to obtain valid access tokens |
 | [implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs](./implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs) | implement permission based access control for calendar resources enabling read write and share restrictions per user |
+| [implement-secure-google-oauth-2-0-authentication-flow-ensuring-token-handling-and-data-transmission-meet-industry-standards.cs](./implement-secure-google-oauth-2-0-authentication-flow-ensuring-token-handling-and-data-transmission-meet-industry-standards.cs) | implement secure google oauth 2 0 authentication flow ensuring token handling and data transmission meet industry standards |
+| [initialize-a-new-cloud-console-project-by-configuring-the-required-settings-and-enabling-necessary-apis.cs](./initialize-a-new-cloud-console-project-by-configuring-the-required-settings-and-enabling-necessary-apis.cs) | initialize a new cloud console project by configuring the required settings and enabling necessary apis |
+| [navigate-to-https-cloud-google-com-console-project-and-authenticate-with-your-gmail-account-credentials-to-access-the-console.cs](./navigate-to-https-cloud-google-com-console-project-and-authenticate-with-your-gmail-account-credentials-to-access-the-console.cs) | navigate to https cloud google com console project and authenticate with your gmail account credentials to access the console |
 | [navigate-to-the-given-url-complete-all-required-actions-and-retrieve-the-resulting-authorization-code.cs](./navigate-to-the-given-url-complete-all-required-actions-and-retrieve-the-resulting-authorization-code.cs) | navigate to the given url complete all required actions and retrieve the resulting authorization code |
 | [obtain-the-color-attributes-embedded-within-an-email-content-for-processing-or-analysis-programmatically.cs](./obtain-the-color-attributes-embedded-within-an-email-content-for-processing-or-analysis-programmatically.cs) | obtain the color attributes embedded within an email content for processing or analysis programmatically |
+| [parse-mbox-files-to-retrieve-email-messages-and-their-metadata-programmatically-for-further-processing.cs](./parse-mbox-files-to-retrieve-email-messages-and-their-metadata-programmatically-for-further-processing.cs) | parse mbox files to retrieve email messages and their metadata programmatically for further processing |
 | [perform-a-freebusy-query-against-google-calendar-to-retrieve-availability-information-for-specified-users-and-time-range.cs](./perform-a-freebusy-query-against-google-calendar-to-retrieve-availability-information-for-specified-users-and-time-range.cs) | perform a freebusy query against google calendar to retrieve availability information for specified users and time range |
 | [perform-google-calendar-operations-through-the-gmail-client-api-enabling-creation-retrieval-and-modification-of-events.cs](./perform-google-calendar-operations-through-the-gmail-client-api-enabling-creation-retrieval-and-modification-of-events.cs) | perform google calendar operations through the gmail client api enabling creation retrieval and modification of events |
 | [perform-oauth-2-0-authentication-using-the-tokenresponse-class-and-configure-the-client-for-subsequent-api-requests.cs](./perform-oauth-2-0-authentication-using-the-tokenresponse-class-and-configure-the-client-for-subsequent-api-requests.cs) | perform oauth 2 0 authentication using the tokenresponse class and configure the client for subsequent api requests |
@@ -91,7 +97,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs](./transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs) | transform an icalendar ics file into an outlook msg message handling associated outlook items and storage files |
 
 ## Category Statistics
-- Total examples: 43
+- Total examples: 48
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -100,5 +106,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-27 | `20260327_053114` | [examples/batch-20260327_053114](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260327_053114) |
+| 2026-03-27 | `20260327_055338` | [examples/batch-20260327_055338](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260327_055338) |
 <!-- AUTOGENERATED:END -->
