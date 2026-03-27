@@ -1,45 +1,56 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Calendar;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
+using Aspose.Email.Calendar;
 
-namespace AsposeEmailExample
+namespace Sample
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             try
             {
-                // Replace with valid OAuth 2.0 access token and default email address.
-                string accessToken = "YOUR_ACCESS_TOKEN";
-                string defaultEmail = "user@example.com";
-
-                // Create Gmail client instance.
-                using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
+                // Initialize Gmail client with placeholder credentials
+                IGmailClient gmailClient = GmailClient.GetInstance("clientId", "clientSecret", "refreshToken", "user@example.com");
+                using (gmailClient)
                 {
-                    // Retrieve all calendars.
+                    // Retrieve the list of calendars
                     Calendar[] calendars = gmailClient.ListCalendars();
-
-                    foreach (Calendar calendar in calendars)
+                    if (calendars == null || calendars.Length == 0)
                     {
-                        // Retrieve all appointments for the current calendar.
-                        Appointment[] appointments = gmailClient.ListAppointments(calendar.Id);
+                        Console.WriteLine("No calendars found.");
+                        return;
+                    }
 
-                        foreach (Appointment appointment in appointments)
-                        {
-                            // Modify the appointment's summary.
-                            appointment.Summary = appointment.Summary + " - Updated";
+                    // Use the first calendar in the collection
+                    string calendarId = calendars[0].Id;
 
-                            // Update the appointment on Google Calendar.
-                            gmailClient.UpdateAppointment(calendar.Id, appointment);
-                        }
+                    // Retrieve appointments from the selected calendar
+                    Appointment[] appointments = gmailClient.ListAppointments(calendarId);
+                    if (appointments == null || appointments.Length == 0)
+                    {
+                        Console.WriteLine("No appointments found in the selected calendar.");
+                        return;
+                    }
+
+                    // Iterate through each appointment, modify its properties, and update it on Google Calendar
+                    foreach (Appointment appointment in appointments)
+                    {
+                        // Example modifications
+                        appointment.Summary = "Updated: " + appointment.Summary;
+                        appointment.Description = (appointment.Description ?? string.Empty) + " (modified)";
+
+                        // Push the changes back to Google Calendar
+                        Appointment updated = gmailClient.UpdateAppointment(calendarId, appointment);
+                        Console.WriteLine($"Updated appointment: {updated.Summary}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }
