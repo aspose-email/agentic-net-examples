@@ -4,65 +4,46 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-namespace Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Path to the MSG file
+            string msgPath = "sample.msg";
+
+            // Verify that the MSG file exists
+            if (!File.Exists(msgPath))
             {
-                // Path to the MSG file
-                string msgFilePath = "sample.msg";
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
+                return;
+            }
 
-                // Azure AD application credentials (replace with real values)
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string tenantId = "tenantId";
+            // Load the MSG file into a MailMessage object
+            using (MailMessage message = MailMessage.Load(msgPath))
+            {
+                // Create a token provider for Outlook (3‑argument overload)
+                Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                    clientId: "clientId",
+                    clientSecret: "clientSecret",
+                    refreshToken: "refreshToken");
 
-                // Verify that the MSG file exists
-                if (!File.Exists(msgFilePath))
-                {
-                    Console.Error.WriteLine($"Message file not found: {msgFilePath}");
-                    return;
-                }
+                // Tenant identifier (replace with actual tenant ID)
+                string tenantId = "yourTenantId";
 
-                // Create the Outlook token provider
-                Aspose.Email.Clients.ITokenProvider tokenProvider;
-                try
+                // Initialize the Microsoft Graph client
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
                 {
-                    tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
-                    return;
-                }
-
-                // Initialize the Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
-                {
-                    // Load the MSG file into a MailMessage object
-                    using (MailMessage mailMessage = MailMessage.Load(msgFilePath))
-                    {
-                        // Upload the message to the Inbox folder
-                        try
-                        {
-                            graphClient.CreateMessage("Inbox", mailMessage);
-                            Console.WriteLine("Message uploaded successfully.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to upload message: {ex.Message}");
-                        }
-                    }
+                    // Upload the message to the Drafts folder
+                    client.CreateMessage("Drafts", message);
+                    Console.WriteLine("Message uploaded to Drafts folder successfully.");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
