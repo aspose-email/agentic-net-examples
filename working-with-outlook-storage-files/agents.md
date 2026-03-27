@@ -31,7 +31,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [insert-email-messages-from-a-specified-folder-into-an-existing-pst-storage-file-using-the-pst-format.cs](./insert-email-messages-from-a-specified-folder-into-an-existing-pst-storage-file-using-the-pst-format.cs) | insert email messages from a specified folder into an existing pst storage file using the pst format |
 | [manipulate-outlook-storage-files-to-retrieve-modify-and-organize-messages-within-pst-format-containers.cs](./manipulate-outlook-storage-files-to-retrieve-modify-and-organize-messages-within-pst-format-containers.cs) | manipulate outlook storage files to retrieve modify and organize messages within pst format containers |
 | [retrieve-message-metadata-and-contents-from-an-outlook-pst-storage-file-using-the-pst-format.cs](./retrieve-message-metadata-and-contents-from-an-outlook-pst-storage-file-using-the-pst-format.cs) | retrieve message metadata and contents from an outlook pst storage file using the pst format |
-| [subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-file.cs](./subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-file.cs) | subscribe to updates for pst file operations while handling outlook storage file |
+| [subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-files-in-pst-format.cs](./subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-files-in-pst-format.cs) | subscribe to updates for pst file operations while handling outlook storage files in pst format |
 
 ## Category Statistics
 - Total examples: 5

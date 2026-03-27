@@ -27,8 +27,8 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 ## Files in this folder
 | File | Description |
 |------|-------------|
-| [configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loa.cs](./configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loa.cs) | configure smtpclient with host port and security settings then send an email loa |
-| [set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitt.cs](./set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitt.cs) | set the smtp host port and security options on the smtpclient prior to transmitt |
+| [configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loaded-from-an-msg-file.cs](./configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loaded-from-an-msg-file.cs) | configure smtpclient with host port and security settings then send an email loaded from an msg file |
+| [set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitting-an-msg-formatted-email.cs](./set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitting-an-msg-formatted-email.cs) | set the smtp host port and security options on the smtpclient prior to transmitting an msg formatted email |
 
 ## Category Statistics
 - Total examples: 2
