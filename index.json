@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 500,
+  "total_examples": 502,
   "total_categories": 14,
   "last_updated": "2026-03-27",
   "categories": [
@@ -1065,32 +1065,34 @@
     },
     {
       "name": "working-with-outlook-storage-files",
-      "file_count": 3,
+      "file_count": 5,
       "files": [
         "add-messages-from-an-external-pst-file-into-an-existing-outlook-storage-file-using-the-pst-format.cs",
         "insert-email-messages-from-a-specified-folder-into-an-existing-pst-storage-file-using-the-pst-format.cs",
+        "manipulate-outlook-storage-files-to-retrieve-modify-and-organize-messages-within-pst-format-containers.cs",
+        "retrieve-message-metadata-and-contents-from-an-outlook-pst-storage-file-using-the-pst-format.cs",
         "subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-file-20c10c67.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 3
+          "count": 5
         },
         {
           "name": "System.IO",
-          "count": 3
+          "count": 5
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 3
+          "count": 5
         },
         {
           "name": "Aspose.Email",
-          "count": 2
+          "count": 4
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 2
+          "count": 4
         }
       ],
       "key_apis": []
