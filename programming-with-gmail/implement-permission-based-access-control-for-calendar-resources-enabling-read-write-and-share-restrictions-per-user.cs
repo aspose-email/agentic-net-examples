@@ -1,52 +1,46 @@
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Initialize Gmail client (replace placeholders with real credentials)
-            Aspose.Email.Clients.Google.IGmailClient gmailClient = GmailClient.GetInstance("YOUR_ACCESS_TOKEN", "user@example.com");
-            using (gmailClient)
+            // Initialize Gmail client (dummy credentials)
+            using (IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com"))
             {
-                // Retrieve the list of calendars
-                Aspose.Email.Clients.Google.Calendar[] calendars = gmailClient.ListCalendars();
-                if (calendars == null || calendars.Length == 0)
-                {
-                    Console.WriteLine("No calendars found.");
-                    return;
-                }
+                // Create a new calendar
+                Calendar calendar = new Calendar("Sample Calendar");
+                string calendarId = gmailClient.CreateCalendar(calendar);
+                Console.WriteLine($"Created calendar with Id: {calendarId}");
 
-                // Use the first calendar's identifier for the demo
-                string calendarId = calendars[0].Id;
+                // Define a scope for a specific user
+                AclScope scope = new AclScope(AclScopeType.user, "alice@example.com");
 
-                // Create a read‑only access rule
-                Aspose.Email.Clients.Google.AccessControlRule readRule = new AccessControlRule(
-                    new AclScope(AclScopeType.user, "reader@example.com"),
-                    AccessRole.reader);
-                gmailClient.CreateAccessRule(calendarId, readRule);
+                // Create a read‑only access rule for the user
+                AccessControlRule readRule = new AccessControlRule(scope, AccessRole.reader);
+                AccessControlRule createdRule = gmailClient.CreateAccessRule(calendarId, readRule);
+                Console.WriteLine($"Access rule created: Role={createdRule.Role}, Id={createdRule.Id}");
 
-                // Create a write access rule
-                Aspose.Email.Clients.Google.AccessControlRule writeRule = new AccessControlRule(
-                    new AclScope(AclScopeType.user, "writer@example.com"),
-                    AccessRole.writer);
-                gmailClient.CreateAccessRule(calendarId, writeRule);
+                // Update the rule to give write permission
+                AccessControlRule writeRule = new AccessControlRule(scope, AccessRole.writer);
+                AccessControlRule updatedRule = gmailClient.UpdateAccessRule(calendarId, writeRule);
+                Console.WriteLine($"Access rule updated: Role={updatedRule.Role}, Id={updatedRule.Id}");
 
-                // Create a share (owner) access rule
-                Aspose.Email.Clients.Google.AccessControlRule ownerRule = new AccessControlRule(
-                    new AclScope(AclScopeType.user, "owner@example.com"),
-                    AccessRole.owner);
-                gmailClient.CreateAccessRule(calendarId, ownerRule);
+                // Delete the access rule
+                gmailClient.DeleteAccessRule(calendarId, createdRule.Id);
+                Console.WriteLine("Access rule deleted.");
 
-                // List and display all access rules for the calendar
-                Aspose.Email.Clients.Google.AccessControlRule[] rules = gmailClient.ListAccessRules(calendarId);
-                foreach (Aspose.Email.Clients.Google.AccessControlRule rule in rules)
-                {
-                    Console.WriteLine($"Scope Type: {rule.Scope.Type}, Email: {rule.Scope.Value}, Role: {rule.Role}");
-                }
+                // Clean up the calendar
+                gmailClient.DeleteCalendar(calendarId);
+                Console.WriteLine("Calendar deleted.");
             }
         }
         catch (Exception ex)
