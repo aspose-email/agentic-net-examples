@@ -17,6 +17,7 @@ Examples are organized by feature category:
 - `working-with-imap-client/` - 38 example(s)
 - `working-with-microsoft-graph-client/` - 34 example(s)
 - `working-with-mime-messages/` - 59 example(s)
+- `working-with-outlook-storage-files/` - 3 example(s)
 - `working-with-pop3-client/` - 40 example(s)
 - `working-with-smtp-client/` - 2 example(s)
 - `zimbra/` - 9 example(s)

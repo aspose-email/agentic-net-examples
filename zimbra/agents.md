@@ -34,15 +34,15 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 ## Files in this folder
 | File | Description |
 |------|-------------|
-| [calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs](./calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs) | calculate the total number of items contained within each zimbra tgz archive without extracting files |
-| [configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs](./configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs) | configure zimbra to receive product update notifications by enabling the subscription service and specifying update channels |
-| [convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs](./convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs) | convert an icalendar ics file into a microsoft outlook msg message while preserving calendar details |
-| [convert-msg-email-files-to-html-format-preserving-message-content-attachments-and-original-structure.cs](./convert-msg-email-files-to-html-format-preserving-message-content-attachments-and-original-structure.cs) | convert msg email files to html format preserving message content attachments and original structure |
-| [export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hierarchy-and-directory-structure.cs](./export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hierarchy-and-directory-structure.cs) | export mailbox messages to msg files while maintaining the original folder hierarchy and directory structure |
-| [implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs](./implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-provided-api.cs) | implement conversion of msg email files to eml format programmatically using the provided api |
-| [read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-processing-and-analysis.cs](./read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-processing-and-analysis.cs) | read all email messages stored in zimbra tgz archives programmatically for processing and analysis |
-| [render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-within-the-interface.cs](./render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-within-the-interface.cs) | render a consolidated view of email calendar entries and tgz file handling within the interface |
-| [retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-data-from-the-hosted-mail-collaboration-server.cs](./retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-data-from-the-hosted-mail-collaboration-server.cs) | retrieve comprehensive configuration settings user statistics and service status data from the hosted mail collaboration server |
+| [calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-wit-c6993ba5.cs](./calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-wit-c6993ba5.cs) | calculate the total number of items contained within each zimbra tgz archive wit c6993ba5 |
+| [configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscri-97375fc1.cs](./configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscri-97375fc1.cs) | configure zimbra to receive product update notifications by enabling the subscri 97375fc1 |
+| [convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserv-53e588f0.cs](./convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserv-53e588f0.cs) | convert an icalendar ics file into a microsoft outlook msg message while preserv 53e588f0 |
+| [convert-msg-email-files-to-html-format-preserving-message-content-attachments-an-6d333f96.cs](./convert-msg-email-files-to-html-format-preserving-message-content-attachments-an-6d333f96.cs) | convert msg email files to html format preserving message content attachments an 6d333f96 |
+| [export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hiera-5dac27d6.cs](./export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hiera-5dac27d6.cs) | export mailbox messages to msg files while maintaining the original folder hiera 5dac27d6 |
+| [implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-e091f53f.cs](./implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-e091f53f.cs) | implement conversion of msg email files to eml format programmatically using the e091f53f |
+| [read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-proce-3c94cbec.cs](./read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-proce-3c94cbec.cs) | read all email messages stored in zimbra tgz archives programmatically for proce 3c94cbec |
+| [render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-withi-ccb435d4.cs](./render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-withi-ccb435d4.cs) | render a consolidated view of email calendar entries and tgz file handling withi ccb435d4 |
+| [retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-5c0eafec.cs](./retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-5c0eafec.cs) | retrieve comprehensive configuration settings user statistics and service status 5c0eafec |
 
 ## Category Statistics
 - Total examples: 9
@@ -54,5 +54,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-27 | `20260327_072703` | [examples/batch-20260327_072703](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260327_072703) |
+| 2026-03-27 | `20260327_084654` | [examples/batch-20260327_084654](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260327_084654) |
 <!-- AUTOGENERATED:END -->
