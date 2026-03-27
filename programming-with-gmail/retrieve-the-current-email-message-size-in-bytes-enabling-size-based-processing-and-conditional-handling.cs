@@ -1,6 +1,7 @@
 using System;
-using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Imap;
 
 class Program
 {
@@ -8,64 +9,32 @@ class Program
     {
         try
         {
-            string emlPath = "sample.eml";
-
-            // Ensure the input file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(emlPath))
+            // Create and configure the IMAP client
+            using (ImapClient imapClient = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.SSLImplicit))
             {
-                try
-                {
-                    using (StreamWriter writer = new StreamWriter(emlPath, false))
-                    {
-                        writer.WriteLine("From: example@example.com");
-                        writer.WriteLine("Subject: Sample Email");
-                        writer.WriteLine();
-                        writer.WriteLine("This is a placeholder email message.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder file: {ex.Message}");
-                    return;
-                }
-            }
+                // Select the inbox folder
+                imapClient.SelectFolder("INBOX");
 
-            // Load the email message.
-            using (MailMessage mailMessage = MailMessage.Load(emlPath))
-            {
-                // Save the message to a memory stream to determine its size in bytes.
-                using (MemoryStream memoryStream = new MemoryStream())
+                // Retrieve the list of messages in the folder
+                ImapMessageInfoCollection messages = imapClient.ListMessages();
+
+                // Iterate through each message and obtain its size
+                foreach (ImapMessageInfo info in messages)
                 {
-                    try
-                    {
-                        mailMessage.Save(memoryStream, SaveOptions.DefaultEml);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error saving message to stream: {ex.Message}");
-                        return;
-                    }
+                    long sizeInBytes = info.Size;
+                    Console.WriteLine($"Message UID: {info.UniqueId}, Size: {sizeInBytes} bytes");
 
-                    long messageSizeInBytes = memoryStream.Length;
-                    Console.WriteLine($"Message size: {messageSizeInBytes} bytes");
-
-                    // Example conditional handling based on size.
-                    const long sizeThreshold = 1024 * 10; // 10 KB
-                    if (messageSizeInBytes > sizeThreshold)
+                    // Example of size‑based conditional handling
+                    if (sizeInBytes > 1_048_576) // larger than 1 MB
                     {
-                        Console.WriteLine("The message exceeds the size threshold and will be processed accordingly.");
-                        // Add size‑based processing logic here.
-                    }
-                    else
-                    {
-                        Console.WriteLine("The message is within the acceptable size range.");
+                        Console.WriteLine("Large message detected – apply special processing.");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
