@@ -1,80 +1,55 @@
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
+using Aspose.Email.Mapi;
 
-namespace AsposeEmailGraphSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Path to the MSG file
+            string msgPath = "sample.msg";
+
+            // Verify that the MSG file exists
+            if (!File.Exists(msgPath))
             {
-                // Path to the MSG file
-                string msgPath = "sample.msg";
+                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                return;
+            }
 
-                // Verify that the MSG file exists
-                if (!File.Exists(msgPath))
-                {
-                    Console.Error.WriteLine($"Error: File not found – {msgPath}");
-                    return;
-                }
+            // Create a token provider for public client authentication (dummy credentials)
+            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken"
+            );
 
-                // Load the MSG file into a MailMessage object
-                MailMessage mailMessage;
+            // Initialize the Graph client using the token provider
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
+            {
                 try
                 {
-                    mailMessage = MailMessage.Load(msgPath);
+                    // Load the MSG file into a MapiMessage
+                    using (MapiMessage message = MapiMessage.Load(msgPath))
+                    {
+                        // Send the message via Microsoft Graph using MIME format
+                        client.SendAsMime(message);
+                        Console.WriteLine("Message sent successfully.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
-                    return;
-                }
-
-                using (mailMessage)
-                {
-                    // Create a token provider for public client authentication
-                    Aspose.Email.Clients.ITokenProvider tokenProvider;
-                    try
-                    {
-                        tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                            "clientId",
-                            "clientSecret",
-                            "refreshToken");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error creating token provider: {ex.Message}");
-                        return;
-                    }
-
-                    // Initialize the Graph client
-                    using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
-                    {
-                        try
-                        {
-                            // Folder identifier (e.g., "Inbox")
-                            string folderId = "Inbox";
-
-                            // Upload the message to the specified folder
-                            graphClient.CreateMessage(folderId, mailMessage);
-                            Console.WriteLine("Message uploaded successfully.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error uploading message: {ex.Message}");
-                        }
-                    }
+                    Console.Error.WriteLine($"Error during message processing: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
