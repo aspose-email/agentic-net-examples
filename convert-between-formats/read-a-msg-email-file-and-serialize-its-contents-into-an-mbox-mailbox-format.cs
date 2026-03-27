@@ -1,85 +1,56 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage;
-using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string msgPath = "input.msg";
-            string pstPath = "temp.pst";
+            string msgPath = "sample.msg";
             string mboxPath = "output.mbox";
 
-            // Verify input MSG file exists
+            // Verify input file exists
             if (!File.Exists(msgPath))
             {
                 Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Load MSG into MapiMessage
-            MapiMessage mapiMsg;
-            try
+            // Ensure output directory exists
+            string mboxDir = Path.GetDirectoryName(mboxPath);
+            if (!string.IsNullOrEmpty(mboxDir) && !Directory.Exists(mboxDir))
             {
-                mapiMsg = MapiMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
+                Directory.CreateDirectory(mboxDir);
             }
 
-            // Convert MapiMessage to MailMessage (required for PST storage)
-            MailMessage mailMsg;
-            try
+            // Load the MSG file into a MapiMessage
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                mailMsg = mapiMsg.ToMailMessage(new MailConversionOptions());
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Conversion to MailMessage failed: {ex.Message}");
-                return;
-            }
-
-            // Create a temporary PST file and add the message
-            try
-            {
-                // Ensure any existing temp PST is removed
-                if (File.Exists(pstPath))
+                // Create an in‑memory PST (Unicode format)
+                using (MemoryStream pstStream = new MemoryStream())
                 {
-                    File.Delete(pstPath);
-                }
-
-                using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                {
-                    // Add message to the root folder
-                    pst.RootFolder.AddMessage(mapiMsg);
-                    // Convert the PST to MBOX
-                    try
+                    using (PersonalStorage pst = PersonalStorage.Create(pstStream, FileFormatVersion.Unicode))
                     {
+                        // Get the standard Inbox folder
+                        FolderInfo inbox = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
+
+                        // Add the message to the Inbox
+                        inbox.AddMessage(msg);
+
+                        // Convert the PST to an MBOX file
                         MailboxConverter.ConvertPersonalStorageToMbox(pst, mboxPath, null);
-                        Console.WriteLine($"MBOX file created at: {mboxPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to convert PST to MBOX: {ex.Message}");
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"PST creation or processing failed: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
