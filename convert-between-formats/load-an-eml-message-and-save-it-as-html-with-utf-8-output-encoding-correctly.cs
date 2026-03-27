@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using Aspose.Email;
 
 class Program
@@ -8,17 +9,16 @@ class Program
     {
         try
         {
-            string inputPath = "sample.eml";
-            string outputPath = "sample.html";
+            const string emlPath = "input.eml";
+            const string htmlPath = "output.html";
 
-            // Ensure the input EML file exists
-            if (!File.Exists(inputPath))
+            // Ensure the input EML file exists; create a minimal placeholder if missing.
+            if (!File.Exists(emlPath))
             {
                 try
                 {
-                    // Create a minimal placeholder EML file
-                    string placeholder = "From: placeholder@example.com\r\nTo: placeholder@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(inputPath, placeholder);
+                    const string placeholder = "From: placeholder@example.com\r\nTo: recipient@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
+                    File.WriteAllText(emlPath, placeholder, Encoding.UTF8);
                 }
                 catch (Exception ex)
                 {
@@ -27,21 +27,31 @@ class Program
                 }
             }
 
-            // Load the EML message and save as HTML using default HTML options (UTF‑8)
-            using (MailMessage message = MailMessage.Load(inputPath))
+            // Load the EML message.
+            using (MailMessage mailMessage = MailMessage.Load(emlPath))
             {
+                // Ensure the body is encoded as UTF‑8.
+                mailMessage.BodyEncoding = Encoding.UTF8;
+
+                // Configure HTML save options (no Encoding property exists).
+                HtmlSaveOptions saveOptions = new HtmlSaveOptions
+                {
+                    // Example: embed resources directly into the HTML.
+                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml,
+                    // Enable checking of body content encoding to enforce UTF‑8.
+                    CheckBodyContentEncoding = true
+                };
+
+                // Save as HTML.
                 try
                 {
-                    message.Save(outputPath, SaveOptions.DefaultHtml);
+                    mailMessage.Save(htmlPath, saveOptions);
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Failed to save HTML file: {ex.Message}");
-                    return;
                 }
             }
-
-            Console.WriteLine($"EML file '{inputPath}' successfully converted to HTML at '{outputPath}'.");
         }
         catch (Exception ex)
         {
