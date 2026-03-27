@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 453,
+  "total_examples": 497,
   "total_categories": 13,
   "last_updated": "2026-03-27",
   "categories": [
@@ -965,51 +965,99 @@
     },
     {
       "name": "working-with-mime-messages",
-      "file_count": 15,
+      "file_count": 59,
       "files": [
+        "access-the-htmlbody-property-of-an-msg-email-object-to-obtain-its-html-message-content.cs",
         "add-a-file-attachment-to-an-msg-email-by-calling-mailmessage-attachments-add-new-attachment-filepath-during-message-composition.cs",
+        "add-a-linked-resource-to-the-first-alternate-view-of-an-msg-email-by-calling-mailmessage-alternateviews-0-linkedresources-add-new-linkedresource-imagepath.cs",
         "add-one-or-more-attachments-to-the-email-via-the-attachments-collection-and-save-the-message-as-an-msg-file.cs",
         "assign-the-sender-address-to-a-msg-email-message-by-setting-the-mailmessage-from-property.cs",
+        "attach-a-file-to-an-msg-email-by-invoking-mailmessage-attachments-add-new-attachment-filepath-within-the-message-construction-process.cs",
+        "attach-additional-files-to-an-email-message-in-msg-format-ensuring-correct-mime-encoding-and-message-integrity.cs",
         "compose-an-email-by-assigning-from-to-subject-and-body-fields-then-export-it-as-an-msg-file.cs",
         "construct-an-email-containing-plain-text-and-html-parts-via-alternateview-objects-and-persist-it-as-an-msg-file.cs",
         "construct-an-email-message-containing-alternate-views-and-serialize-it-correctly-to-msg-format.cs",
+        "construct-an-msg-email-that-embeds-images-directly-within-the-message-body-for-proper-rendering.cs",
         "construct-an-msg-formatted-email-message-that-includes-specified-attachments-and-appropriate-mime-headers-correctly.cs",
+        "create-an-attachment-object-and-include-it-in-the-mailmessage-attachments-collection-for-a-msg-email.cs",
+        "delete-a-specific-attachment-from-an-msg-email-message-programmatically-using-the-mailmessage-attachments-remove-attachment-method-at-runtime.cs",
+        "delete-a-targeted-attachment-from-an-msg-email-by-invoking-the-attachments-collection-remove-method.cs",
+        "embed-an-image-within-a-msg-email-html-body-by-creating-a-linkedresource-and-adding-it-to-alternateview-linkedresources-collection.cs",
         "embed-image-resources-via-linkedresource-and-include-them-in-the-alternateview-linkedresources-collection-of-an-msg-email.cs",
         "embed-images-into-an-email-html-body-via-linkedresource-objects-attach-them-to-an-alternateview-and-save-as-msg.cs",
+        "extract-all-attachments-from-an-msg-file-and-provide-them-in-their-original-formats.cs",
+        "extract-all-embedded-images-from-msg-email-files-while-maintaining-original-image-formats-and-quality.cs",
+        "extract-an-embedded-image-from-an-email-via-linkedresource-contentstream-and-write-it-to-a-msg-file.cs",
+        "extract-both-plain-text-and-html-message-bodies-from-msg-files-using-the-provided-api.cs",
         "generate-a-basic-msg-email-message-including-standard-headers-subject-line-and-plain-text-body-content.cs",
         "generate-alternate-views-for-an-msg-email-by-invoking-alternateview-createalternateviewfromstring-html-null-text-html-to-embed-html-content.cs",
         "generate-msg-formatted-email-messages-programmatically-ensuring-correct-mime-structure-header-fields-and-attachment-handling.cs",
+        "handle-email-attachments-and-embedded-objects-within-msg-files-ensuring-proper-extraction-and-preservation-of-content.cs",
+        "iterate-the-alternateview-linkedresources-collection-extract-each-embedded-image-and-write-it-to-a-separate-msg-file.cs",
+        "iterate-through-all-msg-email-attachments-and-persist-each-one-to-disk-by-calling-att-save-filepath.cs",
+        "iterate-through-the-msg-email-linked-resources-and-invoke-lr-save-filepath-to-write-each-to-disk.cs",
+        "load-an-email-from-an-eml-file-using-mailmessage-load-to-obtain-a-msg-format-message.cs",
+        "load-an-email-from-an-eml-file-via-mailmessage-load-and-export-it-directly-to-a-msg-file.cs",
+        "load-an-email-from-an-mbox-file-with-mailmessage-load-and-export-it-as-an-html-document.cs",
+        "loop-through-the-attachments-collection-and-write-each-attachment-to-a-msg-file-on-disk.cs",
+        "obtain-the-plain-text-body-from-an-msg-email-message-programmatically-via-its-textbody-property.cs",
+        "parse-an-msg-file-and-retrieve-its-subject-sender-and-recipient-values-from-the-message-headers.cs",
+        "parse-msg-files-to-retrieve-and-display-all-email-header-fields-for-further-processing.cs",
         "persist-a-mailmessage-object-to-an-eml-file-by-calling-mailmessage-save-with-the-target-filename-and-saveoptions-defaulteml.cs",
+        "persist-an-email-message-as-an-msg-file-by-invoking-message-save-with-the-output-path-and-default-msg-options.cs",
+        "persist-an-email-message-as-an-msg-file-maintaining-all-headers-body-content-and-attachments.cs",
+        "persist-the-email-object-as-an-html-document-by-invoking-message-save-output-html-saveoptions-defaulthtml-with-default-html-settings.cs",
+        "persist-the-linkedresource-contentstream-from-an-msg-email-to-a-local-file-by-calling-copyto-file-create-outputpath.cs",
         "populate-the-to-cc-and-bcc-collections-of-a-mailmessage-to-include-recipients-in-an-msg-file.cs",
-        "set-the-msg-email-content-by-assigning-text-to-mailmessage-body-or-html-to-mailmessage-htmlbody.cs"
+        "provide-programmatic-access-to-retrieve-replace-or-analyze-embedded-images-in-msg-email-messages.cs",
+        "read-the-attachment-data-from-an-msg-message-by-accessing-its-contentstream-as-a-net-stream.cs",
+        "retrieve-all-embedded-image-assets-from-an-msg-email-file-while-maintaining-original-image-format.cs",
+        "retrieve-an-msg-message-html-content-by-assigning-mailmessage-htmlbody-to-your-string-variable-in-code.cs",
+        "retrieve-attachment-data-from-an-msg-email-by-reading-its-contentstream-property-to-access-the-file-bytes.cs",
+        "retrieve-both-plain-text-and-html-body-content-from-an-msg-email-message-using-the-provided-api.cs",
+        "retrieve-the-binary-content-of-attachments-from-an-msg-formatted-email-message-programmatically-while-preserving-its-original-encoding.cs",
+        "retrieve-the-body-and-metadata-of-an-email-message-from-an-msg-file-programmatically.cs",
+        "retrieve-the-body-metadata-and-attachments-of-an-email-stored-in-a-msg-file.cs",
+        "retrieve-the-plain-text-content-of-an-msg-email-by-assigning-mailmessage-textbody-to-a-string-variable.cs",
+        "retrieve-the-sender-email-address-from-a-msg-message-via-the-from-address-property-of-the-object.cs",
+        "retrieve-the-subject-line-from-an-msg-email-message-using-the-mailmessage-subject-property-value.cs",
+        "set-the-msg-email-content-by-assigning-text-to-mailmessage-body-or-html-to-mailmessage-htmlbody.cs",
+        "strip-all-attachments-from-an-msg-email-message-ensuring-the-remaining-message-content-remains-intact.cs",
+        "strip-all-attachments-from-an-msg-formatted-email-message-while-maintaining-the-original-message-integrity.cs",
+        "write-code-to-persist-email-attachments-onto-the-filesystem-using-the-msg-file-format.cs",
+        "write-the-extracted-email-components-to-msg-file-format-ensuring-proper-mime-structure-and-metadata-preservation.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 15
+          "count": 59
         },
         {
           "name": "System.IO",
-          "count": 15
+          "count": 59
         },
         {
           "name": "Aspose.Email",
-          "count": 15
+          "count": 54
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 6
+          "count": 32
         },
         {
           "name": "Aspose.Email.Mime",
-          "count": 5
+          "count": 10
         },
         {
           "name": "System.Text",
-          "count": 1
+          "count": 2
         },
         {
           "name": "System.Net.Mime",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
           "count": 1
         }
       ],
