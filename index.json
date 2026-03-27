@@ -3,8 +3,8 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 461,
-  "total_categories": 12,
+  "total_examples": 465,
+  "total_categories": 13,
   "last_updated": "2026-03-27",
   "categories": [
     {
@@ -82,16 +82,12 @@
           "count": 3
         },
         {
-          "name": "Aspose.Email.Mime",
-          "count": 2
-        },
-        {
           "name": "Aspose.Email.Storage",
           "count": 2
         },
         {
-          "name": "Aspose.Email.PersonalInfo",
-          "count": 1
+          "name": "Aspose.Email.Mime",
+          "count": 2
         },
         {
           "name": "Aspose.Email.Tools.Search",
@@ -99,6 +95,10 @@
         },
         {
           "name": "System.Text.RegularExpressions",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
           "count": 1
         }
       ],
@@ -203,11 +203,11 @@
           "count": 4
         },
         {
-          "name": "Aspose.Email.Mapi",
+          "name": "System.Net",
           "count": 3
         },
         {
-          "name": "System.Net",
+          "name": "Aspose.Email.Mapi",
           "count": 3
         },
         {
@@ -219,20 +219,12 @@
           "count": 2
         },
         {
-          "name": "System.Text",
-          "count": 2
-        },
-        {
           "name": "System.Threading.Tasks",
           "count": 2
         },
         {
-          "name": "Aspose.Email.Calendar.Recurrences",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Clients.Activity",
-          "count": 1
+          "name": "System.Text",
+          "count": 2
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
@@ -243,15 +235,7 @@
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients.Graph",
-          "count": 1
-        },
-        {
-          "name": "RangeAlias = Aspose.Email.Clients.Google.Range",
-          "count": 1
-        },
-        {
-          "name": "System.Diagnostics",
+          "name": "Aspose.Email.Calendar.Recurrences",
           "count": 1
         },
         {
@@ -260,6 +244,22 @@
         },
         {
           "name": "System.Threading",
+          "count": 1
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 1
+        },
+        {
+          "name": "RangeAlias = Aspose.Email.Clients.Google.Range",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Graph",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Activity",
           "count": 1
         }
       ],
@@ -293,11 +293,11 @@
           "count": 17
         },
         {
-          "name": "Aspose.Email",
+          "name": "System.IO",
           "count": 15
         },
         {
-          "name": "System.IO",
+          "name": "Aspose.Email",
           "count": 15
         },
         {
@@ -309,6 +309,10 @@
           "count": 4
         },
         {
+          "name": "Aspose.Email.Mapi",
+          "count": 3
+        },
+        {
           "name": "Aspose.Email.Clients",
           "count": 3
         },
@@ -317,19 +321,15 @@
           "count": 3
         },
         {
-          "name": "Aspose.Email.Mapi",
-          "count": 3
-        },
-        {
           "name": "System.Reflection",
           "count": 2
         },
         {
-          "name": "System.Net",
+          "name": "System.Text",
           "count": 1
         },
         {
-          "name": "System.Text",
+          "name": "System.Net",
           "count": 1
         }
       ],
@@ -534,12 +534,16 @@
           "count": 7
         },
         {
+          "name": "System.Text",
+          "count": 4
+        },
+        {
           "name": "Aspose.Email.PersonalInfo",
           "count": 4
         },
         {
-          "name": "System.Text",
-          "count": 4
+          "name": "System.Threading.Tasks",
+          "count": 2
         },
         {
           "name": "Aspose.Email.Clients.Google",
@@ -550,15 +554,7 @@
           "count": 2
         },
         {
-          "name": "System.Threading.Tasks",
-          "count": 2
-        },
-        {
-          "name": "Aspose.Email.Clients.Exchange.WebService.Models",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Clients.Imap",
+          "name": "System.IO.Compression",
           "count": 1
         },
         {
@@ -566,19 +562,23 @@
           "count": 1
         },
         {
-          "name": "Aspose.Email.Storage.Pst",
-          "count": 1
-        },
-        {
           "name": "System.Diagnostics",
           "count": 1
         },
         {
-          "name": "System.IO.Compression",
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
           "count": 1
         },
         {
           "name": "System.Threading",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService.Models",
           "count": 1
         }
       ],
@@ -612,11 +612,11 @@
       ],
       "required_namespaces": [
         {
-          "name": "Aspose.Email",
+          "name": "System",
           "count": 21
         },
         {
-          "name": "System",
+          "name": "Aspose.Email",
           "count": 21
         },
         {
@@ -644,11 +644,11 @@
           "count": 4
         },
         {
-          "name": "Aspose.Email.Calendar",
+          "name": "Aspose.Email.Clients",
           "count": 3
         },
         {
-          "name": "Aspose.Email.Clients",
+          "name": "Aspose.Email.Calendar",
           "count": 3
         },
         {
@@ -656,11 +656,52 @@
           "count": 2
         },
         {
-          "name": "System.Collections.Generic",
+          "name": "System.Text",
           "count": 1
         },
         {
-          "name": "System.Text",
+          "name": "System.Collections.Generic",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "working-with-ibm-notes",
+      "file_count": 4,
+      "files": [
+        "generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs",
+        "load-a-notes-document-from-an-msg-file-using-its-unid-identifier-ensuring-accurate-retrieval-of-content.cs",
+        "load-an-existing-ibm-notes-database-from-an-msg-file-into-application-memory-for-processing.cs",
+        "persist-modifications-to-the-database-and-generate-an-msg-file-containing-the-updated-information.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 4
+        },
+        {
+          "name": "System.IO",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Storage.Nsf",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Graph",
           "count": 1
         }
       ],
@@ -739,11 +780,11 @@
           "count": 7
         },
         {
-          "name": "Aspose.Email.Clients.Exchange",
+          "name": "Aspose.Email.Clients.Exchange.WebService",
           "count": 6
         },
         {
-          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "name": "Aspose.Email.Clients.Exchange",
           "count": 6
         },
         {
@@ -759,11 +800,11 @@
           "count": 2
         },
         {
-          "name": "Aspose.Email.Clients.Google",
+          "name": "Aspose.Email.Tools.Verifications",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Tools.Verifications",
+          "name": "Aspose.Email.Clients.Google",
           "count": 1
         }
       ],
@@ -810,15 +851,15 @@
       ],
       "required_namespaces": [
         {
+          "name": "System",
+          "count": 34
+        },
+        {
           "name": "Aspose.Email.Clients",
           "count": 34
         },
         {
           "name": "Aspose.Email.Clients.Graph",
-          "count": 34
-        },
-        {
-          "name": "System",
           "count": 34
         },
         {
@@ -846,15 +887,15 @@
           "count": 2
         },
         {
-          "name": "Aspose.Email.Calendar",
-          "count": 1
-        },
-        {
           "name": "System.Threading",
           "count": 1
         },
         {
           "name": "System.Threading.Tasks",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Calendar",
           "count": 1
         }
       ],
@@ -946,11 +987,11 @@
           "count": 10
         },
         {
-          "name": "System.Net.Mime",
+          "name": "System.Text",
           "count": 2
         },
         {
-          "name": "System.Text",
+          "name": "System.Net.Mime",
           "count": 2
         },
         {
@@ -972,15 +1013,15 @@
       ],
       "required_namespaces": [
         {
-          "name": "Aspose.Email.Storage.Pst",
-          "count": 5
-        },
-        {
           "name": "System",
           "count": 5
         },
         {
           "name": "System.IO",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
           "count": 5
         },
         {
@@ -1041,15 +1082,15 @@
       ],
       "required_namespaces": [
         {
+          "name": "System",
+          "count": 40
+        },
+        {
           "name": "Aspose.Email.Clients",
           "count": 40
         },
         {
           "name": "Aspose.Email.Clients.Pop3",
-          "count": 40
-        },
-        {
-          "name": "System",
           "count": 40
         },
         {
@@ -1092,6 +1133,14 @@
       ],
       "required_namespaces": [
         {
+          "name": "System",
+          "count": 2
+        },
+        {
+          "name": "System.IO",
+          "count": 2
+        },
+        {
           "name": "Aspose.Email",
           "count": 2
         },
@@ -1101,14 +1150,6 @@
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
-          "count": 2
-        },
-        {
-          "name": "System",
-          "count": 2
-        },
-        {
-          "name": "System.IO",
           "count": 2
         }
       ],
@@ -1142,19 +1183,19 @@
           "count": 6
         },
         {
-          "name": "Aspose.Email.Mapi",
-          "count": 3
-        },
-        {
           "name": "Aspose.Email.Storage.Zimbra",
           "count": 3
         },
         {
-          "name": "Aspose.Email.Calendar",
-          "count": 2
+          "name": "Aspose.Email.Mapi",
+          "count": 3
         },
         {
           "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Calendar",
           "count": 2
         },
         {
@@ -1166,15 +1207,15 @@
           "count": 1
         },
         {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 1
+        },
+        {
           "name": "Aspose.Email.Clients.Google",
           "count": 1
         },
         {
           "name": "Aspose.Email.Clients.Imap",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Storage.Pst",
           "count": 1
         }
       ],
