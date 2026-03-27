@@ -1,11 +1,11 @@
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Smtp;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Calendar;
 using Aspose.Email.Mapi;
+using Aspose.Email.Calendar;
+using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Clients;
 
 class Program
 {
@@ -13,27 +13,22 @@ class Program
     {
         try
         {
-            // Define file and SMTP parameters
+            // Paths for the input .ics file, the temporary .msg file and the PST file.
             string icsPath = "sample.ics";
+            string msgPath = "appointment.msg";
             string pstPath = "sample.pst";
-            string appointmentMsgPath = "appointment.msg";
-            string smtpHost = "smtp.example.com";
-            int smtpPort = 25;
-            string smtpUser = "user@example.com";
-            string smtpPass = "password";
 
-            // -------------------------------------------------
-            // Convert .ics to .msg
-            // -------------------------------------------------
-            Appointment appointment = null;
+            // Verify that the .ics file exists before proceeding.
+            if (!File.Exists(icsPath))
+            {
+                Console.Error.WriteLine($"Error: File not found – {icsPath}");
+                return;
+            }
+
+            // Load the calendar appointment from the .ics file.
+            Appointment appointment;
             try
             {
-                if (!File.Exists(icsPath))
-                {
-                    Console.Error.WriteLine($"Error: File not found – {icsPath}");
-                    return;
-                }
-
                 appointment = Appointment.Load(icsPath);
             }
             catch (Exception ex)
@@ -42,90 +37,81 @@ class Program
                 return;
             }
 
+            // Convert the appointment to a MAPI message.
+            MapiMessage mapiMessage = appointment.ToMapiMessage();
+
+            // Save the MAPI message as a .msg file (used later as an attachment).
             try
             {
-                MapiMessage appointmentMessage = appointment.ToMapiMessage();
-                appointmentMessage.Save(appointmentMsgPath);
-                Console.WriteLine($"Appointment saved as MSG: {appointmentMsgPath}");
+                mapiMessage.Save(msgPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error saving appointment MSG: {ex.Message}");
+                Console.Error.WriteLine($"Error saving .msg file: {ex.Message}");
                 return;
             }
 
-            // -------------------------------------------------
-            // Process PST storage: extract each message as .msg
-            // -------------------------------------------------
+            // Ensure the PST file exists; create it if it does not.
             if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {pstPath}");
-                return;
-            }
-
-            try
-            {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                try
                 {
-                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
-                    {
-                        Console.WriteLine($"Processing folder: {folderInfo.DisplayName}");
-                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
-                        {
-                            try
-                            {
-                                MapiMessage msg = pst.ExtractMessage(messageInfo);
-                                // Sanitize filename
-                                string safeSubject = string.IsNullOrEmpty(msg.Subject) ? "NoSubject" : msg.Subject;
-                                foreach (char c in Path.GetInvalidFileNameChars())
-                                {
-                                    safeSubject = safeSubject.Replace(c, '_');
-                                }
-                                string msgFileName = $"{safeSubject}.msg";
-                                msg.Save(msgFileName);
-                                Console.WriteLine($"Saved message: {msgFileName}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Error extracting/saving message: {ex.Message}");
-                            }
-                        }
-                    }
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
+
+            // Open the PST file and add the message to a custom folder.
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
-                return;
+                // Get the standard Inbox folder.
+                FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
+                if (inboxFolder == null)
+                {
+                    Console.Error.WriteLine("Error: Unable to retrieve the Inbox folder from PST.");
+                    return;
+                }
+
+                // Create a subfolder named "MyFolder" under the Inbox.
+                FolderInfo myFolder = inboxFolder.AddSubFolder("MyFolder");
+
+                // Add the MAPI message to the newly created folder.
+                myFolder.AddMessage(mapiMessage);
             }
 
-            // -------------------------------------------------
-            // Send an email via SMTP
-            // -------------------------------------------------
+            // Send an email with the .msg file attached using SMTP.
             try
             {
-                using (MailMessage mail = new MailMessage())
+                using (SmtpClient smtpClient = new SmtpClient("smtp.example.com", 587, "user@example.com", "password"))
                 {
-                    mail.From = new MailAddress(smtpUser);
-                    mail.To.Add(new MailAddress("recipient@example.com"));
-                    mail.Subject = "Test Email from Aspose.Email";
-                    mail.Body = "This is a test email sent using Aspose.Email SMTP client.";
+                    smtpClient.SecurityOptions = SecurityOptions.Auto;
 
-                    using (SmtpClient smtp = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass))
-                    {
-                        smtp.Send(mail);
-                        Console.WriteLine("Email sent successfully.");
-                    }
+                    MailMessage email = new MailMessage(
+                        "user@example.com",
+                        "recipient@example.com",
+                        "Appointment Export",
+                        "Please find the appointment attached as a .msg file."
+                    );
+
+                    // Attach the .msg file.
+                    email.Attachments.Add(new Attachment(msgPath));
+
+                    smtpClient.Send(email);
                 }
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"SMTP error: {ex.Message}");
-                return;
+                // Continue without rethrowing to keep the application stable.
             }
         }
         catch (Exception ex)
         {
+            // Top-level exception guard.
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
