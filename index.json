@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 490,
+  "total_examples": 492,
   "total_categories": 13,
   "last_updated": "2026-03-27",
   "categories": [
@@ -861,7 +861,7 @@
     },
     {
       "name": "working-with-microsoft-graph-client",
-      "file_count": 34,
+      "file_count": 36,
       "files": [
         "authenticate-with-azure-active-directory-via-microsoft-graph-client-using-office-credentials-extracted-from-an-msg-file.cs",
         "construct-a-microsoft-graph-query-with-graphquerybuilder-to-fetch-only-unread-messages-from-msg-formatted-data.cs",
@@ -871,6 +871,7 @@
         "create-a-notebook-from-an-msg-file-programmatically-using-the-microsoft-graph-client-api.cs",
         "create-a-task-in-microsoft-graph-from-an-msg-file-using-the-graph-client-api.cs",
         "create-an-azure-ad-admin-center-project-from-an-msg-file-using-the-microsoft-graph-client.cs",
+        "create-an-azure-ad-application-in-the-tenant-using-microsoft-graph-client-extracting-required-configuration-fro.cs",
         "create-an-azure-ad-application-in-the-tenant-using-microsoft-graph-client-extracting-required-configuration-from-an-msg-file.cs",
         "create-an-email-message-from-an-msg-file-using-the-microsoft-graph-client-api.cs",
         "create-an-email-rule-from-an-msg-file-using-the-microsoft-graph-client-library.cs",
@@ -893,6 +894,7 @@
         "utilize-microsoft-graph-client-to-retrieve-and-display-the-new-application-registration-blade-from-an-msg-file.cs",
         "utilize-microsoft-graph-client-to-subscribe-to-product-updates-automatically-delivered-in-msg-format.cs",
         "utilize-microsoft-graph-client-to-transform-ics-files-to-msg-and-convert-msg-files-to-eml-format.cs",
+        "utilize-the-microsoft-graph-client-in-c-to-transform-msg-email-files-into-eml-format.cs",
         "utilize-the-microsoft-graph-client-to-configure-graph-api-permissions-extracted-from-an-msg-file.cs",
         "utilize-the-microsoft-graph-client-to-create-or-update-an-override-using-an-msg-formatted-message.cs",
         "utilize-the-microsoft-graph-client-to-retrieve-a-notebook-encapsulated-within-an-msg-file.cs",
@@ -901,31 +903,31 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 34
+          "count": 36
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 34
+          "count": 36
         },
         {
           "name": "Aspose.Email.Clients.Graph",
-          "count": 34
+          "count": 36
         },
         {
           "name": "Aspose.Email",
-          "count": 31
+          "count": 33
         },
         {
           "name": "System.IO",
-          "count": 27
+          "count": 29
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 23
+          "count": 26
         },
         {
           "name": "System.Net",
-          "count": 5
+          "count": 4
         },
         {
           "name": "Aspose.Email.Clients.Exchange",

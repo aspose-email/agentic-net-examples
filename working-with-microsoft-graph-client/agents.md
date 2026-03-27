@@ -18,13 +18,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (34 file(s))
-- `using Aspose.Email.Clients;` (34 file(s))
-- `using Aspose.Email.Clients.Graph;` (34 file(s))
-- `using Aspose.Email;` (31 file(s))
-- `using System.IO;` (27 file(s))
-- `using Aspose.Email.Mapi;` (23 file(s))
-- `using System.Net;` (5 file(s))
+- `using System;` (36 file(s))
+- `using Aspose.Email.Clients;` (36 file(s))
+- `using Aspose.Email.Clients.Graph;` (36 file(s))
+- `using Aspose.Email;` (33 file(s))
+- `using System.IO;` (29 file(s))
+- `using Aspose.Email.Mapi;` (26 file(s))
+- `using System.Net;` (4 file(s))
 - `using Aspose.Email.Clients.Exchange;` (2 file(s))
 - `using System.Collections.Generic;` (2 file(s))
 - `using System.Threading;` (1 file(s))
@@ -42,6 +42,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [create-a-notebook-from-an-msg-file-programmatically-using-the-microsoft-graph-client-api.cs](./create-a-notebook-from-an-msg-file-programmatically-using-the-microsoft-graph-client-api.cs) | create a notebook from an msg file programmatically using the microsoft graph client api |
 | [create-a-task-in-microsoft-graph-from-an-msg-file-using-the-graph-client-api.cs](./create-a-task-in-microsoft-graph-from-an-msg-file-using-the-graph-client-api.cs) | create a task in microsoft graph from an msg file using the graph client api |
 | [create-an-azure-ad-admin-center-project-from-an-msg-file-using-the-microsoft-graph-client.cs](./create-an-azure-ad-admin-center-project-from-an-msg-file-using-the-microsoft-graph-client.cs) | create an azure ad admin center project from an msg file using the microsoft graph client |
+| [create-an-azure-ad-application-in-the-tenant-using-microsoft-graph-client-extracting-required-configuration-fro.cs](./create-an-azure-ad-application-in-the-tenant-using-microsoft-graph-client-extracting-required-configuration-fro.cs) | create an azure ad application in the tenant using microsoft graph client extracting required configuration fro |
 | [create-an-azure-ad-application-in-the-tenant-using-microsoft-graph-client-extracting-required-configuration-from-an-msg-file.cs](./create-an-azure-ad-application-in-the-tenant-using-microsoft-graph-client-extracting-required-configuration-from-an-msg-file.cs) | create an azure ad application in the tenant using microsoft graph client extracting required configuration from an msg file |
 | [create-an-email-message-from-an-msg-file-using-the-microsoft-graph-client-api.cs](./create-an-email-message-from-an-msg-file-using-the-microsoft-graph-client-api.cs) | create an email message from an msg file using the microsoft graph client api |
 | [create-an-email-rule-from-an-msg-file-using-the-microsoft-graph-client-library.cs](./create-an-email-rule-from-an-msg-file-using-the-microsoft-graph-client-library.cs) | create an email rule from an msg file using the microsoft graph client library |
@@ -64,13 +65,14 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [utilize-microsoft-graph-client-to-retrieve-and-display-the-new-application-registration-blade-from-an-msg-file.cs](./utilize-microsoft-graph-client-to-retrieve-and-display-the-new-application-registration-blade-from-an-msg-file.cs) | utilize microsoft graph client to retrieve and display the new application registration blade from an msg file |
 | [utilize-microsoft-graph-client-to-subscribe-to-product-updates-automatically-delivered-in-msg-format.cs](./utilize-microsoft-graph-client-to-subscribe-to-product-updates-automatically-delivered-in-msg-format.cs) | utilize microsoft graph client to subscribe to product updates automatically delivered in msg format |
 | [utilize-microsoft-graph-client-to-transform-ics-files-to-msg-and-convert-msg-files-to-eml-format.cs](./utilize-microsoft-graph-client-to-transform-ics-files-to-msg-and-convert-msg-files-to-eml-format.cs) | utilize microsoft graph client to transform ics files to msg and convert msg files to eml format |
+| [utilize-the-microsoft-graph-client-in-c-to-transform-msg-email-files-into-eml-format.cs](./utilize-the-microsoft-graph-client-in-c-to-transform-msg-email-files-into-eml-format.cs) | utilize the microsoft graph client in c to transform msg email files into eml format |
 | [utilize-the-microsoft-graph-client-to-configure-graph-api-permissions-extracted-from-an-msg-file.cs](./utilize-the-microsoft-graph-client-to-configure-graph-api-permissions-extracted-from-an-msg-file.cs) | utilize the microsoft graph client to configure graph api permissions extracted from an msg file |
 | [utilize-the-microsoft-graph-client-to-create-or-update-an-override-using-an-msg-formatted-message.cs](./utilize-the-microsoft-graph-client-to-create-or-update-an-override-using-an-msg-formatted-message.cs) | utilize the microsoft graph client to create or update an override using an msg formatted message |
 | [utilize-the-microsoft-graph-client-to-retrieve-a-notebook-encapsulated-within-an-msg-file.cs](./utilize-the-microsoft-graph-client-to-retrieve-a-notebook-encapsulated-within-an-msg-file.cs) | utilize the microsoft graph client to retrieve a notebook encapsulated within an msg file |
 | [utilize-the-microsoft-graph-client-to-retrieve-and-display-the-newly-registered-applications-blade-from-msg-format.cs](./utilize-the-microsoft-graph-client-to-retrieve-and-display-the-newly-registered-applications-blade-from-msg-format.cs) | utilize the microsoft graph client to retrieve and display the newly registered applications blade from msg format |
 
 ## Category Statistics
-- Total examples: 34
+- Total examples: 36
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -79,5 +81,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-27 | `20260327_205053` | [examples/batch-20260327_205053](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260327_205053) |
+| 2026-03-27 | `20260327_210655` | [examples/batch-20260327_210655](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260327_210655) |
 <!-- AUTOGENERATED:END -->
