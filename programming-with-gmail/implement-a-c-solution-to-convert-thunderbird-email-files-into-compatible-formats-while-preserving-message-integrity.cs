@@ -1,43 +1,40 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Storage;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputPath = "sample.eml";
-            string outputPath = "sample.msg";
+            // Path to the Thunderbird MBOX file
+            string mboxPath = "input.mbox";
+            // Desired path for the resulting PST file
+            string pstPath = "output.pst";
 
-            // Verify input file exists
-            if (!File.Exists(inputPath))
+            // Verify that the source MBOX file exists
+            if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"Error: Input file not found – {inputPath}");
+                Console.Error.WriteLine($"Error: MBOX file not found – {mboxPath}");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Load the Thunderbird EML file into a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+            // Convert the MBOX storage to PST
+            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath))
             {
-                // Convert MailMessage to MapiMessage
-                MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
-
-                // Save as MSG using MsgSaveOptions (requires MailMessageSaveType)
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                mapiMessage.Save(outputPath, saveOptions);
+                // PST is now created; additional processing can be done here if needed
+                Console.WriteLine("MBOX to PST conversion completed successfully.");
             }
-
-            Console.WriteLine("Conversion completed successfully.");
         }
         catch (Exception ex)
         {
