@@ -7,22 +7,35 @@ class Program
     {
         try
         {
-            // Replace with your actual client ID and desired scopes
-            string clientId = "YOUR_CLIENT_ID";
-            string redirectUri = "urn:ietf:wg:oauth:2.0:oob";
-            string scope = "https://mail.google.com/";
-            string authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&redirect_uri={redirectUri}&response_type=code&scope={Uri.EscapeDataString(scope)}&access_type=offline";
+            // URL that initiates the authorization flow
+            string authorizationUrl = "https://example.com/authorize";
 
-            Console.WriteLine("Opening the default browser for Google OAuth consent...");
-            using (System.Diagnostics.Process process = new System.Diagnostics.Process())
+            // Open the default web browser to let the user complete the flow
+            ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                process.StartInfo.FileName = authUrl;
-                process.StartInfo.UseShellExecute = true;
-                process.Start();
+                FileName = authorizationUrl,
+                UseShellExecute = true
+            };
+
+            try
+            {
+                Process.Start(startInfo);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to open browser: {ex.Message}");
+                return;
             }
 
-            Console.Write("After granting access, paste the authorization code here: ");
+            // Prompt the user to paste the resulting authorization code
+            Console.WriteLine("After completing the authorization, please enter the authorization code:");
             string authorizationCode = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(authorizationCode))
+            {
+                Console.Error.WriteLine("No authorization code was entered.");
+                return;
+            }
 
             Console.WriteLine($"Authorization code received: {authorizationCode}");
         }
