@@ -1,45 +1,64 @@
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 using Aspose.Email.Calendar;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Initialize the Gmail client (replace placeholders with real credentials)
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "YOUR_CLIENT_ID",
-                "YOUR_CLIENT_SECRET",
-                "YOUR_REFRESH_TOKEN",
-                "user@example.com"))
+            // Initialize Gmail client with dummy credentials
+            IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com");
+
+            // List all calendars
+            Aspose.Email.Clients.Google.Calendar[] calendars = gmailClient.ListCalendars();
+
+            if (calendars == null || calendars.Length < 2)
             {
-                // IDs of the source and destination calendars
-                string sourceCalendarId = "source-calendar-id";
-                string destinationCalendarId = "destination-calendar-id";
-
-                // List appointments in the source calendar
-                Appointment[] sourceAppointments = gmailClient.ListAppointments(sourceCalendarId);
-                if (sourceAppointments == null || sourceAppointments.Length == 0)
-                {
-                    Console.WriteLine("No appointments found in the source calendar.");
-                    return;
-                }
-
-                // Choose the first appointment to relocate
-                Appointment appointmentToMove = sourceAppointments[0];
-                string appointmentId = appointmentToMove.UniqueId;
-
-                // Move the appointment to the destination calendar
-                gmailClient.MoveAppointment(sourceCalendarId, appointmentId, destinationCalendarId);
-                Console.WriteLine($"Appointment '{appointmentToMove.Summary}' moved to calendar '{destinationCalendarId}'.");
-
-                // Optionally delete the moved appointment from the destination calendar
-                gmailClient.DeleteAppointment(destinationCalendarId, appointmentId);
-                Console.WriteLine($"Appointment '{appointmentToMove.Summary}' deleted from calendar '{destinationCalendarId}'.");
+                Console.Error.WriteLine("At least two calendars are required to relocate events.");
+                return;
             }
+
+            // Choose source and destination calendars (first two in the list)
+            string sourceCalendarId = calendars[0].Id;
+            string destinationCalendarId = calendars[1].Id;
+
+            // Retrieve appointments from the source calendar
+            Appointment[] sourceAppointments = gmailClient.ListAppointments(sourceCalendarId);
+
+            if (sourceAppointments == null || sourceAppointments.Length == 0)
+            {
+                Console.WriteLine("No appointments found in the source calendar.");
+                return;
+            }
+
+            // Relocate each appointment to the destination calendar
+            foreach (Appointment appointment in sourceAppointments)
+            {
+                // Unique identifier of the appointment
+                string appointmentId = appointment.UniqueId;
+
+                // Move the appointment
+                Appointment movedAppointment = gmailClient.MoveAppointment(
+                    sourceCalendarId,
+                    destinationCalendarId,
+                    appointmentId);
+
+                Console.WriteLine($"Moved appointment '{movedAppointment.Summary}' to calendar '{calendars[1].Summary}'.");
+            }
+
+            // Example: delete a specific appointment from the destination calendar
+            // (deleting the first moved appointment as a demonstration)
+            string deleteAppointmentId = sourceAppointments[0].UniqueId;
+            gmailClient.DeleteAppointment(destinationCalendarId, deleteAppointmentId);
+            Console.WriteLine($"Deleted appointment with ID '{deleteAppointmentId}' from the destination calendar.");
         }
         catch (Exception ex)
         {
