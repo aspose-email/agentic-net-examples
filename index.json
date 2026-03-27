@@ -251,7 +251,7 @@
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 26
+          "count": 27
         },
         {
           "name": "Aspose.Email.Clients.Google",
@@ -331,6 +331,10 @@
         },
         {
           "name": "System.Diagnostics",
+          "count": 1
+        },
+        {
+          "name": "RangeAlias = Aspose.Email.Clients.Google.Range",
           "count": 1
         },
         {
