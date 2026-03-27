@@ -3,8 +3,8 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 438,
-  "total_categories": 12,
+  "total_examples": 453,
+  "total_categories": 13,
   "last_updated": "2026-03-27",
   "categories": [
     {
@@ -958,6 +958,58 @@
         },
         {
           "name": "Aspose.Email.Calendar",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "working-with-mime-messages",
+      "file_count": 15,
+      "files": [
+        "add-a-file-attachment-to-an-msg-email-by-calling-mailmessage-attachments-add-new-attachment-filepath-during-message-composition.cs",
+        "add-one-or-more-attachments-to-the-email-via-the-attachments-collection-and-save-the-message-as-an-msg-file.cs",
+        "assign-the-sender-address-to-a-msg-email-message-by-setting-the-mailmessage-from-property.cs",
+        "compose-an-email-by-assigning-from-to-subject-and-body-fields-then-export-it-as-an-msg-file.cs",
+        "construct-an-email-containing-plain-text-and-html-parts-via-alternateview-objects-and-persist-it-as-an-msg-file.cs",
+        "construct-an-email-message-containing-alternate-views-and-serialize-it-correctly-to-msg-format.cs",
+        "construct-an-msg-formatted-email-message-that-includes-specified-attachments-and-appropriate-mime-headers-correctly.cs",
+        "embed-image-resources-via-linkedresource-and-include-them-in-the-alternateview-linkedresources-collection-of-an-msg-email.cs",
+        "embed-images-into-an-email-html-body-via-linkedresource-objects-attach-them-to-an-alternateview-and-save-as-msg.cs",
+        "generate-a-basic-msg-email-message-including-standard-headers-subject-line-and-plain-text-body-content.cs",
+        "generate-alternate-views-for-an-msg-email-by-invoking-alternateview-createalternateviewfromstring-html-null-text-html-to-embed-html-content.cs",
+        "generate-msg-formatted-email-messages-programmatically-ensuring-correct-mime-structure-header-fields-and-attachment-handling.cs",
+        "persist-a-mailmessage-object-to-an-eml-file-by-calling-mailmessage-save-with-the-target-filename-and-saveoptions-defaulteml.cs",
+        "populate-the-to-cc-and-bcc-collections-of-a-mailmessage-to-include-recipients-in-an-msg-file.cs",
+        "set-the-msg-email-content-by-assigning-text-to-mailmessage-body-or-html-to-mailmessage-htmlbody.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 15
+        },
+        {
+          "name": "System.IO",
+          "count": 15
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 15
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 5
+        },
+        {
+          "name": "System.Text",
+          "count": 1
+        },
+        {
+          "name": "System.Net.Mime",
           "count": 1
         }
       ],
