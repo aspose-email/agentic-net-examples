@@ -5,57 +5,63 @@ using Aspose.Email.Calendar;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Paths for input EML and output ICS files
-            string inputPath = "sample.eml";
-            string outputPath = "output.ics";
+            string emlPath = "input.eml";
+            string icsPath = "output.ics";
 
-            // Verify that the input EML file exists
-            if (!File.Exists(inputPath))
+            // Verify input file exists
+            if (!File.Exists(emlPath))
             {
-                Console.Error.WriteLine($"Error: Input file not found – {inputPath}");
+                Console.Error.WriteLine($"Error: File not found – {emlPath}");
                 return;
             }
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Load the EML message with default options
+            using (MailMessage message = MailMessage.Load(emlPath, new EmlLoadOptions()))
             {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Load the EML message
-            using (MailMessage emailMessage = MailMessage.Load(inputPath))
-            {
-                // Prepare data for the calendar event
-                string eventSubject = emailMessage.Subject ?? "No Subject";
-                string eventDescription = emailMessage.Body ?? string.Empty;
-
-                // Example: event starts now and lasts one hour
-                DateTime eventStart = DateTime.Now;
-                DateTime eventEnd = eventStart.AddHours(1);
-
-                // Create an attendee list and add the sender if available
+                // Prepare organizer and attendees
+                MailAddress organizer = message.From ?? new MailAddress("organizer@example.com");
                 MailAddressCollection attendees = new MailAddressCollection();
-                if (emailMessage.From != null)
+                if (message.To != null)
                 {
-                    attendees.Add(emailMessage.From);
+                    foreach (MailAddress addr in message.To)
+                    {
+                        attendees.Add(addr);
+                    }
                 }
 
-                // Create the appointment (calendar event)
-                Appointment calendarEvent = new Appointment(eventSubject, eventStart, eventEnd, emailMessage.From, attendees);
-                calendarEvent.Description = eventDescription;
+                // Create a simple appointment (using now + 1 hour as fallback dates)
+                DateTime start = DateTime.Now;
+                DateTime end = start.AddHours(1);
+                Appointment appointment = new Appointment(
+                    location: "Meeting Room",
+                    startDate: start,
+                    endDate: end,
+                    organizer: organizer,
+                    attendees: attendees);
 
-                // Save the appointment as an iCalendar (ICS) file
-                calendarEvent.Save(outputPath);
+                // Transfer basic information from the email
+                appointment.Summary = message.Subject ?? "No Subject";
+                appointment.Description = message.Body ?? string.Empty;
+
+                // Save the appointment as an iCalendar file
+                try
+                {
+                    appointment.Save(icsPath);
+                    Console.WriteLine($"ICS file created at: {icsPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving ICS file: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
