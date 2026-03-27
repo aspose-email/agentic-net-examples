@@ -14,7 +14,7 @@ Examples are organized by feature category:
 - `working-with-exchange-ews-client/` - 148 example(s)
 - `working-with-exchange-webdav-client/` - 21 example(s)
 - `working-with-imap-client/` - 38 example(s)
-- `working-with-microsoft-graph-client/` - 20 example(s)
+- `working-with-microsoft-graph-client/` - 34 example(s)
 - `working-with-smtp-client/` - 2 example(s)
 - `zimbra/` - 9 example(s)
 
