@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Net;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
@@ -14,27 +14,14 @@ class Program
             // Path to the MSG file containing Office credentials
             string msgPath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing
+            // Verify that the MSG file exists
             if (!File.Exists(msgPath))
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage())
-                    {
-                        placeholder.From = new MailAddress("placeholder@example.com");
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Body = "This is a placeholder MSG file.";
-                        placeholder.Save(msgPath, SaveOptions.DefaultMsg);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to create placeholder MSG file: " + ex.Message);
-                    return;
-                }
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
             }
 
-            // Load the MSG file and extract the user email (used as username)
+            // Load the MSG file
             MailMessage mailMessage;
             try
             {
@@ -42,64 +29,48 @@ class Program
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Failed to load MSG file: " + ex.Message);
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
                 return;
             }
 
-            using (mailMessage)
+            // Extract credentials from custom headers (replace with actual header names as needed)
+            string clientId = mailMessage.Headers["X-ClientId"] ?? "clientId";
+            string clientSecret = mailMessage.Headers["X-ClientSecret"] ?? "clientSecret";
+            string refreshToken = mailMessage.Headers["X-RefreshToken"] ?? "refreshToken";
+            string tenantId = mailMessage.Headers["X-TenantId"] ?? "tenantId";
+
+            // Create a token provider for Outlook (Azure AD)
+            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+            // Initialize the Microsoft Graph client
+            IGraphClient graphClient;
+            try
             {
-                string userEmail = mailMessage.From != null ? mailMessage.From.Address : "user@example.com";
+                graphClient = GraphClient.GetClient(tokenProvider, tenantId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create Graph client: {ex.Message}");
+                mailMessage.Dispose();
+                return;
+            }
 
-                // Azure AD application credentials (replace with real values)
-                string clientId = "your-client-id";
-                string clientSecret = "your-client-secret";
-                string refreshToken = "your-refresh-token";
-                string tenantId = "your-tenant-id";
-
-                // Create the token provider for Outlook (Microsoft Graph)
-                TokenProvider tokenProvider;
-                try
+            // Use the Graph client to list messages in the Inbox folder
+            using (graphClient)
+            {
+                IEnumerable<MessageInfo> inboxMessages = graphClient.ListMessages("Inbox");
+                foreach (MessageInfo info in inboxMessages)
                 {
-                    tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to create token provider: " + ex.Message);
-                    return;
-                }
-
-                // Initialize the Graph client
-                IGraphClient graphClient;
-                try
-                {
-                    graphClient = GraphClient.GetClient(tokenProvider, tenantId);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to initialize Graph client: " + ex.Message);
-                    return;
-                }
-
-                // Use the Graph client (example: list messages in the Inbox)
-                using (graphClient)
-                {
-                    try
-                    {
-                        // The ListMessages method returns a collection of message metadata.
-                        // Here we simply invoke it; detailed processing can be added as needed.
-                        var messages = graphClient.ListMessages("Inbox");
-                        Console.WriteLine("Successfully retrieved messages from the Inbox.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Graph operation failed: " + ex.Message);
-                    }
+                    Console.WriteLine($"Subject: {info.Subject}");
                 }
             }
+
+            // Dispose the loaded message
+            mailMessage.Dispose();
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
