@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
@@ -9,34 +10,30 @@ class Program
     {
         try
         {
-            // Replace these placeholders with actual credentials obtained from Google Developer Console.
-            string clientId = "YOUR_CLIENT_ID";
-            string clientSecret = "YOUR_CLIENT_SECRET";
-            string refreshToken = "YOUR_REFRESH_TOKEN";
+            // Replace these placeholder values with actual credentials obtained from Google Developer Console
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
             string defaultEmail = "user@example.com";
 
-            // Create a Gmail client instance using the provided OAuth credentials.
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+            // Create the Gmail client using the provided credentials
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
+
+            // Verify the client works by listing messages in the mailbox
+            List<GmailMessageInfo> messages = gmailClient.ListMessages();
+            Console.WriteLine($"Retrieved {messages.Count} messages from the Gmail account.");
+
+            // If there is at least one message, fetch its full content and display the subject
+            if (messages.Count > 0)
             {
-                try
-                {
-                    // Example operation: retrieve and display the list of calendars.
-                    Aspose.Email.Clients.Google.Calendar[] calendars = gmailClient.ListCalendars();
-                    Console.WriteLine("Calendars:");
-                    foreach (Aspose.Email.Clients.Google.Calendar calendar in calendars)
-                    {
-                        Console.WriteLine($"- {calendar.Summary} (Id: {calendar.Id})");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Gmail operation failed: {ex.Message}");
-                }
+                GmailMessageInfo firstInfo = messages[0];
+                MailMessage fullMessage = gmailClient.FetchMessage(firstInfo.Id);
+                Console.WriteLine($"First message subject: {fullMessage.Subject}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
