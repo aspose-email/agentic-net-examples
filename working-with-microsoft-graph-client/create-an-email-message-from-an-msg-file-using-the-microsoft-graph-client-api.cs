@@ -1,77 +1,50 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-namespace AsposeEmailGraphSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Paths and authentication parameters (replace with real values)
+            string msgPath = "sample.msg";
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string tenantId = "tenantId";
+
+            // Verify that the MSG file exists before attempting to load it
+            if (!File.Exists(msgPath))
             {
-                // Path to the MSG file
-                string msgFilePath = "sample.msg";
-
-                // Verify that the MSG file exists
-                if (!File.Exists(msgFilePath))
-                {
-                    Console.Error.WriteLine($"Message file not found: {msgFilePath}");
-                    return;
-                }
-
-                // Load the MSG file into a MapiMessage
-                try
-                {
-                    using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
-                    {
-                        // Convert the MapiMessage to a MailMessage
-                        using (MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions()))
-                        {
-                            // Prepare token provider for Microsoft Graph authentication
-                            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                                "clientId",
-                                "clientSecret",
-                                "refreshToken");
-
-                            // Tenant identifier (replace with actual tenant ID)
-                            string tenantId = "tenant-id";
-
-                            // Create the Graph client
-                            try
-                            {
-                                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
-                                {
-                                    // Folder identifier where the message will be created (e.g., Drafts)
-                                    string folderId = "Drafts";
-
-                                    // Create the message in the specified folder
-                                    graphClient.CreateMessage(folderId, mailMessage);
-                                    Console.WriteLine("Message created successfully in Graph.");
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Graph client error: {ex.Message}");
-                                return;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to load or convert MSG file: {ex.Message}");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
+
+            // Load the MSG file into a MailMessage instance
+            using (MailMessage mailMessage = MailMessage.Load(msgPath))
+            {
+                // Create a token provider for Outlook (Microsoft Graph)
+                TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+                // Initialize the Graph client using the token provider and tenant identifier
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
+                {
+                    // Destination folder identifier (e.g., "Inbox")
+                    string folderId = "Inbox";
+
+                    // Upload the message to the specified folder
+                    client.CreateMessage(folderId, mailMessage);
+                    Console.WriteLine("Message uploaded successfully.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
