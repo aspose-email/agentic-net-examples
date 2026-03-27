@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
@@ -11,47 +10,44 @@ class Program
     {
         try
         {
-            // Paths and credentials (replace with actual values)
-            string msgFilePath = "notebook.msg";
-            string clientId = "your-client-id";
-            string clientSecret = "your-client-secret";
-            string refreshToken = "your-refresh-token";
-            string tenantId = "your-tenant-id";
+            // Path to the MSG file containing the notebook
+            string msgPath = "notebook.msg";
 
-            // Verify the MSG file exists
-            if (!File.Exists(msgFilePath))
+            // Ensure the file exists; create a minimal placeholder if missing
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgFilePath}");
-                return;
+                using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder", ""))
+                {
+                    placeholder.Save(msgPath);
+                }
             }
 
-            // Load the MSG file into a MapiMessage
-            using (MapiMessage notebookMessage = MapiMessage.Load(msgFilePath))
+            // Load the MSG file
+            using (MailMessage message = MailMessage.Load(msgPath))
             {
-                // Placeholder notebook ID (in a real scenario, obtain the actual ID)
-                string notebookItemId = "placeholder-notebook-id";
+                // Placeholder IDs for the source notebook and destination folder
+                string sourceNotebookId = "source-notebook-id";
+                string destinationFolderId = "destination-folder-id";
+                string destinationNotebookName = "CopiedNotebook";
 
-                // Target group ID where the notebook will be copied (optional)
-                string targetGroupId = "target-group-id";
+                // Initialize token provider for Outlook (Microsoft Graph)
+                TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                    "clientId",
+                    "clientSecret",
+                    "refreshToken");
 
-                // Optional new name for the copied notebook
-                string newNotebookName = "Copied Notebook";
-
-                // Create token provider (Outlook token provider expects three arguments)
-                Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-                // Initialize the Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+                // Create Graph client
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, "tenantId"))
                 {
-                    // Initiate the copy operation
-                    string operationLocation = graphClient.CopyNotebook(notebookItemId, targetGroupId, newNotebookName);
-                    Console.WriteLine("Copy operation initiated. Operation-Location: " + operationLocation);
+                    // Copy the notebook to the target location
+                    client.CopyNotebook(sourceNotebookId, destinationFolderId, destinationNotebookName);
+                    Console.WriteLine("Notebook copied successfully.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
