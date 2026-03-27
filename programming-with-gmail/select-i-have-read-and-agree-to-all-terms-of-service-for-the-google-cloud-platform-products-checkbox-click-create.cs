@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
@@ -10,21 +9,23 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with dummy credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId", "clientSecret", "refreshToken", "user@example.com"))
+            // Initialize Gmail client with dummy OAuth token and default email
+            IGmailClient gmailClient = GmailClient.GetInstance("accessToken", "user@example.com");
+            using (gmailClient)
             {
-                // Create a filter (simulating selecting a checkbox and clicking Create)
-                Filter filter = new Filter();
-                // Example: set filter criteria if needed
-                // filter.Query = "I have read and agree to all Terms of Service for the Google Cloud Platform products.";
-                string filterId = gmailClient.CreateFilter(filter);
-                Console.WriteLine("Filter created with Id: " + filterId);
+                // List messages in the mailbox
+                var messages = gmailClient.ListMessages();
+                foreach (var messageInfo in messages)
+                {
+                    // Fetch the full message to access its subject
+                    MailMessage fullMessage = gmailClient.FetchMessage(messageInfo.Id);
+                    Console.WriteLine(fullMessage.Subject);
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
