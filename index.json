@@ -3,8 +3,8 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 320,
-  "total_categories": 8,
+  "total_examples": 358,
+  "total_categories": 9,
   "last_updated": "2026-03-27",
   "categories": [
     {
@@ -725,6 +725,109 @@
         },
         {
           "name": "System.Collections.Generic",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "working-with-imap-client",
+      "file_count": 38,
+      "files": [
+        "activate-client-side-logging-by-setting-the-loggingenabled-boolean-property-to-true-on-the-client-instance.cs",
+        "apply-the-seen-flag-to-a-specific-email-message-by-invoking-client-addmessageflags-with-imapmessageflags-seen.cs",
+        "change-the-name-of-a-specified-directory-on-the-file-system-to-a-new-identifier.cs",
+        "configure-the-client-to-write-log-output-to-a-specified-file-by-assigning-the-desired-path-to-logfilepath.cs",
+        "create-a-backup-of-mailboxes-to-preserve-all-messages-and-metadata-for-recovery-purposes.cs",
+        "create-rename-delete-and-list-imap-server-folders-programmatically-using-the-provided-api-methods.cs",
+        "define-search-filters-programmatically-for-example-using-subject-contains-invoice-or-date-greaterthan-somedate-expressions-to-retrieve-matching-email-messages-from-a-mailbox.cs",
+        "establish-an-asynchronous-connection-by-invoking-the-connectasync-method-on-the-client-object-instance.cs",
+        "establish-an-asynchronous-connection-to-an-imap-server-handling-authentication-and-network-latency-efficiently.cs",
+        "execute-a-search-query-through-client-search-query-to-obtain-all-messages-that-satisfy-the-specified-criteria.cs",
+        "generate-a-pst-backup-of-the-mailbox-by-invoking-client-backupmailbox-with-the-specified-file-path.cs",
+        "implement-asynchronous-retrieval-of-email-messages-using-non-blocking-operations-to-improve-application-responsiveness-efficiently.cs",
+        "implement-functionality-to-back-up-and-restore-mailboxes-using-imap-protocols-ensuring-data-integrity-and-consistency.cs",
+        "implement-functionality-to-filter-email-messages-by-date-range-supporting-inclusive-and-exclusive-boundaries.cs",
+        "implement-functionality-to-retrieve-email-messages-that-match-a-specified-subject-line-filter-criteria.cs",
+        "instantiate-a-directory-at-the-specified-path-to-organize-subsequent-files-and-resources-within-the-project.cs",
+        "instantiate-an-imapquerybuilder-object-to-programmatically-construct-complex-imap-search-queries-for-mailbox-operations.cs",
+        "invoke-client-createfolder-newfolder-to-programmatically-generate-a-new-folder-within-the-current-mailbox-hierarchy-on-the-server.cs",
+        "invoke-client-deletefolder-with-the-target-folder-name-to-permanently-remove-the-specified-directory-from-storage.cs",
+        "invoke-client-renamefolder-with-the-existing-folder-name-and-desired-new-name-to-rename-the-directory.cs",
+        "invoke-the-validatecredentials-method-to-programmatically-confirm-the-supplied-username-and-password-against-the-server.cs",
+        "obtain-a-collection-of-email-messages-from-the-server-by-invoking-the-client-listmessages-method.cs",
+        "perform-an-asynchronous-operation-to-permanently-delete-a-specified-message-from-the-mail-store.cs",
+        "process-and-interpret-validation-results-to-determine-compliance-and-manage-any-reported-errors-accordingly.cs",
+        "programmatically-transfer-the-specified-email-message-to-a-target-folder-by-invoking-client-movemessage-message-destinationfolder.cs",
+        "recover-mailbox-data-from-backups-into-the-mail-system-while-preserving-all-folder-hierarchy-and-metadata.cs",
+        "remove-a-specific-email-message-by-invoking-the-client-object-deletemessage-method-with-the-target-message.cs",
+        "remove-a-specific-email-message-from-the-mailbox-programmatically-using-the-provided-api-call.cs",
+        "remove-selected-email-messages-from-an-imap-server-using-appropriate-protocol-commands-and-ensure-server-synchronization-reflects-the-deletions-accurately.cs",
+        "remove-the-specified-directory-from-the-file-system-ensuring-all-contained-files-are-permanently-deleted.cs",
+        "retrieve-and-display-imap-server-activity-logs-for-monitoring-connection-and-command-events-including-authentication.cs",
+        "retrieve-email-messages-asynchronously-by-invoking-the-client-fetchmessagesasync-method-handling-the-returned-task-appropriately.cs",
+        "set-up-imap-protocol-logging-to-capture-client-server-communication-details-and-enable-diagnostic-analysis.cs",
+        "use-client-restoremailbox-with-the-specified-pst-file-to-recover-a-mailbox-from-backup-operation.cs",
+        "validate-user-credentials-by-evaluating-the-boolean-result-returned-from-the-authentication-api-method.cs",
+        "validate-user-credentials-by-invoking-the-client-validatecredentials-method-with-the-provided-username-and-password.cs",
+        "verify-all-required-prerequisites-are-satisfied-prior-to-initiating-a-connection-with-the-imap-server.cs",
+        "verify-the-correctness-of-imap-server-authentication-parameters-by-attempting-a-login-and-handling-potential-failures.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 38
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 29
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 27
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 26
+        },
+        {
+          "name": "System.IO",
+          "count": 10
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 8
+        },
+        {
+          "name": "System.Net",
+          "count": 7
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange",
+          "count": 6
+        },
+        {
+          "name": "System.Threading.Tasks",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 3
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Tools.Verifications",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Google",
           "count": 1
         }
       ],
