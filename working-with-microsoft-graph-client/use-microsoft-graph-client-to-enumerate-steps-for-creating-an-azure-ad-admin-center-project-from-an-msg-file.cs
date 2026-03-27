@@ -1,75 +1,59 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Graph;
 using Aspose.Email.Clients;
+using Aspose.Email.Clients.Graph;
 
-class Program
+namespace AsposeEmailGraphExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Path to the MSG file
-            string msgPath = "sample.msg";
-
-            // Verify the MSG file exists
-            if (!File.Exists(msgPath))
+            try
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
+                // Paths and credentials (replace with real values)
+                string msgPath = "sample.msg";
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string tenantId = "tenantId";
+                string folderName = "AdminCenterProject";
 
-            // Load the MSG file into a MailMessage object
-            using (MailMessage mailMessage = MailMessage.Load(msgPath))
-            {
-                // Prepare token provider for Microsoft Graph (Outlook)
-                // Replace the placeholder values with real credentials
-                string clientId = "your-client-id";
-                string clientSecret = "your-client-secret";
-                string refreshToken = "your-refresh-token";
-                string tenantId = "your-tenant-id";
-
-                // Create the token provider instance
-                TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-                // Initialize the Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+                // Verify the MSG file exists before loading
+                if (!File.Exists(msgPath))
                 {
-                    // Example: List the user's mail folders
-                    var folders = graphClient.ListFolders();
-                    Console.WriteLine("User's mail folders:");
-                    foreach (var folder in folders)
-                    {
-                        Console.WriteLine($"- {folder.DisplayName} (Id: {folder.ItemId})");
-                    }
+                    Console.Error.WriteLine($"Message file not found: {msgPath}");
+                    return;
+                }
 
-                    // Choose a target folder (e.g., Drafts) by name
-                    string targetFolderId = null;
-                    foreach (var folder in folders)
-                    {
-                        if (string.Equals(folder.DisplayName, "Drafts", StringComparison.OrdinalIgnoreCase))
-                        {
-                            targetFolderId = folder.ItemId;
-                            break;
-                        }
-                    }
+                // Load the MSG file into a MailMessage object
+                using (MailMessage mailMessage = MailMessage.Load(msgPath))
+                {
+                    // Initialize the Outlook token provider (no using directive for the type)
+                    Aspose.Email.Clients.TokenProvider outlookProvider =
+                        Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
 
-                    if (targetFolderId == null)
+                    // Create the Microsoft Graph client
+                    using (IGraphClient client = GraphClient.GetClient(outlookProvider, tenantId))
                     {
-                        Console.Error.WriteLine("Drafts folder not found.");
-                        return;
-                    }
+                        // Create a new folder in the mailbox
+                        client.CreateFolder(folderName);
 
-                    // Create a new message in the target folder using the loaded MSG content
-                    MailMessage createdMessage = graphClient.CreateMessage(targetFolderId, mailMessage);
-                    Console.WriteLine($"Message created with Subject: {createdMessage.Subject}");
+                        // Retrieve the folder information to obtain its ItemId (not Id)
+                        FolderInfo folderInfo = client.GetFolder(folderName);
+                        string folderId = folderInfo.ItemId;
+
+                        // Upload the message into the newly created folder
+                        client.CreateMessage(folderId, mailMessage);
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Top‑level exception handling
+                Console.Error.WriteLine(ex.Message);
+            }
         }
     }
 }
