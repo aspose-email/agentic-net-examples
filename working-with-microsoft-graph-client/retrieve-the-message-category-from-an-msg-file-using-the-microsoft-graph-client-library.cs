@@ -1,8 +1,7 @@
 using System;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Graph;
 
 class Program
 {
@@ -10,42 +9,38 @@ class Program
     {
         try
         {
-            // Token provider for Microsoft Graph (dummy credentials)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken");
+            string msgFilePath = "message.msg";
 
-            // Create Graph client
-            using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
+            // Ensure the MSG file exists before attempting to load it
+            if (!File.Exists(msgFilePath))
             {
-                // ID of the message to fetch (replace with actual ID)
-                string messageId = "message-id";
+                Console.Error.WriteLine($"The file '{msgFilePath}' does not exist.");
+                return;
+            }
 
-                // Fetch the message as a MapiMessage
-                using (MapiMessage message = graphClient.FetchMessage(messageId))
+            // Load the MSG file using the correct API
+            using (MapiMessage message = MapiMessage.Load(msgFilePath))
+            {
+                // Retrieve the categories assigned to the message
+                string[] categories = message.Categories;
+
+                if (categories != null && categories.Length > 0)
                 {
-                    // Retrieve categories (may be null)
-                    string[] categories = message.Categories;
-
-                    if (categories != null && categories.Length > 0)
+                    Console.WriteLine("Message Categories:");
+                    foreach (string category in categories)
                     {
-                        Console.WriteLine("Message Categories:");
-                        foreach (string category in categories)
-                        {
-                            Console.WriteLine("- " + category);
-                        }
+                        Console.WriteLine($"- {category}");
                     }
-                    else
-                    {
-                        Console.WriteLine("No categories assigned to this message.");
-                    }
+                }
+                else
+                {
+                    Console.WriteLine("No categories are assigned to this message.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
