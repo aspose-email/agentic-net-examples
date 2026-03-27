@@ -18,17 +18,17 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (2 file(s))
-- `using System.IO;` (2 file(s))
 - `using Aspose.Email;` (2 file(s))
 - `using Aspose.Email.Clients;` (2 file(s))
 - `using Aspose.Email.Clients.Smtp;` (2 file(s))
+- `using System;` (2 file(s))
+- `using System.IO;` (2 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
-| [configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loa-b681d4c1.cs](./configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loa-b681d4c1.cs) | configure smtpclient with host port and security settings then send an email loa b681d4c1 |
-| [set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitt-094c8dc1.cs](./set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitt-094c8dc1.cs) | set the smtp host port and security options on the smtpclient prior to transmitt 094c8dc1 |
+| [configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loa.cs](./configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loa.cs) | configure smtpclient with host port and security settings then send an email loa |
+| [set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitt.cs](./set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitt.cs) | set the smtp host port and security options on the smtpclient prior to transmitt |
 
 ## Category Statistics
 - Total examples: 2

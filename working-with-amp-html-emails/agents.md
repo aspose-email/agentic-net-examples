@@ -19,16 +19,16 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 
 ## Required Namespaces
 - `using System;` (17 file(s))
-- `using System.IO;` (15 file(s))
 - `using Aspose.Email;` (15 file(s))
+- `using System.IO;` (15 file(s))
 - `using Aspose.Email.Amp;` (11 file(s))
 - `using Aspose.Email.Mime;` (4 file(s))
-- `using Aspose.Email.Mapi;` (3 file(s))
 - `using Aspose.Email.Clients;` (3 file(s))
 - `using Aspose.Email.Clients.Smtp;` (3 file(s))
+- `using Aspose.Email.Mapi;` (3 file(s))
 - `using System.Reflection;` (2 file(s))
-- `using System.Text;` (1 file(s))
 - `using System.Net;` (1 file(s))
+- `using System.Text;` (1 file(s))
 
 ## Files in this folder
 | File | Description |

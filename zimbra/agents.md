@@ -21,28 +21,28 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - `using System;` (9 file(s))
 - `using System.IO;` (7 file(s))
 - `using Aspose.Email;` (6 file(s))
-- `using Aspose.Email.Storage.Zimbra;` (3 file(s))
 - `using Aspose.Email.Mapi;` (3 file(s))
-- `using Aspose.Email.Clients;` (2 file(s))
+- `using Aspose.Email.Storage.Zimbra;` (3 file(s))
 - `using Aspose.Email.Calendar;` (2 file(s))
+- `using Aspose.Email.Clients;` (2 file(s))
 - `using System.Collections.Generic;` (2 file(s))
 - `using Aspose.Email.Clients.Activity;` (1 file(s))
-- `using Aspose.Email.Storage.Pst;` (1 file(s))
 - `using Aspose.Email.Clients.Google;` (1 file(s))
 - `using Aspose.Email.Clients.Imap;` (1 file(s))
+- `using Aspose.Email.Storage.Pst;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
-| [calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-wit-c6993ba5.cs](./calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-wit-c6993ba5.cs) | calculate the total number of items contained within each zimbra tgz archive wit c6993ba5 |
-| [configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscri-97375fc1.cs](./configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscri-97375fc1.cs) | configure zimbra to receive product update notifications by enabling the subscri 97375fc1 |
-| [convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserv-53e588f0.cs](./convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserv-53e588f0.cs) | convert an icalendar ics file into a microsoft outlook msg message while preserv 53e588f0 |
-| [convert-msg-email-files-to-html-format-preserving-message-content-attachments-an-6d333f96.cs](./convert-msg-email-files-to-html-format-preserving-message-content-attachments-an-6d333f96.cs) | convert msg email files to html format preserving message content attachments an 6d333f96 |
-| [export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hiera-5dac27d6.cs](./export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hiera-5dac27d6.cs) | export mailbox messages to msg files while maintaining the original folder hiera 5dac27d6 |
-| [implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-e091f53f.cs](./implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the-e091f53f.cs) | implement conversion of msg email files to eml format programmatically using the e091f53f |
-| [read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-proce-3c94cbec.cs](./read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-proce-3c94cbec.cs) | read all email messages stored in zimbra tgz archives programmatically for proce 3c94cbec |
-| [render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-withi-ccb435d4.cs](./render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-withi-ccb435d4.cs) | render a consolidated view of email calendar entries and tgz file handling withi ccb435d4 |
-| [retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-5c0eafec.cs](./retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-5c0eafec.cs) | retrieve comprehensive configuration settings user statistics and service status 5c0eafec |
+| [calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-wit.cs](./calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-wit.cs) | calculate the total number of items contained within each zimbra tgz archive wit |
+| [configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscri.cs](./configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscri.cs) | configure zimbra to receive product update notifications by enabling the subscri |
+| [convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserv.cs](./convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserv.cs) | convert an icalendar ics file into a microsoft outlook msg message while preserv |
+| [convert-msg-email-files-to-html-format-preserving-message-content-attachments-an.cs](./convert-msg-email-files-to-html-format-preserving-message-content-attachments-an.cs) | convert msg email files to html format preserving message content attachments an |
+| [export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hiera.cs](./export-mailbox-messages-to-msg-files-while-maintaining-the-original-folder-hiera.cs) | export mailbox messages to msg files while maintaining the original folder hiera |
+| [implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the.cs](./implement-conversion-of-msg-email-files-to-eml-format-programmatically-using-the.cs) | implement conversion of msg email files to eml format programmatically using the |
+| [read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-proce.cs](./read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-proce.cs) | read all email messages stored in zimbra tgz archives programmatically for proce |
+| [render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-withi.cs](./render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-withi.cs) | render a consolidated view of email calendar entries and tgz file handling withi |
+| [retrieve-comprehensive-configuration-settings-user-statistics-and-service-status.cs](./retrieve-comprehensive-configuration-settings-user-statistics-and-service-status.cs) | retrieve comprehensive configuration settings user statistics and service status |
 
 ## Category Statistics
 - Total examples: 9
