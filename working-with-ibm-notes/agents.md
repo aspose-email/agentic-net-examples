@@ -18,24 +18,54 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (4 file(s))
-- `using System.IO;` (4 file(s))
-- `using Aspose.Email;` (4 file(s))
-- `using Aspose.Email.Mapi;` (3 file(s))
+- `using System;` (28 file(s))
+- `using System.IO;` (28 file(s))
+- `using Aspose.Email.Mapi;` (27 file(s))
+- `using Aspose.Email;` (26 file(s))
+- `using Aspose.Email.Clients;` (2 file(s))
+- `using System.Net;` (1 file(s))
+- `using System.Threading;` (1 file(s))
+- `using System.Threading.Tasks;` (1 file(s))
+- `using Aspose.Email.Clients.Imap;` (1 file(s))
 - `using Aspose.Email.Storage.Nsf;` (1 file(s))
-- `using Aspose.Email.Clients;` (1 file(s))
 - `using Aspose.Email.Clients.Graph;` (1 file(s))
+- `using System.Text;` (1 file(s))
+- `using System.Collections.Generic;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
+| [add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs](./add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs) | add a notesattachment to the document and assign the msg file as its content |
+| [configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs](./configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs) | configure replication parameters for processing an input msg file to ensure accurate message duplication |
+| [construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs](./construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs) | construct a new email object using the contents of an input msg file preserving all original message properties |
+| [generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs](./generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs) | generate a calendar event using the contents of an input msg file as the entry source |
+| [generate-a-new-contact-entry-by-processing-an-input-msg-file-and-extracting-its-contact-details.cs](./generate-a-new-contact-entry-by-processing-an-input-msg-file-and-extracting-its-contact-details.cs) | generate a new contact entry by processing an input msg file and extracting its contact details |
 | [generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs](./generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs) | generate a new ibm notes database using an msg file as the source input |
+| [generate-a-new-notes-document-using-an-msg-file-as-input-preserving-the-message-content-and-metadata.cs](./generate-a-new-notes-document-using-an-msg-file-as-input-preserving-the-message-content-and-metadata.cs) | generate a new notes document using an msg file as input preserving the message content and metadata |
+| [generate-a-new-task-object-based-on-the-provided-input-message-msg-for-subsequent-processing.cs](./generate-a-new-task-object-based-on-the-provided-input-message-msg-for-subsequent-processing.cs) | generate a new task object based on the provided input message msg for subsequent processing |
+| [generate-a-rich-text-rtf-file-from-an-input-msg-email-message-while-preserving-formatting.cs](./generate-a-rich-text-rtf-file-from-an-input-msg-email-message-while-preserving-formatting.cs) | generate a rich text rtf file from an input msg email message while preserving formatting |
+| [implement-a-user-interface-view-that-accepts-msg-files-as-input-for-processing-and-display.cs](./implement-a-user-interface-view-that-accepts-msg-files-as-input-for-processing-and-display.cs) | implement a user interface view that accepts msg files as input for processing and display |
+| [implement-an-agent-that-accepts-a-msg-object-as-input-and-processes-it-according-to-defined-business-logic.cs](./implement-an-agent-that-accepts-a-msg-object-as-input-and-processes-it-according-to-defined-business-logic.cs) | implement an agent that accepts a msg object as input and processes it according to defined business logic |
+| [load-a-calendar-entry-from-an-msg-file-into-memory-for-further-processing-programmatically.cs](./load-a-calendar-entry-from-an-msg-file-into-memory-for-further-processing-programmatically.cs) | load a calendar entry from an msg file into memory for further processing programmatically |
+| [load-a-notes-document-by-its-unid-employing-the-notesdocument-class-to-read-the-provided-msg-file.cs](./load-a-notes-document-by-its-unid-employing-the-notesdocument-class-to-read-the-provided-msg-file.cs) | load a notes document by its unid employing the notesdocument class to read the provided msg file |
 | [load-a-notes-document-from-an-msg-file-using-its-unid-identifier-ensuring-accurate-retrieval-of-content.cs](./load-a-notes-document-from-an-msg-file-using-its-unid-identifier-ensuring-accurate-retrieval-of-content.cs) | load a notes document from an msg file using its unid identifier ensuring accurate retrieval of content |
+| [load-an-agent-using-an-msg-file-as-input-parsing-the-message-content-into-the-appropriate-object-model.cs](./load-an-agent-using-an-msg-file-as-input-parsing-the-message-content-into-the-appropriate-object-model.cs) | load an agent using an msg file as input parsing the message content into the appropriate object model |
 | [load-an-existing-ibm-notes-database-from-an-msg-file-into-application-memory-for-processing.cs](./load-an-existing-ibm-notes-database-from-an-msg-file-into-application-memory-for-processing.cs) | load an existing ibm notes database from an msg file into application memory for processing |
+| [load-an-msg-file-into-a-view-object-enabling-programmatic-access-to-its-contents-and-properties.cs](./load-an-msg-file-into-a-view-object-enabling-programmatic-access-to-its-contents-and-properties.cs) | load an msg file into a view object enabling programmatic access to its contents and properties |
+| [load-and-parse-an-msg-attachment-to-access-its-message-properties-and-content-programmatically.cs](./load-and-parse-an-msg-attachment-to-access-its-message-properties-and-content-programmatically.cs) | load and parse an msg attachment to access its message properties and content programmatically |
+| [parse-the-msg-file-to-programmatically-extract-its-rich-text-body-content-for-subsequent-processing.cs](./parse-the-msg-file-to-programmatically-extract-its-rich-text-body-content-for-subsequent-processing.cs) | parse the msg file to programmatically extract its rich text body content for subsequent processing |
 | [persist-modifications-to-the-database-and-generate-an-msg-file-containing-the-updated-information.cs](./persist-modifications-to-the-database-and-generate-an-msg-file-containing-the-updated-information.cs) | persist modifications to the database and generate an msg file containing the updated information |
+| [process-and-modify-rich-text-content-in-ibm-notes-msg-files-utilizing-the-notesrichtext-class.cs](./process-and-modify-rich-text-content-in-ibm-notes-msg-files-utilizing-the-notesrichtext-class.cs) | process and modify rich text content in ibm notes msg files utilizing the notesrichtext class |
+| [programmatically-add-a-new-attachment-to-an-email-message-using-an-input-msg-file.cs](./programmatically-add-a-new-attachment-to-an-email-message-using-an-input-msg-file.cs) | programmatically add a new attachment to an email message using an input msg file |
+| [read-a-contact-from-an-msg-file-into-an-object-model-for-subsequent-processing.cs](./read-a-contact-from-an-msg-file-into-an-object-model-for-subsequent-processing.cs) | read a contact from an msg file into an object model for subsequent processing |
+| [read-and-parse-an-input-msg-file-to-instantiate-the-corresponding-task-object-in-memory.cs](./read-and-parse-an-input-msg-file-to-instantiate-the-corresponding-task-object-in-memory.cs) | read and parse an input msg file to instantiate the corresponding task object in memory |
+| [read-and-parse-an-msg-file-to-access-its-form-data-within-the-application.cs](./read-and-parse-an-msg-file-to-access-its-form-data-within-the-application.cs) | read and parse an msg file to access its form data within the application |
+| [read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs](./read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs) | read and parse an msg file to instantiate a mail message object for processing |
+| [read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs](./read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs) | read replication settings from an msg file and map them to the appropriate configuration objects |
+| [when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs](./when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs) | when saving the parent msg file attachments are automatically persisted within the resulting output message file |
 
 ## Category Statistics
-- Total examples: 4
+- Total examples: 28
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -44,5 +74,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-27 | `20260327_202248` | [examples/batch-20260327_202248](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260327_202248) |
+| 2026-03-27 | `20260327_203116` | [examples/batch-20260327_203116](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260327_203116) |
 <!-- AUTOGENERATED:END -->

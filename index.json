@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 465,
+  "total_examples": 489,
   "total_categories": 13,
   "last_updated": "2026-03-27",
   "categories": [
@@ -668,40 +668,88 @@
     },
     {
       "name": "working-with-ibm-notes",
-      "file_count": 4,
+      "file_count": 28,
       "files": [
+        "add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs",
+        "configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs",
+        "construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs",
+        "generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs",
+        "generate-a-new-contact-entry-by-processing-an-input-msg-file-and-extracting-its-contact-details.cs",
         "generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs",
+        "generate-a-new-notes-document-using-an-msg-file-as-input-preserving-the-message-content-and-metadata.cs",
+        "generate-a-new-task-object-based-on-the-provided-input-message-msg-for-subsequent-processing.cs",
+        "generate-a-rich-text-rtf-file-from-an-input-msg-email-message-while-preserving-formatting.cs",
+        "implement-a-user-interface-view-that-accepts-msg-files-as-input-for-processing-and-display.cs",
+        "implement-an-agent-that-accepts-a-msg-object-as-input-and-processes-it-according-to-defined-business-logic.cs",
+        "load-a-calendar-entry-from-an-msg-file-into-memory-for-further-processing-programmatically.cs",
+        "load-a-notes-document-by-its-unid-employing-the-notesdocument-class-to-read-the-provided-msg-file.cs",
         "load-a-notes-document-from-an-msg-file-using-its-unid-identifier-ensuring-accurate-retrieval-of-content.cs",
+        "load-an-agent-using-an-msg-file-as-input-parsing-the-message-content-into-the-appropriate-object-model.cs",
         "load-an-existing-ibm-notes-database-from-an-msg-file-into-application-memory-for-processing.cs",
-        "persist-modifications-to-the-database-and-generate-an-msg-file-containing-the-updated-information.cs"
+        "load-an-msg-file-into-a-view-object-enabling-programmatic-access-to-its-contents-and-properties.cs",
+        "load-and-parse-an-msg-attachment-to-access-its-message-properties-and-content-programmatically.cs",
+        "parse-the-msg-file-to-programmatically-extract-its-rich-text-body-content-for-subsequent-processing.cs",
+        "persist-modifications-to-the-database-and-generate-an-msg-file-containing-the-updated-information.cs",
+        "process-and-modify-rich-text-content-in-ibm-notes-msg-files-utilizing-the-notesrichtext-class.cs",
+        "programmatically-add-a-new-attachment-to-an-email-message-using-an-input-msg-file.cs",
+        "read-a-contact-from-an-msg-file-into-an-object-model-for-subsequent-processing.cs",
+        "read-and-parse-an-input-msg-file-to-instantiate-the-corresponding-task-object-in-memory.cs",
+        "read-and-parse-an-msg-file-to-access-its-form-data-within-the-application.cs",
+        "read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs",
+        "read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs",
+        "when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 4
+          "count": 28
         },
         {
           "name": "System.IO",
-          "count": 4
-        },
-        {
-          "name": "Aspose.Email",
-          "count": 4
+          "count": 28
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 3
+          "count": 27
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 26
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
+          "name": "System.Net",
+          "count": 1
+        },
+        {
+          "name": "System.Threading",
+          "count": 1
+        },
+        {
+          "name": "System.Threading.Tasks",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 1
         },
         {
           "name": "Aspose.Email.Storage.Nsf",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients",
+          "name": "Aspose.Email.Clients.Graph",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients.Graph",
+          "name": "System.Text",
+          "count": 1
+        },
+        {
+          "name": "System.Collections.Generic",
           "count": 1
         }
       ],
