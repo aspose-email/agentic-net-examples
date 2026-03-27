@@ -5,12 +5,12 @@ using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             // Path to the MBOX file
-            string mboxPath = "archive.mbox";
+            string mboxPath = "storage.mbox";
 
             // Verify that the MBOX file exists
             if (!File.Exists(mboxPath))
@@ -19,42 +19,27 @@ class Program
                 return;
             }
 
-            // List of message IDs to retrieve
-            string[] messageIds = new string[] { "id1", "id2" };
+            // Unique identifiers of the messages to retrieve
+            string[] targetIds = new string[] { "id1", "id2" };
 
             // Create the MBOX reader
-            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                foreach (string id in messageIds)
+                foreach (string id in targetIds)
                 {
                     try
                     {
                         // Extract the message by its unique identifier
-                        MailMessage message = mbox.ExtractMessage(id, new EmlLoadOptions());
-
-                        // Ensure the MailMessage is disposed after processing
-                        using (message)
+                        using (MailMessage mail = mboxReader.ExtractMessage(id, new EmlLoadOptions()))
                         {
-                            // Example processing: output the subject
-                            Console.WriteLine($"Subject: {message.Subject}");
-
-                            // Save the extracted message to an .eml file
-                            string safeSubject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
-                            string fileName = $"{safeSubject}_{id}.eml";
-
-                            try
-                            {
-                                message.Save(fileName, SaveOptions.DefaultEml);
-                            }
-                            catch (Exception saveEx)
-                            {
-                                Console.Error.WriteLine($"Failed to save message {id}: {saveEx.Message}");
-                            }
+                            Console.WriteLine($"Subject: {mail.Subject}");
+                            Console.WriteLine($"From: {mail.From}");
+                            // Additional processing can be performed here
                         }
                     }
-                    catch (Exception extractEx)
+                    catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to extract message with ID {id}: {extractEx.Message}");
+                        Console.Error.WriteLine($"Failed to extract message with ID '{id}': {ex.Message}");
                     }
                 }
             }

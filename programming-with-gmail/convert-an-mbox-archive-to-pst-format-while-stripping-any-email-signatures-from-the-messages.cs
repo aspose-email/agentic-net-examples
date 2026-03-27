@@ -6,7 +6,7 @@ using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
@@ -24,17 +24,28 @@ class Program
             string pstDirectory = Path.GetDirectoryName(pstPath);
             if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
-                Directory.CreateDirectory(pstDirectory);
+                try
+                {
+                    Directory.CreateDirectory(pstDirectory);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
             }
 
             // Set conversion options to remove signatures
-            MboxToPstConversionOptions options = new MboxToPstConversionOptions();
-            options.RemoveSignature = true;
+            MboxToPstConversionOptions options = new MboxToPstConversionOptions
+            {
+                RemoveSignature = true
+            };
 
             // Perform conversion
             using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath, options))
             {
-                Console.WriteLine("MBOX to PST conversion completed successfully.");
+                // Conversion completed; pst will be disposed automatically
+                Console.WriteLine("MBOX successfully converted to PST with signatures removed.");
             }
         }
         catch (Exception ex)

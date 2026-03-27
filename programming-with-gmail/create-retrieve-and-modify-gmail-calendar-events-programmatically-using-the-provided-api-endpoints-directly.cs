@@ -1,74 +1,88 @@
 using System;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
 using Aspose.Email.Calendar;
-using System.Collections.Generic;
+using Aspose.Email.Clients.Google;
 
-namespace GmailCalendarSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Initialize Gmail client with placeholder credentials
-                string clientId = "YOUR_CLIENT_ID";
-                string clientSecret = "YOUR_CLIENT_SECRET";
-                string refreshToken = "YOUR_REFRESH_TOKEN";
-                string userEmail = "user@example.com";
+            // Initialize Gmail client with dummy OAuth credentials
+            IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com");
 
-                using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail))
+            using (gmailClient)
+            {
+                // ----- Create a new calendar -----
+                Calendar newCalendar = new Calendar("Sample Calendar");
+                string calendarId = gmailClient.CreateCalendar(newCalendar);
+                // Store the identifier in the calendar object for later use
+                newCalendar.Id = calendarId;
+
+                Console.WriteLine($"Created calendar with Id: {calendarId}");
+
+                // ----- List existing calendars -----
+                Calendar[] calendars = gmailClient.ListCalendars();
+                Console.WriteLine("Existing calendars:");
+                foreach (Calendar cal in calendars)
                 {
-                    // Ensure we have at least one calendar; create one if none exist
-                    Calendar[] calendars = gmailClient.ListCalendars();
-                    string calendarId;
-                    if (calendars != null && calendars.Length > 0)
-                    {
-                        calendarId = calendars[0].Id;
-                    }
-                    else
-                    {
-                        Calendar newCalendar = new Calendar("Sample Calendar");
-                        calendarId = gmailClient.CreateCalendar(newCalendar);
-                    }
-
-                    // Prepare attendees for the appointment
-                    MailAddressCollection attendees = new MailAddressCollection();
-                    attendees.Add(new MailAddress("attendee1@example.com"));
-                    attendees.Add(new MailAddress("attendee2@example.com"));
-
-                    // Create a new appointment
-                    Appointment newAppointment = new Appointment(
-                        "Team Sync",
-                        new DateTime(2024, 5, 20, 10, 0, 0),
-                        new DateTime(2024, 5, 20, 11, 0, 0),
-                        new MailAddress(userEmail),
-                        attendees);
-                    newAppointment.Description = "Weekly team synchronization meeting.";
-                    newAppointment.Location = "Conference Room A";
-
-                    // Create the appointment in the selected calendar
-                    Appointment createdAppointment = gmailClient.CreateAppointment(calendarId, newAppointment);
-                    Console.WriteLine("Created Appointment ID: " + createdAppointment.UniqueId);
-
-                    // Retrieve the appointment back from Google Calendar
-                    Appointment fetchedAppointment = gmailClient.FetchAppointment(calendarId, createdAppointment.UniqueId);
-                    Console.WriteLine("Fetched Appointment Summary: " + fetchedAppointment.Summary);
-                    Console.WriteLine("Fetched Appointment Start: " + fetchedAppointment.StartDate);
-                    Console.WriteLine("Fetched Appointment End: " + fetchedAppointment.EndDate);
-
-                    // Modify the appointment (e.g., change the summary)
-                    fetchedAppointment.Summary = "Team Sync - Updated";
-                    Appointment updatedAppointment = gmailClient.UpdateAppointment(calendarId, fetchedAppointment);
-                    Console.WriteLine("Updated Appointment Summary: " + updatedAppointment.Summary);
+                    Console.WriteLine($"- {cal.Summary} (Id: {cal.Id})");
                 }
+
+                // ----- Prepare attendees for the appointment -----
+                MailAddressCollection attendees = new MailAddressCollection();
+                attendees.Add(new MailAddress("attendee1@example.com"));
+                attendees.Add(new MailAddress("attendee2@example.com"));
+
+                // ----- Create a new appointment -----
+                Appointment appointment = new Appointment(
+                    "Team Meeting",                     // summary
+                    "Discuss project status",           // description
+                    "Conference Room A",                // location
+                    DateTime.Now.AddHours(1),           // start time
+                    DateTime.Now.AddHours(2),           // end time
+                    new MailAddress("organizer@example.com"),
+                    attendees);
+
+                Appointment createdAppointment = gmailClient.CreateAppointment(calendarId, appointment);
+                Console.WriteLine($"Created appointment with Id: {createdAppointment.UniqueId}");
+
+                // ----- List appointments in the calendar -----
+                Appointment[] appointments = gmailClient.ListAppointments(calendarId);
+                Console.WriteLine("Appointments in the calendar:");
+                foreach (Appointment appt in appointments)
+                {
+                    Console.WriteLine($"- {appt.Summary} (Id: {appt.UniqueId})");
+                }
+
+                // ----- Fetch the created appointment -----
+                Appointment fetchedAppointment = gmailClient.FetchAppointment(calendarId, createdAppointment.UniqueId);
+                Console.WriteLine($"Fetched appointment: {fetchedAppointment.Summary} at {fetchedAppointment.StartDate}");
+
+                // ----- Update the appointment -----
+                fetchedAppointment.Summary = "Updated Team Meeting";
+                fetchedAppointment.Location = "Conference Room B";
+                Appointment updatedAppointment = gmailClient.UpdateAppointment(calendarId, fetchedAppointment);
+                Console.WriteLine($"Updated appointment summary: {updatedAppointment.Summary}, location: {updatedAppointment.Location}");
+
+                // ----- Delete the appointment -----
+                gmailClient.DeleteAppointment(calendarId, updatedAppointment.UniqueId);
+                Console.WriteLine("Deleted the appointment.");
+
+                // ----- Delete the calendar -----
+                gmailClient.DeleteCalendar(calendarId);
+                Console.WriteLine("Deleted the calendar.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

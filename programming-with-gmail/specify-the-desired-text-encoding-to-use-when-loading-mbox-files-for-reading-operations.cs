@@ -1,9 +1,7 @@
-using Aspose.Email.Storage.Pst;
 using System;
 using System.IO;
 using System.Text;
 using Aspose.Email;
-using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
 
 class Program
@@ -14,30 +12,28 @@ class Program
         {
             string mboxPath = "sample.mbox";
 
+            // Guard against missing file
             if (!File.Exists(mboxPath))
             {
                 Console.Error.WriteLine($"Error: File not found – {mboxPath}");
                 return;
             }
 
-            // Set global load options for MBOX parsing
-            MailStorageConverter.MboxMessageOptions = new EmlLoadOptions
-            {
-                PreferredTextEncoding = Encoding.UTF8
-            };
+            // Specify the desired text encoding for loading MBOX messages
+            MboxLoadOptions loadOptions = new MboxLoadOptions();
+            loadOptions.PreferredTextEncoding = Encoding.UTF8;
 
-            // Create a reader with specific load options
-            using (FileStream fileStream = File.OpenRead(mboxPath))
+            // Open the MBOX file with the specified options
+            using (MboxrdStorageReader reader = new MboxrdStorageReader(mboxPath, loadOptions))
             {
-                MboxLoadOptions loadOptions = new MboxLoadOptions
+                MailMessage message;
+                // Read messages sequentially until none are left
+                while ((message = reader.ReadNextMessage()) != null)
                 {
-                    PreferredTextEncoding = Encoding.UTF8
-                };
-
-                using (MboxStorageReader reader = MboxStorageReader.CreateReader(fileStream, loadOptions))
-                {
-                    // Reader is ready to read messages with UTF-8 encoding
-                    Console.WriteLine("MBOX file opened with UTF-8 encoding.");
+                    using (message)
+                    {
+                        Console.WriteLine($"Subject: {message.Subject}");
+                    }
                 }
             }
         }

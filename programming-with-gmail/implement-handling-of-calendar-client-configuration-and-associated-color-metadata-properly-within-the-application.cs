@@ -2,53 +2,73 @@ using System;
 using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients.Google;
+using Aspose.Email.Calendar;
 
-class Program
+namespace AsposeEmailGmailSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Initialize Gmail client with placeholder credentials
-            string clientId = "YOUR_CLIENT_ID";
-            string clientSecret = "YOUR_CLIENT_SECRET";
-            string refreshToken = "YOUR_REFRESH_TOKEN";
-            string userEmail = "user@example.com";
-
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail))
+            // Top-level exception guard
+            try
             {
-                // Retrieve calendar color information
-                IDictionary<string, string> colors = gmailClient.GetColors() as IDictionary<string, string>;
-
-                Console.WriteLine("Calendar Colors:");
-                if (colors != null)
+                // Initialize Gmail client with dummy OAuth token and default email
+                using (IGmailClient gmailClient = GmailClient.GetInstance(
+                    accessToken: "dummy_access_token",
+                    defaultEmail: "user@example.com"))
                 {
-                    foreach (KeyValuePair<string, string> entry in colors)
+                    // Retrieve and display color information
+                    try
                     {
-                        Console.WriteLine($"{entry.Key}: {entry.Value}");
+                        ColorsInfo colorsInfo = gmailClient.GetColors();
+                        // ColorsInfo may contain a collection of colors; display its string representation
+                        Console.WriteLine("Colors Info: " + (colorsInfo?.ToString() ?? "No colors returned"));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("Error retrieving colors: " + ex.Message);
+                    }
+
+                    // List messages in the mailbox and display their subjects
+                    try
+                    {
+                        List<GmailMessageInfo> messages = gmailClient.ListMessages();
+                        Console.WriteLine($"Total messages: {messages?.Count ?? 0}");
+                        foreach (GmailMessageInfo msgInfo in messages)
+                        {
+                            // Fetch the full message to access the subject
+                            MailMessage fullMessage = gmailClient.FetchMessage(msgInfo.Id);
+                            Console.WriteLine("Subject: " + (fullMessage?.Subject ?? "(no subject)"));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("Error listing messages: " + ex.Message);
+                    }
+
+                    // List appointments for a specific calendar (using "primary" as a placeholder)
+                    try
+                    {
+                        string calendarId = "primary";
+                        Appointment[] appointments = gmailClient.ListAppointments(calendarId);
+                        Console.WriteLine($"Total appointments in calendar '{calendarId}': {appointments?.Length ?? 0}");
+                        foreach (Appointment appt in appointments)
+                        {
+                            Console.WriteLine("Appointment Summary: " + (appt?.Summary ?? "(no summary)"));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("Error listing appointments: " + ex.Message);
                     }
                 }
-                else
-                {
-                    Console.WriteLine("No color information returned.");
-                }
-
-                // Fetch a specific calendar (using "primary" as an example identifier)
-                string calendarId = "primary";
-                ExtendedCalendar calendar = gmailClient.FetchCalendar(calendarId);
-
-                Console.WriteLine($"Fetched Calendar ID: {calendar.Id}");
-                Console.WriteLine($"Summary: {calendar.Summary}");
-
-                // Example of updating the calendar's color (placeholder color ID)
-                // Uncomment and adjust the color ID as needed
-                // calendar.ColorId = "9";
-                // gmailClient.UpdateCalendar(calendar);
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                // Global exception handling
+                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            }
         }
     }
 }

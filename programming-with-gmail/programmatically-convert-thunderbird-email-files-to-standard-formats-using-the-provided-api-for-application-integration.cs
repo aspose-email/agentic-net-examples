@@ -1,41 +1,43 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Storage;
+using Aspose.Email.Storage.Pst;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Paths for the source Thunderbird MBOX file and the target PST file
+            string mboxPath = "input.mbox";
+            string pstPath = "output.pst";
+
+            // Verify that the source MBOX file exists
+            if (!File.Exists(mboxPath))
             {
-                // Input Thunderbird email file (EML format)
-                string inputFilePath = "sample.eml";
-                // Desired output file (MSG format)
-                string outputFilePath = "sample.msg";
-
-                // Verify that the input file exists
-                if (!File.Exists(inputFilePath))
-                {
-                    Console.Error.WriteLine($"Error: File not found – {inputFilePath}");
-                    return;
-                }
-
-                // Load the EML file into a MailMessage object and save it as MSG
-                using (MailMessage mailMessage = MailMessage.Load(inputFilePath))
-                {
-                    // Save the message using the default MSG save options
-                    mailMessage.Save(outputFilePath, SaveOptions.DefaultMsg);
-                }
-
-                Console.WriteLine("Conversion completed successfully.");
+                Console.Error.WriteLine($"Error: File not found – {mboxPath}");
+                return;
             }
-            catch (Exception ex)
+
+            // Ensure the directory for the PST file exists
+            string pstDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
-                // Handle any unexpected errors gracefully
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Directory.CreateDirectory(pstDirectory);
             }
+
+            // Perform the conversion from MBOX to PST
+            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath))
+            {
+                Console.WriteLine("MBOX to PST conversion completed successfully.");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Global exception handling
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

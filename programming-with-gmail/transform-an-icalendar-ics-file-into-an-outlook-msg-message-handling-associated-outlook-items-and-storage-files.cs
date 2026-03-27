@@ -10,30 +10,31 @@ class Program
     {
         try
         {
-            string icsPath = "calendar.ics";
-            string msgPath = "message.msg";
+            // Input iCalendar file path
+            string icsPath = "sample.ics";
 
+            // Verify the input file exists
             if (!File.Exists(icsPath))
             {
                 Console.Error.WriteLine($"Error: File not found – {icsPath}");
                 return;
             }
 
+            // Output Outlook MSG file path
+            string msgPath = "sample.msg";
+
             try
             {
                 // Load the iCalendar file into an Appointment object
                 Appointment appointment = Appointment.Load(icsPath);
 
-                // Convert the Appointment to a MAPI message
-                MapiMessage mapiMessage = appointment.ToMapiMessage();
-
-                // Save the MAPI message as an Outlook MSG file
-                using (mapiMessage)
+                // Convert the Appointment to a MapiMessage
+                using (MapiMessage mapiMessage = appointment.ToMapiMessage())
                 {
+                    // Save the MapiMessage as an Outlook MSG file
                     mapiMessage.Save(msgPath);
+                    Console.WriteLine($"MSG file saved to {msgPath}");
                 }
-
-                Console.WriteLine($"Successfully converted '{icsPath}' to '{msgPath}'.");
             }
             catch (Exception ex)
             {

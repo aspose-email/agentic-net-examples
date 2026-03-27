@@ -1,47 +1,44 @@
 using System;
 using System.Net;
-using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-namespace Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Initialize Gmail client with dummy OAuth credentials
+            IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com");
+
+            using (gmailClient)
             {
-                // Placeholder credentials – replace with real values.
-                string accessToken = "YOUR_ACCESS_TOKEN";
-                string defaultEmail = "user@example.com";
+                // Retrieve current configuration
+                string accessToken = gmailClient.AccessToken;
+                string defaultEmail = gmailClient.DefaultEmail;
+                int timeout = gmailClient.Timeout;
 
-                // Create Gmail client instance.
-                using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
-                {
-                    // Retrieve current configuration settings.
-                    string currentToken = gmailClient.AccessToken;
-                    int currentTimeout = gmailClient.Timeout;
-                    IWebProxy currentProxy = gmailClient.Proxy;
+                Console.WriteLine($"Access Token: {accessToken}");
+                Console.WriteLine($"Default Email: {defaultEmail}");
+                Console.WriteLine($"Timeout (ms): {timeout}");
 
-                    Console.WriteLine("Current Access Token: " + currentToken);
-                    Console.WriteLine("Current Timeout (ms): " + currentTimeout);
-                    Console.WriteLine("Current Proxy: " + (currentProxy?.GetProxy(new Uri("https://gmail.com"))?.ToString() ?? "None"));
+                // Modify configuration: increase timeout and set a proxy
+                gmailClient.Timeout = 200000; // 200 seconds
 
-                    // Modify configuration settings.
-                    gmailClient.AccessToken = "NEW_ACCESS_TOKEN";
-                    gmailClient.Timeout = 200000; // 200 seconds
-                    gmailClient.Proxy = new WebProxy("http://proxy.example.com:8080");
+                WebProxy proxy = new WebProxy("http://proxy.example.com:8080");
+                gmailClient.Proxy = proxy;
 
-                    // Verify updated configuration.
-                    Console.WriteLine("Updated Access Token: " + gmailClient.AccessToken);
-                    Console.WriteLine("Updated Timeout (ms): " + gmailClient.Timeout);
-                    Console.WriteLine("Updated Proxy: " + (gmailClient.Proxy?.GetProxy(new Uri("https://gmail.com"))?.ToString() ?? "None"));
-                }
+                Console.WriteLine("Modified Timeout and Proxy settings applied.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

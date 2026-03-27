@@ -1,41 +1,30 @@
-using System.Collections.Generic;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
-namespace AsposeEmailMboxCount
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        List<MailMessage> messages = new List<MailMessage>();
+            string mboxFilePath = "sample.mbox";
 
-            try
+            if (!File.Exists(mboxFilePath))
             {
-                // Path to the MBOX file
-                string mboxFilePath = "storage.mbox";
-
-                // Verify that the file exists before attempting to read it
-                if (!File.Exists(mboxFilePath))
-                {
-                    Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
-                    return;
-                }
-
-                // Create a reader for the MBOX file and retrieve the total message count
-                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
-                {
-                    int totalMessages = mboxReader.GetTotalItemsCount();
-                    Console.WriteLine($"Total messages in the MBOX file: {totalMessages}");
-                }
+                Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
+                return;
             }
-            catch (Exception ex)
+
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
             {
-                // Output any unexpected errors to the error console
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                int totalCount = reader.GetTotalItemsCount();
+                Console.WriteLine($"Total messages in MBOX: {totalCount}");
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

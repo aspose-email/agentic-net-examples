@@ -3,8 +3,8 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 392,
-  "total_categories": 10,
+  "total_examples": 398,
+  "total_categories": 11,
   "last_updated": "2026-03-27",
   "categories": [
     {
@@ -105,6 +105,32 @@
       "key_apis": []
     },
     {
+      "name": "general",
+      "file_count": 1,
+      "files": [
+        "generate-email-from-mudassir-and-sent-to-test-subject-test-email-body-hello.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
       "name": "programming-email-verification",
       "file_count": 24,
       "files": [
@@ -163,7 +189,7 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 43,
+      "file_count": 48,
       "files": [
         "access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs",
         "add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs",
@@ -188,9 +214,14 @@
         "implement-functionality-to-relocate-and-remove-calendar-events-within-a-google-calendar-using-the-api.cs",
         "implement-functionality-to-split-an-mbox-storage-file-into-separate-messages-and-provide-the-ability-to-abort-the-splitting-process.cs",
         "implement-handling-of-calendar-client-configuration-and-associated-color-metadata-properly-within-the-application.cs",
+        "implement-oauth-2-0-authentication-flow-utilizing-the-googleoauthhelper-class-to-obtain-valid-access-tokens.cs",
         "implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs",
+        "implement-secure-google-oauth-2-0-authentication-flow-ensuring-token-handling-and-data-transmission-meet-industry-standards.cs",
+        "initialize-a-new-cloud-console-project-by-configuring-the-required-settings-and-enabling-necessary-apis.cs",
+        "navigate-to-https-cloud-google-com-console-project-and-authenticate-with-your-gmail-account-credentials-to-access-the-console.cs",
         "navigate-to-the-given-url-complete-all-required-actions-and-retrieve-the-resulting-authorization-code.cs",
         "obtain-the-color-attributes-embedded-within-an-email-content-for-processing-or-analysis-programmatically.cs",
+        "parse-mbox-files-to-retrieve-email-messages-and-their-metadata-programmatically-for-further-processing.cs",
         "perform-a-freebusy-query-against-google-calendar-to-retrieve-availability-information-for-specified-users-and-time-range.cs",
         "perform-google-calendar-operations-through-the-gmail-client-api-enabling-creation-retrieval-and-modification-of-events.cs",
         "perform-oauth-2-0-authentication-using-the-tokenresponse-class-and-configure-the-client-for-subsequent-api-requests.cs",
@@ -212,55 +243,63 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 43
+          "count": 48
         },
         {
           "name": "Aspose.Email",
-          "count": 38
-        },
-        {
-          "name": "System.IO",
-          "count": 18
-        },
-        {
-          "name": "Aspose.Email.Clients.Google",
-          "count": 18
-        },
-        {
-          "name": "Aspose.Email.Calendar",
-          "count": 12
+          "count": 41
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 11
+          "count": 26
         },
         {
-          "name": "System.Collections.Generic",
-          "count": 8
+          "name": "Aspose.Email.Clients.Google",
+          "count": 23
         },
         {
-          "name": "Aspose.Email.Storage.Pst",
-          "count": 6
+          "name": "System.IO",
+          "count": 17
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 13
         },
         {
           "name": "Aspose.Email.Storage.Mbox",
-          "count": 6
+          "count": 8
         },
         {
           "name": "Aspose.Email.Storage",
-          "count": 5
+          "count": 7
         },
         {
-          "name": "Aspose.Email.Mapi",
-          "count": 5
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 7
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 4
         },
         {
           "name": "System.Net",
           "count": 3
         },
         {
-          "name": "Aspose.Email.Clients.Smtp",
+          "name": "Aspose.Email.Mapi",
           "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 2
+        },
+        {
+          "name": "System.Net.Http",
+          "count": 2
         },
         {
           "name": "System.Threading.Tasks",
@@ -271,19 +310,15 @@
           "count": 2
         },
         {
-          "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 1
-        },
-        {
           "name": "Aspose.Email.Clients.Exchange",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Calendar.Recurrences",
+          "name": "Aspose.Email.Clients.Exchange.WebService",
           "count": 1
         },
         {
-          "name": "System.Net.Http",
+          "name": "Aspose.Email.Calendar.Recurrences",
           "count": 1
         },
         {

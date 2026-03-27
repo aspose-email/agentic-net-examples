@@ -1,5 +1,5 @@
 using System;
-using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
 class Program
@@ -8,37 +8,34 @@ class Program
     {
         try
         {
-            // Initialize the Gmail client (replace placeholders with real credentials)
-            string clientId = "YOUR_CLIENT_ID";
-            string clientSecret = "YOUR_CLIENT_SECRET";
-            string refreshToken = "YOUR_REFRESH_TOKEN";
-            string userEmail = "user@example.com";
+            // Initialize Gmail client with dummy credentials
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string defaultEmail = "user@example.com";
 
-            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail);
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
 
-            // Calendars that should be removed
-            string[] targetCalendarNames = new string[] { "Test Calendar", "Old Calendar" };
+            // IDs of calendars that should be permanently removed
+            string[] calendarsToDelete = new string[] { "calendarId1", "calendarId2" };
 
-            // Retrieve all calendars for the user
-            Aspose.Email.Clients.Google.Calendar[] calendars = gmailClient.ListCalendars();
-
-            foreach (Aspose.Email.Clients.Google.Calendar calendar in calendars)
+            foreach (string calendarId in calendarsToDelete)
             {
-                foreach (string targetName in targetCalendarNames)
+                try
                 {
-                    if (calendar.Summary.Equals(targetName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Permanently delete the matching calendar
-                        gmailClient.DeleteCalendar(calendar.Id);
-                        Console.WriteLine($"Deleted calendar: {calendar.Summary} (Id: {calendar.Id})");
-                        break;
-                    }
+                    // Delete the calendar permanently
+                    gmailClient.DeleteCalendar(calendarId);
+                    Console.WriteLine($"Deleted calendar with ID: {calendarId}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to delete calendar '{calendarId}': {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
 class Program
@@ -8,16 +9,16 @@ class Program
     {
         try
         {
-            // OAuth 2.0 credentials
+            // OAuth 2.0 credentials (replace with real values)
             string clientId = "your-client-id";
             string clientSecret = "your-client-secret";
             string refreshToken = "your-refresh-token";
             string defaultEmail = "user@example.com";
 
+            // Create Gmail client instance safely
             IGmailClient gmailClient = null;
             try
             {
-                // Create Gmail client instance
                 gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
             }
             catch (Exception ex)
@@ -26,28 +27,23 @@ class Program
                 return;
             }
 
+            // Ensure the client is disposed properly
             using (gmailClient)
             {
-                // List messages (IDs only)
-                var messages = gmailClient.ListMessages();
-                foreach (GmailMessageInfo messageInfo in messages)
+                try
                 {
-                    MailMessage fullMessage = null;
-                    try
+                    // List messages in the mailbox
+                    var messages = gmailClient.ListMessages();
+                    foreach (GmailMessageInfo messageInfo in messages)
                     {
-                        // Fetch full message to access subject
-                        fullMessage = gmailClient.FetchMessage(messageInfo.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to fetch message {messageInfo.Id}: {ex.Message}");
-                        continue;
-                    }
-
-                    using (fullMessage)
-                    {
+                        // Fetch the full message to access its properties
+                        MailMessage fullMessage = gmailClient.FetchMessage(messageInfo.Id);
                         Console.WriteLine($"Subject: {fullMessage.Subject}");
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during Gmail operations: {ex.Message}");
                 }
             }
         }

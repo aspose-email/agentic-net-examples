@@ -1,5 +1,6 @@
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 using Aspose.Email.Calendar;
 
@@ -9,52 +10,51 @@ class Program
     {
         try
         {
-            // Initialize Gmail client (replace placeholders with real credentials)
+            // Initialize Gmail client with dummy credentials
             IGmailClient gmailClient = GmailClient.GetInstance(
-                clientId: "YOUR_CLIENT_ID",
-                clientSecret: "YOUR_CLIENT_SECRET",
-                refreshToken: "YOUR_REFRESH_TOKEN",
-                defaultEmail: "your.email@example.com");
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com");
 
-            // Use the client within a using block to ensure disposal
-            using (gmailClient)
+            try
             {
-                try
+                // Create a new calendar
+                Calendar calendar = new Calendar("Sample Calendar");
+                string calendarId = gmailClient.CreateCalendar(calendar);
+
+                // Prepare attendees
+                MailAddressCollection attendees = new MailAddressCollection();
+                attendees.Add(new MailAddress("alice@example.com"));
+                attendees.Add(new MailAddress("bob@example.com"));
+
+                // Create an appointment
+                Appointment appointment = new Appointment(
+                    "Conference Room A",
+                    new DateTime(2024, 5, 20, 10, 0, 0),
+                    new DateTime(2024, 5, 20, 11, 0, 0),
+                    new MailAddress("organizer@example.com"),
+                    attendees);
+                appointment.Summary = "Project Kickoff";
+                appointment.Description = "Discuss project goals and timelines.";
+
+                // Insert the appointment into the created calendar
+                Appointment createdAppointment = gmailClient.CreateAppointment(calendarId, appointment);
+
+                Console.WriteLine("Appointment created with ID: " + createdAppointment.UniqueId);
+            }
+            finally
+            {
+                // Ensure the client is disposed
+                if (gmailClient is IDisposable disposableClient)
                 {
-                    // Calendar identifier (replace with actual calendar ID)
-                    string calendarId = "primary";
-
-                    // Prepare attendees
-                    MailAddressCollection attendees = new MailAddressCollection();
-                    attendees.Add(new MailAddress("person1@example.com"));
-                    attendees.Add(new MailAddress("person2@example.com"));
-                    attendees.Add(new MailAddress("person3@example.com"));
-
-                    // Create an appointment
-                    Appointment appointment = new Appointment(
-                        location: "Conference Room 1",
-                        startDate: new DateTime(2024, 12, 15, 10, 0, 0),
-                        endDate: new DateTime(2024, 12, 15, 11, 0, 0),
-                        organizer: new MailAddress("organizer@example.com"),
-                        attendees: attendees);
-
-                    appointment.Summary = "Project Kickoff Meeting";
-                    appointment.Description = "Discuss project goals, timeline, and responsibilities.";
-
-                    // Insert the appointment into the specified Google Calendar
-                    Appointment created = gmailClient.CreateAppointment(calendarId, appointment);
-                    Console.WriteLine("Appointment created with ID: " + created.UniqueId);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Gmail operation failed: " + ex.Message);
-                    return;
+                    disposableClient.Dispose();
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

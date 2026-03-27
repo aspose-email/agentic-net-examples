@@ -1,18 +1,20 @@
 using System;
-using System.Collections.Generic;
+using System.Net.Http;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-namespace AsposeEmailGmailSample
+namespace AsposeEmailSample
 {
+    // Handles Gmail OAuth authentication, token refresh, and user profile retrieval.
     public class GoogleUser : IDisposable
     {
+        private readonly IGmailClient _gmailClient;
         private readonly string _clientId;
         private readonly string _clientSecret;
         private readonly string _refreshToken;
         private readonly string _defaultEmail;
-        private IGmailClient _gmailClient;
+        private bool _disposed;
 
         public GoogleUser(string clientId, string clientSecret, string refreshToken, string defaultEmail)
         {
@@ -20,109 +22,79 @@ namespace AsposeEmailGmailSample
             _clientSecret = clientSecret;
             _refreshToken = refreshToken;
             _defaultEmail = defaultEmail;
+
+            // Create Gmail client instance using OAuth credentials.
+            _gmailClient = GmailClient.GetInstance(_clientId, _clientSecret, _refreshToken, _defaultEmail);
         }
 
-        public bool Authenticate()
+        // Refreshes the access token using the Gmail client.
+        public void RefreshAccessToken()
         {
-            try
-            {
-                // Acquire a token provider for Google (not directly used here but shown for completeness)
-                Aspose.Email.Clients.TokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Google.GetInstance(_clientId, _clientSecret, _refreshToken);
-
-                // Create Gmail client instance using the refresh token flow
-                _gmailClient = GmailClient.GetInstance(_clientId, _clientSecret, _refreshToken, _defaultEmail);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Authentication failed: " + ex.Message);
-                return false;
-            }
+            _gmailClient.RefreshToken();
         }
 
-        public void RefreshToken()
+        // Retrieves the current access token.
+        public string GetAccessToken()
         {
-            if (_gmailClient == null)
-            {
-                Console.Error.WriteLine("Client not initialized.");
-                return;
-            }
-
-            try
-            {
-                _gmailClient.RefreshToken();
-                Console.WriteLine("Access token refreshed successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Token refresh failed: " + ex.Message);
-            }
+            return _gmailClient.AccessToken;
         }
 
-        public void PrintUserProfile()
+        // Retrieves the user's Google profile using the access token.
+        public string GetUserProfile()
         {
-            if (_gmailClient == null)
+            string accessToken = GetAccessToken();
+            using (HttpClient httpClient = new HttpClient())
             {
-                Console.Error.WriteLine("Client not initialized.");
-                return;
-            }
-
-            try
-            {
-                // Retrieve user settings as a simple profile representation
-                Dictionary<string, string> settings = _gmailClient.GetSettings();
-                foreach (KeyValuePair<string, string> kvp in settings)
-                {
-                    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Failed to retrieve user profile: " + ex.Message);
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                HttpResponseMessage response = httpClient.GetAsync("https://www.googleapis.com/oauth2/v1/userinfo?alt=json").Result;
+                response.EnsureSuccessStatusCode();
+                return response.Content.ReadAsStringAsync().Result;
             }
         }
+
+        // Exposes the underlying Gmail client for additional operations if needed.
+        public IGmailClient Client => _gmailClient;
 
         public void Dispose()
         {
-            if (_gmailClient != null)
+            if (!_disposed)
             {
                 _gmailClient.Dispose();
-                _gmailClient = null;
+                _disposed = true;
             }
         }
     }
 
-    public class Program
+    class Program
     {
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
             try
             {
-                // Replace the placeholders with actual credentials
-                string clientId = "YOUR_CLIENT_ID";
-                string clientSecret = "YOUR_CLIENT_SECRET";
-                string refreshToken = "YOUR_REFRESH_TOKEN";
-                string defaultEmail = "user@example.com";
+                // Dummy OAuth credentials – replace with real values.
+                const string clientId = "your-client-id";
+                const string clientSecret = "your-client-secret";
+                const string refreshToken = "your-refresh-token";
+                const string defaultEmail = "user@example.com";
 
                 using (GoogleUser googleUser = new GoogleUser(clientId, clientSecret, refreshToken, defaultEmail))
                 {
-                    if (googleUser.Authenticate())
-                    {
-                        Console.WriteLine("Authenticated successfully.");
-                        Console.WriteLine("User profile settings:");
-                        googleUser.PrintUserProfile();
+                    // Refresh the access token.
+                    googleUser.RefreshAccessToken();
 
-                        Console.WriteLine("Refreshing access token...");
-                        googleUser.RefreshToken();
+                    // Output the current access token.
+                    Console.WriteLine("Access Token: " + googleUser.GetAccessToken());
 
-                        Console.WriteLine("User profile settings after refresh:");
-                        googleUser.PrintUserProfile();
-                    }
+                    // Retrieve and display the user profile information.
+                    string profileJson = googleUser.GetUserProfile();
+                    Console.WriteLine("User Profile:");
+                    Console.WriteLine(profileJson);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+                Console.Error.WriteLine("Error: " + ex.Message);
             }
         }
     }

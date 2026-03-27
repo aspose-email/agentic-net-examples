@@ -1,8 +1,9 @@
 using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Calendar.Recurrences;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Google;
 
 class Program
 {
@@ -10,44 +11,66 @@ class Program
     {
         try
         {
-            // Define the output file path for the appointment
-            string filePath = "appointment.ics";
-            string directory = Path.GetDirectoryName(filePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Initialize Gmail client with placeholder credentials
+            IGmailClient gmailClient;
+            try
             {
-                Directory.CreateDirectory(directory);
+                gmailClient = GmailClient.GetInstance(
+                    "clientId",
+                    "clientSecret",
+                    "refreshToken",
+                    "user@example.com");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                return;
             }
 
-            // Create attendees collection
-            MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("alice@example.com"));
-            attendees.Add(new MailAddress("bob@example.com"));
+            // Define calendar identifier (use primary calendar)
+            string calendarId = "primary";
 
-            // Define the organizer
+            // Prepare organizer and attendees
             MailAddress organizer = new MailAddress("organizer@example.com");
+            MailAddressCollection attendees = new MailAddressCollection();
+            attendees.Add(new MailAddress("attendee1@example.com"));
+            attendees.Add(new MailAddress("attendee2@example.com"));
 
-            // Define a daily recurrence pattern (every 1 day)
-            DailyRecurrencePattern recurrence = new DailyRecurrencePattern(1);
-            // Uncomment the following line if the property is available in the target version
-            // recurrence.Occurrences = 5;
+            // Define appointment times
+            DateTime start = new DateTime(2024, 5, 1, 10, 0, 0);
+            DateTime end = new DateTime(2024, 5, 1, 11, 0, 0);
+
+            // Create a daily recurrence pattern (every 1 day)
+            RecurrencePattern recurrence = new DailyRecurrencePattern(1);
 
             // Create the appointment with recurrence
             Appointment appointment = new Appointment(
-                "Conference Room",
-                "Team Meeting",
-                "Weekly sync meeting",
-                DateTime.Now.AddDays(1).AddHours(9),
-                DateTime.Now.AddDays(1).AddHours(10),
+                "Conference Room A",
+                "Team Sync",
+                "Weekly team sync meeting",
+                start,
+                end,
                 organizer,
                 attendees,
                 recurrence);
 
-            // Save the appointment to an iCalendar file
-            appointment.Save(filePath);
+            // Create the appointment in the specified calendar
+            try
+            {
+                Appointment created = gmailClient.CreateAppointment(calendarId, appointment);
+                Console.WriteLine("Appointment created successfully.");
+                Console.WriteLine($"Summary: {created.Summary}");
+                Console.WriteLine($"Start: {created.StartDate}");
+                Console.WriteLine($"End: {created.EndDate}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create appointment: {ex.Message}");
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
