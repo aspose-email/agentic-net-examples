@@ -6,49 +6,41 @@ using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Define source MBOX file and destination PST file paths
             string mboxFilePath = "input.mbox";
             string pstFilePath = "output.pst";
 
-            // Verify input MBOX file exists
+            // Verify that the source MBOX file exists
             if (!File.Exists(mboxFilePath))
             {
-                Console.Error.WriteLine($"Input MBOX file not found: {mboxFilePath}");
+                Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
                 return;
             }
 
-            // Ensure output directory exists
+            // Ensure the directory for the PST file exists
             string pstDirectory = Path.GetDirectoryName(pstFilePath);
             if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
-                try
-                {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(pstDirectory);
             }
 
             // Set conversion options (e.g., remove signatures)
             MboxToPstConversionOptions options = new MboxToPstConversionOptions();
             options.RemoveSignature = true; // Set to false to retain signatures
 
-            // Perform conversion
-            using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath, options))
+            // Perform the conversion; the returned PersonalStorage must be disposed
+            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath, options))
             {
-                // Conversion succeeded; pstStorage will be disposed automatically
-                Console.WriteLine("MBOX to PST conversion completed successfully.");
+                Console.WriteLine($"MBOX file '{mboxFilePath}' successfully converted to PST file '{pstFilePath}'.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
