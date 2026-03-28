@@ -1,44 +1,38 @@
 using System;
 using System.IO;
 
-public class Program
+class Program
 {
-    public static void Main(string[] args)
+    static void Main(string[] args)
     {
         try
         {
-            // Define the original directory and the new name.
-            string sourcePath = @"C:\Temp\OldFolder";
-            string destinationPath = @"C:\Temp\NewFolder";
+            // Define the source (existing) directory and the new name.
+            string sourceDirectory = "OldDirectory";
+            string targetDirectory = "NewDirectory";
 
-            // Verify that the source directory exists.
-            if (!Directory.Exists(sourcePath))
+            // Ensure the source directory exists; create a placeholder if it does not.
+            if (!Directory.Exists(sourceDirectory))
             {
-                Console.Error.WriteLine("Source directory does not exist: " + sourcePath);
-                return;
+                Directory.CreateDirectory(sourceDirectory);
+                Console.WriteLine($"Created placeholder directory: {sourceDirectory}");
             }
 
-            // Verify that the destination directory does not already exist.
-            if (Directory.Exists(destinationPath))
+            // Check that the target directory does not already exist to avoid exceptions.
+            if (Directory.Exists(targetDirectory))
             {
-                Console.Error.WriteLine("Destination directory already exists: " + destinationPath);
+                Console.Error.WriteLine($"Target directory already exists: {targetDirectory}");
                 return;
-            }
-
-            // Ensure the parent directory for the destination exists.
-            string parentDirectory = Path.GetDirectoryName(destinationPath);
-            if (!Directory.Exists(parentDirectory))
-            {
-                Directory.CreateDirectory(parentDirectory);
             }
 
             // Rename (move) the directory.
-            Directory.Move(sourcePath, destinationPath);
-            Console.WriteLine("Directory renamed successfully to: " + destinationPath);
+            Directory.Move(sourceDirectory, targetDirectory);
+            Console.WriteLine($"Directory renamed from '{sourceDirectory}' to '{targetDirectory}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("An error occurred: " + ex.Message);
+            // Log any unexpected errors without crashing the application.
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
