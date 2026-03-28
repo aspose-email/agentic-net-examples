@@ -6,67 +6,40 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define input and output paths
             string icsPath = "sample.ics";
             string msgPath = "output.msg";
 
-            // Guard input file existence
             if (!File.Exists(icsPath))
             {
                 Console.Error.WriteLine($"Error: File not found – {icsPath}");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(msgPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating directory: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the iCalendar file into an Appointment object
             Appointment appointment;
             try
             {
                 appointment = Appointment.Load(icsPath);
             }
-            catch (Exception ex)
+            catch (Exception loadEx)
             {
-                Console.Error.WriteLine($"Error loading iCalendar file: {ex.Message}");
+                Console.Error.WriteLine($"Error loading appointment: {loadEx.Message}");
                 return;
             }
 
-            // Convert the Appointment to a MAPI message
-            MapiMessage mapiMessage = appointment.ToMapiMessage();
-
-            // Save the MAPI message as an Outlook MSG file
-            try
+            using (MapiMessage mapiMessage = appointment.ToMapiMessage())
             {
-                mapiMessage.Save(msgPath);
-                Console.WriteLine($"Successfully converted '{icsPath}' to '{msgPath}'.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
-            }
-            finally
-            {
-                // Dispose the MAPI message
-                if (mapiMessage != null)
+                try
                 {
-                    mapiMessage.Dispose();
+                    mapiMessage.Save(msgPath);
+                    Console.WriteLine($"MSG file saved to {msgPath}");
+                }
+                catch (Exception saveEx)
+                {
+                    Console.Error.WriteLine($"Error saving MSG: {saveEx.Message}");
                 }
             }
         }
