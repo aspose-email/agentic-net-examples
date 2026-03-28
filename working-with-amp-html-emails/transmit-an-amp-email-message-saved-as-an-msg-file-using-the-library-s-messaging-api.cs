@@ -1,70 +1,45 @@
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Amp;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Clients;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define output directory and file path
-            string outputDirectory = "Output";
-            string msgFilePath = Path.Combine(outputDirectory, "amp_message.msg");
+            string msgPath = "amp_message.msg";
 
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputDirectory))
+            if (!File.Exists(msgPath))
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Create an AMP email message
-            using (AmpMessage ampMessage = new AmpMessage())
-            {
-                ampMessage.From = new MailAddress("sender@example.com", "Sender Name");
-                ampMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
-                ampMessage.Subject = "AMP Email Example";
-                ampMessage.Body = "This is the plain‑text fallback.";
-                ampMessage.IsBodyHtml = true;
-                ampMessage.HtmlBody = "<html><body><h1>Hello</h1></body></html>";
-                // Sample AMP HTML body (replace with actual AMP content)
-                ampMessage.AmpHtmlBody = "<amp-email></amp-email>";
-
-                // Save the message as an MSG file
-                ampMessage.Save(msgFilePath);
-            }
-
-            // Create SMTP client with safety handling
-            SmtpClient smtpClient;
-            try
-            {
-                smtpClient = new SmtpClient("smtp.example.com", 587, "username", "password", SecurityOptions.Auto);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create SMTP client: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            using (smtpClient)
+            using (FileStream fileStream = File.OpenRead(msgPath))
             {
-                // Load the saved MSG file and send it
-                try
+                using (AmpMessage ampMessage = new AmpMessage())
                 {
-                    using (MailMessage messageToSend = MailMessage.Load(msgFilePath))
+                    ampMessage.Import(fileStream);
+
+                    // Configure SMTP client (replace with actual server details)
+                    using (SmtpClient smtpClient = new SmtpClient("smtp.example.com", 587, "username", "password"))
                     {
-                        smtpClient.Send(messageToSend);
-                        Console.WriteLine("AMP message sent successfully.");
+                        smtpClient.SecurityOptions = SecurityOptions.Auto;
+
+                        try
+                        {
+                            smtpClient.Send(ampMessage);
+                            Console.WriteLine("AMP email sent successfully.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to send email: {ex.Message}");
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error sending message: {ex.Message}");
-                    return;
                 }
             }
         }
