@@ -3,34 +3,50 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // POP3 server configuration
+            string host = "pop.example.com";
+            int port = 110;
+            string username = "user@example.com";
+            string password = "password";
+
+            // Initialize and use POP3 client
+            using (Pop3Client client = new Pop3Client(host, port, username, password))
             {
-                // Initialize POP3 client with server details
-                using (Pop3Client client = new Pop3Client("pop.example.com", 110, "user", "password", SecurityOptions.Auto))
+                try
                 {
-                    try
+                    // Validate credentials and establish connection
+                    client.ValidateCredentials();
+                    Console.WriteLine("POP3 connection successful.");
+
+                    // Retrieve message count
+                    int messageCount = client.GetMessageCount();
+                    Console.WriteLine($"Message count: {messageCount}");
+
+                    // Example operation: fetch first message if any
+                    if (messageCount > 0)
                     {
-                        // Attempt to retrieve mailbox information to validate the connection
-                        client.GetMailboxInfo();
-                        Console.WriteLine("POP3 client connected successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error during POP3 operation: {ex.Message}");
-                        return;
+                        using (MailMessage message = client.FetchMessage(1))
+                        {
+                            Console.WriteLine($"Subject: {message.Subject}");
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
