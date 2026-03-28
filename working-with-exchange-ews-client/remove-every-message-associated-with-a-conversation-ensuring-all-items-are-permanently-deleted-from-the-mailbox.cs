@@ -5,44 +5,38 @@ using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define connection parameters (replace with real values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create the EWS client using the factory method.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+            // Initialize the EWS client (replace placeholders with actual values)
+            using (IEWSClient client = EWSClient.GetEWSClient(
+                "https://exchange.example.com/EWS/Exchange.asmx",
+                new NetworkCredential("username", "password")))
             {
-                // Get the Inbox folder identifier.
-                string inboxFolderId = client.MailboxInfo.InboxUri;
-
-                // Find all conversations in the Inbox.
-                ExchangeConversation[] conversations = client.FindConversations(inboxFolderId);
-
-                // Delete each conversation permanently.
-                foreach (ExchangeConversation conversation in conversations)
+                try
                 {
-                    try
+                    // Find all conversations in the Inbox folder
+                    string inboxFolderId = client.MailboxInfo.InboxUri;
+                    ExchangeConversation[] conversations = client.FindConversations(inboxFolderId);
+
+                    // Delete all items belonging to each conversation
+                    foreach (ExchangeConversation conversation in conversations)
                     {
                         client.DeleteConversationItems(conversation.ConversationId);
-                        Console.WriteLine($"Deleted conversation: {conversation.ConversationId}");
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to delete conversation {conversation.ConversationId}: {ex.Message}");
-                    }
+
+                    Console.WriteLine("All conversation items have been permanently deleted.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error processing conversations: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Failed to initialize client or execute operation: {ex.Message}");
         }
     }
 }
