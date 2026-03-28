@@ -1,8 +1,9 @@
 using System;
+using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,43 +11,47 @@ class Program
     {
         try
         {
-            // Replace the placeholders with actual values.
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string tenantId = "tenantId";
-            string messageId = "messageId"; // The Graph message ID that contains the task in MSG format.
-
-            // Create a token provider for Microsoft Graph.
+            // Initialize token provider (dummy credentials)
             Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                clientId, clientSecret, refreshToken);
+                "clientId", "clientSecret", "refreshToken");
 
-            // Initialize the Graph client.
-            using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+            // Create Graph client
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
             {
-                // Fetch the MSG message as a MapiMessage.
-                MapiMessage msg = graphClient.FetchMessage(messageId);
+                // ID of the MSG task to retrieve
+                string messageId = "MESSAGE_ID";
 
-                // Verify that the message represents a task.
-                if (msg.SupportedType == MapiItemType.Task)
+                // Fetch the message as a MapiMessage (disposable)
+                using (MapiMessage taskMessage = client.FetchMessage(messageId))
                 {
-                    // Convert the MapiMessage to a MapiTask.
-                    MapiTask task = (MapiTask)msg.ToMapiMessageItem();
+                    // Verify that the fetched item is a task
+                    if (!string.IsNullOrEmpty(taskMessage.MessageClass) && taskMessage.MessageClass.StartsWith("IPM.Task"))
+                    {
+                        Console.WriteLine("Task Subject: " + taskMessage.Subject);
 
-                    // Output some task properties.
-                    Console.WriteLine("Task Subject: " + task.Subject);
-                    Console.WriteLine("Due Date: " + task.DueDate);
-                    Console.WriteLine("Percent Complete: " + task.PercentComplete);
-                }
-                else
-                {
-                    Console.WriteLine("The fetched message is not a task.");
+                        // Save the task to a local MSG file
+                        string outputPath = "task.msg";
+
+                        // Ensure the target directory exists
+                        string directory = Path.GetDirectoryName(outputPath);
+                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+
+                        taskMessage.Save(outputPath);
+                        Console.WriteLine("Task saved to: " + outputPath);
+                    }
+                    else
+                    {
+                        Console.WriteLine("The fetched item is not a task.");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
