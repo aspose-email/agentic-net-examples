@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 using Aspose.Email.Mapi;
+using Aspose.Email.Clients;
 
 class Program
 {
@@ -11,57 +11,59 @@ class Program
     {
         try
         {
-            // Path to the MSG file containing the task details
-            string msgPath = "task.msg";
+            // Path to the MSG file
+            string msgPath = "sample.msg";
 
-            // Verify that the MSG file exists
+            // Verify the file exists
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine("The MSG file was not found: " + msgPath);
+                Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            // Token provider credentials (replace with real values)
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string tenantId = "tenantId";
-
-            // Create the token provider
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-            // Initialize the Graph client
-            using (IGraphClient graphClient = Aspose.Email.Clients.Graph.GraphClient.GetClient(tokenProvider, tenantId))
+            // Load the MSG file into a MailMessage
+            using (MailMessage message = MailMessage.Load(msgPath))
             {
-                // Retrieve the first task list (default task list)
-                var taskLists = graphClient.ListTaskLists();
-                if (taskLists == null || taskLists.Count == 0)
+                // Create a token provider for Outlook (3‑argument overload)
+                Aspose.Email.Clients.TokenProvider tokenProvider;
+                try
                 {
-                    Console.Error.WriteLine("No task lists were found in the mailbox.");
+                    tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                        "clientId",          // Replace with your client ID
+                        "clientSecret",      // Replace with your client secret
+                        "refreshToken");     // Replace with your refresh token
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
                     return;
                 }
 
-                string taskListId = taskLists[0].ItemId;
+                // Tenant identifier for Microsoft Graph
+                string tenantId = "your-tenant-id"; // Replace with your tenant ID
 
-                // Load the MSG file as a MapiMessage
-                using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
+                // Initialize the Graph client
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
                 {
-                    // Create a MapiTask and populate basic fields
-                    using (MapiTask task = new MapiTask())
+                    // Convert the MailMessage to a MapiTask (simple mapping)
+                    MapiTask task = new MapiTask
                     {
-                        task.Subject = mapiMessage.Subject;
-                        task.Body = mapiMessage.Body;
+                        Subject = message.Subject,
+                        Body = message.Body
+                    };
 
-                        // Create the task in the specified task list via Graph
-                        MapiTask createdTask = graphClient.CreateTask(task, taskListId);
-                        Console.WriteLine("Task created successfully. Subject: " + createdTask.Subject);
-                    }
+                    // Folder identifier where the task will be created.
+                    // For demonstration, using the default "Tasks" folder name.
+                    string tasksFolderId = "Tasks";
+
+                    // Create the task in Microsoft Graph
+                    client.CreateTask(task, tasksFolderId);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
