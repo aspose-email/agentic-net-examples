@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,43 +8,37 @@ class Program
     {
         try
         {
-            // Input MSG file path
             string inputPath = "sample.msg";
-            // Output HTML file path
-            string outputPath = "output.html";
+            string outputPath = "sample.html";
 
-            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Load the MSG file into a MapiMessage
-            using (MapiMessage mapiMessage = MapiMessage.Load(inputPath))
-            {
-                // Convert MapiMessage to MailMessage with default conversion options
-                MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions());
-
-                // Ensure MailMessage is disposed after use
-                using (mailMessage)
+            using (MailMessage mailMessage = MailMessage.Load(
+                inputPath,
+                new MsgLoadOptions
                 {
-                    // Save the MailMessage as HTML (MHTML format)
-                    mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
-                }
+                    PreserveRtfContent = true,
+                    PreserveEmbeddedMessageFormat = true
+                }))
+            {
+                HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
+                mailMessage.Save(outputPath, htmlOptions);
+                Console.WriteLine($"Message exported to HTML: {outputPath}");
             }
         }
         catch (Exception ex)
         {
-            // Log any unexpected errors
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
