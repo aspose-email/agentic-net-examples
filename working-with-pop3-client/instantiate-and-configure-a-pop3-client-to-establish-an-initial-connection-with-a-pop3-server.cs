@@ -2,39 +2,37 @@ using System;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace Pop3ClientExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Initialize POP3 client with server details
+            using (Pop3Client client = new Pop3Client())
             {
-                // POP3 server connection parameters
-                string host = "pop.example.com";
-                int port = 110; // Standard POP3 port
-                string username = "user@example.com";
-                string password = "password";
+                client.Host = "pop.example.com";
+                client.Port = 110;
+                client.Username = "user@example.com";
+                client.Password = "password";
+                client.SecurityOptions = SecurityOptions.Auto;
 
-                // Initialize the POP3 client with the specified parameters
-                using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+                try
                 {
-                    try
-                    {
-                        // Perform a simple NOOP command to verify the connection
-                        client.Noop();
-                        Console.WriteLine("POP3 connection established successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
-                    }
+                    // Validate credentials to establish connection
+                    client.ValidateCredentials();
+                    Console.WriteLine("POP3 client connected successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to connect POP3 client: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
