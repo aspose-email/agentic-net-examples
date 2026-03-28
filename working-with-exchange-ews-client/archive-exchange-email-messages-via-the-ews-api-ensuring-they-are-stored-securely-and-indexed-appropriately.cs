@@ -1,48 +1,62 @@
+using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define the EWS endpoint and credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Define the archive directory and ensure it exists
+            string archiveDir = "Archive";
+            if (!Directory.Exists(archiveDir))
             {
-                try
+                Directory.CreateDirectory(archiveDir);
+            }
+
+            // Connect to the Exchange server using EWS
+            try
+            {
+                using (IEWSClient client = EWSClient.GetEWSClient(
+                    "https://exchange.example.com/EWS/Exchange.asmx",
+                    "username",
+                    "password"))
                 {
-                    // Get the Inbox folder URI
-                    string inboxUri = client.MailboxInfo.InboxUri;
-
-                    // List all messages in the Inbox
-                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
-
-                    // Archive each message
-                    foreach (ExchangeMessageInfo info in messages)
+                    // List messages in the Inbox folder
+                    ExchangeMessageInfoCollection messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
+                    foreach (ExchangeMessageInfo info in messageInfos)
                     {
-                        client.ArchiveItem(inboxUri, info.UniqueUri);
-                        Console.WriteLine($"Archived message: {info.Subject}");
+                        try
+                        {
+                            // Fetch the message to read its subject for indexing
+                            using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                            {
+                                Console.WriteLine($"Archiving: {message.Subject}");
+                            }
+
+                            // Save the message to the archive directory
+                            string filePath = Path.Combine(archiveDir, $"{Guid.NewGuid()}.eml");
+                            client.SaveMessage(info.UniqueUri, filePath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to archive message {info.UniqueUri}: {ex.Message}");
+                        }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing messages: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to connect to Exchange server: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Failed to connect to Exchange: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
