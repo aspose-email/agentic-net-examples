@@ -1,6 +1,7 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients;
 
 class Program
 {
@@ -8,26 +9,33 @@ class Program
     {
         try
         {
-            // Initialize Gmail gmailClient
-            IGmailClient gmailClient = GmailClient.GetInstance("clientId", "clientSecret", "refreshToken", "user@example.com");
-            using (gmailClient)
+            // Initialize and connect the IMAP client
+            using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.Auto))
             {
-                try
+                // Select the mailbox folder (e.g., INBOX)
+                client.SelectFolder("INBOX");
+
+                // Retrieve the list of messages in the selected folder
+                ImapMessageInfoCollection messages = client.ListMessages();
+
+                if (messages != null && messages.Count > 0)
                 {
-                    // Specify the message identifier to delete
-                    string messageId = "MESSAGE_ID";
-                    gmailClient.DeleteMessage(messageId);
-                    Console.WriteLine($"Message {messageId} deleted successfully.");
+                    // Get the unique identifier of the first message
+                    string messageId = messages[0].UniqueId;
+
+                    // Delete the message and commit the deletion
+                    client.DeleteMessage(messageId, true);
+                    Console.WriteLine("Message with UID '{0}' has been deleted.", messageId);
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.Error.WriteLine($"Error deleting message: {ex.Message}");
+                    Console.WriteLine("No messages found to delete.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
