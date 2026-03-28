@@ -1,33 +1,38 @@
 using System;
 using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Mailbox URI and user credentials
+            // Authentication parameters
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Initialize EWS client with the credentials
-            using (Aspose.Email.Clients.Exchange.WebService.IEWSClient client = Aspose.Email.Clients.Exchange.WebService.EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Initialize the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                Console.WriteLine("EWS client authenticated successfully.");
-                // Subsequent API operations can be performed using 'client' here.
+                try
+                {
+                    // Verify the connection by retrieving the server version
+                    string versionInfo = client.GetVersionInfo();
+                    Console.WriteLine("Exchange Server version: " + versionInfo);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("EWS operation failed: " + ex.Message);
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
