@@ -1,62 +1,65 @@
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-
-class Program
+namespace AsposeEmailGraphExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // File path to the MSG file
-            string msgPath = "sample.msg";
-
-            // Verify the MSG file exists
-            if (!File.Exists(msgPath))
+            try
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
+                // ---------- Local MSG file handling ----------
+                string msgFilePath = "sample.msg";
 
-            // Create Outlook token provider (replace with real credentials)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken");
-
-            // Tenant identifier (replace with real tenant ID)
-            string tenantId = "tenantId";
-
-            // Initialize Graph client
-            using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
-            {
-                // Load the MSG file as a MapiMessage
-                using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
+                // Ensure the MSG file exists; create a minimal placeholder if missing
+                if (!File.Exists(msgFilePath))
                 {
-                    // Display basic properties of the message
-                    Console.WriteLine("Subject: " + mapiMessage.Subject);
-                    Console.WriteLine("From: " + mapiMessage.SenderEmailAddress);
-                    Console.WriteLine("To: " + string.Join("; ", mapiMessage.Recipients));
-                    Console.WriteLine("Body:");
-                    Console.WriteLine(mapiMessage.Body);
+                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "receiver@example.com", "Placeholder Subject", "This is a placeholder MSG file."))
+                    {
+                        placeholder.Save(msgFilePath);
+                    }
+                }
 
-                    // Example: upload the message to the user's Drafts folder via Graph
-                    // (Folder ID for Drafts can be obtained via graphClient.ListFolders or known constant)
-                    // Here we use the simple overload that creates a message from MapiMessage
-                    string draftsFolderId = "drafts";
-                    graphClient.CreateMessage(draftsFolderId, mapiMessage);
-                    Console.WriteLine("Message uploaded to Drafts folder.");
+                // Load and display the local MSG file
+                using (MapiMessage localMessage = MapiMessage.Load(msgFilePath))
+                {
+                    Console.WriteLine("Local MSG Subject: " + localMessage.Subject);
+                    Console.WriteLine("Local MSG Body: " + localMessage.Body);
+                }
+
+                // ---------- Microsoft Graph client usage ----------
+                // Dummy credentials – replace with real values when running the sample
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string tenantId = "tenantId";
+
+                // Create token provider (Outlook) – 3‑argument overload
+                Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+                // Initialize Graph client
+                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+                {
+                    // Placeholder message ID – replace with an actual ID from your mailbox
+                    string messageId = "message-id";
+
+                    // Fetch the message from Microsoft Graph
+                    MapiMessage graphMessage = graphClient.FetchMessage(messageId);
+
+                    // Display fetched message details
+                    Console.WriteLine("Graph Message Subject: " + graphMessage.Subject);
+                    Console.WriteLine("Graph Message Body: " + graphMessage.Body);
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Error: " + ex.Message);
+            }
         }
     }
 }
