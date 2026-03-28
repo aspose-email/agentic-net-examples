@@ -9,42 +9,51 @@ class Program
     {
         try
         {
-            string msgPath = "amp_message.msg";
+            // Define the path for the MSG file that will store the AMP email.
+            string msgFilePath = "amp_message.msg";
 
-            // Ensure the output directory exists
-            string directory = Path.GetDirectoryName(Path.GetFullPath(msgPath));
-            if (!Directory.Exists(directory))
+            // Ensure the directory for the output file exists.
+            string directory = Path.GetDirectoryName(msgFilePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            // If the MSG file does not exist, create a minimal placeholder AMP message
-            if (!File.Exists(msgPath))
+            // Create an AMP email, set basic properties and the AMP HTML body, then save as MSG.
+            using (AmpMessage ampMessage = new AmpMessage())
             {
-                using (AmpMessage placeholder = new AmpMessage())
-                {
-                    placeholder.From = new MailAddress("placeholder@example.com");
-                    placeholder.To.Add(new MailAddress("recipient@example.com"));
-                    placeholder.Subject = "Placeholder AMP Message";
-                    placeholder.Body = "Plain text fallback.";
-                    placeholder.AmpHtmlBody = "<amp-email></amp-email>";
-                    placeholder.Save(msgPath);
-                }
+                ampMessage.From = new MailAddress("sender@example.com", "Sender Name");
+                ampMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
+                ampMessage.Subject = "Sample AMP Email";
+                ampMessage.Body = "This is the plain‑text fallback body.";
+                ampMessage.IsBodyHtml = true;
+                ampMessage.AmpHtmlBody = "<amp-email><h1>Hello AMP!</h1></amp-email>";
+
+                // Save the message as an Outlook MSG file.
+                ampMessage.Save(msgFilePath);
             }
 
-            // Load the existing MSG file as a MailMessage
-            using (MailMessage loadedMessage = MailMessage.Load(msgPath))
+            // Verify that the file was created before attempting to load it.
+            if (!File.Exists(msgFilePath))
             {
-                // Attempt to cast to AmpMessage to access AMP-specific properties
-                AmpMessage ampMessage = loadedMessage as AmpMessage;
-                if (ampMessage != null)
+                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                return;
+            }
+
+            // Load the saved MSG file back into a MailMessage instance.
+            using (MailMessage loadedMessage = MailMessage.Load(msgFilePath))
+            {
+                Console.WriteLine($"Subject: {loadedMessage.Subject}");
+                Console.WriteLine($"Plain Text Body: {loadedMessage.Body}");
+                // The AMP HTML body is not directly exposed on MailMessage,
+                // but it can be accessed if the message is cast to AmpMessage.
+                if (loadedMessage is AmpMessage loadedAmp)
                 {
-                    Console.WriteLine("AMP HTML Body:");
-                    Console.WriteLine(ampMessage.AmpHtmlBody);
+                    Console.WriteLine($"AMP HTML Body: {loadedAmp.AmpHtmlBody}");
                 }
                 else
                 {
-                    Console.WriteLine("The loaded message does not contain AMP content.");
+                    Console.WriteLine("AMP content is not available in the loaded message.");
                 }
             }
         }
