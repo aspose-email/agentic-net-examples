@@ -1,8 +1,9 @@
 using System;
+using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,35 +11,49 @@ class Program
     {
         try
         {
-            // Initialize token provider (replace with real credentials)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken");
+            // Path to the MSG file
+            string msgPath = "sample.msg";
 
-            // Create Graph client
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
+            // Verify that the file exists
+            if (!File.Exists(msgPath))
             {
-                // Retrieve all task lists
-                TaskListInfoCollection taskLists = client.ListTaskLists();
+                Console.Error.WriteLine($"File not found: {msgPath}");
+                return;
+            }
 
-                foreach (TaskListInfo taskListInfo in taskLists)
+            // Load the MSG file into a MapiMessage instance
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            {
+                // Initialize a token provider for Outlook (dummy credentials)
+                Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                    "clientId", "clientSecret", "refreshToken");
+
+                // Create a Graph client instance
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, "tenantId"))
                 {
-                    Console.WriteLine($"Task List: {taskListInfo.DisplayName}");
-
-                    // Retrieve tasks from the current task list
-                    MapiTaskCollection tasks = client.ListTasks(taskListInfo.ItemId);
-
-                    foreach (MapiTask task in tasks)
+                    // List tasks from the default Outlook tasks folder
+                    try
                     {
-                        Console.WriteLine($"- Subject: {task.Subject}");
+                        // The folder identifier for the default tasks folder is typically "tasks"
+                        var tasks = client.ListTasks("tasks");
+                        foreach (var task in tasks)
+                        {
+                            Console.WriteLine($"Task Subject: {task.Subject}");
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error retrieving tasks: {ex.Message}");
+                    }
+
+                    // Demonstrate accessing information from the loaded MSG file
+                    Console.WriteLine($"Loaded MSG Subject: {msg.Subject}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
