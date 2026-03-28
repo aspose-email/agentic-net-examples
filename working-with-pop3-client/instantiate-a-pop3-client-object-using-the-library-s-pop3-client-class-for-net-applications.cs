@@ -8,24 +8,19 @@ class Program
     {
         try
         {
-            // Connection parameters (replace with real values)
-            string host = "pop.example.com";
-            int port = 110;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Initialize POP3 client and ensure it is disposed properly
-            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+            // Instantiate the POP3 client with host, username, and password.
+            using (Pop3Client client = new Pop3Client("pop.example.com", "username", "password"))
             {
                 try
                 {
-                    // Retrieve the list of messages
-                    var messages = client.ListMessages();
-                    Console.WriteLine($"Total messages retrieved: {messages.Count}");
+                    // Validate the credentials to ensure the client can connect.
+                    client.ValidateCredentials();
+                    Console.WriteLine("POP3 client initialized and credentials validated.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
+                    return;
                 }
             }
         }
