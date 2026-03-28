@@ -18,20 +18,33 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (2 file(s))
-- `using System.IO;` (2 file(s))
-- `using Aspose.Email;` (2 file(s))
-- `using Aspose.Email.Clients;` (2 file(s))
-- `using Aspose.Email.Clients.Smtp;` (2 file(s))
+- `using System;` (15 file(s))
+- `using System.IO;` (15 file(s))
+- `using Aspose.Email;` (15 file(s))
+- `using Aspose.Email.Clients.Smtp;` (15 file(s))
+- `using Aspose.Email.Clients;` (7 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
 | [configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loaded-from-an-msg-file.cs](./configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loaded-from-an-msg-file.cs) | configure smtpclient with host port and security settings then send an email loaded from an msg file |
+| [configure-the-smtpclient-s-log-level-to-detailed-to-aid-troubleshooting-when-transmitting-msg-format-emails.cs](./configure-the-smtpclient-s-log-level-to-detailed-to-aid-troubleshooting-when-transmitting-msg-format-emails.cs) | configure the smtpclient s log level to detailed to aid troubleshooting when transmitting msg format emails |
+| [configure-the-smtpclient-to-log-smtp-operations-by-specifying-a-logfile-path-and-loglevel-during-msg-email-loading.cs](./configure-the-smtpclient-to-log-smtp-operations-by-specifying-a-logfile-path-and-loglevel-during-msg-email-loading.cs) | configure the smtpclient to log smtp operations by specifying a logfile path and loglevel during msg email loading |
+| [create-an-email-from-an-msg-file-using-mailmessage-then-transmit-it-via-smtpclient.cs](./create-an-email-from-an-msg-file-using-mailmessage-then-transmit-it-via-smtpclient.cs) | create an email from an msg file using mailmessage then transmit it via smtpclient |
+| [create-an-smtp-client-using-configuration-extracted-from-an-msg-file-and-transmit-the-email.cs](./create-an-smtp-client-using-configuration-extracted-from-an-msg-file-and-transmit-the-email.cs) | create an smtp client using configuration extracted from an msg file and transmit the email |
+| [enable-smtp-communication-logging-for-email-transmission-specifying-logfile-and-loglevel-settings-with-an-msg-source.cs](./enable-smtp-communication-logging-for-email-transmission-specifying-logfile-and-loglevel-settings-with-an-msg-source.cs) | enable smtp communication logging for email transmission specifying logfile and loglevel settings with an msg source |
+| [enable-smtp-protocol-logging-and-transmit-an-email-message-loaded-from-an-msg-file.cs](./enable-smtp-protocol-logging-and-transmit-an-email-message-loaded-from-an-msg-file.cs) | enable smtp protocol logging and transmit an email message loaded from an msg file |
+| [forward-a-loaded-msg-mailmessage-to-additional-recipients-by-calling-the-mailmessage-forward-method-preserving-original-content.cs](./forward-a-loaded-msg-mailmessage-to-additional-recipients-by-calling-the-mailmessage-forward-method-preserving-original-content.cs) | forward a loaded msg mailmessage to additional recipients by calling the mailmessage forward method preserving original content |
+| [instantiate-a-mailmessage-populate-from-to-subject-and-body-fields-from-an-msg-template-then-dispatch-using-smtpclient.cs](./instantiate-a-mailmessage-populate-from-to-subject-and-body-fields-from-an-msg-template-then-dispatch-using-smtpclient.cs) | instantiate a mailmessage populate from to subject and body fields from an msg template then dispatch using smtpclient |
+| [load-an-msg-file-into-a-mailmessage-instance-and-transmit-it-using-the-smtpclient-send.cs](./load-an-msg-file-into-a-mailmessage-instance-and-transmit-it-using-the-smtpclient-send.cs) | load an msg file into a mailmessage instance and transmit it using the smtpclient send |
+| [load-an-msg-file-into-a-mailmessage-object-and-forward-the-message-by-invoking-its-forward-method.cs](./load-an-msg-file-into-a-mailmessage-object-and-forward-the-message-by-invoking-its-forward-method.cs) | load an msg file into a mailmessage object and forward the message by invoking its forward method |
+| [set-the-enablessl-property-on-the-smtp-client-to-enable-ssl-before-transmitting-msg-formatted-messages.cs](./set-the-enablessl-property-on-the-smtp-client-to-enable-ssl-before-transmitting-msg-formatted-messages.cs) | set the enablessl property on the smtp client to enable ssl before transmitting msg formatted messages |
 | [set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitting-an-msg-formatted-email.cs](./set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitting-an-msg-formatted-email.cs) | set the smtp host port and security options on the smtpclient prior to transmitting an msg formatted email |
+| [transmit-an-msg-email-file-through-smtp-by-configuring-smtpclient-with-sample-server-and-credential-parameters.cs](./transmit-an-msg-email-file-through-smtp-by-configuring-smtpclient-with-sample-server-and-credential-parameters.cs) | transmit an msg email file through smtp by configuring smtpclient with sample server and credential parameters |
+| [use-smtpclient-to-authenticate-to-the-smtp-server-with-basic-ntlm-or-oauth2-credentials-when-sending-an-msg-email.cs](./use-smtpclient-to-authenticate-to-the-smtp-server-with-basic-ntlm-or-oauth2-credentials-when-sending-an-msg-email.cs) | use smtpclient to authenticate to the smtp server with basic ntlm or oauth2 credentials when sending an msg email |
 
 ## Category Statistics
-- Total examples: 2
+- Total examples: 15
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -40,5 +53,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_021422` | [examples/batch-20260328_021422](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260328_021422) |
+| 2026-03-28 | `20260328_141932` | [examples/batch-20260328_141932](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260328_141932) |
 <!-- AUTOGENERATED:END -->
