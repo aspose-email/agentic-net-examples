@@ -1,34 +1,33 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
+using System.Net;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-        try
+        static void Main()
         {
-            // Define the Exchange Web Services (EWS) endpoint and credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create the EWS client. The factory returns an IEWSClient implementation.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            try
             {
-                // Retrieve mailbox information and display key folder URIs
-                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
-                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
-                Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                // Exchange server endpoint and credentials
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
+
+                // Create the EWS client using the factory method
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    // Example operation: retrieve and display the server version
+                    string versionInfo = client.GetVersionInfo();
+                    Console.WriteLine("Exchange Server Version: " + versionInfo);
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            // Output any errors to the error stream without crashing the application
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Error: " + ex.Message);
+            }
         }
     }
 }
