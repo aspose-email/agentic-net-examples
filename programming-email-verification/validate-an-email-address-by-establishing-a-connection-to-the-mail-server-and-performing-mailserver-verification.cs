@@ -1,36 +1,47 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Tools.Verifications;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Smtp;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Email address to validate (replace with the address you want to check)
-            string emailAddress = "example@example.com";
+            // Mail server connection settings
+            string host = "smtp.example.com";
+            int port = 587;
+            string username = "user@example.com";
+            string password = "password";
 
-            // Create the validator
-            EmailValidator validator = new EmailValidator();
-
-            // Perform validation using the default MailServer validation policy
-            ValidationResult result;
-            validator.Validate(emailAddress, out result);
-
-            // Check the validation result using the ReturnCode property
-            if (result.ReturnCode == ValidationResponseCode.ValidationSuccess)
+            // Create and configure the SMTP client
+            using (SmtpClient client = new SmtpClient())
             {
-                Console.WriteLine($"The email address '{emailAddress}' is valid.");
-            }
-            else
-            {
-                Console.WriteLine($"The email address '{emailAddress}' is invalid. Reason: {result.Message}");
+                client.Host = host;
+                client.Port = port;
+                client.Username = username;
+                client.Password = password;
+                client.SecurityOptions = SecurityOptions.Auto;
+
+                // Validate the credentials against the mail server
+                bool credentialsValid;
+                try
+                {
+                    credentialsValid = client.ValidateCredentials();
+                }
+                catch (Exception validationEx)
+                {
+                    Console.Error.WriteLine($"Credential validation error: {validationEx.Message}");
+                    return;
+                }
+
+                Console.WriteLine(credentialsValid ? "Credentials are valid." : "Credentials are invalid.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
