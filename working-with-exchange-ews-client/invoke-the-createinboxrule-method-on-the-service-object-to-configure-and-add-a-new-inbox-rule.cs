@@ -8,24 +8,21 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Service URL and credentials
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Service URL and credentials (replace with actual values)
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+            NetworkCredential credential = new NetworkCredential("user@example.com", "password");
 
             // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
             {
-                // Define the sender to block
+                // Define a rule that moves messages from a specific sender to a target folder
                 MailAddress sender = new MailAddress("spam@example.com");
+                string targetFolder = "Inbox/Spam";
 
-                // Create a rule that deletes messages from the specified sender
-                InboxRule rule = InboxRule.CreateRuleDeleteFrom(sender);
-                rule.DisplayName = "Delete spam from specific sender";
+                InboxRule rule = InboxRule.CreateRuleMoveFrom(sender, targetFolder);
+                rule.DisplayName = "Move spam to Spam folder";
                 rule.IsEnabled = true;
 
                 // Add the rule to the mailbox
@@ -35,7 +32,7 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
