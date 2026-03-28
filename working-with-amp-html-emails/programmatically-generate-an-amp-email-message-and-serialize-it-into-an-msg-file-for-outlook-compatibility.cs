@@ -5,33 +5,55 @@ using Aspose.Email.Amp;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             // Define output MSG file path
-            string outputPath = "output.msg";
-
-            // Ensure the directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            string outputPath = Path.Combine(Environment.CurrentDirectory, "AmpEmail.msg");
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create and configure the AMP message
+            // Create AMP email message
             using (AmpMessage ampMessage = new AmpMessage())
             {
-                ampMessage.From = new MailAddress("sender@example.com");
-                ampMessage.To.Add(new MailAddress("recipient@example.com"));
+                // Set standard properties
+                ampMessage.From = new MailAddress("sender@example.com", "Sender Name");
+                ampMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
                 ampMessage.Subject = "AMP Email Example";
-                ampMessage.Body = "This is the plain‑text fallback body.";
-                ampMessage.AmpHtmlBody = "<amp-html><h1>Hello, AMP!</h1></amp-html>";
+                ampMessage.Body = "This is the plain text fallback body.";
 
-                // Save the message as an MSG file using a stream and SaveOptions
-                using (FileStream fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                // Set AMP HTML body
+                ampMessage.AmpHtmlBody = @"
+<!doctype html>
+<html amp4email>
+<head>
+  <meta charset=""utf-8"">
+  <script async src=""https://cdn.ampproject.org/v0.js""></script>
+  <style amp4email-boilerplate>body{visibility:hidden}</style>
+  <style amp-custom>
+    h1 {color: #1e88e5;}
+  </style>
+</head>
+<body>
+  <h1>Hello from AMP Email!</h1>
+  <p>This content is displayed in AMP‑supported email clients.</p>
+</body>
+</html>";
+
+                // Save as Outlook MSG file
+                try
                 {
-                    ampMessage.Save(fileStream, SaveOptions.DefaultMsg);
+                    ampMessage.Save(outputPath);
+                    Console.WriteLine($"AMP message saved to: {outputPath}");
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
+                    return;
                 }
             }
         }
