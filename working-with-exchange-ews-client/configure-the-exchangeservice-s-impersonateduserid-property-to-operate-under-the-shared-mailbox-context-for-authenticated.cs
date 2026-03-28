@@ -3,64 +3,50 @@ using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
 
-namespace AsposeEmailImpersonationExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Credentials for the account that has permission to impersonate the shared mailbox
+            NetworkCredential credentials = new NetworkCredential("username", "password", "domain");
 
-            try
+            // Initialize the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
             {
-                // Define connection parameters (replace with real values)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
-                string sharedMailboxAddress = "sharedmailbox@example.com";
-
-                // Create network credentials
-                NetworkCredential credentials = new NetworkCredential(username, password);
-
-                // Initialize EWS client inside a using block to ensure disposal
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                try
                 {
-                    try
+                    // Impersonate the shared mailbox using its primary SMTP address
+                    client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, "sharedmailbox@example.com");
+
+                    // List messages from the impersonated mailbox's Inbox
+                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+
+                    // Iterate through the messages and display their subjects
+                    foreach (ExchangeMessageInfo messageInfo in messages)
                     {
-                        // Impersonate the shared mailbox user
-                        client.ImpersonateUser(ItemChoice.SmtpAddress, sharedMailboxAddress);
-
-                        // Build a simple query (optional, can be omitted to list all messages)
-                        ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                        builder.Subject.Contains("Test");
-                        MailQuery query = builder.GetQuery();
-
-                        // List messages from the impersonated mailbox's Inbox
-                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-
-                        // Output basic information about each message
-                        foreach (ExchangeMessageInfo info in messages)
+                        // Fetch the full message using its unique URI
+                        using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
                         {
-                            Console.WriteLine("Subject: " + info.Subject);
-                            Console.WriteLine("From: " + info.From);
-                            Console.WriteLine("Received: " + info.Date);
-                            Console.WriteLine(new string('-', 40));
+                            Console.WriteLine(message.Subject);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Error during EWS operations: " + ex.Message);
-                        return;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle errors that occur during impersonation or message operations
+                    Console.Error.WriteLine("Error during EWS operations: " + ex.Message);
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            // Handle errors that occur while creating the client (e.g., authentication failures)
+            Console.Error.WriteLine("Failed to connect to Exchange server: " + ex.Message);
+            return;
         }
     }
 }
