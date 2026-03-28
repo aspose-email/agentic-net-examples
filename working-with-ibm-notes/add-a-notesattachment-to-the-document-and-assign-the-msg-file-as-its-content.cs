@@ -9,37 +9,33 @@ class Program
     {
         try
         {
-            string sourceMsgPath = "source.msg";
+            // Define paths
+            string msgFilePath = "source.msg";
+            string outputMsgPath = "parent_with_notes.msg";
 
-            // Ensure the source MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(sourceMsgPath))
+            // Verify source MSG file exists
+            if (!File.Exists(msgFilePath))
             {
-                MapiMessage placeholder = new MapiMessage(
-                    "Placeholder",
-                    "Placeholder body",
-                    "sender@example.com",
-                    "receiver@example.com");
-                placeholder.Save(sourceMsgPath);
-                Console.WriteLine($"Created placeholder MSG at {sourceMsgPath}");
+                Console.Error.WriteLine($"Source MSG file not found: {msgFilePath}");
+                return;
             }
 
-            // Load the MSG file that will become the attachment content
-            using (MapiMessage attachedMessage = MapiMessage.Load(sourceMsgPath))
+            // Load the MSG file to be used as a notes attachment
+            using (MapiMessage notesMessage = MapiMessage.Load(msgFilePath))
             {
-                // Create a new MapiMessage document
-                using (MapiMessage document = new MapiMessage(
-                    "Document with NotesAttachment",
-                    "Document body",
-                    "author@example.com",
-                    "recipient@example.com"))
+                // Create a new parent MAPI message
+                using (MapiMessage parentMessage = new MapiMessage(
+                    "Parent Subject",
+                    "This is the body of the parent message.",
+                    "sender@example.com",
+                    "receiver@example.com"))
                 {
-                    // Add the MSG as a NotesAttachment (embedded message)
-                    document.Attachments.Add("NotesAttachment.msg", attachedMessage);
+                    // Add the loaded MSG as an embedded (notes) attachment
+                    parentMessage.Attachments.Add("NotesAttachment.msg", notesMessage);
 
-                    // Save the document containing the attachment
-                    string outputPath = "document_with_notes.msg";
-                    document.Save(outputPath);
-                    Console.WriteLine($"Document saved with NotesAttachment at {outputPath}");
+                    // Save the parent message with the notes attachment
+                    parentMessage.Save(outputMsgPath);
+                    Console.WriteLine($"Parent message saved with notes attachment to: {outputMsgPath}");
                 }
             }
         }
