@@ -3,35 +3,34 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailMsgParser
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "sample.msg";
-
-            if (!File.Exists(msgPath))
+            try
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
+                string msgFilePath = "sample.msg";
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+                if (!File.Exists(msgFilePath))
+                {
+                    Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                    return;
+                }
+
+                using (MapiMessage msg = MapiMessage.Load(msgFilePath))
+                {
+                    string richTextBody = msg.BodyRtf ?? string.Empty;
+                    Console.WriteLine("Rich‑text body content:");
+                    Console.WriteLine(richTextBody);
+                    // TODO: Add further processing of richTextBody here.
+                }
+            }
+            catch (Exception ex)
             {
-                // Extract the rich‑text (RTF) body
-                string rtfBody = msg.BodyRtf ?? string.Empty;
-
-                // Example processing: output the length of the RTF content
-                Console.WriteLine($"RTF body length: {rtfBody.Length}");
-
-                // Additional processing of rtfBody can be performed here
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
