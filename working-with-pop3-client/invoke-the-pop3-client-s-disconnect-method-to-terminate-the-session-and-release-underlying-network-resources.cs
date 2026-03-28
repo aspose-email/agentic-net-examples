@@ -1,5 +1,4 @@
 using System;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
 class Program
@@ -8,26 +7,20 @@ class Program
     {
         try
         {
-            // Initialize POP3 client with placeholder credentials
-            using (Pop3Client client = new Pop3Client("pop.example.com", 110, "username", "password", SecurityOptions.Auto))
+            // Initialize the POP3 client with placeholder server and credentials.
+            using (Pop3Client client = new Pop3Client("pop.example.com", "username", "password"))
             {
-                try
-                {
-                    // Perform a simple operation to ensure the session is established
-                    int messageCount = client.GetMessageCount();
-                    Console.WriteLine($"Message count: {messageCount}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
-                    return;
-                }
-                // The using block will dispose the client, effectively disconnecting the session
+                // Example operation: retrieve and display the number of messages in the mailbox.
+                int messageCount = client.GetMessageCount();
+                Console.WriteLine($"Message count: {messageCount}");
+
+                // The using block ensures that the client is properly disconnected
+                // and all underlying network resources are released when the block exits.
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
