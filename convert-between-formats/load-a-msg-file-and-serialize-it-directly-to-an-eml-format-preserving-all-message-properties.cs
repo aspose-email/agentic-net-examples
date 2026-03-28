@@ -15,7 +15,7 @@ class Program
             // Verify input file exists
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: Input file not found – {inputPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
@@ -29,35 +29,25 @@ class Program
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating output directory: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                     return;
                 }
             }
 
-            try
+            // Load MSG file, convert to MailMessage, and save as EML
+            using (MapiMessage msg = MapiMessage.Load(inputPath))
             {
-                // Load MSG file into MapiMessage
-                using (MapiMessage mapiMsg = MapiMessage.Load(inputPath))
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mail = msg.ToMailMessage(conversionOptions))
                 {
-                    // Convert to MailMessage preserving properties
-                    using (MailMessage mailMsg = mapiMsg.ToMailMessage(new MailConversionOptions()))
-                    {
-                        // Save as EML format
-                        mailMsg.Save(outputPath, SaveOptions.DefaultEml);
-                    }
+                    EmlSaveOptions emlOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
+                    mail.Save(outputPath, emlOptions);
                 }
-
-                Console.WriteLine("Conversion completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error during conversion: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
