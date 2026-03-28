@@ -9,40 +9,48 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            // Path to the MSG file
+            string msgPath = "message.msg";
 
+            // Verify that the file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
                 Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
+            // Load the MSG file inside a using block to ensure proper disposal
             using (MapiMessage message = MapiMessage.Load(msgPath))
             {
-                // Metadata
-                Console.WriteLine("Subject: " + (message.Subject ?? string.Empty));
-                Console.WriteLine("From: " + (message.SenderName ?? string.Empty));
-                Console.WriteLine("To: " + (message.DisplayTo ?? string.Empty));
-                Console.WriteLine("CC: " + (message.DisplayCc ?? string.Empty));
-                Console.WriteLine("BCC: " + (message.DisplayBcc ?? string.Empty));
-                Console.WriteLine("Sent Time: " + message.ClientSubmitTime);
-
-                // Body
+                // Display basic metadata
+                Console.WriteLine("Subject: " + message.Subject);
+                Console.WriteLine("From: " + message.SenderName);
+                Console.WriteLine("Sent: " + message.ClientSubmitTime);
                 Console.WriteLine("Body:");
-                Console.WriteLine(message.Body ?? string.Empty);
+                Console.WriteLine(message.Body);
 
-                // Attachments
+                // Process each attachment
                 foreach (MapiAttachment attachment in message.Attachments)
                 {
                     Console.WriteLine("Attachment: " + attachment.FileName);
-                    string attachmentPath = Path.Combine(Path.GetDirectoryName(msgPath) ?? string.Empty, attachment.FileName);
-                    attachment.Save(attachmentPath);
+
+                    // Save the attachment to the current directory
+                    string outputPath = Path.Combine(Directory.GetCurrentDirectory(), attachment.FileName);
+                    try
+                    {
+                        attachment.Save(outputPath);
+                        Console.WriteLine($"Saved to: {outputPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
