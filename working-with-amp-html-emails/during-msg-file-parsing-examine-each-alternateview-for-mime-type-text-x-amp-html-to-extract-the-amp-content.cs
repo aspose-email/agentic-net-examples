@@ -1,46 +1,54 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Amp;
+using Aspose.Email.Mapi;
 using Aspose.Email.Mime;
 
-class Program
+namespace MsgAmpExtractor
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "sample.msg";
-
-            if (!File.Exists(msgPath))
+            try
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
+                // Path to the MSG file
+                string msgPath = "sample.msg";
 
-            using (FileStream fileStream = File.OpenRead(msgPath))
-            using (AmpMessage ampMessage = new AmpMessage())
-            {
-                // Load the MSG file into the AmpMessage instance
-                ampMessage.Import(fileStream);
-
-                // Iterate through all alternate views and extract AMP content
-                foreach (AlternateView view in ampMessage.AlternateViews)
+                // Verify that the file exists before attempting to load it
+                if (!File.Exists(msgPath))
                 {
-                    if (view.ContentType != null &&
-                        string.Equals(view.ContentType.MediaType, "text/x-amp-html", StringComparison.OrdinalIgnoreCase))
+                    Console.Error.WriteLine($"File not found: {msgPath}");
+                    return;
+                }
+
+                // Load the MSG file into a MapiMessage
+                using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
+                {
+                    // Convert the MapiMessage to a MailMessage to access AlternateViews
+                    using (MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions()))
                     {
-                        string ampContent = ampMessage.GetAlternateViewContent(view.ContentType.MediaType);
-                        Console.WriteLine("AMP Content:");
-                        Console.WriteLine(ampContent);
-                        Console.WriteLine(new string('-', 40));
+                        // Iterate through each AlternateView
+                        foreach (AlternateView alternateView in mailMessage.AlternateViews)
+                        {
+                            // Check for the AMP MIME type
+                            if (alternateView.ContentType != null &&
+                                alternateView.ContentType.MediaType.Equals("text/x-amp-html", StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Extract the AMP content as a string
+                                string ampContent = mailMessage.GetAlternateViewContent(alternateView.ContentType.MediaType);
+                                Console.WriteLine("AMP Content:");
+                                Console.WriteLine(ampContent);
+                            }
+                        }
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Output any unexpected errors
+                Console.Error.WriteLine(ex.Message);
+            }
         }
     }
 }
