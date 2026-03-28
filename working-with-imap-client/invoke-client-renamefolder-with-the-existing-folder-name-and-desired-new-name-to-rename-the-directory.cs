@@ -1,29 +1,42 @@
 using System;
-using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Initialize IMAP client with connection parameters
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
+
+            using (ImapClient client = new ImapClient(host, port, SecurityOptions.Auto))
             {
-                // Initialize IMAP client with host, credentials and security options
-                using (ImapClient client = new ImapClient("imap.example.com", "username", "password", SecurityOptions.Auto))
+                try
                 {
-                    // Rename the folder from "OldFolder" to "NewFolder"
-                    client.RenameFolder("OldFolder", "NewFolder");
-                    Console.WriteLine("Folder renamed successfully.");
+                    client.Username = username;
+                    client.Password = password;
+
+                    // Rename the folder
+                    string oldFolderName = "OldFolder";
+                    string newFolderName = "NewFolder";
+                    client.RenameFolder(oldFolderName, newFolderName);
+                    Console.WriteLine($"Folder renamed from '{oldFolderName}' to '{newFolderName}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                // Output any errors to the error stream
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
