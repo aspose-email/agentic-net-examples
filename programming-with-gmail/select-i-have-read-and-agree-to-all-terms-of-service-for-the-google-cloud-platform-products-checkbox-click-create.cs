@@ -9,23 +9,32 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with dummy OAuth token and default email
-            IGmailClient gmailClient = GmailClient.GetInstance("accessToken", "user@example.com");
-            using (gmailClient)
+            // Initialize Gmail client with dummy OAuth credentials
+            using (IGmailClient gmailClient = GmailClient.GetInstance("clientId", "clientSecret", "refreshToken", "user@example.com"))
             {
-                // List messages in the mailbox
-                var messages = gmailClient.ListMessages();
-                foreach (var messageInfo in messages)
+                try
                 {
-                    // Fetch the full message to access its subject
-                    MailMessage fullMessage = gmailClient.FetchMessage(messageInfo.Id);
-                    Console.WriteLine(fullMessage.Subject);
+                    // Create the email message confirming acceptance of terms
+                    using (MailMessage message = new MailMessage())
+                    {
+                        message.From = "user@example.com";
+                        message.To = "support@example.com";
+                        message.Subject = "Acceptance of Google Cloud Platform Terms of Service";
+                        message.Body = "I have read and agree to all Terms of Service for the Google Cloud Platform products.";
+                        // Send the message
+                        gmailClient.SendMessage(message);
+                        Console.WriteLine("Confirmation email sent successfully.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error sending email: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
