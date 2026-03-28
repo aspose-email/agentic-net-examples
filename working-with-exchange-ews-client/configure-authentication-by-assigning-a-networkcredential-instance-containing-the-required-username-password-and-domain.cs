@@ -2,36 +2,49 @@ using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-        try
+        static void Main()
         {
-            // Define the EWS service URL
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-
-            // Create a NetworkCredential with username, password, and domain
-            NetworkCredential credentials = new NetworkCredential("username", "password", "DOMAIN");
-
-            // Initialize the EWS client using the credentials
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            try
             {
-                // The client is now authenticated and ready for operations
-                // Example: list messages in the Inbox (optional)
-                // var messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                // foreach (var info in messages)
-                // {
-                //     Console.WriteLine(info.Subject);
-                // }
+                // Configure credentials
+                NetworkCredential credentials = new NetworkCredential("username", "password", "DOMAIN");
+
+                // Initialize EWS client with credentials
+                try
+                {
+                    using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
+                    {
+                        try
+                        {
+                            // Retrieve mailbox information
+                            ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+
+                            // Output some mailbox URIs
+                            Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                            Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine("Operation error: " + ex.Message);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Connection error: " + ex.Message);
+                    return;
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            }
         }
     }
 }
