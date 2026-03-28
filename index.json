@@ -3,8 +3,8 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 490,
-  "total_categories": 13,
+  "total_examples": 502,
+  "total_categories": 14,
   "last_updated": "2026-03-28",
   "categories": [
     {
@@ -99,6 +99,51 @@
         },
         {
           "name": "Aspose.Email.PersonalInfo",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "programming-email-verification",
+      "file_count": 12,
+      "files": [
+        "create-a-sample-net-application-that-validates-email-addresses-using-standard-verification-techniques-and-reports-results.cs",
+        "validate-a-domain-name-s-existence-and-format-using-the-net-verifications-component-s-validation-method.cs",
+        "validate-a-mail-server-s-configuration-authentication-and-connectivity-using-the-verifications-library-to-ensure-reliability.cs",
+        "validate-an-email-address-by-establishing-a-connection-to-the-mail-server-and-performing-mailserver-verification.cs",
+        "validate-an-email-address-s-format-and-domain-consistently-by-applying-the-syntaxanddomain-validation-method.cs",
+        "validate-an-email-address-strictly-against-its-syntax-using-the-syntaxonly-validation-mode-function.cs",
+        "validate-domain-names-by-invoking-the-email-verification-methods-provided-in-the-library-s-verification-module.cs",
+        "validate-email-address-strings-against-standard-formats-using-the-provided-examples-and-ensure-conformity.cs",
+        "validate-email-addresses-by-utilizing-the-verifications-library-to-assess-format-and-domain-authenticity.cs",
+        "validate-email-addresses-programmatically-employing-basic-syntax-checks-to-ensure-format-compliance-and-reject-malformed.cs",
+        "validate-email-addresses-programmatically-employing-the-specified-verification-algorithm-and-handling-validation-outcomes.cs",
+        "validate-mail-server-connectivity-by-performing-server-verification-operations-through-the-provided-verification-api.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 12
+        },
+        {
+          "name": "Aspose.Email.Tools.Verifications",
+          "count": 11
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 10
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
           "count": 1
         }
       ],
