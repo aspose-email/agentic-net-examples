@@ -9,108 +9,68 @@ class Program
     {
         try
         {
-            if (args == null || args.Length < 2)
+            // Input MSG file path
+            string msgPath = "sample.msg";
+            // Output HTML file path
+            string htmlPath = "sample.html";
+
+            // Verify input file exists
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine("Usage: <program> <input_msg_path> <output_html_path>");
+                Console.Error.WriteLine($"Error: File not found – {msgPath}");
                 return;
             }
 
-            string inputMsgPath = args[0];
-            string outputHtmlPath = args[1];
-            string outputDirectory = Path.GetDirectoryName(outputHtmlPath);
-
-            if (!File.Exists(inputMsgPath))
-            {
-                Console.Error.WriteLine($"Error: Input file not found – {inputMsgPath}");
-                return;
-            }
-
-            if (!Directory.Exists(outputDirectory))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(htmlPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    Directory.CreateDirectory(outputDir);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Could not create output directory – {outputDirectory}. {ex.Message}");
+                    Console.Error.WriteLine($"Error: Unable to create directory – {outputDir}. {ex.Message}");
                     return;
                 }
             }
 
-            try
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
+                // Convert to MailMessage preserving embedded message format
+                MailConversionOptions conversionOptions = new MailConversionOptions
                 {
-                    // Build HTML content
-                    string htmlContent = "<html><head><meta charset=\"UTF-8\"><title>"
-                                         + System.Web.HttpUtility.HtmlEncode(msg.Subject ?? "No Subject")
-                                         + "</title></head><body>";
+                    PreserveEmbeddedMessageFormat = true
+                };
+                using (MailMessage mail = msg.ToMailMessage(conversionOptions))
+                {
+                    // Save the message as HTML
+                    HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
+                    mail.Save(htmlPath, htmlOptions);
+                }
 
-                    htmlContent += "<h2>" + System.Web.HttpUtility.HtmlEncode(msg.Subject ?? "No Subject") + "</h2>";
-                    htmlContent += "<p><strong>From:</strong> " + System.Web.HttpUtility.HtmlEncode(msg.SenderName ?? "Unknown") + "</p>";
-                    htmlContent += "<p><strong>To:</strong> " + System.Web.HttpUtility.HtmlEncode(string.Join(", ", msg.Recipients)) + "</p>";
-                    htmlContent += "<p><strong>Date:</strong> " + (msg.ClientSubmitTime != DateTime.MinValue ? msg.ClientSubmitTime.ToString() : "Unknown") + "</p>";
-                    htmlContent += "<hr/>";
-
-                    string bodyHtml = msg.BodyHtml;
-                    if (!string.IsNullOrEmpty(bodyHtml))
-                    {
-                        htmlContent += bodyHtml;
-                    }
-                    else
-                    {
-                        // Fallback to plain text body
-                        string plainBody = System.Web.HttpUtility.HtmlEncode(msg.Body ?? string.Empty);
-                        htmlContent += "<pre>" + plainBody + "</pre>";
-                    }
-
-                    // Process attachments
-                    if (msg.Attachments != null && msg.Attachments.Count > 0)
-                    {
-                        htmlContent += "<hr/><h3>Attachments</h3><ul>";
-                        int attachmentIndex = 0;
-                        foreach (MapiAttachment attachment in msg.Attachments)
-                        {
-                            string attachmentFileName = string.IsNullOrEmpty(attachment.FileName) ? $"attachment_{attachmentIndex}" : attachment.FileName;
-                            string attachmentPath = Path.Combine(outputDirectory, attachmentFileName);
-                            try
-                            {
-                                attachment.Save(attachmentPath);
-                                htmlContent += "<li><a href=\"" + System.Web.HttpUtility.UrlPathEncode(attachmentFileName) + "\">"
-                                               + System.Web.HttpUtility.HtmlEncode(attachmentFileName) + "</a></li>";
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Warning: Could not save attachment '{attachmentFileName}'. {ex.Message}");
-                            }
-                            attachmentIndex++;
-                        }
-                        htmlContent += "</ul>";
-                    }
-
-                    htmlContent += "</body></html>";
-
-                    // Write HTML to file
+                // Extract and save attachments to the same directory as the HTML file
+                foreach (MapiAttachment attachment in msg.Attachments)
+                {
+                    string attachmentPath = Path.Combine(outputDir ?? string.Empty, attachment.FileName);
                     try
                     {
-                        File.WriteAllText(outputHtmlPath, htmlContent);
-                        Console.WriteLine($"HTML file created at: {outputHtmlPath}");
+                        attachment.Save(attachmentPath);
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error: Could not write HTML file – {outputHtmlPath}. {ex.Message}");
+                        Console.Error.WriteLine($"Warning: Failed to save attachment {attachment.FileName}. {ex.Message}");
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-            }
+
+            Console.WriteLine("Conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
