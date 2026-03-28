@@ -4,36 +4,31 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             string inputPath = "sample.eml";
-
-            // Verify that the input EML file exists
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file '{inputPath}' not found.");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Load the EML message
+            string outputPath = "sample.html";
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
             using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Configure HTML save options with custom rendering settings
-                HtmlSaveOptions saveOptions = new HtmlSaveOptions();
-                saveOptions.ResourceRenderingMode = Aspose.Email.ResourceRenderingMode.EmbedIntoHtml;
-                saveOptions.CssStyles = "body { font-family: Arial, sans-serif; }";
-
-                string outputPath = Path.ChangeExtension(inputPath, ".html");
-
-                // Save the message as HTML using a file stream
-                using (FileStream outputStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
-                {
-                    message.Save(outputStream, saveOptions);
-                }
-
-                Console.WriteLine($"EML file successfully converted to HTML: {outputPath}");
+                HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
+                htmlOptions.ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml;
+                htmlOptions.UseRelativePathToResources = true;
+                htmlOptions.CssStyles = "body {font-family: Arial;}";
+                message.Save(outputPath, htmlOptions);
             }
         }
         catch (Exception ex)
