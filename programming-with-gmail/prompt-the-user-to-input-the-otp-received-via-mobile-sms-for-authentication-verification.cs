@@ -1,58 +1,32 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients.Smtp;
-using Aspose.Email.Clients;
 
-class Program
+namespace AsposeEmailOtpSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Generate a simple 6‑digit OTP
-            Random randomGenerator = new Random();
-            int otpNumber = randomGenerator.Next(100000, 1000000);
-            string otpCode = otpNumber.ToString();
-
-            // Prepare the email message containing the OTP
-            using (MailMessage message = new MailMessage())
+            try
             {
-                message.From = "sender@example.com";
-                message.To = "recipient@example.com";
-                message.Subject = "Your OTP Code";
-                message.Body = "Your OTP is: " + otpCode;
+                // Prompt the user to enter the OTP received via mobile SMS
+                Console.Write("Enter OTP: ");
+                string otp = Console.ReadLine();
 
-                // Send the email using SmtpClient (placeholder credentials)
-                try
+                // Validate input
+                if (string.IsNullOrWhiteSpace(otp))
                 {
-                    using (SmtpClient client = new SmtpClient("smtp.example.com", 587, "username", "password", SecurityOptions.Auto))
-                    {
-                        client.Send(message);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error sending OTP email: " + ex.Message);
+                    Console.Error.WriteLine("Error: OTP not provided.");
                     return;
                 }
-            }
 
-            // Prompt the user to enter the OTP received via SMS
-            Console.Write("Enter the OTP you received: ");
-            string userInput = Console.ReadLine();
-
-            if (userInput == otpCode)
-            {
-                Console.WriteLine("OTP verification succeeded.");
+                // Use the OTP as needed (placeholder for verification logic)
+                Console.WriteLine($"OTP entered: {otp}");
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("OTP verification failed.");
+                // Global exception handling
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
