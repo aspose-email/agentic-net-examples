@@ -2,52 +2,45 @@ using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define the EWS service URL and user credentials (placeholders)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password", "DOMAIN");
+            // Initialize EWS client with placeholder credentials
+            IEWSClient client = EWSClient.GetEWSClient(
+                "https://exchange.example.com/EWS/Exchange.asmx",
+                new NetworkCredential("admin@example.com", "password"));
 
-            // Create the EWS client instance
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            using (client)
             {
                 try
                 {
-                    // Impersonate the target user
-                    string impersonatedUser = "impersonated@example.com";
-                    client.ImpersonateUser(ItemChoice.SmtpAddress, impersonatedUser);
+                    // Impersonate another user
+                    client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, "impersonated@example.com");
 
-                    // Retrieve messages from the impersonated user's Inbox
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                    foreach (ExchangeMessageInfo info in messages)
+                    // Example operation: list messages in the impersonated user's Inbox
+                    foreach (var msgInfo in client.ListMessages())
                     {
-                        // Fetch the full message to access its properties
-                        MailMessage message = client.FetchMessage(info.UniqueUri);
-                        Console.WriteLine("Subject: " + message.Subject);
-                        // Dispose the fetched message
-                        message.Dispose();
+                        Console.WriteLine($"Subject: {msgInfo.Subject}");
                     }
-
-                    // Reset impersonation after operations are complete
-                    client.ResetImpersonation();
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Error during impersonated operations: " + ex.Message);
+                    Console.Error.WriteLine($"Operation error: {ex.Message}");
+                }
+                finally
+                {
+                    // Reset impersonation if needed
+                    client.ResetImpersonation();
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Fatal error: " + ex.Message);
+            Console.Error.WriteLine($"Initialization error: {ex.Message}");
         }
     }
 }
