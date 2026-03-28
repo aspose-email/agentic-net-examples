@@ -1,4 +1,5 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Activity;
 
@@ -8,36 +9,34 @@ class Program
     {
         try
         {
-            // Obtain an Outlook token provider (replace placeholders with real values)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken");
+            // Create token provider for Outlook (replace with real credentials)
+            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                clientId: "clientId",
+                clientSecret: "clientSecret",
+                refreshToken: "refreshToken");
 
-            // URL of the subscription service (replace with actual service endpoint)
-            string serviceUrl = "https://activity.example.com";
+            // Service URL for the subscription service (placeholder)
+            string serviceUrl = "https://api.example.com/activity";
 
-            // Create the activity client and ensure it is disposed properly
-            using (IActivityClient activityClient = ActivityClient.GetClient(tokenProvider, serviceUrl))
+            // Create the Activity client
+            using (IActivityClient client = ActivityClient.GetClient(tokenProvider, serviceUrl))
             {
-                // Configure the webhook that will receive notifications
-                Webhook webhook = new Webhook
+                // Prepare webhook information
+                var webhook = new Webhook
                 {
-                    Address = "https://myapp.example.com/webhook",
-                    Expiration = DateTime.UtcNow.AddDays(30)
+                    Address = "https://yourapp.example.com/webhook",
+                    Expiration = DateTime.UtcNow.AddHours(1)
                 };
 
-                // Define the content type for product update notifications
-                string contentType = "productUpdates";
+                // Register for product update notifications (content type is a placeholder)
+                client.StartSubscription("product-updates", webhook);
 
-                // Register the subscription
-                activityClient.StartSubscription(contentType, webhook);
-                Console.WriteLine("Subscription registered successfully.");
+                Console.WriteLine("Subscription request sent successfully.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
