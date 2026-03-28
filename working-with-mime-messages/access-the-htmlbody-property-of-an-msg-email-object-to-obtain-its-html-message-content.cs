@@ -5,20 +5,18 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string msgPath = "message.msg";
+            string msgPath = "sample.msg";
 
-            // Verify that the MSG file exists
             if (!File.Exists(msgPath))
             {
                 Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file and access its HTML body
             using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
                 string htmlBody = msg.BodyHtml;
@@ -28,7 +26,7 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
