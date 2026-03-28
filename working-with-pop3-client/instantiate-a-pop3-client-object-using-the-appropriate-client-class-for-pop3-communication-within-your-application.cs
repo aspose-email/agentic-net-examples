@@ -1,32 +1,36 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-class Program
+namespace AsposeEmailPop3Sample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Instantiate POP3 client with host, port, username, password, and security options
-            using (Pop3Client client = new Pop3Client("pop.example.com", 110, "username", "password", SecurityOptions.Auto))
+            try
             {
-                // Validate credentials to ensure connection parameters are correct
-                try
+                // Initialize POP3 client with host, username, password and security options
+                using (Pop3Client client = new Pop3Client("pop.example.com", "username", "password", SecurityOptions.Auto))
                 {
-                    client.ValidateCredentials();
-                    Console.WriteLine("POP3 client created and credentials validated successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Credential validation failed: {ex.Message}");
-                    return;
+                    try
+                    {
+                        // Validate credentials to ensure connection is successful
+                        client.ValidateCredentials();
+                        Console.WriteLine("POP3 client connected and authenticated successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"POP3 connection failed: {ex.Message}");
+                        return;
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
