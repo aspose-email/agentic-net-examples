@@ -8,15 +8,21 @@ class Program
     {
         try
         {
-            string mboxFilePath = "sample.mbox";
+            string mboxPath = "storage.mbox";
 
-            if (!File.Exists(mboxFilePath))
+            if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
+                // Create an empty placeholder MBOX file if it does not exist
+                using (FileStream placeholder = File.Create(mboxPath))
+                {
+                    // No content needed for placeholder
+                }
+                Console.Error.WriteLine($"Input file not found. Created empty placeholder at {mboxPath}.");
                 return;
             }
 
-            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
+            // Open the MBOX file using the Aspose.Email MboxStorageReader
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
                 int totalCount = reader.GetTotalItemsCount();
                 Console.WriteLine($"Total messages in MBOX: {totalCount}");
