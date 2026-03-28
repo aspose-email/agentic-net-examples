@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -11,28 +10,29 @@ class Program
         {
             string msgPath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if it does not.
             if (!File.Exists(msgPath))
             {
-                using (MapiMessage placeholder = new MapiMessage(
-                    "sender@example.com",
-                    "receiver@example.com",
-                    "Placeholder Subject",
-                    "Placeholder body"))
-                {
-                    placeholder.Save(msgPath);
-                }
+                Console.Error.WriteLine($"File not found: {msgPath}");
+                return;
             }
 
-            // Load the MSG file as a MailMessage and output its subject.
-            using (MailMessage message = MailMessage.Load(msgPath))
+            try
             {
-                Console.WriteLine("Subject: " + message.Subject);
+                using (MailMessage message = MailMessage.Load(msgPath))
+                {
+                    string subject = message.Subject ?? string.Empty;
+                    Console.WriteLine("Subject: " + subject);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Error loading MSG file: " + ex.Message);
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
