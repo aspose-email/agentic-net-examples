@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 621,
+  "total_examples": 622,
   "total_categories": 14,
   "last_updated": "2026-03-28",
   "categories": [
@@ -151,9 +151,10 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 41,
+      "file_count": 42,
       "files": [
         "access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs",
+        "add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs",
         "add-a-new-calendar-appointment-to-the-schedule-using-the-library-s-appointment-insertion-api.cs",
         "capture-the-user-s-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs",
         "convert-an-mbox-archive-to-pst-format-providing-the-option-to-strip-or-retain-email-signatures-as-required.cs",
@@ -198,11 +199,11 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 41
+          "count": 42
         },
         {
           "name": "Aspose.Email",
-          "count": 32
+          "count": 33
         },
         {
           "name": "Aspose.Email.Clients",
