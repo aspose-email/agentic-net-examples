@@ -11,59 +11,44 @@ class Program
     {
         try
         {
-            // Paths for the source MBOX file and the target PST file.
+            // Paths for the source MBOX file and the destination PST file.
             string mboxPath = "input.mbox";
             string pstPath = "output.pst";
 
-            // Option to remove signatures during conversion.
+            // Option to remove email signatures during conversion.
             bool removeSignature = true;
 
-            // Ensure the source MBOX file exists; create a minimal placeholder if it does not.
+            // Verify that the source MBOX file exists.
             if (!File.Exists(mboxPath))
+            {
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                return;
+            }
+
+            // Ensure the directory for the PST file exists.
+            string pstDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
                 try
                 {
-                    using (StreamWriter writer = new StreamWriter(mboxPath))
-                    {
-                        writer.WriteLine("From - Mon Jan 01 00:00:00 2020");
-                        writer.WriteLine("Subject: Placeholder Message");
-                        writer.WriteLine();
-                        writer.WriteLine("This is a placeholder email generated because the input MBOX file was missing.");
-                    }
+                    Directory.CreateDirectory(pstDirectory);
                 }
-                catch (Exception ex)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create directory '{pstDirectory}': {dirEx.Message}");
                     return;
                 }
             }
 
-            // Ensure the directory for the PST file exists.
-            try
-            {
-                string pstDirectory = Path.GetDirectoryName(pstPath);
-                if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-                {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare PST output directory: {ex.Message}");
-                return;
-            }
-
             // Configure conversion options.
-            MboxToPstConversionOptions options = new MboxToPstConversionOptions
-            {
-                RemoveSignature = removeSignature
-            };
+            MboxToPstConversionOptions options = new MboxToPstConversionOptions();
+            options.RemoveSignature = removeSignature;
 
-            // Perform the conversion.
+            // Perform the conversion inside a using block to dispose the resulting PST.
             using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath, options))
             {
-                // Conversion succeeded; the PST file is now available at pstPath.
-                Console.WriteLine($"MBOX file '{mboxPath}' successfully converted to PST file '{pstPath}'.");
+                // Conversion succeeded; you can further work with the PST if needed.
+                Console.WriteLine($"MBOX file '{mboxPath}' successfully converted to PST '{pstPath}'.");
                 Console.WriteLine($"Signature removal was {(removeSignature ? "enabled" : "disabled")}.");
             }
         }
