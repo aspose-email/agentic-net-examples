@@ -5,30 +5,28 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string msgPath = @"C:\Emails\sample.msg";
+            string msgFilePath = "message.msg";
 
-            // Verify that the MSG file exists before attempting to load it.
-            if (!File.Exists(msgPath))
+            if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                Console.Error.WriteLine($"File not found: {msgFilePath}");
                 return;
             }
 
-            // Load the MSG file and extract its plain‑text body.
-            using (MapiMessage message = MapiMessage.Load(msgPath))
+            using (MapiMessage msg = MapiMessage.Load(msgFilePath))
             {
-                string plainTextBody = message.Body ?? string.Empty;
-                Console.WriteLine("Plain‑text Body:");
+                string plainTextBody = msg.Body;
+                Console.WriteLine("Plain text body:");
                 Console.WriteLine(plainTextBody);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
