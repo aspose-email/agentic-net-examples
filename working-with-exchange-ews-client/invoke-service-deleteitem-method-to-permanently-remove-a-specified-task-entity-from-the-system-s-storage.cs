@@ -7,23 +7,22 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define mailbox URI and credentials
+            // Placeholder mailbox URI and credentials
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            string username = "user@example.com";
+            string password = "password";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Initialize the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // URI of the task to be deleted (replace with a real value)
-                string taskUri = "https://exchange.example.com/EWS/Tasks/TaskId";
+                // Placeholder task URI to be deleted
+                string taskUri = "https://exchange.example.com/EWS/Tasks/UniqueTaskId";
 
-                // Permanently delete the task
+                // Delete the task permanently
                 client.DeleteItem(taskUri, DeletionOptions.DeletePermanently);
-                Console.WriteLine("Task deleted successfully.");
+                Console.WriteLine("Task deleted permanently.");
             }
         }
         catch (Exception ex)
