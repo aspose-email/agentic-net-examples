@@ -1,38 +1,36 @@
 using System;
 using System.IO;
 
-namespace Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Specify the directory path to be created or ensured.
-                string directoryPath = "C:\\Temp\\AsposeSample";
+            // Specify the directory path to be created
+            string directoryPath = @"C:\MyProject\Resources";
 
-                // Verify that the directory exists; if not, attempt to create it.
-                if (!Directory.Exists(directoryPath))
+            // Check if the directory already exists
+            if (!Directory.Exists(directoryPath))
+            {
+                // Create the directory and obtain a DirectoryInfo object
+                DirectoryInfo createdDirectory = Directory.CreateDirectory(directoryPath);
+
+                // Verify that the directory was created successfully
+                if (!createdDirectory.Exists)
                 {
-                    try
-                    {
-                        Directory.CreateDirectory(directoryPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error: Could not create directory – {directoryPath}. {ex.Message}");
-                        return;
-                    }
+                    Console.Error.WriteLine($"Error: Failed to create directory – {directoryPath}");
+                    return;
                 }
+            }
 
-                Console.WriteLine($"Directory ensured at: {directoryPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unhandled error: {ex.Message}");
-                return;
-            }
+            Console.WriteLine($"Directory is ready at: {directoryPath}");
+        }
+        catch (Exception exception)
+        {
+            // Output any unexpected errors
+            Console.Error.WriteLine($"Error: {exception.Message}");
+            return;
         }
     }
 }
