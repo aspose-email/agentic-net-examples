@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 490,
+  "total_examples": 492,
   "total_categories": 13,
-  "last_updated": "2026-03-27",
+  "last_updated": "2026-03-28",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -668,11 +668,12 @@
     },
     {
       "name": "working-with-ibm-notes",
-      "file_count": 28,
+      "file_count": 30,
       "files": [
         "add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs",
         "configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs",
         "construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs",
+        "design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs",
         "generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs",
         "generate-a-new-contact-entry-by-processing-an-input-msg-file-and-extracting-its-contact-details.cs",
         "generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs",
@@ -681,6 +682,7 @@
         "generate-a-rich-text-rtf-file-from-an-input-msg-email-message-while-preserving-formatting.cs",
         "implement-a-user-interface-view-that-accepts-msg-files-as-input-for-processing-and-display.cs",
         "implement-an-agent-that-accepts-a-msg-object-as-input-and-processes-it-according-to-defined-business-logic.cs",
+        "instantiate-the-notesdocument-class-and-populate-its-fields-with-the-input-msg-to-create-a-new-notes-document.cs",
         "load-a-calendar-entry-from-an-msg-file-into-memory-for-further-processing-programmatically.cs",
         "load-a-notes-document-by-its-unid-employing-the-notesdocument-class-to-read-the-provided-msg-file.cs",
         "load-a-notes-document-from-an-msg-file-using-its-unid-identifier-ensuring-accurate-retrieval-of-content.cs",
@@ -702,22 +704,26 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 28
+          "count": 30
         },
         {
           "name": "System.IO",
-          "count": 28
+          "count": 30
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 27
+          "count": 29
         },
         {
           "name": "Aspose.Email",
-          "count": 26
+          "count": 28
         },
         {
           "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Storage.Nsf",
           "count": 2
         },
         {
@@ -734,10 +740,6 @@
         },
         {
           "name": "Aspose.Email.Clients.Imap",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Storage.Nsf",
           "count": 1
         },
         {
@@ -913,15 +915,15 @@
         },
         {
           "name": "Aspose.Email",
-          "count": 31
+          "count": 32
         },
         {
           "name": "System.IO",
-          "count": 27
+          "count": 28
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 23
+          "count": 22
         },
         {
           "name": "System.Net",
