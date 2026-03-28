@@ -1,48 +1,38 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string msgPath = "message.msg";
+            string msgPath = args.Length > 0 ? args[0] : "sample.msg";
 
-            // Guard file existence
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            using (MailMessage mailMessage = MailMessage.Load(msgPath))
             {
-                // Iterate through attachments
-                foreach (MapiAttachment attachment in msg.Attachments)
+                foreach (Attachment attachment in mailMessage.Attachments)
                 {
-                    // Access the property stream
-                    MapiPropertyStream propStream = attachment.PropertyStream;
-                    object contentObj = propStream.Content;
-
-                    // Ensure the content is a Stream
-                    if (contentObj is Stream contentStream)
+                    if (attachment.ContentStream == null)
                     {
-                        // Read the attachment data
-                        using (contentStream)
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            contentStream.CopyTo(ms);
-                            byte[] data = ms.ToArray();
-                            Console.WriteLine($"Attachment: {attachment.FileName}, Size: {data.Length} bytes");
-                        }
+                        Console.WriteLine($"Attachment \"{attachment.Name}\" has no content stream.");
+                        continue;
                     }
-                    else
+
+                    using (Stream contentStream = attachment.ContentStream)
+                    using (MemoryStream memory = new MemoryStream())
                     {
-                        Console.Error.WriteLine($"Attachment {attachment.FileName} does not contain a stream.");
+                        contentStream.CopyTo(memory);
+                        byte[] data = memory.ToArray();
+                        Console.WriteLine($"Attachment \"{attachment.Name}\" size: {data.Length} bytes");
+                        // Example: process data here
                     }
                 }
             }

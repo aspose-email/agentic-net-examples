@@ -1,58 +1,48 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Mailbox URI and credentials (replace with real values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Initialize the EWS client with credentials
+            try
             {
-                // Optional filter: subject contains a keyword if provided
-                MailQuery query = null;
-                if (args != null && args.Length > 0 && !string.IsNullOrEmpty(args[0]))
+                using (IEWSClient client = EWSClient.GetEWSClient(
+                    "https://mail.example.com/EWS/Exchange.asmx",
+                    new NetworkCredential("username", "password")))
                 {
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.Subject.Contains(args[0]);
-                    query = builder.GetQuery();
-                }
+                    // Get mailbox information
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                    string inboxUri = mailboxInfo.InboxUri;
 
-                // List messages from Inbox
-                ExchangeMessageInfoCollection messages;
-                if (query != null)
-                {
-                    messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-                }
-                else
-                {
-                    messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                }
+                    // List messages in the Inbox folder
+                    ExchangeMessageInfoCollection messagesInfo = client.ListMessages(inboxUri);
 
-                // Iterate and display subjects
-                foreach (ExchangeMessageInfo info in messages)
-                {
-                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                    // Iterate through each message info and fetch the full message
+                    foreach (ExchangeMessageInfo info in messagesInfo)
                     {
-                        Console.WriteLine("Subject: " + message.Subject);
+                        using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                        {
+                            Console.WriteLine($"Subject: {message.Subject}");
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Client error: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

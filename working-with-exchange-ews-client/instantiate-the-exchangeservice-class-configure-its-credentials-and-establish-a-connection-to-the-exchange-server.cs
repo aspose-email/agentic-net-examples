@@ -7,28 +7,36 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Mailbox URI and credentials (replace with actual values)
+            // Define connection parameters
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            string username = "user@example.com";
+            string password = "password";
 
             // Create and configure the EWS client
-            using (Aspose.Email.Clients.Exchange.WebService.IEWSClient client = Aspose.Email.Clients.Exchange.WebService.EWSClient.GetEWSClient(mailboxUri, credentials))
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Retrieve mailbox information to verify the connection
-                Aspose.Email.Clients.Exchange.ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                try
+                {
+                    // Optionally set additional client properties
+                    client.Credentials = new NetworkCredential(username, password);
+                    client.UseDateInLogFileName = true;
 
-                // Output some mailbox URIs
-                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
-                Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                    // Test the connection by retrieving server version info
+                    string versionInfo = client.GetVersionInfo();
+                    Console.WriteLine("Connected to Exchange Server. Version: " + versionInfo);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error during client operation: " + ex.Message);
+                    return;
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }

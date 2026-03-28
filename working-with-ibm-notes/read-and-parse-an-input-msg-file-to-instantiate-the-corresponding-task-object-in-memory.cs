@@ -3,53 +3,43 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailTaskExample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgFilePath = "sample.msg";
-
-            if (!File.Exists(msgFilePath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
-                return;
-            }
-
             try
             {
-                using (MapiMessage message = MapiMessage.Load(msgFilePath))
-                {
-                    Console.WriteLine("Subject: " + message.Subject);
-                    Console.WriteLine("From: " + message.SenderName);
-                    Console.WriteLine("Body: " + message.Body);
+                string msgFilePath = "task.msg";
 
-                    foreach (MapiAttachment attachment in message.Attachments)
+                if (!File.Exists(msgFilePath))
+                {
+                    Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                    return;
+                }
+
+                using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+                {
+                    if (mapiMessage.SupportedType == MapiItemType.Task)
                     {
-                        Console.WriteLine("Attachment Name: " + attachment.FileName);
-                        string attachmentPath = Path.Combine(Environment.CurrentDirectory, attachment.FileName);
-                        try
+                        using (MapiTask task = (MapiTask)mapiMessage.ToMapiMessageItem())
                         {
-                            attachment.Save(attachmentPath);
-                            Console.WriteLine("Saved attachment to: " + attachmentPath);
+                            Console.WriteLine($"Subject: {task.Subject}");
+                            Console.WriteLine($"Due Date: {task.DueDate}");
+                            // The task object is now instantiated in memory and can be used further.
                         }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error saving attachment '{attachment.FileName}': {ex.Message}");
-                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("The MSG file does not contain a task.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

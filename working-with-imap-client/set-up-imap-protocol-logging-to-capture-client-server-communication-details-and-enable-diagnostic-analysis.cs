@@ -1,45 +1,62 @@
-using System;
-using Aspose.Email;
 using Aspose.Email.Clients;
+using System;
+using System.IO;
+using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 
-namespace ImapLoggingExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Prepare log directory.
+            string logDirectory = "Logs";
             try
             {
-                // Initialize the IMAP client with server details and credentials
-                using (Aspose.Email.Clients.Imap.ImapClient imapClient = new Aspose.Email.Clients.Imap.ImapClient(
-                    "imap.example.com",
-                    993,
-                    "username",
-                    "password",
-                    Aspose.Email.Clients.SecurityOptions.SSLImplicit))
+                if (!Directory.Exists(logDirectory))
                 {
-                    try
-                    {
-                        // Enable protocol logging and specify the log file name
-                        imapClient.EnableLogger = true;
-                        imapClient.LogFileName = "imap_log.txt";
-
-                        // Perform an operation that triggers the connection (e.g., select a folder)
-                        imapClient.SelectFolder("INBOX");
-
-                        Console.WriteLine("IMAP client connected successfully. Logging is enabled.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                    }
+                    Directory.CreateDirectory(logDirectory);
                 }
             }
-            catch (Exception ex)
+            catch (Exception dirEx)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Error creating log directory: {dirEx.Message}");
+                return;
             }
+
+            // IMAP client configuration.
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
+            SecurityOptions security = SecurityOptions.Auto;
+            string logFilePath = Path.Combine(logDirectory, "imap_log.txt");
+
+            // Initialize and configure the IMAP client.
+            using (ImapClient client = new ImapClient(host, port, username, password, security))
+            {
+                try
+                {
+                    client.EnableLogger = true;
+                    client.LogFileName = logFilePath;
+                    client.UseDateInLogFileName = false;
+
+                    // Perform a simple operation to generate log entries.
+                    client.SelectFolder("INBOX");
+                    ImapMessageInfoCollection messages = client.ListMessages();
+                    Console.WriteLine($"Total messages in INBOX: {messages.Count}");
+                }
+                catch (Exception clientEx)
+                {
+                    Console.Error.WriteLine($"IMAP operation failed: {clientEx.Message}");
+                    return;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

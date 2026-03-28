@@ -1,5 +1,4 @@
 using System;
-using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
@@ -9,29 +8,24 @@ class Program
     {
         try
         {
-            // Initialize POP3 client with server details
-            using (Pop3Client client = new Pop3Client("pop.example.com", "user@example.com", "password", SecurityOptions.Auto))
+            // Initialize POP3 client with host, username, and password
+            using (Pop3Client client = new Pop3Client("pop.example.com", "username", "password"))
             {
                 try
                 {
-                    // Validate the supplied credentials against the POP3 server
+                    // Validate the credentials against the POP3 server
                     bool isValid = client.ValidateCredentials();
-
-                    Console.WriteLine(isValid
-                        ? "Credentials are valid."
-                        : "Credentials are invalid.");
+                    Console.WriteLine(isValid ? "Credentials are valid." : "Invalid credentials.");
                 }
                 catch (Exception ex)
                 {
-                    // Handle errors that occur during validation (e.g., network issues, authentication failures)
-                    Console.Error.WriteLine($"Validation error: {ex.Message}");
+                    Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
                     return;
                 }
             }
         }
         catch (Exception ex)
         {
-            // Catch any unexpected errors in the overall execution
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }

@@ -1,61 +1,76 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Imap;
 
-class Program
+namespace AsposeEmailSample
 {
-    static void Main()
+    class Program
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-        try
+        static void Main()
         {
-            // Define mailbox URI and credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("user", "password");
-
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            try
             {
-                // ----- Single item deletion -----
-                string singleItemUri = "item-uri-1";
-                try
-                {
-                    client.DeleteItem(singleItemUri, DeletionOptions.DeletePermanently);
-                    Console.WriteLine("Deleted single item: " + singleItemUri);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error deleting single item: " + ex.Message);
-                }
+                // Server connection settings (replace with real values)
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "user@example.com";
+                string password = "password";
 
-                // ----- Batch deletion -----
-                List<string> batchItemUris = new List<string>
-                {
-                    "item-uri-2",
-                    "item-uri-3",
-                    "item-uri-4"
-                };
+                // Initialize and connect the IMAP client
                 try
                 {
-                    // Cast to the async interface to use DeleteItemsAsync
-                    IAsyncEwsClient asyncClient = (IAsyncEwsClient)client;
-                    Task deleteTask = asyncClient.DeleteItemsAsync(batchItemUris, DeletionOptions.DeletePermanently);
-                    deleteTask.GetAwaiter().GetResult();
-                    Console.WriteLine("Deleted batch items successfully.");
+                    using (ImapClient client = new ImapClient(host, port, username, password))
+                    {
+                        client.SecurityOptions = SecurityOptions.SSLImplicit;
+
+                        // Select the INBOX folder
+                        client.SelectFolder("INBOX");
+
+                        // Retrieve all messages in the folder
+                        ImapMessageInfoCollection messages = client.ListMessages();
+                        Console.WriteLine($"Total messages in INBOX: {messages.Count}");
+
+                        // ----- Single-item deletion -----
+                        if (messages.Count > 0)
+                        {
+                            // Delete the first message by its unique identifier
+                            ImapMessageInfo firstMessage = messages[0];
+                            client.DeleteMessage(firstMessage.UniqueId);
+                            client.CommitDeletes();
+                            Console.WriteLine($"Deleted single message UID: {firstMessage.UniqueId}");
+                        }
+
+                        // ----- Batch deletion -----
+                        if (messages.Count > 2)
+                        {
+                            // Prepare a list of messages to delete (e.g., second and third messages)
+                            List<ImapMessageInfo> batchToDelete = new List<ImapMessageInfo>
+                            {
+                                messages[1],
+                                messages[2]
+                            };
+
+                            // Delete the batch and commit immediately
+                            client.DeleteMessages(batchToDelete, true);
+                            Console.WriteLine("Deleted batch of messages (UIDs: {0}, {1})",
+                                batchToDelete[0].UniqueId, batchToDelete[1].UniqueId);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Error deleting batch items: " + ex.Message);
+                    // Handle connection or operation errors
+                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                    return;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            catch (Exception ex)
+            {
+                // Top-level exception guard
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

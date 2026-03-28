@@ -1,48 +1,67 @@
 using System;
 using System.IO;
-using System.Text;
 using Aspose.Email;
 using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
 
-namespace AsposeEmailMboxLoadOptionsExample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // Path to the MBOX file
-                string mboxFilePath = "sample.mbox";
+            // Path to the MBOX file
+            string mboxFilePath = "sample.mbox";
 
-                // Verify that the file exists before attempting to read it
-                if (!File.Exists(mboxFilePath))
+            // Ensure the MBOX file exists; create a minimal placeholder if missing
+            if (!File.Exists(mboxFilePath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"Error: File not found – {mboxFilePath}");
+                    using (FileStream placeholderStream = File.Create(mboxFilePath))
+                    {
+                        // Create an empty MBOX file
+                    }
+                    Console.WriteLine($"Placeholder MBOX file created at '{mboxFilePath}'.");
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ioEx.Message}");
                     return;
                 }
+            }
 
-                // Configure load options for reading the MBOX file
-                MboxLoadOptions loadOptions = new MboxLoadOptions();
-                loadOptions.LeaveOpen = false;                     // Do not keep the underlying stream open after disposal
-                loadOptions.PreferredTextEncoding = Encoding.UTF8; // Use UTF-8 for message text decoding
+            // Configure load options for the MBOX reader
+            MboxLoadOptions mboxLoadOptions = new MboxLoadOptions();
 
-                // Create a reader for the MBOX storage with the specified options
-                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, loadOptions))
+            // Configure EML load options that control how individual messages are parsed
+            EmlLoadOptions emlLoadOptions = new EmlLoadOptions();
+
+            // Open the MBOX reader with the specified load options
+            try
+            {
+                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, mboxLoadOptions))
                 {
-                    // Example: extract a message by its entry identifier (replace with a real ID as needed)
-                    // The ExtractMessage method requires an identifier and EmlLoadOptions.
-                    // Here we demonstrate the call signature without actual execution.
-                    // EmlLoadOptions emlOptions = new EmlLoadOptions();
-                    // MailMessage message = mboxReader.ExtractMessage("some-message-id", emlOptions);
-                    // Console.WriteLine($"Subject: {message.Subject}");
+                    // Enumerate messages using the EML load options
+                    foreach (MailMessage message in mboxReader.EnumerateMessages(emlLoadOptions))
+                    {
+                        // Output basic information about each message
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"To: {message.To}");
+                        Console.WriteLine(new string('-', 40));
+                    }
                 }
             }
-            catch (Exception ex)
+            catch (Exception readerEx)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"Error reading MBOX file: {readerEx.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

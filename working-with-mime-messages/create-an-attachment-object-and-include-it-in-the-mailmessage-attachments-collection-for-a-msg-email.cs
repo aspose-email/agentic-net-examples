@@ -8,60 +8,64 @@ class Program
     {
         try
         {
-            // Paths for the attachment file and the output MSG file
-            string attachmentPath = "1.txt";
-            string outputPath = "AddAttachments.msg";
+            // Path to the attachment file
+            string attachmentPath = "sample.txt";
 
             // Ensure the attachment file exists; create a minimal placeholder if missing
             if (!File.Exists(attachmentPath))
             {
                 try
                 {
-                    File.WriteAllText(attachmentPath, "Placeholder attachment content");
+                    File.WriteAllText(attachmentPath, "Sample attachment content");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create attachment file: {ex.Message}");
                     return;
                 }
             }
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Create the email message and add the attachment
+            // Create the email message
             using (MailMessage message = new MailMessage())
             {
-                message.From = "sender@from.com";
-                message.To = "receiver@to.com";
-                message.Subject = "This is message";
-                message.Body = "This is body";
+                message.From = "sender@example.com";
+                message.To.Add("receiver@example.com");
+                message.Subject = "Message with attachment";
+                message.Body = "Please see the attached file.";
 
+                // Load and add the attachment
                 using (Attachment attachment = new Attachment(attachmentPath))
                 {
                     message.Attachments.Add(attachment);
                 }
 
-                // Save the message as MSG
+                // Define output MSG file path
+                string outputPath = "MessageWithAttachment.msg";
+
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                        return;
+                    }
+                }
+
+                // Save the message as MSG using appropriate save options
                 try
                 {
-                    message.Save(outputPath, SaveOptions.DefaultMsg);
+                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                    message.Save(outputPath, saveOptions);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
                 }
             }
         }

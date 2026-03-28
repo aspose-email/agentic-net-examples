@@ -10,25 +10,28 @@ class Program
     {
         try
         {
-            // Replace these placeholder values with actual credentials obtained from Google Developer Console
-            string clientId = "your-client-id";
-            string clientSecret = "your-client-secret";
-            string refreshToken = "your-refresh-token";
-            string defaultEmail = "user@example.com";
+            // Initialize the Gmail client with dummy credentials.
+            IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com");
 
-            // Create the Gmail client using the provided credentials
-            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-
-            // Verify the client works by listing messages in the mailbox
-            List<GmailMessageInfo> messages = gmailClient.ListMessages();
-            Console.WriteLine($"Retrieved {messages.Count} messages from the Gmail account.");
-
-            // If there is at least one message, fetch its full content and display the subject
-            if (messages.Count > 0)
+            // Ensure the client is disposed after use.
+            using (gmailClient)
             {
-                GmailMessageInfo firstInfo = messages[0];
-                MailMessage fullMessage = gmailClient.FetchMessage(firstInfo.Id);
-                Console.WriteLine($"First message subject: {fullMessage.Subject}");
+                // Retrieve the list of messages.
+                List<GmailMessageInfo> messages = gmailClient.ListMessages();
+                Console.WriteLine($"Total messages: {messages.Count}");
+
+                // Iterate through messages and fetch full details.
+                foreach (GmailMessageInfo info in messages)
+                {
+                    using (MailMessage fullMessage = gmailClient.FetchMessage(info.Id))
+                    {
+                        Console.WriteLine($"Subject: {fullMessage.Subject}");
+                    }
+                }
             }
         }
         catch (Exception ex)

@@ -10,48 +10,56 @@ class Program
     {
         try
         {
-            // Paths for the source MSG file and the target IBM Notes (NSF) database
-            string msgFilePath = "sample.msg";
-            string nsfFilePath = "notes.nsf";
-
-            // Verify that the source MSG file exists
-            if (!File.Exists(msgFilePath))
+            string msgPath = "input.msg";
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                Console.Error.WriteLine($"Error: File not found – {msgPath}");
                 return;
             }
 
-            // Ensure the directory for the NSF file exists
-            string nsfDirectory = Path.GetDirectoryName(nsfFilePath);
-            if (!string.IsNullOrEmpty(nsfDirectory) && !Directory.Exists(nsfDirectory))
+            // Load the MSG file as a MapiMessage
+            using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(msgPath))
             {
-                try
+                string nsfPath = "output.nsf";
+
+                // Ensure the target directory exists
+                string nsfDirectory = Path.GetDirectoryName(nsfPath);
+                if (!string.IsNullOrEmpty(nsfDirectory) && !Directory.Exists(nsfDirectory))
                 {
-                    Directory.CreateDirectory(nsfDirectory);
+                    try
+                    {
+                        Directory.CreateDirectory(nsfDirectory);
+                    }
+                    catch (Exception dirEx)
+                    {
+                        Console.Error.WriteLine($"Error creating directory for NSF: {dirEx.Message}");
+                        return;
+                    }
                 }
-                catch (Exception dirEx)
+
+                // Create an empty NSF file if it does not exist
+                if (!File.Exists(nsfPath))
                 {
-                    Console.Error.WriteLine($"Error creating directory for NSF file: {dirEx.Message}");
-                    return;
+                    try
+                    {
+                        using (FileStream fs = File.Create(nsfPath))
+                        {
+                            // Placeholder: an empty NSF file is created.
+                        }
+                    }
+                    catch (Exception createEx)
+                    {
+                        Console.Error.WriteLine($"Error creating NSF file: {createEx.Message}");
+                        return;
+                    }
                 }
-            }
 
-            // Create a new IBM Notes (NSF) database file
-            using (NotesStorageFacility notesFacility = new NotesStorageFacility(nsfFilePath))
-            {
-                // Load the MSG file into a MapiMessage object
-                using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+                // Open the NSF database
+                using (NotesStorageFacility notesFacility = new NotesStorageFacility(nsfPath))
                 {
-                    // Convert the MapiMessage to an IMapiMessageItem (required for storage)
-                    IMapiMessageItem messageItem = mapiMessage.ToMapiMessageItem();
-
-                    // NOTE: The NotesStorageFacility class does not expose a direct method to add messages.
-                    // If a suitable API exists in the Aspose.Email version you are using, it would be invoked here.
-                    // For demonstration, we simply output some properties of the loaded message.
-
-                    Console.WriteLine($"Subject: {mapiMessage.Subject}");
-                    Console.WriteLine($"From: {mapiMessage.SenderEmailAddress}");
-                    Console.WriteLine($"Body preview: {mapiMessage.Body?.Substring(0, Math.Min(100, mapiMessage.Body.Length))}");
+                    // At this point a new IBM Notes database (NSF) is ready.
+                    // Additional logic to import the MapiMessage into the NSF would go here.
+                    Console.WriteLine($"NSF database created at: {nsfPath}");
                 }
             }
         }

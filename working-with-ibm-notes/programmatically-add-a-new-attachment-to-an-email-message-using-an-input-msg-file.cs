@@ -1,8 +1,6 @@
 using System;
 using System.IO;
-using System.Text;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,32 +8,40 @@ class Program
     {
         try
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
+            string inputMsgPath = "input.msg";
+            string attachmentFilePath = "newAttachment.txt";
+            string outputMsgPath = "output.msg";
 
-            if (!File.Exists(inputPath))
+            // Verify input MSG file exists
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                Console.Error.WriteLine($"Error: Input file not found – {inputMsgPath}");
                 return;
             }
 
-            using (MapiMessage message = MapiMessage.Load(inputPath))
+            // Verify attachment file exists
+            if (!File.Exists(attachmentFilePath))
             {
-                string attachmentName = "Sample.txt";
-                string attachmentText = "This is a sample attachment.";
-                byte[] attachmentData = Encoding.UTF8.GetBytes(attachmentText);
+                Console.Error.WriteLine($"Error: Attachment file not found – {attachmentFilePath}");
+                return;
+            }
 
-                // Add the attachment to the message
-                message.Attachments.Add(attachmentName, attachmentData);
+            // Load the existing MSG message
+            using (MailMessage message = MailMessage.Load(inputMsgPath))
+            {
+                // Create attachment and add it to the message
+                using (Attachment attachment = new Attachment(attachmentFilePath))
+                {
+                    message.AddAttachment(attachment);
+                }
 
-                // Save the updated message
-                message.Save(outputPath);
-                Console.WriteLine($"Attachment added and message saved to {outputPath}");
+                // Save the updated message to a new MSG file
+                message.Save(outputMsgPath);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

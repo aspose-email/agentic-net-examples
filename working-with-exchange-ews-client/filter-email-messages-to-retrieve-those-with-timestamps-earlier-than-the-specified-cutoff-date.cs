@@ -1,54 +1,78 @@
-using System.Net;
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Google;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Define cutoff date
+            DateTime cutoffDate = new DateTime(2023, 1, 1);
 
+            // Initialize Gmail client with placeholder credentials
+            IGmailClient client;
             try
             {
-                // Define mailbox URI and credentials (dummy values for illustration)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
-
-                // Create the EWS client inside a using block to ensure disposal
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-                {
-                    // Define the cutoff date (messages earlier than this date will be retrieved)
-                    DateTime cutoffDate = new DateTime(2023, 1, 1);
-
-                    // Build the query to find messages with SentDate earlier than the cutoff date
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    MailQuery dateQuery = builder.SentDate.Before(cutoffDate);
-                    MailQuery query = builder.GetQuery();
-
-                    // Retrieve messages from the Inbox folder that match the query
-                    string inboxFolderUri = client.MailboxInfo.InboxUri;
-                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxFolderUri, query);
-
-                    // Output basic information about each matching message
-                    foreach (ExchangeMessageInfo info in messages)
-                    {
-                        Console.WriteLine("Subject: " + info.Subject);
-                        Console.WriteLine("Sent Date: " + info.Date);
-                        Console.WriteLine(new string('-', 40));
-                    }
-                }
+                client = GmailClient.GetInstance(
+                    "clientId",
+                    "clientSecret",
+                    "refreshToken",
+                    "user@example.com");
             }
             catch (Exception ex)
             {
-                // Write any errors to the error output stream
-                Console.Error.WriteLine("Error: " + ex.Message);
+                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                return;
             }
+
+            // Ensure the client is disposed after use
+            using (client)
+            {
+                // Retrieve list of message infos
+                List<GmailMessageInfo> messageInfos;
+                try
+                {
+                    messageInfos = client.ListMessages();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
+                    return;
+                }
+
+                // Iterate through messages and filter by date
+                foreach (GmailMessageInfo info in messageInfos)
+                {
+                    MailMessage fullMessage;
+                    try
+                    {
+                        fullMessage = client.FetchMessage(info.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to fetch message {info.Id}: {ex.Message}");
+                        continue;
+                    }
+
+                    using (fullMessage)
+                    {
+                        if (fullMessage.Date < cutoffDate)
+                        {
+                            Console.WriteLine($"Subject: {fullMessage.Subject}");
+                            Console.WriteLine($"Date: {fullMessage.Date}");
+                            Console.WriteLine();
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

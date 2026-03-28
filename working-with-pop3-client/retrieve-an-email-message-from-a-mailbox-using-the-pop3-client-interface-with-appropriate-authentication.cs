@@ -3,55 +3,50 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace Pop3RetrieveExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        // Top‑level exception guard
+        try
         {
-            try
+            // POP3 server connection details
+            string host = "pop.example.com";
+            int port = 110; // use 995 for SSL
+            string username = "user@example.com";
+            string password = "password";
+
+            // Initialize POP3 client (client variable name must be preserved)
+            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
             {
-                // POP3 server connection parameters
-                string host = "pop.example.com";
-                int port = 995;
-                string username = "user@example.com";
-                string password = "password";
-
-                // Initialize POP3 client with SSL/TLS
-                using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+                // Client connection safety guard
+                try
                 {
-                    try
-                    {
-                        // Retrieve list of messages
-                        Pop3MessageInfoCollection messages = client.ListMessages();
+                    // Retrieve total number of messages in the mailbox
+                    int messageCount = client.GetMessageCount();
+                    Console.WriteLine($"Total messages: {messageCount}");
 
-                        if (messages.Count > 0)
-                        {
-                            // Get information about the first message
-                            Pop3MessageInfo firstInfo = messages[0];
-
-                            // Fetch the full message using its UniqueId
-                            using (MailMessage mailMessage = client.FetchMessage(firstInfo.UniqueId))
-                            {
-                                Console.WriteLine("Subject: " + mailMessage.Subject);
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("No messages found in the mailbox.");
-                        }
-                    }
-                    catch (Exception ex)
+                    if (messageCount > 0)
                     {
-                        Console.Error.WriteLine("Error during POP3 operations: " + ex.Message);
-                        return;
+                        // Fetch the first message (sequence number starts at 1)
+                        using (MailMessage message = client.FetchMessage(1))
+                        {
+                            Console.WriteLine($"Subject: {message.Subject}");
+                            Console.WriteLine($"From: {message.From}");
+                            Console.WriteLine($"Body: {message.Body}");
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

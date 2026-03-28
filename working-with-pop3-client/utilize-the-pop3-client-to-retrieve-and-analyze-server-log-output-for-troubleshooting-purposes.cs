@@ -10,59 +10,59 @@ class Program
     {
         try
         {
-            // POP3 server configuration
+            // POP3 server connection settings (replace with real values)
             string host = "pop3.example.com";
-            int port = 995;
+            int port = 110;
             string username = "user@example.com";
             string password = "password";
 
-            // Log file path
-            string logFilePath = "pop3_log.txt";
+            // Enable logging to a file
+            string logFilePath = "pop3log.txt";
 
-            // Ensure the directory for the log file exists
-            string logDirectory = Path.GetDirectoryName(Path.GetFullPath(logFilePath));
-            if (!Directory.Exists(logDirectory))
-            {
-                Directory.CreateDirectory(logDirectory);
-            }
-
-            // Initialize and configure the POP3 client
+            // Create and use the POP3 client
             using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
             {
                 client.EnableLogger = true;
                 client.LogFileName = logFilePath;
-                client.UseDateInLogFileName = false;
 
-                // Trigger connection by retrieving the message count
-                int messageCount = client.GetMessageCount();
-                Console.WriteLine($"Message count: {messageCount}");
-
-                // List messages and display basic information
-                Pop3MessageInfoCollection messages = client.ListMessages();
-                foreach (Pop3MessageInfo info in messages)
+                try
                 {
-                    Console.WriteLine($"UID: {info.UniqueId}, Size: {info.Size} bytes");
-                }
+                    // Retrieve mailbox information
+                    Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    Console.WriteLine($"Message Count: {mailboxInfo.MessageCount}");
+                    Console.WriteLine($"Occupied Size: {mailboxInfo.OccupiedSize}");
 
-                // Commit any pending deletions (none in this example)
-                client.CommitDeletes();
+                    // List messages and display basic details
+                    Pop3MessageInfoCollection messages = client.ListMessages();
+                    foreach (Pop3MessageInfo info in messages)
+                    {
+                        Console.WriteLine($"Seq: {info.SequenceNumber}, Subject: {info.Subject}, Size: {info.Size}");
+                    }
+                }
+                catch (Pop3Exception ex)
+                {
+                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                    return;
+                }
             }
 
-            // Read and output the POP3 client log
+            // After client disposal, read and display the log file if it exists
             if (File.Exists(logFilePath))
             {
                 try
                 {
-                    string[] logLines = File.ReadAllLines(logFilePath);
+                    string logContent = File.ReadAllText(logFilePath);
                     Console.WriteLine("\n--- POP3 Client Log ---");
-                    foreach (string line in logLines)
-                    {
-                        Console.WriteLine(line);
-                    }
+                    Console.WriteLine(logContent);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error reading log file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to read log file: {ex.Message}");
                 }
             }
             else
@@ -72,7 +72,7 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Fatal error: {ex.Message}");
         }
     }
 }

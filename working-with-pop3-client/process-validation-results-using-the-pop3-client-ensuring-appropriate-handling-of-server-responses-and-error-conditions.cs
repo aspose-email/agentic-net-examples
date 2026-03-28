@@ -1,116 +1,67 @@
 using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients.Pop3.Models;
 
-namespace Pop3ValidationSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // POP3 server connection parameters (replace with real values)
+            const string host = "pop3.example.com";
+            const int port = 995;
+            const string username = "user@example.com";
+            const string password = "password";
+            const SecurityOptions security = SecurityOptions.Auto;
+
+            // Create and connect the POP3 client
+            using (Pop3Client client = new Pop3Client(host, port, username, password, security))
             {
-                // POP3 server configuration
-                string host = "pop.example.com";
-                int port = 995;
-                string username = "user";
-                string password = "pass";
-
-                // Initialize POP3 client with SSL
-                using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.SSLImplicit))
+                try
                 {
-                    // Validate credentials
-                    try
-                    {
-                        client.ValidateCredentials();
-                    }
-                    catch (Exception authEx)
-                    {
-                        Console.Error.WriteLine($"Authentication failed: {authEx.Message}");
-                        return;
-                    }
+                    // Retrieve mailbox status information
+                    Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    Console.WriteLine($"Message Count: {mailboxInfo.MessageCount}");
+                    Console.WriteLine($"Occupied Size: {mailboxInfo.OccupiedSize} bytes");
 
-                    // Retrieve list of messages
+                    // List messages (basic info only)
                     Pop3MessageInfoCollection messageInfos = client.ListMessages();
-                    Console.WriteLine($"Total messages: {messageInfos.Count}");
-
-                    // Ensure output directory exists
-                    string outputDir = "SavedMessages";
-                    if (!Directory.Exists(outputDir))
-                    {
-                        try
-                        {
-                            Directory.CreateDirectory(outputDir);
-                        }
-                        catch (Exception dirEx)
-                        {
-                            Console.Error.WriteLine($"Failed to create directory '{outputDir}': {dirEx.Message}");
-                            return;
-                        }
-                    }
-
-                    // Process each message
                     foreach (Pop3MessageInfo info in messageInfos)
                     {
-                        Console.WriteLine($"Message #{info.SequenceNumber} UID: {info.UniqueId}");
-
-                        // Fetch the full message
-                        MailMessage message;
-                        try
-                        {
-                            message = client.FetchMessage(info.SequenceNumber);
-                        }
-                        catch (Exception fetchEx)
-                        {
-                            Console.Error.WriteLine($"Failed to fetch message {info.UniqueId}: {fetchEx.Message}");
-                            continue;
-                        }
-
-                        Console.WriteLine($"Subject: {message.Subject}");
-
-                        // Save the message to a file
-                        string filePath = Path.Combine(outputDir, $"{info.UniqueId}.eml");
-                        try
-                        {
-                            using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                            {
-                                message.Save(fs, SaveOptions.DefaultEml);
-                            }
-                        }
-                        catch (Exception ioEx)
-                        {
-                            Console.Error.WriteLine($"Failed to save message {info.UniqueId}: {ioEx.Message}");
-                        }
-
-                        // Delete the message from the server after processing
-                        try
-                        {
-                            client.DeleteMessage(info.SequenceNumber);
-                        }
-                        catch (Exception delEx)
-                        {
-                            Console.Error.WriteLine($"Failed to delete message {info.UniqueId}: {delEx.Message}");
-                        }
+                        Console.WriteLine($"Seq: {info.SequenceNumber}, Subject: {info.Subject}, Size: {info.Size} bytes");
                     }
 
-                    // Commit deletions
-                    try
+                    // Example: fetch the first message if any
+                    if (messageInfos.Count > 0)
                     {
-                        client.CommitDeletes();
-                    }
-                    catch (Exception commitEx)
-                    {
-                        Console.Error.WriteLine($"Failed to commit deletions: {commitEx.Message}");
+                        int firstSeq = messageInfos[0].SequenceNumber;
+                        using (MailMessage message = client.FetchMessage(firstSeq))
+                        {
+                            Console.WriteLine("\n--- Fetched Message ---");
+                            Console.WriteLine($"From: {message.From}");
+                            Console.WriteLine($"Subject: {message.Subject}");
+                            Console.WriteLine($"Body:\n{message.Body}");
+                        }
                     }
                 }
+                catch (Pop3Exception popEx)
+                {
+                    Console.Error.WriteLine($"POP3 operation failed: {popEx.Message}");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to initialize POP3 client: {ex.Message}");
         }
     }
 }

@@ -6,7 +6,7 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
@@ -16,63 +16,54 @@ class Program
             // Verify source PST exists
             if (!File.Exists(sourcePstPath))
             {
-                Console.Error.WriteLine($"Error: Source PST file not found – {sourcePstPath}");
+                Console.Error.WriteLine($"Error: File not found – {sourcePstPath}");
                 return;
             }
 
-            // Ensure destination PST exists; create if missing
+            // Verify destination PST exists; create a minimal one if missing
             if (!File.Exists(destinationPstPath))
             {
                 try
                 {
-                    PersonalStorage.Create(destinationPstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine($"Created destination PST: {destinationPstPath}");
+                    using (PersonalStorage createdPst = PersonalStorage.Create(destinationPstPath, FileFormatVersion.Unicode))
+                    {
+                        // Optionally create default folders
+                        createdPst.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
+                    }
                 }
-                catch (Exception createEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating destination PST: {createEx.Message}");
+                    Console.Error.WriteLine($"Error creating destination PST: {ex.Message}");
                     return;
                 }
             }
 
-            // Open both PST files with write access
-            using (PersonalStorage sourcePst = PersonalStorage.FromFile(sourcePstPath, true))
+            // Open source PST (read‑only) and destination PST (writable)
+            using (PersonalStorage sourcePst = PersonalStorage.FromFile(sourcePstPath, false))
             using (PersonalStorage destinationPst = PersonalStorage.FromFile(destinationPstPath, true))
             {
-                // Get the Inbox folder from the source PST
-                FolderInfo sourceInbox = null;
-                foreach (FolderInfo folder in sourcePst.RootFolder.GetSubFolders())
-                {
-                    if (string.Equals(folder.DisplayName, "Inbox", StringComparison.OrdinalIgnoreCase))
-                    {
-                        sourceInbox = folder;
-                        break;
-                    }
-                }
-
-                if (sourceInbox == null)
-                {
-                    Console.Error.WriteLine("Error: Source PST does not contain an Inbox folder.");
-                    return;
-                }
-
                 // Get (or create) the Inbox folder in the destination PST
                 FolderInfo destinationInbox = destinationPst.GetPredefinedFolder(StandardIpmFolder.Inbox);
 
-                // Iterate through each message in the source Inbox and add to destination Inbox
-                foreach (MessageInfo messageInfo in sourceInbox.EnumerateMessages())
+                // Iterate through each subfolder in the source PST
+                foreach (FolderInfo sourceFolder in sourcePst.RootFolder.GetSubFolders())
                 {
-                    using (MapiMessage sourceMessage = sourcePst.ExtractMessage(messageInfo))
+                    // Enumerate all messages in the current source folder
+                    foreach (MessageInfo messageInfo in sourceFolder.EnumerateMessages())
                     {
-                        string addedEntryId = destinationInbox.AddMessage(sourceMessage);
-                        Console.WriteLine($"Added message: {messageInfo.Subject} (EntryId: {addedEntryId})");
+                        // Extract the message as a MapiMessage
+                        using (MapiMessage mapiMessage = sourcePst.ExtractMessage(messageInfo))
+                        {
+                            // Add the message to the destination Inbox
+                            destinationInbox.AddMessage(mapiMessage);
+                        }
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

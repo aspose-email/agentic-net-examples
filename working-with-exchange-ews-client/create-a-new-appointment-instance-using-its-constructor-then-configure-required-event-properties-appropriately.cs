@@ -1,57 +1,41 @@
 using System;
+using Aspose.Email;
+using Aspose.Email.Calendar;
 
-namespace AppointmentSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Create attendees collection
-                Aspose.Email.MailAddressCollection attendees = new Aspose.Email.MailAddressCollection();
-                attendees.Add(new Aspose.Email.MailAddress("alice@example.com"));
-                attendees.Add(new Aspose.Email.MailAddress("bob@example.com"));
+            // Prepare attendees
+            MailAddressCollection attendees = new MailAddressCollection();
+            attendees.Add(new MailAddress("person1@domain.com"));
+            attendees.Add(new MailAddress("person2@domain.com"));
 
-                // Organizer address
-                Aspose.Email.MailAddress organizer = new Aspose.Email.MailAddress("organizer@example.com");
+            // Create an appointment using the constructor
+            Appointment appointment = new Appointment(
+                "Conference Room",
+                new DateTime(2023, 12, 15, 10, 0, 0),
+                new DateTime(2023, 12, 15, 11, 0, 0),
+                new MailAddress("organizer@domain.com"),
+                attendees);
 
-                // Create appointment using the constructor with location, summary, description, dates, organizer, and attendees
-                Aspose.Email.Calendar.Appointment appointment = new Aspose.Email.Calendar.Appointment(
-                    "Conference Room 1",
-                    "Project Kickoff",
-                    "Discuss project goals and milestones.",
-                    new DateTime(2023, 10, 15, 10, 0, 0),
-                    new DateTime(2023, 10, 15, 11, 0, 0),
-                    organizer,
-                    attendees);
+            // Configure required properties
+            appointment.Summary = "Project Kickoff";
+            appointment.Description = "Discuss project scope and deliverables.";
+            appointment.Location = "Conference Room";
 
-                // Additional property configuration (optional, already set via constructor)
-                appointment.Location = "Conference Room 1";
-                appointment.Summary = "Project Kickoff";
-                appointment.Description = "Discuss project goals and milestones.";
-                appointment.StartDate = new DateTime(2023, 10, 15, 10, 0, 0);
-                appointment.EndDate = new DateTime(2023, 10, 15, 11, 0, 0);
-                appointment.Organizer = organizer;
-                appointment.Attendees = attendees;
-
-                // Output appointment details
-                Console.WriteLine("Appointment created:");
-                Console.WriteLine("Summary: " + appointment.Summary);
-                Console.WriteLine("Location: " + appointment.Location);
-                Console.WriteLine("Start: " + appointment.StartDate);
-                Console.WriteLine("End: " + appointment.EndDate);
-                Console.WriteLine("Organizer: " + appointment.Organizer.Address);
-                Console.WriteLine("Attendees:");
-                foreach (Aspose.Email.MailAddress address in appointment.Attendees)
-                {
-                    Console.WriteLine(" - " + address.Address);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+            // Display appointment details
+            Console.WriteLine("Appointment created:");
+            Console.WriteLine($"Subject: {appointment.Summary}");
+            Console.WriteLine($"Organizer: {appointment.Organizer}");
+            Console.WriteLine($"Start: {appointment.StartDate}");
+            Console.WriteLine($"End: {appointment.EndDate}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

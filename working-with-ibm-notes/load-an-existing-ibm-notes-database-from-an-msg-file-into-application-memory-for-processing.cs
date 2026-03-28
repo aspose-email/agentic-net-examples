@@ -5,34 +5,34 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgFilePath = "sample.msg";
+            // Path to the MSG file exported from IBM Notes
+            string msgFilePath = "NotesMessage.msg";
 
+            // Verify that the file exists before attempting to load it
             if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                Console.Error.WriteLine($"File not found: {msgFilePath}");
                 return;
             }
 
-            using (MapiMessage message = MapiMessage.Load(msgFilePath))
+            // Load the MSG file into a MapiMessage instance
+            using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
             {
-                // Display basic message information
-                Console.WriteLine($"Subject: {message.Subject}");
-                Console.WriteLine($"From: {message.SenderEmailAddress}");
-                Console.WriteLine($"Body: {message.Body}");
+                // Example processing: display basic properties
+                Console.WriteLine($"Subject: {mapiMessage.Subject}");
+                Console.WriteLine($"From: {mapiMessage.SenderName}");
+                Console.WriteLine($"Body: {mapiMessage.Body}");
 
-                // List attachments, if any
-                foreach (var attachment in message.Attachments)
-                {
-                    Console.WriteLine($"Attachment: {attachment.FileName}");
-                }
+                // Additional processing of the message can be performed here
             }
         }
         catch (Exception ex)
         {
+            // Gracefully handle any unexpected errors
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }

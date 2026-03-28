@@ -1,20 +1,18 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
 using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define log file path
+            // Define the directory and file for logging
             string logDirectory = Path.Combine(Environment.CurrentDirectory, "Logs");
             string logFilePath = Path.Combine(logDirectory, "ews_log.txt");
 
@@ -24,30 +22,28 @@ class Program
                 Directory.CreateDirectory(logDirectory);
             }
 
-            // Create credentials (replace with real values)
+            // Set up credentials for the Exchange server
             NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            // Initialize EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
+            // Initialize the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient("https://example.com/EWS/Exchange.asmx", credentials))
             {
-                // Configure logging
-                client.LogFileName = logFilePath;
-                client.UseDateInLogFileName = true; // Include date in log file name
-
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                foreach (ExchangeMessageInfo info in messages)
+                // Enable and configure logging via the base EmailClient class
+                if (client is EmailClient emailClient)
                 {
-                    Console.WriteLine("Subject: " + info.Subject);
-                    Console.WriteLine("From: " + info.From);
-                    Console.WriteLine("Received: " + info.Date);
-                    Console.WriteLine(new string('-', 40));
+                    emailClient.EnableLogger = true;               // Turn on logging
+                    emailClient.LogFileName = logFilePath;          // Destination file
+                    emailClient.UseDateInLogFileName = false;      // Disable automatic date suffix
                 }
+
+                // Example operation: list messages in the Inbox folder
+                ExchangeMessageInfoCollection inboxMessages = client.ListMessages(client.MailboxInfo.InboxUri);
+                Console.WriteLine($"Inbox contains {inboxMessages.Count} messages.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

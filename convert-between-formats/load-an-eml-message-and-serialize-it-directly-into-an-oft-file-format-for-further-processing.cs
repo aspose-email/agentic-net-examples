@@ -20,20 +20,18 @@ class Program
             }
 
             // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(oftPath);
+            string? outputDir = Path.GetDirectoryName(oftPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Load the EML message
+            // Load the EML message, convert to MAPI, and save as OFT
             using (MailMessage mailMessage = MailMessage.Load(emlPath))
             {
-                // Convert to MapiMessage
                 using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
                 {
-                    // Save as Outlook File Template (OFT)
-                    mapiMessage.SaveAsTemplate(oftPath);
+                    mapiMessage.Save(oftPath, SaveOptions.DefaultOft);
                 }
             }
         }

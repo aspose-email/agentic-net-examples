@@ -11,32 +11,23 @@ class Program
             string sourcePath = "message.html";
             string targetPath = "message.emlx";
 
-            // Ensure source HTML file exists; create a minimal placeholder if missing.
             if (!File.Exists(sourcePath))
             {
-                try
-                {
-                    File.WriteAllText(sourcePath, "<html><body><p>Placeholder email content.</p></body></html>");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Source file not found: {sourcePath}");
+                return;
             }
 
-            // Load the HTML message and save it as EMLX.
             try
             {
-                using (MailMessage mailMessage = MailMessage.Load(sourcePath))
+                using (MailMessage message = MailMessage.Load(sourcePath))
                 {
-                    EmlSaveOptions saveOptions = new EmlSaveOptions(MailMessageSaveType.EmlxFormat);
-                    mailMessage.Save(targetPath, saveOptions);
+                    // Save as EMLX using the default EML save options; the .emlx extension will produce the correct format.
+                    message.Save(targetPath, SaveOptions.DefaultEml);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing email files: {ex.Message}");
+                Console.Error.WriteLine($"Error processing email: {ex.Message}");
                 return;
             }
         }
