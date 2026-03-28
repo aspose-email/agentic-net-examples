@@ -3,53 +3,55 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            string msgPath = "sample.msg";
+            if (!File.Exists(msgPath))
             {
-                string msgPath = "sample.msg";
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
+            }
 
-                if (!File.Exists(msgPath))
-                {
-                    Console.Error.WriteLine($"Error: File not found – {msgPath}");
-                    return;
-                }
+            string outputDirectory = "ExtractedImages";
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
 
-                using (MapiMessage msg = MapiMessage.Load(msgPath))
+            using (MapiMessage message = MapiMessage.Load(msgPath))
+            {
+                foreach (MapiAttachment attachment in message.Attachments)
                 {
-                    foreach (MapiAttachment attachment in msg.Attachments)
+                    string extension = Path.GetExtension(attachment.FileName).ToLowerInvariant();
+                    bool isImage = extension == ".png" ||
+                                   extension == ".jpg" ||
+                                   extension == ".jpeg" ||
+                                   extension == ".gif" ||
+                                   extension == ".bmp";
+
+                    if (isImage)
                     {
-                        string extension = Path.GetExtension(attachment.FileName)?.ToLowerInvariant();
-
-                        if (extension == ".png" ||
-                            extension == ".jpg" ||
-                            extension == ".jpeg" ||
-                            extension == ".gif" ||
-                            extension == ".bmp")
+                        string outputPath = Path.Combine(outputDirectory, attachment.FileName);
+                        try
                         {
-                            string outputPath = attachment.FileName;
-
-                            try
-                            {
-                                attachment.Save(outputPath);
-                                Console.WriteLine($"Saved image: {outputPath}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
-                            }
+                            attachment.Save(outputPath);
+                            Console.WriteLine($"Saved image: {outputPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
                         }
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
