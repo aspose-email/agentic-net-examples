@@ -1,56 +1,46 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
 
-namespace AsposeEmailExample
+namespace EmailSample
 {
     class Program
     {
         static void Main(string[] args)
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
+            // Add Aspose.Email via NuGet: Install-Package Aspose.Email
             try
             {
-                // Define mailbox URI and credentials (replace with real values)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
-
-                // Create EWS client using the factory method
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                string outputPath = "output.eml";
+                string directoryPath = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
                 {
-                    try
-                    {
-                        // Build a simple query to fetch all messages in the Inbox
-                        ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                        MailQuery query = builder.GetQuery();
+                    Directory.CreateDirectory(directoryPath);
+                }
 
-                        // List messages in the Inbox folder
-                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
+                MailMessage message = new MailMessage();
+                try
+                {
+                    message.From = new MailAddress("sender@example.com");
+                    MailAddressCollection toAddresses = new MailAddressCollection();
+                    toAddresses.Add(new MailAddress("recipient@example.com"));
+                    message.To = toAddresses;
+                    message.Subject = "Test Email";
+                    message.Body = "This is a test email.";
 
-                        // Iterate and display basic metadata
-                        foreach (ExchangeMessageInfo info in messages)
-                        {
-                            Console.WriteLine("Subject: " + info.Subject);
-                            Console.WriteLine("From: " + info.From);
-                            Console.WriteLine("Received: " + info.Date);
-                            Console.WriteLine(new string('-', 40));
-                        }
-                    }
-                    catch (Exception ex)
+                    message.Save(outputPath, SaveOptions.DefaultEml);
+                }
+                finally
+                {
+                    if (message != null)
                     {
-                        Console.Error.WriteLine("Error during EWS operations: " + ex.Message);
-                        return;
+                        message.Dispose();
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
-                return;
+                Console.Error.WriteLine(ex.Message);
             }
         }
     }
