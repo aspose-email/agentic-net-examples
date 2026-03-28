@@ -1,54 +1,73 @@
+using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
+using Aspose.Email.Tools.Search;
 
-class Program
+namespace ImapBackupSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Path where the backup will be stored
-            string backupPath = "mailbox_backup.zip";
-
-            // Ensure the directory for the backup file exists
-            string backupDirectory = Path.GetDirectoryName(backupPath);
-            if (!string.IsNullOrEmpty(backupDirectory) && !Directory.Exists(backupDirectory))
+            try
             {
-                Directory.CreateDirectory(backupDirectory);
-            }
+                // IMAP server connection settings (replace with real values)
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "user@example.com";
+                string password = "password";
+                SecurityOptions security = SecurityOptions.Auto;
 
-            // Initialize the IMAP client (replace with real server and credentials)
-            using (ImapClient client = new ImapClient("imap.example.com", 993, "user@example.com", "password", SecurityOptions.SSLImplicit))
-            {
-                // Simple connectivity check
+                // Path for the backup file
+                string backupFilePath = "imap_backup.pst";
+
+                // Ensure the directory for the backup file exists
                 try
                 {
-                    client.Noop();
+                    string? directory = Path.GetDirectoryName(backupFilePath);
+                    if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    {
+                        Directory.CreateDirectory(directory);
+                    }
                 }
-                catch (Exception connEx)
+                catch (Exception ioEx)
                 {
-                    Console.Error.WriteLine($"IMAP connection failed: {connEx.Message}");
+                    Console.Error.WriteLine($"File system error: {ioEx.Message}");
                     return;
                 }
 
-                // Retrieve all folders from the mailbox
-                ImapFolderInfoCollection folders = client.ListFolders();
+                // Connect to the IMAP server and perform backup
+                try
+                {
+                    using (ImapClient client = new ImapClient(host, port, username, password, security))
+                    {
+                        // Retrieve all folders from the mailbox
+                        ImapFolderInfoCollection folders = client.ListFolders();
 
-                // Use default backup settings
-                BackupSettings backupSettings = new BackupSettings();
+                        // Backup the selected folders to the specified PST file
+                        BackupSettings backupSettings = new BackupSettings();
+                        client.Backup(folders, backupFilePath, backupSettings);
 
-                // Perform the backup synchronously (await the async task)
-                client.BackupAsync(folders, backupPath, backupSettings).GetAwaiter().GetResult();
-
-                Console.WriteLine("Mailbox backup completed successfully.");
+                        Console.WriteLine($"Backup completed successfully. File saved to: {backupFilePath}");
+                    }
+                }
+                catch (ImapException imapEx)
+                {
+                    Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                    return;
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception topEx)
+            {
+                Console.Error.WriteLine($"Fatal error: {topEx.Message}");
+            }
         }
     }
 }
