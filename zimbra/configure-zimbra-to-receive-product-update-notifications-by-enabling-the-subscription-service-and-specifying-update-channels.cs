@@ -1,6 +1,6 @@
 using System;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Activity;
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -8,26 +8,25 @@ class Program
     {
         try
         {
-            // Create token provider for Outlook (replace placeholders with real values)
-            TokenProvider outlookTokenProvider = TokenProvider.Outlook.GetInstance(
-                "your-client-id",
-                "your-client-secret",
-                "your-refresh-token");
+            // Connection parameters for the Zimbra server (EWS endpoint)
+            string mailboxUri = "https://zimbra.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Initialize Activity client (tenant identifier placeholder)
-            using (IActivityClient activityClient = ActivityClient.GetClient(outlookTokenProvider, "your-tenant-id"))
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Define the content type to subscribe to (e.g., product update notifications)
-                string contentType = "productUpdates";
+                // Enable the subscription service by configuring check interval and timeout
+                client.NotificationsCheckInterval = 300; // seconds between checks
+                client.NotificationTimeout = 60;        // seconds to wait for a response
 
-                // Configure webhook endpoint and expiration
-                Webhook webhook = new Webhook();
-                webhook.Address = "https://yourapp.example.com/webhook/receive";
-                webhook.Expiration = DateTime.UtcNow.AddDays(30);
+                // Specify the update channels (e.g., Inbox, Calendar, Contacts) via a custom header
+                client.AddHeader("X-Update-Channels", "Inbox,Calendar,Contacts");
 
-                // Start the subscription
-                activityClient.StartSubscription(contentType, webhook);
-                Console.WriteLine("Subscription started successfully.");
+                // Apply the subscription settings
+                client.UpdateSubscription();
+
+                Console.WriteLine("Zimbra subscription service configured successfully.");
             }
         }
         catch (Exception ex)
