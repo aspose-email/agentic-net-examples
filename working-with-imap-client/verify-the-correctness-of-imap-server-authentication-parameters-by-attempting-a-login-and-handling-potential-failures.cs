@@ -1,46 +1,63 @@
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
-class Program
+namespace ImapAuthenticationCheck
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // IMAP server connection parameters
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create and authenticate the IMAP client
             try
             {
-                using (Aspose.Email.Clients.Imap.ImapClient client = new Aspose.Email.Clients.Imap.ImapClient(host, port, username, password, Aspose.Email.Clients.SecurityOptions.Auto))
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "user@example.com";
+                string password = "password";
+
+                // Initialize and connect the IMAP client
+                try
                 {
-                    try
+                    using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
                     {
-                        client.ValidateCredentials();
-                        Console.WriteLine("IMAP authentication succeeded.");
+                        // Verify credentials
+                        bool isAuthenticated = false;
+                        try
+                        {
+                            isAuthenticated = client.ValidateCredentials();
+                        }
+                        catch (Exception credEx)
+                        {
+                            Console.Error.WriteLine($"Credential validation error: {credEx.Message}");
+                            return;
+                        }
+
+                        if (isAuthenticated)
+                        {
+                            Console.WriteLine("IMAP authentication succeeded.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("IMAP authentication failed.");
+                        }
                     }
-                    catch (Aspose.Email.ImapException imapEx)
-                    {
-                        Console.Error.WriteLine($"IMAP authentication failed: {imapEx.Message}");
-                        return;
-                    }
+                }
+                catch (ImapException imapEx)
+                {
+                    Console.Error.WriteLine($"IMAP connection error: {imapEx.Message}");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                    return;
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to create or connect IMAP client: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Fatal error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
