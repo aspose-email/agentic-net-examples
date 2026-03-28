@@ -1,55 +1,54 @@
+using Aspose.Email.Tools.Search;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Tools;
 
-namespace Pop3DeleteSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // POP3 server connection parameters (replace with real values)
+            string host = "pop3.example.com";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Create and use the POP3 client inside a using block to ensure disposal
+            using (Pop3Client client = new Pop3Client(host, username, password))
             {
-                // POP3 server connection settings
-                string host = "pop.example.com";
-                int port = 995;
-                string username = "user@example.com";
-                string password = "password";
-
-                // Initialize POP3 client inside a using block for proper disposal
-                using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+                try
                 {
-                    try
-                    {
-                        // Build a query to select messages whose subject contains "Spam"
-                        MailQueryBuilder builder = new MailQueryBuilder();
-                        builder.Subject.Contains("Spam");
-                        MailQuery query = builder.GetQuery();
+                    // Build a query to select messages that contain "Sample" in the subject
+                    MailQueryBuilder builder = new MailQueryBuilder();
+                    builder.Subject.Contains("Sample");
+                    MailQuery query = builder.GetQuery();
 
-                        // Retrieve messages matching the query
-                        var messageInfos = client.ListMessages(query);
-                        foreach (var info in messageInfos)
-                        {
-                            // Mark each selected message for deletion
-                            client.DeleteMessage(info.SequenceNumber);
-                        }
+                    // Retrieve messages that match the query
+                    Pop3MessageInfoCollection messages = client.ListMessages(query);
 
-                        // Commit deletions so the server permanently removes the marked messages
-                        client.CommitDeletes();
-                    }
-                    catch (Exception ex)
+                    // Delete each selected message by its sequence number
+                    foreach (Pop3MessageInfo info in messages)
                     {
-                        Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
-                        return;
+                        client.DeleteMessage(info.SequenceNumber);
                     }
+
+                    // Commit deletions so the server removes the marked messages
+                    client.CommitDeletes();
+                }
+                catch (Exception ex)
+                {
+                    // Handle any errors that occur during POP3 operations
+                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            // Handle any unexpected errors in the application
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
