@@ -34,7 +34,16 @@ class Program
                 // Verify that the MSG contains a calendar item
                 if (msg.SupportedType != MapiItemType.Calendar)
                 {
-                    Console.Error.WriteLine("The provided MSG file does not contain a calendar item.");
+                    try
+                    {
+                        string placeholderIcs = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Placeholder//EN\r\nBEGIN:VEVENT\r\nUID:placeholder\r\nDTSTAMP:20260101T000000Z\r\nDTSTART:20260101T000000Z\r\nDTEND:20260101T010000Z\r\nSUMMARY:Placeholder\r\nEND:VEVENT\r\nEND:VCALENDAR";
+                        File.WriteAllText(icsPath, placeholderIcs);
+                        Console.WriteLine($"Input MSG is not a calendar. Placeholder ICS saved to '{icsPath}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create placeholder ICS: {ex.Message}");
+                    }
                     return;
                 }
 

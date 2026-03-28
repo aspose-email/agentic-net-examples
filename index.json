@@ -3,13 +3,13 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 620,
+  "total_examples": 621,
   "total_categories": 14,
   "last_updated": "2026-03-28",
   "categories": [
     {
       "name": "convert-between-formats",
-      "file_count": 39,
+      "file_count": 40,
       "files": [
         "configure-an-htmlsaveoptions-object-with-custom-rendering-and-resource-settings-to-convert-an-eml-file-to-html.cs",
         "convert-an-eml-file-to-html-format-while-retaining-the-original-message-date-by-setting-preserveoriginaldate-to-true.cs",
@@ -26,6 +26,7 @@
         "load-an-eml-message-and-save-it-as-html-with-utf-8-output-encoding-correctly.cs",
         "load-an-eml-message-and-serialize-it-directly-into-an-oft-file-format-for-further-processing.cs",
         "load-an-eml-message-append-it-to-a-pst-store-and-then-persist-the-updated-pst-file.cs",
+        "load-an-eml-message-convert-it-to-ost-format-and-save-the-resulting-file-to-the-specified-location.cs",
         "load-an-eml-message-embed-its-linked-resources-and-export-the-content-as-a-standalone-html-file.cs",
         "load-an-eml-message-into-memory-and-serialize-it-directly-to-an-msg-file-while-preserving-all-properties.cs",
         "load-an-eml-message-transform-its-contents-and-export-it-as-an-ics-calendar-file.cs",
@@ -54,23 +55,23 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 39
+          "count": 40
         },
         {
           "name": "System.IO",
-          "count": 39
+          "count": 40
         },
         {
           "name": "Aspose.Email",
-          "count": 39
+          "count": 40
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 14
+          "count": 15
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 4
+          "count": 5
         },
         {
           "name": "Aspose.Email.Storage.Mbox",
