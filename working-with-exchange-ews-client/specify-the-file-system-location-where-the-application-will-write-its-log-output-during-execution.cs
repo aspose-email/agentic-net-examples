@@ -9,60 +9,35 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
             // Define log file location
-            string logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AsposeLogs");
-            string logFilePath = Path.Combine(logDirectory, "ews_log.txt");
+            string logFilePath = Path.Combine(Environment.CurrentDirectory, "logs", "ews.log");
 
-            // Ensure the log directory exists
-            try
+            // Ensure the directory for the log file exists
+            string logDirectory = Path.GetDirectoryName(logFilePath);
+            if (!Directory.Exists(logDirectory))
             {
-                if (!Directory.Exists(logDirectory))
-                {
-                    Directory.CreateDirectory(logDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Failed to create log directory: " + ex.Message);
-                return;
+                Directory.CreateDirectory(logDirectory);
             }
 
-            // Prepare credentials
+            // Set up credentials (replace with real values)
             NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            // Initialize EWS client with logging
-            try
+            // Initialize the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient("https://example.com/EWS/Exchange.asmx", credentials))
             {
-                using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
-                {
-                    client.LogFileName = logFilePath;
-                    client.UseDateInLogFileName = false;
+                // Assign the log file path to the client
+                client.LogFileName = logFilePath;
 
-                    // Sample operation: list messages in the Inbox
-                    try
-                    {
-                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                        Console.WriteLine("Inbox message count: " + messages.Count);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Error listing messages: " + ex.Message);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Failed to initialize EWS client: " + ex.Message);
-                return;
+                // Example operation: list messages in the Inbox folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                Console.WriteLine($"Total messages in Inbox: {messages.Count}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
