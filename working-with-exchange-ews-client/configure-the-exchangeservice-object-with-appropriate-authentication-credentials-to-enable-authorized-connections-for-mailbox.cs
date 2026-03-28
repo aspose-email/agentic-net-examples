@@ -2,26 +2,26 @@ using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Mailbox URI of the Exchange server
+            // Exchange server URL and user credentials
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Authentication credentials
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create and configure the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Create the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Example: output the Inbox URI to verify connection
-                Console.WriteLine("Connected. Inbox URI: " + client.MailboxInfo.InboxUri);
+                // Retrieve mailbox information to verify the connection
+                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                // Additional mailbox operations can be performed here
             }
         }
         catch (Exception ex)
