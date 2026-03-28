@@ -1,42 +1,67 @@
 using System;
 using System.IO;
-using Aspose.Email;
+using System.Collections.Generic;
 
-class Program
+namespace LogInspector
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Path to the log file
-            string logFilePath = "log.txt";
-
-            // Verify that the log file exists before attempting to read it
-            if (!File.Exists(logFilePath))
+            try
             {
-                Console.Error.WriteLine($"Error: File not found – {logFilePath}");
-                return;
-            }
+                string logFilePath = "log.txt";
 
-            // Open the file stream and read the log contents
-            using (FileStream fileStream = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (StreamReader reader = new StreamReader(fileStream))
-            {
-                int lineNumber = 0;
-                while (!reader.EndOfStream)
+                if (!File.Exists(logFilePath))
                 {
-                    string line = reader.ReadLine();
-                    lineNumber++;
+                    // Create a minimal placeholder log file
+                    using (StreamWriter placeholderWriter = new StreamWriter(logFilePath))
+                    {
+                        placeholderWriter.WriteLine("Request: Placeholder");
+                        placeholderWriter.WriteLine("Response: Placeholder");
+                    }
+                    Console.Error.WriteLine($"Log file not found. Created placeholder at {logFilePath}.");
+                    return;
+                }
 
-                    // Simple analysis: output line number and content
-                    Console.WriteLine($"{lineNumber}: {line}");
+                List<string> requestLines = new List<string>();
+                List<string> responseLines = new List<string>();
+
+                using (StreamReader reader = new StreamReader(logFilePath))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        if (line.StartsWith("Request:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            requestLines.Add(line);
+                        }
+                        else if (line.StartsWith("Response:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            responseLines.Add(line);
+                        }
+                    }
+                }
+
+                Console.WriteLine($"Total request entries: {requestLines.Count}");
+                Console.WriteLine($"Total response entries: {responseLines.Count}");
+
+                Console.WriteLine("\nRequests:");
+                foreach (string req in requestLines)
+                {
+                    Console.WriteLine(req);
+                }
+
+                Console.WriteLine("\nResponses:");
+                foreach (string resp in responseLines)
+                {
+                    Console.WriteLine(resp);
                 }
             }
-        }
-        catch (Exception exception)
-        {
-            // Output any unexpected errors
-            Console.Error.WriteLine($"Exception: {exception.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
