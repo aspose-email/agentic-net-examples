@@ -3,45 +3,60 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "contact.msg";
-
-            if (!File.Exists(msgPath))
+            try
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
+                // Path to the MSG file containing the contact
+                string msgFilePath = "contact.msg";
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
-            {
-                if (msg.SupportedType == MapiItemType.Contact)
+                // Verify that the file exists before attempting to load it
+                if (!File.Exists(msgFilePath))
                 {
-                    using (MapiContact contact = (MapiContact)msg.ToMapiMessageItem())
-                    {
-                        // Display contact name
-                        Console.WriteLine(contact.NameInfo.DisplayName);
+                    Console.Error.WriteLine($"File not found: {msgFilePath}");
+                    return;
+                }
 
-                        // Display primary email address if available
-                        if (contact.ElectronicAddresses != null && contact.ElectronicAddresses.Email1 != null)
+                // Load the MSG file as a MapiMessage (IDisposable)
+                using (MapiMessage msg = MapiMessage.Load(msgFilePath))
+                {
+                    // Ensure the loaded message is a contact
+                    if (msg.SupportedType == MapiItemType.Contact)
+                    {
+                        // Convert the MapiMessage to a MapiContact (IDisposable)
+                        using (MapiContact contact = (MapiContact)msg.ToMapiMessageItem())
                         {
-                            Console.WriteLine(contact.ElectronicAddresses.Email1.EmailAddress);
+                            // Example processing: display contact name and primary email address
+                            Console.WriteLine($"Display Name: {contact.NameInfo.DisplayName}");
+
+                            // ElectronicAddresses may contain up to three email entries; use Email1 if available
+                            if (contact.ElectronicAddresses != null && contact.ElectronicAddresses.Email1 != null)
+                            {
+                                Console.WriteLine($"Email: {contact.ElectronicAddresses.Email1.EmailAddress}");
+                            }
+                            else
+                            {
+                                Console.WriteLine("No email address found.");
+                            }
+
+                            // Additional processing of the contact can be performed here
                         }
                     }
-                }
-                else
-                {
-                    Console.WriteLine("The MSG file does not contain a contact.");
+                    else
+                    {
+                        Console.Error.WriteLine("The specified MSG file does not contain a contact.");
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                // Global exception handling to prevent unhandled crashes
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
