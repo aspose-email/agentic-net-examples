@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
-using Aspose.Email.Mime;
 
 class Program
 {
@@ -10,67 +9,61 @@ class Program
     {
         try
         {
-            // Input HTML file path
             string htmlFilePath = "input.html";
-            // Output iCalendar file path
             string icsFilePath = "output.ics";
 
-            // Verify input file exists
+            // Ensure the HTML input file exists; create a minimal placeholder if missing.
             if (!File.Exists(htmlFilePath))
-            {
-                Console.Error.WriteLine($"Input file not found: {htmlFilePath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(icsFilePath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    File.WriteAllText(htmlFilePath, "<html><body>Sample Event</body></html>");
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
                     return;
                 }
             }
 
-            // Read HTML content
+            // Read HTML content.
             string htmlContent;
             try
             {
-                htmlContent = File.ReadAllText(htmlFilePath);
+                using (StreamReader reader = new StreamReader(htmlFilePath))
+                {
+                    htmlContent = reader.ReadToEnd();
+                }
             }
-            catch (Exception readEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to read HTML file: {readEx.Message}");
+                Console.Error.WriteLine($"Error reading HTML file: {ex.Message}");
                 return;
             }
 
-            // Prepare minimal appointment data
-            string location = "Online";
-            DateTime start = DateTime.Now.AddHours(1);
-            DateTime end = start.AddHours(2);
+            // Prepare minimal appointment data.
+            DateTime startDate = DateTime.Now;
+            DateTime endDate = startDate.AddHours(1);
             MailAddress organizer = new MailAddress("organizer@example.com");
             MailAddressCollection attendees = new MailAddressCollection();
 
-            // Create appointment
-            Appointment appointment = new Appointment(location, start, end, organizer, attendees);
-            appointment.Summary = "Generated Appointment";
-            appointment.Description = "Appointment generated from HTML content.";
+            // Create the appointment and set HTML description.
+            Appointment appointment = new Appointment("Sample Event", startDate, endDate, organizer, attendees);
             appointment.HtmlDescription = htmlContent;
+            appointment.Summary = "Sample Event from HTML";
 
-            // Save as iCalendar (.ics)
+            // Save the appointment as an iCalendar (ICS) file.
             try
             {
-                appointment.Save(icsFilePath, AppointmentSaveFormat.Ics);
-                Console.WriteLine($"iCalendar file created at: {icsFilePath}");
+                using (FileStream icsStream = new FileStream(icsFilePath, FileMode.Create, FileAccess.Write))
+                {
+                    appointment.Save(icsStream, AppointmentSaveFormat.Ics);
+                }
+                Console.WriteLine($"ICS file created at: {icsFilePath}");
             }
-            catch (Exception saveEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to save iCalendar file: {saveEx.Message}");
+                Console.Error.WriteLine($"Error saving iCalendar file: {ex.Message}");
             }
         }
         catch (Exception ex)
