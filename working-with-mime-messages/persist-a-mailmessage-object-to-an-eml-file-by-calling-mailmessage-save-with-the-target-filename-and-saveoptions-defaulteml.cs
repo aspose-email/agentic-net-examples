@@ -4,15 +4,14 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define the output EML file path
-            string outputPath = "output.eml";
+            string emlPath = "output.eml";
 
             // Ensure the target directory exists
-            string directory = Path.GetDirectoryName(outputPath);
+            string directory = Path.GetDirectoryName(emlPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
@@ -24,10 +23,10 @@ class Program
                 message.From = new MailAddress("sender@example.com");
                 message.To.Add(new MailAddress("recipient@example.com"));
                 message.Subject = "Test Email";
-                message.Body = "This is a test email.";
+                message.Body = "Hello, this is a test email.";
 
-                // Save the message to an EML file using default options
-                message.Save(outputPath, SaveOptions.DefaultEml);
+                // Save the message as EML using default options
+                message.Save(emlPath, SaveOptions.DefaultEml);
             }
         }
         catch (Exception ex)
