@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Calendar;
 
 class Program
 {
@@ -10,20 +9,20 @@ class Program
     {
         try
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.ics";
+            string msgPath = "sample.msg";
+            string icsPath = "output.ics";
 
-            // Guard input file existence
-            if (!File.Exists(inputPath))
+            // Ensure the input MSG file exists
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                Console.Error.WriteLine($"Input file '{msgPath}' does not exist.");
                 return;
             }
 
-            // Load the MSG file as a MapiMessage
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                // Ensure the message contains a calendar item
+                // Verify that the MSG contains a calendar item
                 if (msg.SupportedType != MapiItemType.Calendar)
                 {
                     Console.Error.WriteLine("The provided MSG file does not contain a calendar item.");
@@ -31,14 +30,12 @@ class Program
                 }
 
                 // Convert to MapiCalendar
-                using (MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem())
-                {
-                    // Save as iCalendar (ICS) format
-                    calendar.Save(outputPath, AppointmentSaveFormat.Ics);
-                }
-            }
+                MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
 
-            Console.WriteLine($"Conversion completed successfully. ICS file saved to: {outputPath}");
+                // Save the calendar as an iCalendar (ICS) file
+                calendar.Save(icsPath, MapiCalendarSaveOptions.DefaultIcs);
+                Console.WriteLine($"Calendar successfully saved to '{icsPath}'.");
+            }
         }
         catch (Exception ex)
         {
