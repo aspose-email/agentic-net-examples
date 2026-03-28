@@ -1,60 +1,55 @@
-using System.Net;
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
-namespace EmailDateFilterExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // IMAP server connection parameters (replace with real values if available)
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
 
-            try
+            // Define the date range (inclusive)
+            DateTime startDate = new DateTime(2022, 1, 1);
+            DateTime endDate   = new DateTime(2022, 1, 31);
+
+            // Build the query string using the required format: d-MMM-yyyy (e.g., 01-Jan-2022)
+            string queryString = string.Format(
+                "('InternalDate' >= '{0:dd-MMM-yyyy}' & 'InternalDate' <= '{1:dd-MMM-yyyy}')",
+                startDate, endDate);
+
+            // Create a MailQuery with the constructed query string
+            MailQuery dateRangeQuery = new MailQuery(queryString);
+
+            // Connect to the IMAP server and fetch messages that match the date range
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
-                // Initialize EWS client (replace with actual server URL and credentials)
-                using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", new System.Net.NetworkCredential("username", "password")))
+                // Retrieve the list of messages that satisfy the query
+                ImapMessageInfoCollection messages = client.ListMessages(dateRangeQuery);
+
+                Console.WriteLine($"Found {messages.Count} message(s) between {startDate:d} and {endDate:d}:");
+
+                foreach (ImapMessageInfo info in messages)
                 {
-                    // Define the date range
-                    DateTime startDate = new DateTime(2023, 1, 1);
-                    DateTime endDate = new DateTime(2023, 2, 1);
-
-                    // Build the query: messages sent on or after startDate and before endDate (exclusive upper bound)
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.SentDate.Greater(startDate);
-                    builder.SentDate.Before(endDate);
-                    MailQuery query = builder.GetQuery();
-
-                    // Retrieve messages from the Inbox that match the query
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
-
-                    // Output basic information for each message
-                    foreach (ExchangeMessageInfo info in messages)
+                    // Fetch the full message to access its properties (e.g., Subject)
+                    using (MailMessage message = client.FetchMessage(info.UniqueId))
                     {
-                        Console.WriteLine("Subject: " + info.Subject);
-                        Console.WriteLine("From: " + info.From);
-                        Console.WriteLine("Sent: " + info.Date);
-                        Console.WriteLine(new string('-', 40));
+                        Console.WriteLine($"- Subject: {message.Subject}");
                     }
-
-                    // Example of inclusive upper bound: add one day to make the end date inclusive
-                    DateTime inclusiveEndDate = endDate.AddDays(1);
-                    ExchangeQueryBuilder inclusiveBuilder = new ExchangeQueryBuilder();
-                    inclusiveBuilder.SentDate.Greater(startDate);
-                    inclusiveBuilder.SentDate.Before(inclusiveEndDate);
-                    MailQuery inclusiveQuery = inclusiveBuilder.GetQuery();
-
-                    ExchangeMessageInfoCollection inclusiveMessages = client.ListMessages(client.MailboxInfo.InboxUri, inclusiveQuery, false);
-                    Console.WriteLine("Inclusive upper bound results count: " + inclusiveMessages.Count);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            // Gracefully report any errors without crashing the application
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
