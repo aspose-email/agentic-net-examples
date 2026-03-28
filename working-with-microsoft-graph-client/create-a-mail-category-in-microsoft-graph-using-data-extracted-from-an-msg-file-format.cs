@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
@@ -11,45 +10,46 @@ class Program
     {
         try
         {
-            // Input MSG file path
+            // Path to the MSG file
             string msgPath = "sample.msg";
 
-            // Verify the MSG file exists
+            // Verify the file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Load the MSG file and extract a category name (using the subject as an example)
+            string categoryName;
+            using (MailMessage message = MailMessage.Load(msgPath))
             {
-                // Extract the first category name from the message (if any)
-                string categoryName = "DefaultCategory";
-                if (msg.Categories != null && msg.Categories.Length > 0)
+                categoryName = string.IsNullOrWhiteSpace(message.Subject) ? "DefaultCategory" : message.Subject;
+            }
+
+            // Prepare the token provider for Microsoft Graph (replace placeholders with real values)
+            Aspose.Email.Clients.ITokenProvider tokenProvider =
+                Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                    "YOUR_CLIENT_ID",
+                    "YOUR_CLIENT_SECRET",
+                    "YOUR_REFRESH_TOKEN");
+
+            // Create the Graph client for the target user (replace with actual user email)
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "user@example.com"))
+            {
+                // Create a new Outlook category using the extracted name and a preset color
+                OutlookCategory createdCategory = client.CreateCategory(
+                    categoryName,
+                    CategoryPreset.Preset0); // Choose an appropriate preset
+
+                Console.WriteLine($"Created category: {createdCategory.DisplayName} (Id: {createdCategory.Id})");
+
+                // List all categories for verification
+                var allCategories = client.ListCategories();
+                Console.WriteLine("Current categories:");
+                foreach (OutlookCategory cat in allCategories)
                 {
-                    categoryName = msg.Categories[0];
-                }
-
-                // Prepare Graph authentication (dummy credentials for illustration)
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string tenantId = "tenantId";
-
-                // Obtain a token provider instance
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    clientId, clientSecret, refreshToken);
-
-                // Create the Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
-                {
-                    // Create a new Outlook category using a preset color
-                    OutlookCategory createdCategory = graphClient.CreateCategory(
-                        categoryName,
-                        CategoryPreset.Preset0); // Use any valid preset enum value
-
-                    Console.WriteLine($"Category created: {createdCategory.DisplayName}, Preset: {createdCategory.Preset}");
+                    Console.WriteLine($"- {cat.DisplayName} (Color: {cat.Color})");
                 }
             }
         }
