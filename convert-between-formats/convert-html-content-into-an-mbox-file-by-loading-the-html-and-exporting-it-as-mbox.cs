@@ -9,15 +9,16 @@ class Program
     {
         try
         {
-            string htmlFilePath = "sample.html";
-            string outputMboxPath = "output.mbox";
+            // Input HTML file and output MBOX file paths
+            string htmlPath = "input.html";
+            string mboxPath = "output.mbox";
 
-            // Ensure input HTML exists; create minimal placeholder if missing
-            if (!File.Exists(htmlFilePath))
+            // Ensure the input HTML file exists; create a minimal placeholder if missing
+            if (!File.Exists(htmlPath))
             {
                 try
                 {
-                    File.WriteAllText(htmlFilePath, "<html><body><p>Placeholder</p></body></html>");
+                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder content</p></body></html>");
                 }
                 catch (Exception ex)
                 {
@@ -26,25 +27,11 @@ class Program
                 }
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputMboxPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
-
+            // Read HTML content
             string htmlContent;
             try
             {
-                htmlContent = File.ReadAllText(htmlFilePath);
+                htmlContent = File.ReadAllText(htmlPath);
             }
             catch (Exception ex)
             {
@@ -52,32 +39,45 @@ class Program
                 return;
             }
 
-            // Create a MailMessage with HTML body
-            MailMessage message = new MailMessage();
-            message.From = "sender@example.com";
-            message.To.Add("recipient@example.com");
-            message.Subject = "HTML to MBOX Example";
-            message.HtmlBody = htmlContent;
-
-            // Write the message to an MBOX file using MboxrdStorageWriter
-            try
+            // Create a mail message from the HTML content
+            using (MailMessage message = new MailMessage())
             {
-                using (FileStream fs = new FileStream(outputMboxPath, FileMode.Create, FileAccess.Write))
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Converted HTML Message";
+                message.HtmlBody = htmlContent;
+                message.IsBodyHtml = true;
+
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(mboxPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                        return;
+                    }
+                }
+
+                // Write the message to an MBOX file
+                try
                 {
                     MboxSaveOptions saveOptions = new MboxSaveOptions();
-                    using (MboxrdStorageWriter writer = new MboxrdStorageWriter(fs, saveOptions))
+                    using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxPath, saveOptions))
                     {
                         writer.WriteMessage(message);
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to write MBOX file: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to write MBOX file: {ex.Message}");
-                return;
-            }
-
-            Console.WriteLine("MBOX file created successfully.");
         }
         catch (Exception ex)
         {
