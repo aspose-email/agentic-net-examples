@@ -1,75 +1,70 @@
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-namespace ExchangeInboxRuleSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-            try
+            // Initialize the EWS client (connection safety)
+            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
             {
-                // Exchange Web Services endpoint and credentials (replace with real values)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
-
-                // Create and connect the EWS client
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                try
                 {
                     // -------------------- Create a new inbox rule --------------------
                     InboxRule newRule = new InboxRule();
                     newRule.DisplayName = "Sample Rule";
                     newRule.IsEnabled = true;
-
                     client.CreateInboxRule(newRule);
                     Console.WriteLine("Inbox rule created.");
 
-                    // -------------------- Retrieve all inbox rules --------------------
-                    InboxRule[] allRules = client.GetInboxRules();
-
-                    Console.WriteLine("Current inbox rules:");
-                    foreach (InboxRule rule in allRules)
+                    // -------------------- Retrieve existing inbox rules --------------------
+                    InboxRule[] rules = client.GetInboxRules();
+                    Console.WriteLine("Existing inbox rules:");
+                    foreach (InboxRule rule in rules)
                     {
-                        Console.WriteLine($"- {rule.DisplayName} (Enabled: {rule.IsEnabled})");
+                        Console.WriteLine($"- {rule.DisplayName} (Id: {rule.RuleId})");
                     }
 
-                    // Find the rule we just created (by display name)
-                    InboxRule targetRule = null;
-                    foreach (InboxRule rule in allRules)
+                    // -------------------- Update the created rule (disable it) --------------------
+                    InboxRule ruleToUpdate = null;
+                    foreach (InboxRule rule in rules)
                     {
                         if (rule.DisplayName == "Sample Rule")
                         {
-                            targetRule = rule;
+                            ruleToUpdate = rule;
                             break;
                         }
                     }
 
-                    if (targetRule != null)
+                    if (ruleToUpdate != null)
                     {
-                        // -------------------- Update the inbox rule --------------------
-                        targetRule.DisplayName = "Updated Sample Rule";
-                        client.UpdateInboxRule(targetRule);
-                        Console.WriteLine("Inbox rule updated.");
+                        ruleToUpdate.IsEnabled = false;
+                        client.UpdateInboxRule(ruleToUpdate);
+                        Console.WriteLine("Inbox rule updated (disabled).");
+                    }
 
-                        // -------------------- Delete the inbox rule --------------------
-                        client.DeleteInboxRule(targetRule.RuleId);
+                    // -------------------- Delete the rule --------------------
+                    if (ruleToUpdate != null)
+                    {
+                        client.DeleteInboxRule(ruleToUpdate.RuleId);
                         Console.WriteLine("Inbox rule deleted.");
                     }
-                    else
-                    {
-                        Console.WriteLine("Created rule not found for update/delete.");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle errors from EWS operations
+                    Console.Error.WriteLine($"EWS operation error: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            // Top‑level exception guard
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
