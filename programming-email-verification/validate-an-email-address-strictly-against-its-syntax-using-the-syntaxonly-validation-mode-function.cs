@@ -8,19 +8,19 @@ class Program
     {
         try
         {
-            // Email address to validate
-            string email = "example@example.com";
+            // Email address to be validated
+            string emailAddress = "example@domain.com";
 
-            // Create an EmailValidator instance
+            // Create an instance of EmailValidator
             EmailValidator validator = new EmailValidator();
 
             // Validate the email address using SyntaxOnly policy
-            ValidationResult result;
-            validator.Validate(email, ValidationPolicy.SyntaxOnly, out result);
+            ValidationResult validationResult;
+            validator.Validate(emailAddress, ValidationPolicy.SyntaxOnly, out validationResult);
 
             // Display validation outcome
-            Console.WriteLine("Return code: " + result.ReturnCode);
-            Console.WriteLine("Message: " + result.Message);
+            Console.WriteLine("Return code: " + validationResult.ReturnCode);
+            Console.WriteLine("Message: " + validationResult.Message);
         }
         catch (Exception ex)
         {
