@@ -9,62 +9,60 @@ class Program
     {
         try
         {
-            // Paths to the original MSG file and the replacement image.
-            string msgPath = "sample.msg";
-            string newImagePath = "newImage.png";
+            string inputPath = "sample.msg";
+            string outputPath = "modified.msg";
 
-            // Verify that the required files exist.
-            if (!File.Exists(msgPath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Message file not found: {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            if (!File.Exists(newImagePath))
+            // Load the MSG file
+            using (MapiMessage message = MapiMessage.Load(inputPath))
             {
-                Console.Error.WriteLine($"Replacement image not found: {newImagePath}");
-                return;
-            }
-
-            // Load the MSG message.
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
-            {
-                Console.WriteLine($"Subject: {msg.Subject}");
-
-                // Iterate through all attachments (including embedded images).
-                foreach (MapiAttachment attachment in msg.Attachments)
+                // Iterate over attachments to find inline images
+                for (int i = 0; i < message.Attachments.Count; i++)
                 {
-                    Console.WriteLine($"Attachment: {attachment.FileName}, Inline: {attachment.IsInline}");
+                    MapiAttachment attachment = message.Attachments[i];
 
-                    // Analyze the attachment size if binary data is present.
-                    if (attachment.BinaryData != null)
+                    // Check if attachment is inline and has an image extension
+                    if (attachment.IsInline)
                     {
-                        Console.WriteLine($"Size: {attachment.BinaryData.Length} bytes");
-                    }
-
-                    // Replace the attachment if it is an image (png, jpg, jpeg).
-                    string extension = Path.GetExtension(attachment.FileName);
-                    if (!string.IsNullOrEmpty(extension))
-                    {
-                        string extLower = extension.ToLowerInvariant();
-                        if (extLower == ".png" || extLower == ".jpg" || extLower == ".jpeg")
+                        string extension = Path.GetExtension(attachment.FileName).ToLowerInvariant();
+                        if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
                         {
-                            byte[] newData = File.ReadAllBytes(newImagePath);
-                            attachment.BinaryData = newData;
-                            Console.WriteLine($"Replaced image attachment '{attachment.FileName}' with new image.");
+                            // Replace image data with a minimal placeholder (e.g., PNG header)
+                            byte[] placeholderData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+                            attachment.BinaryData = placeholderData;
+                            Console.WriteLine($"Replaced image attachment: {attachment.FileName}");
                         }
                     }
                 }
 
-                // Save the modified message to a new file.
-                string outPath = "modified.msg";
-                msg.Save(outPath);
-                Console.WriteLine($"Modified message saved to {outPath}");
+                // Ensure output directory exists
+                try
+                {
+                    string outputDirectory = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+
+                    // Save the modified MSG
+                    message.Save(outputPath);
+                    Console.WriteLine($"Modified message saved to: {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving modified message: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
