@@ -1,44 +1,49 @@
 using System;
-using System.Net;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Imap;
 
-namespace EmailMetadataSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Initialize and configure the IMAP client
+            using (ImapClient client = new ImapClient())
             {
-                // EWS service URL and credentials
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credential = new NetworkCredential("username", "password");
+                client.Host = "imap.example.com";
+                client.Port = 993;
+                client.SecurityOptions = SecurityOptions.SSLImplicit;
+                client.Username = "user@example.com";
+                client.Password = "password";
 
-                // Create and connect the EWS client
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
+                // Connect to the server
+
+                // Select the INBOX folder
+                client.SelectFolder("INBOX");
+
+                // Retrieve basic information for all messages in the folder
+                List<ImapMessageInfo> messages = client.ListMessages();
+
+                foreach (ImapMessageInfo info in messages)
                 {
-                    // Retrieve messages from the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-
-                    // Iterate through each message and output metadata fields
-                    foreach (ExchangeMessageInfo info in messages)
+                    // Fetch the full message using its unique identifier
+                    using (MailMessage message = client.FetchMessage(info.UniqueId))
                     {
-                        Console.WriteLine("Subject: " + info.Subject);
-                        Console.WriteLine("From: " + (info.From != null ? info.From.ToString() : string.Empty));
-                        Console.WriteLine("Date: " + info.Date);
-                        Console.WriteLine("Sender: " + (info.Sender != null ? info.Sender.ToString() : string.Empty));
-                        Console.WriteLine("Size: " + info.Size);
-                        Console.WriteLine("Message ID: " + info.MessageId);
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"Date: {message.Date}");
+                        Console.WriteLine($"Size: {info.Size} bytes");
                         Console.WriteLine(new string('-', 40));
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
