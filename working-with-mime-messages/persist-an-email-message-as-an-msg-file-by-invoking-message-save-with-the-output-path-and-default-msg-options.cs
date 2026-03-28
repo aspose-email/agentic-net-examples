@@ -4,35 +4,52 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string outputPath = "output.msg";
+            string inputPath = "Message.eml";
+            string outputPath = "Message.msg";
 
-            // Ensure the output directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Ensure the input EML file exists; create a minimal placeholder if missing.
+            try
             {
-                Directory.CreateDirectory(directory);
+                if (!File.Exists(inputPath))
+                {
+                    string placeholder = "From: sender@example.com\r\nTo: recipient@example.com\r\nSubject: Test\r\n\r\nBody of the email.";
+                    File.WriteAllText(inputPath, placeholder);
+                }
+            }
+            catch (Exception ioEx)
+            {
+                Console.Error.WriteLine($"Failed to prepare input file: {ioEx.Message}");
+                return;
             }
 
-            using (MailMessage message = new MailMessage())
+            // Ensure the output directory exists.
+            try
             {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Sample Message";
-                message.Body = "This is a sample email saved as MSG.";
+                string outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+            }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Failed to prepare output directory: {dirEx.Message}");
+                return;
+            }
 
-                // Save the message as MSG using default options
+            // Load the email message and save it as MSG using default options.
+            using (MailMessage message = MailMessage.Load(inputPath))
+            {
                 message.Save(outputPath, SaveOptions.DefaultMsg);
             }
-
-            Console.WriteLine($"Message saved to {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
