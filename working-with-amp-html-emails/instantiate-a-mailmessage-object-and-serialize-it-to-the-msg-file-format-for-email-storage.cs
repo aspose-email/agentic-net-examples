@@ -4,42 +4,31 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Ensure output directory exists
-            string outputDirectory = "Output";
-            if (!Directory.Exists(outputDirectory))
+            string outputPath = "Message.msg";
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(directory);
             }
 
-            // Define the path for the MSG file
-            string msgFilePath = Path.Combine(outputDirectory, "sample.msg");
-
-            // Create a new MailMessage instance
             using (MailMessage message = new MailMessage())
             {
-                // Set basic properties
                 message.From = new MailAddress("sender@example.com");
-                MailAddressCollection toAddresses = new MailAddressCollection();
-                toAddresses.Add(new MailAddress("recipient@example.com"));
-                message.To = toAddresses;
+                message.To.Add(new MailAddress("receiver@example.com"));
                 message.Subject = "Test Subject";
-                message.Body = "This is a test email.";
+                message.Body = "Hello, this is a test email.";
 
-                // Prepare save options for MSG format
                 MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-
-                // Save the message to MSG file
-                message.Save(msgFilePath, saveOptions);
-                Console.WriteLine($"Message saved to: {msgFilePath}");
+                message.Save(outputPath, saveOptions);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
