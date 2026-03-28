@@ -8,27 +8,46 @@ class Program
     {
         try
         {
-            string emlPath = "sample.eml";
-            string htmlPath = "sample.html";
+            string inputFile = "input.eml";
+            string outputFile = "output.html";
 
-            if (!File.Exists(emlPath))
+            // Ensure the input file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputFile))
             {
-                Console.Error.WriteLine($"Input file '{emlPath}' not found.");
-                return;
-            }
-
-            using (MailMessage message = MailMessage.Load(emlPath))
-            {
-                HtmlSaveOptions options = new HtmlSaveOptions
+                using (FileStream fs = File.Create(inputFile))
                 {
-                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
-                };
-                message.Save(htmlPath, options);
+                    string placeholder = "From: placeholder@example.com\r\nTo: placeholder@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
+                    byte[] bytes = System.Text.Encoding.UTF8.GetBytes(placeholder);
+                    fs.Write(bytes, 0, bytes.Length);
+                }
+                Console.Error.WriteLine($"Input file not found. Created placeholder at '{inputFile}'.");
             }
+
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputFile);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Load the EML message
+            using (MailMessage emlMessage = MailMessage.Load(inputFile))
+            {
+                // Configure HTML save options to embed resources
+                Aspose.Email.HtmlSaveOptions htmlOptions = new Aspose.Email.HtmlSaveOptions
+                {
+                    ResourceRenderingMode = Aspose.Email.ResourceRenderingMode.EmbedIntoHtml
+                };
+
+                // Save the message as HTML
+                emlMessage.Save(outputFile, htmlOptions);
+            }
+
+            Console.WriteLine("Conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
