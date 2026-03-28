@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Graph;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,78 +10,65 @@ class Program
     {
         try
         {
-            // Token provider parameters (replace with real values)
-            string clientId = "your-client-id";
-            string clientSecret = "your-client-secret";
-            string refreshToken = "your-refresh-token";
+            // Define output MSG file path
+            string msgFilePath = "Invitation.msg";
 
-            // Create Outlook token provider
-            TokenProvider tokenProvider;
-            try
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(msgFilePath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error creating token provider: {ex.Message}");
-                return;
-            }
-
-            // Initialize Graph client
-            IGraphClient client;
-            try
-            {
-                client = Aspose.Email.Clients.Graph.GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error creating Graph client: {ex.Message}");
-                return;
-            }
-
-            using (client)
-            {
-                // Create a mail message and simulate DB modifications
-                MailMessage message = new MailMessage();
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Original Subject";
-                message.Body = "Original body content.";
-
-                // Simulated persistence: update subject and body
-                message.Subject = "Updated Subject";
-                message.Body = "Updated body after database persistence.";
-
-                // Prepare output directory and file path
-                string outputDir = Path.Combine(Environment.CurrentDirectory, "Output");
-                string outputPath = Path.Combine(outputDir, "UpdatedMessage.msg");
-
-                // Ensure the output directory exists
                 try
                 {
-                    if (!Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
+                    Directory.CreateDirectory(outputDirectory);
                 }
-                catch (Exception ex)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Error ensuring output directory: {ex.Message}");
+                    Console.Error.WriteLine($"Error: Unable to create directory – {outputDirectory}. {dirEx.Message}");
+                    return;
+                }
+            }
+
+            // Recipient email address for the sharing invitation
+            string recipientEmail = "user@example.com";
+
+            // Create and connect the EWS client
+            IEWSClient ewsClient = null;
+            try
+            {
+                ewsClient = EWSClient.GetEWSClient(
+                    "https://exchange.example.com/EWS/Exchange.asmx",
+                    "username",
+                    "password");
+            }
+            catch (Exception clientEx)
+            {
+                Console.Error.WriteLine($"Error: Unable to connect to Exchange – {clientEx.Message}");
+                return;
+            }
+
+            // Use the client within a using block to ensure disposal
+            using (ewsClient)
+            {
+                // Create the calendar sharing invitation message
+                MapiMessage invitationMessage = null;
+                try
+                {
+                    invitationMessage = ewsClient.CreateCalendarSharingInvitationMessage(recipientEmail);
+                }
+                catch (Exception invEx)
+                {
+                    Console.Error.WriteLine($"Error: Unable to create invitation – {invEx.Message}");
                     return;
                 }
 
-                // Save the message as MSG
+                // Save the invitation as an MSG file
                 try
                 {
-                    using (FileStream fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
-                    {
-                        message.Save(fs, SaveOptions.DefaultMsg);
-                    }
-                    Console.WriteLine($"Message saved to {outputPath}");
+                    invitationMessage.Save(msgFilePath);
                 }
-                catch (Exception ex)
+                catch (Exception saveEx)
                 {
-                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error: Unable to save MSG file – {saveEx.Message}");
                 }
             }
         }
