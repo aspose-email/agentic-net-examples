@@ -1,68 +1,78 @@
 using System;
 using System.IO;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailPstSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string pstPath = "storage.pst";
-
-            // Ensure the PST file exists; create a minimal one if missing
-            if (!File.Exists(pstPath))
-            {
-                try
-                {
-                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // No additional setup required for an empty PST
-                    }
-                }
-                catch (Exception createEx)
-                {
-                    Console.Error.WriteLine($"Error creating PST file: {createEx.Message}");
-                    return;
-                }
-            }
-
-            // Open the PST file for reading/writing
             try
             {
+                string pstPath = "sample.pst";
+
+                // Ensure the PST file exists; create a minimal one if missing
+                if (!File.Exists(pstPath))
+                {
+                    // Create a new Unicode PST file
+                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // No additional setup required
+                    }
+                }
+
+                // Open the PST file
                 using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    // Set up a file system watcher to monitor changes to the PST file
-                    string directory = Path.GetDirectoryName(pstPath);
-                    string fileName = Path.GetFileName(pstPath);
-
-                    using (FileSystemWatcher watcher = new FileSystemWatcher())
+                    // Subscribe to the ItemMoved event
+                    pst.ItemMoved += (sender, e) =>
                     {
-                        watcher.Path = directory ?? ".";
-                        watcher.Filter = fileName;
-                        watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size;
+                        Console.WriteLine("ItemMoved event triggered.");
+                        Console.WriteLine($"Destination folder: {e.DestinationFolder?.DisplayName}");
+                        Console.WriteLine($"EntryId: {e.EntryId}");
+                        Console.WriteLine($"IsMessage: {e.IsMessage}");
+                        Console.WriteLine($"IsFolder: {e.IsFolder}");
+                    };
 
-                        watcher.Changed += (object sender, FileSystemEventArgs e) =>
-                        {
-                            Console.WriteLine($"PST file changed: {e.FullPath}");
-                        };
+                    // Get the root folder of the PST
+                    FolderInfo rootFolder = pst.RootFolder;
 
-                        watcher.EnableRaisingEvents = true;
+                    // Create source and destination subfolders
+                    FolderInfo sourceFolder = rootFolder.AddSubFolder("Source");
+                    FolderInfo destinationFolder = rootFolder.AddSubFolder("Destination");
 
-                        Console.WriteLine("Monitoring PST file for changes. Press Enter to exit.");
-                        Console.ReadLine();
+                    // Create a simple MAPI message
+                    using (MapiMessage message = new MapiMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Test Subject",
+                        "Test body"))
+                    {
+                        // Add the message to the source folder
+                        sourceFolder.AddMessage(message);
+                    }
+
+                    // Retrieve the MessageInfo of the newly added message
+                    MessageInfo movedMessageInfo = null;
+                    foreach (MessageInfo info in sourceFolder.EnumerateMessages())
+                    {
+                        movedMessageInfo = info;
+                        break; // Only need the first message
+                    }
+
+                    // Move the message to the destination folder, triggering the event
+                    if (movedMessageInfo != null)
+                    {
+                        pst.MoveItem(movedMessageInfo, destinationFolder);
                     }
                 }
             }
-            catch (Exception pstEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error accessing PST file: {pstEx.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
