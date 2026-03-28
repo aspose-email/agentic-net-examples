@@ -12,45 +12,49 @@ namespace Sample
         {
             try
             {
-                // Initialize Gmail client with placeholder credentials
-                IGmailClient gmailClient = GmailClient.GetInstance("clientId", "clientSecret", "refreshToken", "user@example.com");
+                // Initialize Gmail client with dummy credentials
+                IGmailClient gmailClient = GmailClient.GetInstance(
+                    "clientId",
+                    "clientSecret",
+                    "refreshToken",
+                    "user@example.com");
+
                 using (gmailClient)
                 {
-                    // Retrieve the list of calendars
-                    Calendar[] calendars = gmailClient.ListCalendars();
+                    // Retrieve list of calendars
+                    Aspose.Email.Clients.Google.Calendar[] calendars = gmailClient.ListCalendars();
                     if (calendars == null || calendars.Length == 0)
                     {
                         Console.WriteLine("No calendars found.");
                         return;
                     }
 
-                    // Use the first calendar in the collection
+                    // Use the first calendar's identifier
                     string calendarId = calendars[0].Id;
 
                     // Retrieve appointments from the selected calendar
                     Appointment[] appointments = gmailClient.ListAppointments(calendarId);
                     if (appointments == null || appointments.Length == 0)
                     {
-                        Console.WriteLine("No appointments found in the selected calendar.");
+                        Console.WriteLine("No appointments found in the calendar.");
                         return;
                     }
 
-                    // Iterate through each appointment, modify its properties, and update it on Google Calendar
+                    // Iterate through each appointment, modify a property, and update it on the server
                     foreach (Appointment appointment in appointments)
                     {
-                        // Example modifications
-                        appointment.Summary = "Updated: " + appointment.Summary;
-                        appointment.Description = (appointment.Description ?? string.Empty) + " (modified)";
+                        string originalSummary = appointment.Summary ?? string.Empty;
+                        appointment.Summary = originalSummary + " - Updated";
 
-                        // Push the changes back to Google Calendar
-                        Appointment updated = gmailClient.UpdateAppointment(calendarId, appointment);
-                        Console.WriteLine($"Updated appointment: {updated.Summary}");
+                        // Update the appointment on Google Calendar
+                        Appointment updatedAppointment = gmailClient.UpdateAppointment(calendarId, appointment);
+                        Console.WriteLine($"Updated appointment: {updatedAppointment.Summary}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine(ex.Message);
             }
         }
     }
