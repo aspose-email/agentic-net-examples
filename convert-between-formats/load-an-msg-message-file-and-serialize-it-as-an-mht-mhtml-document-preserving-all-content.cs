@@ -4,27 +4,33 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputPath = "sample.msg";
-            string outputPath = "output.mht";
+            string inputPath = "message.msg";
+            string outputPath = "message.mht";
 
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: Input file not found – {inputPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            using (Aspose.Email.MailMessage message = Aspose.Email.MailMessage.Load(inputPath))
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                message.Save(outputPath, Aspose.Email.SaveOptions.DefaultMhtml);
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+            {
+                mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
