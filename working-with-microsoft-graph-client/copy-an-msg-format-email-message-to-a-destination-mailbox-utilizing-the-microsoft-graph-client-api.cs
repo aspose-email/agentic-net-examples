@@ -1,56 +1,55 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
+using Aspose.Email.Clients;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             // Path to the source MSG file
-            string msgPath = "sample.msg";
-
-            // Verify that the MSG file exists
+            string msgPath = "source.msg";
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine("Message file not found: " + msgPath);
+                Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            // Initialize the token provider (replace placeholders with real values)
-            Aspose.Email.Clients.ITokenProvider tokenProvider;
-            try
-            {
-                tokenProvider = TokenProvider.Outlook.GetInstance("clientId", "clientSecret", "refreshToken");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Failed to create token provider: " + ex.Message);
-                return;
-            }
+            // Destination folder identifier in the target mailbox (Graph folder ItemId)
+            string destinationFolderId = "DESTINATION_FOLDER_ITEM_ID";
 
-            // Create the Graph client
-            using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
+            // Load the MSG file into a MailMessage object
+            using (MailMessage message = MailMessage.Load(msgPath))
             {
-                // Load the MSG file as a MapiMessage
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(msgPath))
+                // Initialize token provider (dummy credentials)
+                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                    "clientId",
+                    "clientSecret",
+                    "refreshToken");
+
+                // Create Graph client
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, null))
                 {
-                    // Destination folder identifier (e.g., "Inbox")
-                    string destinationFolderId = "Inbox";
-
-                    // Upload the message to the destination folder
-                    MapiMessage createdMessage = graphClient.CreateMessage(destinationFolderId, mapiMessage);
-                    Console.WriteLine("Message copied successfully. Subject: " + createdMessage?.Subject);
+                    try
+                    {
+                        // Create the message in the destination folder
+                        client.CreateMessage(destinationFolderId, message);
+                        Console.WriteLine("Message copied successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error during message copy: {ex.Message}");
+                        return;
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
