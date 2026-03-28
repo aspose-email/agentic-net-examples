@@ -1,51 +1,41 @@
+using Aspose.Email.Tools.Search;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
 
-namespace AsposeEmailAdvancedQueryExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Initialize credentials for the Exchange server
+            NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            try
+            // Create the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
             {
-                // Exchange mailbox URI and credentials (replace with real values)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
+                // Build an advanced query: subject contains "Report" AND from contains "john@example.com"
+                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
+                builder.Subject.Contains("Report");
+                builder.From.Contains("john@example.com");
+                MailQuery query = builder.GetQuery();
 
-                // Create EWS client
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                // Retrieve messages from the Inbox that match the query
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
+
+                // Output the subject of each matching message
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    // Build an Advanced Query Syntax (AQS) query
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.From.Contains("alice@example.com");
-                    builder.Subject.Contains("Report");
-                    MailQuery query = builder.GetQuery();
-
-                    // Retrieve messages from the Inbox that match the query
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-
-                    // Output basic metadata for each matching message
-                    foreach (ExchangeMessageInfo info in messages)
-                    {
-                        Console.WriteLine("Subject: " + info.Subject);
-                        Console.WriteLine("From: " + info.From);
-                        Console.WriteLine("Received: " + info.Date);
-                        Console.WriteLine(new string('-', 40));
-                    }
+                    Console.WriteLine($"Subject: {info.Subject}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
