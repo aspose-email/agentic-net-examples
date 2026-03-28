@@ -26,7 +26,8 @@ jobs:
         run: |
           BASE=${{ github.base_ref }}
           HEAD=${{ github.sha }}
-          MAP=$(git diff --name-only origin/"$BASE"...$HEAD -- '*.cs' | tr '\n' ' ')
+          # Exclude deleted files from the test list to avoid cp failures
+          MAP=$(git diff --name-only --diff-filter=ACMRT origin/"$BASE"...$HEAD -- '*.cs' | tr '\n' ' ')
           if [ -z "$MAP" ]; then
             echo "found=false" >> $GITHUB_OUTPUT
             echo "No changed .cs examples found." >> $GITHUB_STEP_SUMMARY
@@ -47,6 +48,11 @@ jobs:
             workdir=$(mktemp -d)
             dotnet new console --framework net8.0 --no-restore --output "$workdir" >/dev/null
             rm "$workdir/Program.cs"
+            if [ ! -f "$f" ]; then
+              echo "Skipping deleted file: $f"
+              rm -rf "$workdir"
+              continue
+            fi
             cp "$f" "$workdir/Program.cs"
             pushd "$workdir" >/dev/null
             dotnet add package Aspose.Email --version "$PKG_VERSION" >/dev/null
