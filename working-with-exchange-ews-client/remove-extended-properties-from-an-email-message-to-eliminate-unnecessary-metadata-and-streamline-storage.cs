@@ -1,47 +1,57 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Input and output file paths
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
+            // Exchange Web Services endpoint and credentials
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            // Verify input file exists
-            if (!File.Exists(inputPath))
+            // Create the EWS client (client variable name must be preserved)
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
             {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
+                // Get the Inbox folder URI
+                string inboxUri = client.MailboxInfo.InboxUri;
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Load the MSG file, remove all custom (extended) properties, and save
-            using (MapiMessage message = MapiMessage.Load(inputPath))
-            {
-                // Retrieve custom properties collection
-                var customProperties = message.GetCustomProperties();
-
-                // Remove each custom property by its tag
-                foreach (var kvp in customProperties)
+                // List messages in the Inbox
+                ExchangeMessageInfoCollection messagesInfo = client.ListMessages(inboxUri);
+                if (messagesInfo == null || messagesInfo.Count == 0)
                 {
-                    message.RemoveProperty(kvp.Key);
+                    Console.WriteLine("No messages found in the Inbox.");
+                    return;
                 }
 
-                // Save the cleaned message
-                message.Save(outputPath);
-                Console.WriteLine($"Extended properties removed. Saved to: {outputPath}");
+                // Select the first message
+                string messageUri = messagesInfo[0].UniqueUri;
+
+                // Fetch the full message
+                using (MailMessage message = client.FetchMessage(messageUri))
+                {
+                    // Remove extended (custom) headers to streamline storage
+                    message.Headers.Clear();
+
+                    // Define output path
+                    string outputPath = "cleaned.eml";
+
+                    // Ensure the output directory exists
+                    string outputDir = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+
+                    // Save the cleaned message
+                    message.Save(outputPath, SaveOptions.DefaultEml);
+                    Console.WriteLine($"Message saved without extended properties to: {outputPath}");
+                }
             }
         }
         catch (Exception ex)
