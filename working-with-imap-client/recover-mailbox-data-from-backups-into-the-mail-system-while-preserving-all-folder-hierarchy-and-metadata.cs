@@ -1,50 +1,77 @@
+using Aspose.Email.Clients;
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Imap;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Tools.Search;
 
-public class Program
+class Program
 {
-    public static void Main()
+    static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Path to the backup PST file
-            string pstFilePath = "backup.pst";
+            // Paths and server credentials (replace with real values as needed)
+            const string pstPath = "backup.pst";
+            const string imapHost = "imap.example.com";
+            const int imapPort = 993;
+            const string imapUser = "user@example.com";
+            const string imapPassword = "password";
 
-            // Verify that the PST file exists before attempting to open it
-            if (!File.Exists(pstFilePath))
+            // Verify that the PST file exists before proceeding
+            if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: PST file not found – {pstFilePath}");
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
                 return;
             }
 
-            // EWS connection parameters (replace with actual values)
-            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create the EWS client using the factory method (returns IEWSClient)
-            using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+            // Load the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                try
+                // Initialize the IMAP client
+                using (ImapClient client = new ImapClient(imapHost, imapPort, imapUser, imapPassword, SecurityOptions.Auto))
                 {
-                    // Open the PST file
-                    using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+                    try
                     {
-                        // Restore the mailbox from the PST, preserving folder hierarchy and metadata
-                        RestoreSettings restoreSettings = new RestoreSettings();
-                        ewsClient.Restore(pst, restoreSettings);
-                        Console.WriteLine("Mailbox restoration completed successfully.");
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Restoration error: {ex.Message}");
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to connect to IMAP server: {ex.Message}");
+                        return;
+                    }
+
+                    // Prepare restore settings
+                    RestoreSettings restoreSettings = new RestoreSettings();
+                    restoreSettings.Options = RestoreOptions.Recursive |
+                                              RestoreOptions.RemoveNonexistentFolders |
+                                              RestoreOptions.RemoveNonexistentItems;
+
+                    // Perform the restore operation
+                    try
+                    {
+                        client.Restore(pst, restoreSettings);
+                        Console.WriteLine("Mailbox restored successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Restore operation failed: {ex.Message}");
+                    }
+
+                    // Optional: list top‑level folders after restore
+                    try
+                    {
+                        ImapFolderInfoCollection folders = client.ListFolders();
+                        Console.WriteLine("Folders on the server:");
+                        foreach (ImapFolderInfo folder in folders)
+                        {
+                            Console.WriteLine($"- {folder.Name}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to list folders: {ex.Message}");
+                    }
                 }
             }
         }
