@@ -1,46 +1,40 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.Dav;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Initialize the Exchange WebDAV client
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            NetworkCredential credentials = new NetworkCredential("username", "password");
+            using (ExchangeClient client = new ExchangeClient(serviceUrl, credentials))
             {
-                // Replace with actual mailbox URI and credentials
-                string mailboxUri = "https://exchange.example.com/exchange/user@domain.com/";
-                string username = "user@domain.com";
-                string password = "password";
-
-                // Create and dispose the Exchange WebDAV client safely
-                using (Aspose.Email.Clients.Exchange.Dav.ExchangeClient client = new Aspose.Email.Clients.Exchange.Dav.ExchangeClient(mailboxUri, username, password))
+                // List messages in the Inbox folder
+                ExchangeMessageInfoCollection messageInfos = client.ListMessages("Inbox");
+                foreach (ExchangeMessageInfo messageInfo in messageInfos)
                 {
-                    // Get the Inbox folder URI from the mailbox info
-                    string inboxUri = client.MailboxInfo.InboxUri;
+                    Console.WriteLine($"Message URI: {messageInfo.UniqueUri}");
 
-                    // List messages in the Inbox folder
-                    Aspose.Email.Clients.Exchange.ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
-
-                    // Enumerate and display basic metadata for each message
-                    foreach (Aspose.Email.Clients.Exchange.ExchangeMessageInfo info in messages)
+                    // Fetch the full message content
+                    using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
                     {
-                        Console.WriteLine("Subject: " + info.Subject);
-                        Console.WriteLine("From: " + info.From);
-                        Console.WriteLine("Date: " + info.Date);
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"Body: {message.Body}");
                         Console.WriteLine(new string('-', 40));
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                // Output any errors without crashing the application
-                Console.Error.WriteLine(ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
