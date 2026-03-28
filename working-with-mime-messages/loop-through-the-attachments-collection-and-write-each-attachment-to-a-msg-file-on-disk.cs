@@ -9,50 +9,45 @@ class Program
     {
         try
         {
-            // Path to the source MSG file
+            // Path to the source Outlook MSG file
             string msgPath = "input.msg";
 
-            // Verify the source file exists
+            // Verify the source file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
 
-            // Directory where attachments will be saved
-            string outputDir = "Attachments";
-
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Load the Outlook message
+            // Load the MSG file inside a using block to ensure proper disposal
             using (MapiMessage message = MapiMessage.Load(msgPath))
             {
-                // Loop through each attachment in the message
-                foreach (MapiAttachment attachment in message.Attachments)
-                {
-                    // Build the full path for the attachment file
-                    string attachmentPath = Path.Combine(outputDir, attachment.FileName);
+                // Get the collection of attachments from the message
+                MapiAttachmentCollection attachments = message.Attachments;
 
-                    try
+                // Iterate through each attachment and save it to disk
+                foreach (MapiAttachment attachment in attachments)
+                {
+                    // Determine the output file name (use the original attachment name)
+                    string outputPath = attachment.FileName;
+
+                    // Ensure the target directory exists
+                    string outputDir = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                     {
-                        // Save the attachment to disk
-                        attachment.Save(attachmentPath);
-                        Console.WriteLine($"Saved attachment: {attachmentPath}");
+                        Directory.CreateDirectory(outputDir);
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error saving attachment '{attachment.FileName}': {ex.Message}");
-                    }
+
+                    // Save the attachment to the specified file
+                    attachment.Save(outputPath);
+                    Console.WriteLine($"Saved attachment: {outputPath}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Write any unexpected errors to the error console
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
