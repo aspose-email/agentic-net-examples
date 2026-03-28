@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Graph;
 using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Graph;
 using Aspose.Email.Clients;
 
 class Program
@@ -12,52 +12,45 @@ class Program
         try
         {
             // Path to the MSG file
-            string msgPath = "sample.msg";
+            string msgPath = "task.msg";
 
-            // Verify the file exists
+            // Verify that the MSG file exists
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file into a MailMessage
-            using (MailMessage message = MailMessage.Load(msgPath))
+            // Prepare token provider (dummy credentials for illustration)
+            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken");
+
+            // Initialize Graph client for the user (dummy user email)
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "user@example.com"))
             {
-                // Create a token provider for Outlook (3‑argument overload)
-                Aspose.Email.Clients.TokenProvider tokenProvider;
                 try
                 {
-                    tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                        "clientId",          // Replace with your client ID
-                        "clientSecret",      // Replace with your client secret
-                        "refreshToken");     // Replace with your refresh token
+                    // Load the MSG file into a MailMessage
+                    using (MailMessage mailMessage = MailMessage.Load(msgPath))
+                    {
+                        // Map basic properties to a MapiTask
+                        MapiTask task = new MapiTask
+                        {
+                            Subject = mailMessage.Subject,
+                            Body = mailMessage.Body
+                        };
+
+                        // Create the task in the default "Tasks" folder
+                        client.CreateTask(task, "Tasks");
+                        Console.WriteLine("Task created successfully in Microsoft Graph.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
+                    Console.Error.WriteLine($"Error during Graph operation: {ex.Message}");
                     return;
-                }
-
-                // Tenant identifier for Microsoft Graph
-                string tenantId = "your-tenant-id"; // Replace with your tenant ID
-
-                // Initialize the Graph client
-                using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
-                {
-                    // Convert the MailMessage to a MapiTask (simple mapping)
-                    MapiTask task = new MapiTask
-                    {
-                        Subject = message.Subject,
-                        Body = message.Body
-                    };
-
-                    // Folder identifier where the task will be created.
-                    // For demonstration, using the default "Tasks" folder name.
-                    string tasksFolderId = "Tasks";
-
-                    // Create the task in Microsoft Graph
-                    client.CreateTask(task, tasksFolderId);
                 }
             }
         }
