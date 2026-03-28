@@ -5,35 +5,44 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             string msgPath = "sample.msg";
 
+            // Guard file existence
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            using (MapiMessage message = MapiMessage.Load(msgPath))
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                foreach (MapiAttachment attachment in message.Attachments)
+                // Ensure there is at least one attachment
+                if (msg.Attachments == null || msg.Attachments.Count == 0)
                 {
-                    Console.WriteLine($"Attachment: {attachment.FileName}");
+                    Console.WriteLine("No attachments found.");
+                    return;
+                }
 
+                // Iterate through attachments and read their data via a stream
+                foreach (MapiAttachment attachment in msg.Attachments)
+                {
+                    // BinaryData holds the raw bytes of the attachment
                     byte[] data = attachment.BinaryData;
 
-                    string outputPath = attachment.FileName;
-                    try
+                    // Create a memory stream to mimic ContentStream usage
+                    using (MemoryStream contentStream = new MemoryStream(data))
                     {
-                        File.WriteAllBytes(outputPath, data);
-                        Console.WriteLine($"Saved to {outputPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error saving attachment: {ex.Message}");
+                        // Example: read all bytes from the stream
+                        byte[] buffer = new byte[contentStream.Length];
+                        int read = contentStream.Read(buffer, 0, buffer.Length);
+
+                        Console.WriteLine($"Attachment: {attachment.FileName}");
+                        Console.WriteLine($"Bytes read from ContentStream: {read}");
                     }
                 }
             }
