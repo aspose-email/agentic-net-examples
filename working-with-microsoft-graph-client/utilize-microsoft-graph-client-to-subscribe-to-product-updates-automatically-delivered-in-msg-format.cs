@@ -1,8 +1,8 @@
 using System;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,23 +10,43 @@ class Program
     {
         try
         {
-            // Initialize token provider for Outlook (placeholder credentials)
-            using (TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance("clientId", "clientSecret", "refreshToken"))
-            {
-                // Create Graph client with the token provider and tenant identifier
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
-                {
-                    // Create a MAPI message (MSG format) representing the product update
-                    MapiMessage productUpdate = new MapiMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Product Update Notification",
-                        "Please find the latest product update attached."
-                    );
+            // Path for the MSG file that will hold the product update
+            string msgPath = "ProductUpdate.msg";
 
-                    // Send the message using the Graph client (delivered as MSG)
-                    graphClient.SendAsMime(productUpdate);
-                    Console.WriteLine("Product update sent successfully.");
+            // Ensure the directory exists
+            string directory = Path.GetDirectoryName(msgPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            // Create a token provider for Outlook (dummy credentials)
+            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken");
+
+            // Tenant identifier (dummy value)
+            string tenantId = "yourTenantId";
+
+            // Initialize the Microsoft Graph client
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
+            {
+                // Example: list existing subscriptions (optional)
+                // var subscriptions = client.ListSubscriptions();
+
+                // Create a simple mail message representing the product update
+                using (MailMessage message = new MailMessage(
+                    "updates@example.com",
+                    "user@example.com",
+                    "Product Update",
+                    "Details about the latest product updates."))
+                {
+                    // Save the message in MSG format
+                    using (FileStream fs = new FileStream(msgPath, FileMode.Create, FileAccess.Write))
+                    {
+                        message.Save(fs, SaveOptions.DefaultMsgUnicode);
+                    }
                 }
             }
         }
