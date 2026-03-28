@@ -9,38 +9,35 @@ class Program
     {
         try
         {
-            string msgPath = "message.msg";
+            string msgFilePath = "sample.msg";
 
-            if (!File.Exists(msgPath))
+            // Verify that the input MSG file exists
+            if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
                 return;
             }
 
-            try
+            // Open the MSG file stream and load it into an AmpMessage
+            using (FileStream fileStream = File.OpenRead(msgFilePath))
             {
-                using (FileStream fileStream = File.OpenRead(msgPath))
+                using (AmpMessage ampMessage = new AmpMessage())
                 {
-                    using (AmpMessage ampMessage = new AmpMessage())
-                    {
-                        ampMessage.Import(fileStream);
+                    // Import the MSG content into the AmpMessage instance
+                    ampMessage.Import(fileStream);
 
-                        Console.WriteLine("Subject: " + ampMessage.Subject);
-                        Console.WriteLine("From: " + (ampMessage.From?.DisplayName ?? ampMessage.From?.Address ?? "Unknown"));
-                        Console.WriteLine("AMP HTML Body:");
-                        Console.WriteLine(ampMessage.AmpHtmlBody ?? "(none)");
-                    }
+                    // Access structured AMP content and other properties
+                    Console.WriteLine($"Subject: {ampMessage.Subject}");
+                    Console.WriteLine($"From: {ampMessage.From}");
+                    Console.WriteLine($"To: {ampMessage.To}");
+                    Console.WriteLine("AMP HTML Body:");
+                    Console.WriteLine(ampMessage.AmpHtmlBody ?? "(no AMP content)");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing the MSG file: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
