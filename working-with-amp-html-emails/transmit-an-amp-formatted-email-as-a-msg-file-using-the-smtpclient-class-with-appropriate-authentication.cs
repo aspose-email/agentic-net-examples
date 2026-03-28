@@ -1,9 +1,9 @@
+using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Smtp;
 using Aspose.Email.Amp;
+using Aspose.Email.Clients.Smtp;
 
 class Program
 {
@@ -11,60 +11,50 @@ class Program
     {
         try
         {
-            // SMTP server configuration
-            string host = "smtp.example.com";
-            int port = 587;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Output MSG file path
-            string outputPath = "output.msg";
+            string outputPath = "amp_message.msg";
 
             // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(directory);
             }
 
-            // Create the AMP message
+            // Create an AMP email message
             using (AmpMessage ampMessage = new AmpMessage())
             {
-                ampMessage.From = new MailAddress("sender@example.com", "Sender Name");
-                ampMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
+                ampMessage.From = new MailAddress("sender@example.com");
+                ampMessage.To.Add(new MailAddress("recipient@example.com"));
                 ampMessage.Subject = "AMP Email Example";
-                ampMessage.Body = "This is the plain text body.";
-                ampMessage.IsBodyHtml = true;
-                ampMessage.AmpHtmlBody = "<amp-email></amp-email>";
 
-                // Save the message as an MSG file
-                try
-                {
-                    ampMessage.Save(outputPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                    return;
-                }
+                // Plain HTML body
+                ampMessage.HtmlBody = "<html><body><h1>Hello</h1></body></html>";
 
-                // Send the message via SMTP
-                try
+                // AMP HTML body
+                ampMessage.AmpHtmlBody = @"<!doctype html>
+<html amp4email>
+<head>
+<meta charset=""utf-8"">
+<script async src=""https://cdn.ampproject.org/v0.js""></script>
+</head>
+<body>
+<h1>AMP Content</h1>
+</body>
+</html>";
+
+                // Save the message as a MSG file
+                ampMessage.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+
+                // Send the message via SMTP with authentication
+                using (SmtpClient client = new SmtpClient("smtp.example.com", 587, "username", "password", SecurityOptions.Auto))
                 {
-                    using (SmtpClient client = new SmtpClient(host, port, username, password, SecurityOptions.Auto))
-                    {
-                        client.Send(ampMessage);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to send email: {ex.Message}");
+                    client.Send(ampMessage);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
