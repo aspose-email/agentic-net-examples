@@ -1,53 +1,54 @@
 using System;
 using System.IO;
-using System.Text;
+using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Path to the MSG file
             string msgPath = "message.msg";
 
+            // Verify that the file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
                 Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            try
+            // Load the MSG file inside a using block to ensure proper disposal
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                using (MapiMessage msg = MapiMessage.Load(msgPath))
-                {
-                    string subject = msg.Subject ?? string.Empty;
-                    string sender = msg.SenderName ?? msg.SenderEmailAddress ?? string.Empty;
+                // Retrieve the subject
+                string subject = msg.Subject ?? string.Empty;
+                Console.WriteLine("Subject: " + subject);
 
-                    StringBuilder recipientBuilder = new StringBuilder();
+                // Retrieve the sender information
+                string senderName = msg.SenderName ?? string.Empty;
+                string senderEmail = msg.SenderEmailAddress ?? string.Empty;
+                string sender = string.IsNullOrEmpty(senderEmail) ? senderName : $"{senderName} <{senderEmail}>";
+                Console.WriteLine("From: " + sender);
+
+                // Retrieve recipient information from the Recipients collection
+                if (msg.Recipients != null)
+                {
                     foreach (MapiRecipient recipient in msg.Recipients)
                     {
-                        if (recipientBuilder.Length > 0)
-                            recipientBuilder.Append("; ");
-
-                        recipientBuilder.Append(recipient.EmailAddress ?? string.Empty);
+                        string recipientName = recipient.DisplayName ?? string.Empty;
+                        string recipientEmail = recipient.EmailAddress ?? string.Empty;
+                        string formattedRecipient = string.IsNullOrEmpty(recipientEmail) ? recipientName : $"{recipientName} <{recipientEmail}>";
+                        Console.WriteLine("To: " + formattedRecipient);
                     }
-                    string recipients = recipientBuilder.ToString();
-
-                    Console.WriteLine($"Subject: {subject}");
-                    Console.WriteLine($"Sender: {sender}");
-                    Console.WriteLine($"Recipients: {recipients}");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Output any unexpected errors
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
