@@ -1,5 +1,6 @@
-using System;
 using Aspose.Email.Clients;
+using System;
+using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 
 class Program
@@ -8,27 +9,18 @@ class Program
     {
         try
         {
-            // Initialize the IMAP client with placeholder credentials
-            using (ImapClient client = new ImapClient(
-                "imap.example.com",
-                993,
-                "username",
-                "password",
-                SecurityOptions.SSLImplicit))
+            // Initialize the IMAP client with server details
+            using (ImapClient client = new ImapClient("imap.example.com", "username", "password", SecurityOptions.Auto))
             {
                 // Activate client-side logging
                 client.EnableLogger = true;
-                client.LogFileName = "imap_log.txt";
 
-                // Perform a simple operation to ensure the client is connected
-                client.Noop();
-
-                Console.WriteLine("Client-side logging has been enabled.");
+                // Additional client operations can be performed here
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
