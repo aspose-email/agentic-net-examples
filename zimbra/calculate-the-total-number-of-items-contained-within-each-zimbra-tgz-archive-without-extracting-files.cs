@@ -1,44 +1,49 @@
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Zimbra;
 
-class Program
+namespace ZimbraTgzItemCount
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            if (args.Length == 0)
+            try
             {
-                Console.Error.WriteLine("Please provide at least one TGZ file path as an argument.");
-                return;
-            }
-
-            foreach (string path in args)
-            {
-                if (!File.Exists(path))
+                if (args == null || args.Length == 0)
                 {
-                    Console.Error.WriteLine($"Error: File not found – {path}");
-                    continue;
+                    Console.Error.WriteLine("No archive paths provided.");
+                    return;
                 }
 
-                try
+                foreach (string arg in args)
                 {
-                    using (Aspose.Email.Storage.Zimbra.TgzReader reader = new Aspose.Email.Storage.Zimbra.TgzReader(path))
+                    string filePath = arg;
+                    if (!File.Exists(filePath))
                     {
-                        int totalItems = reader.GetTotalItemsCount();
-                        Console.WriteLine($"File: {Path.GetFileName(path)} - Total items: {totalItems}");
+                        Console.Error.WriteLine($"Error: File not found – {filePath}");
+                        continue;
+                    }
+
+                    try
+                    {
+                        using (TgzReader reader = new TgzReader(filePath))
+                        {
+                            int totalItemsCount = reader.GetTotalItemsCount();
+                            Console.WriteLine($"Archive: {Path.GetFileName(filePath)} – Total items: {totalItemsCount}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error processing '{filePath}': {ex.Message}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing file {path}: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
