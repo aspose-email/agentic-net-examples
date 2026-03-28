@@ -1,27 +1,32 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Tools.Verifications;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             // Email address to validate
-            string emailAddress = "user@example.com";
+            string email = "example@example.com";
 
-            // Create the validator instance
+            // Create an EmailValidator instance
             EmailValidator validator = new EmailValidator();
 
-            // Perform validation with syntax and domain checks
-            ValidationResult validationResult;
-            validator.Validate(emailAddress, ValidationPolicy.SyntaxAndDomain, out validationResult);
+            // Validate the email address using syntax and domain checking
+            ValidationResult result;
+            validator.Validate(email, ValidationPolicy.SyntaxAndDomain, out result);
 
-            // Output the validation result
-            Console.WriteLine("Return Code: " + validationResult.ReturnCode);
-            if (!string.IsNullOrEmpty(validationResult.Message))
+            // Display validation outcome
+            Console.WriteLine("Return Code: " + result.ReturnCode);
+            if (!string.IsNullOrEmpty(result.Message))
             {
-                Console.WriteLine("Message: " + validationResult.Message);
+                Console.WriteLine("Message: " + result.Message);
+            }
+            if (result.LastException != null)
+            {
+                Console.WriteLine("Exception: " + result.LastException.Message);
             }
         }
         catch (Exception ex)
