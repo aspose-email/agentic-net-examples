@@ -12,39 +12,61 @@ class Program
             // Path to the MSG file containing replication settings
             string msgPath = "replication_settings.msg";
 
-            // Verify that the file exists before attempting to load it
+            // Verify the file exists before attempting to load
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file into a MapiMessage instance
+            // Load the MSG file inside a using block to ensure disposal
             using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                // Extract replication related properties using the known property descriptors
-                ReplicationConfig config = new ReplicationConfig
-                {
-                    ReplicationStyle = GetLongProperty(msg, KnownPropertyList.ReplicationStyle),
-                    ReplicationMessagePriority = GetLongProperty(msg, KnownPropertyList.ReplicationMessagePriority),
-                    ReplicationMsgSize = GetLongProperty(msg, KnownPropertyList.ReplicationMsgSize),
-                    ReplicationAlwaysInterval = GetLongProperty(msg, KnownPropertyList.ReplicationAlwaysInterval),
-                    ReplicationSchedule = GetStringProperty(msg, KnownPropertyList.ReplicationSchedule),
-                    EmsAbReplicationSensitivity = GetLongProperty(msg, KnownPropertyList.EmsAbReplicationSensitivity),
-                    EmsAbReplicationMailMsgSize = GetLongProperty(msg, KnownPropertyList.EmsAbReplicationMailMsgSize),
-                    EmsAbReplicationStagger = GetLongProperty(msg, KnownPropertyList.EmsAbReplicationStagger)
-                };
+                // Create a configuration object to hold the replication settings
+                ReplicationConfig config = new ReplicationConfig();
 
-                // Output the extracted configuration values
+                // Retrieve replication message size (numeric value)
+                object sizeObj = msg.GetProperty(KnownPropertyList.ReplicationMsgSize);
+                if (sizeObj is long size)
+                {
+                    config.ReplicationMessageSize = size;
+                }
+
+                // Retrieve replication message priority (numeric value)
+                object priorityObj = msg.GetProperty(KnownPropertyList.ReplicationMessagePriority);
+                if (priorityObj is long priority)
+                {
+                    config.ReplicationMessagePriority = priority;
+                }
+
+                // Retrieve replication style (string value)
+                object styleObj = msg.GetProperty(KnownPropertyList.ReplicationStyle);
+                if (styleObj != null)
+                {
+                    config.ReplicationStyle = styleObj.ToString();
+                }
+
+                // Retrieve replication schedule (string value)
+                object scheduleObj = msg.GetProperty(KnownPropertyList.ReplicationSchedule);
+                if (scheduleObj != null)
+                {
+                    config.ReplicationSchedule = scheduleObj.ToString();
+                }
+
+                // Retrieve receive folder settings (string value)
+                object receiveFolderObj = msg.GetProperty(KnownPropertyList.ReceiveFolderSettings);
+                if (receiveFolderObj != null)
+                {
+                    config.ReceiveFolderSettings = receiveFolderObj.ToString();
+                }
+
+                // Output the extracted configuration
                 Console.WriteLine("Replication Configuration:");
-                Console.WriteLine($"  ReplicationStyle: {config.ReplicationStyle}");
-                Console.WriteLine($"  ReplicationMessagePriority: {config.ReplicationMessagePriority}");
-                Console.WriteLine($"  ReplicationMsgSize: {config.ReplicationMsgSize}");
-                Console.WriteLine($"  ReplicationAlwaysInterval: {config.ReplicationAlwaysInterval}");
-                Console.WriteLine($"  ReplicationSchedule: {config.ReplicationSchedule}");
-                Console.WriteLine($"  EmsAbReplicationSensitivity: {config.EmsAbReplicationSensitivity}");
-                Console.WriteLine($"  EmsAbReplicationMailMsgSize: {config.EmsAbReplicationMailMsgSize}");
-                Console.WriteLine($"  EmsAbReplicationStagger: {config.EmsAbReplicationStagger}");
+                Console.WriteLine($"Message Size: {config.ReplicationMessageSize}");
+                Console.WriteLine($"Message Priority: {config.ReplicationMessagePriority}");
+                Console.WriteLine($"Style: {config.ReplicationStyle}");
+                Console.WriteLine($"Schedule: {config.ReplicationSchedule}");
+                Console.WriteLine($"Receive Folder Settings: {config.ReceiveFolderSettings}");
             }
         }
         catch (Exception ex)
@@ -52,45 +74,14 @@ class Program
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
-
-    // Helper to retrieve a long (Int64) property safely
-    private static long GetLongProperty(MapiMessage msg, PidTagPropertyDescriptor descriptor)
-    {
-        try
-        {
-            object value = msg.GetProperty(descriptor);
-            return value != null ? Convert.ToInt64(value) : 0L;
-        }
-        catch
-        {
-            return 0L;
-        }
-    }
-
-    // Helper to retrieve a string property safely
-    private static string GetStringProperty(MapiMessage msg, PidTagPropertyDescriptor descriptor)
-    {
-        try
-        {
-            object value = msg.GetProperty(descriptor);
-            return value?.ToString() ?? string.Empty;
-        }
-        catch
-        {
-            return string.Empty;
-        }
-    }
 }
 
-// Simple POCO to hold the replication settings
+// Simple POCO to hold replication settings
 class ReplicationConfig
 {
-    public long ReplicationStyle { get; set; }
+    public long ReplicationMessageSize { get; set; }
     public long ReplicationMessagePriority { get; set; }
-    public long ReplicationMsgSize { get; set; }
-    public long ReplicationAlwaysInterval { get; set; }
+    public string ReplicationStyle { get; set; }
     public string ReplicationSchedule { get; set; }
-    public long EmsAbReplicationSensitivity { get; set; }
-    public long EmsAbReplicationMailMsgSize { get; set; }
-    public long EmsAbReplicationStagger { get; set; }
+    public string ReceiveFolderSettings { get; set; }
 }
