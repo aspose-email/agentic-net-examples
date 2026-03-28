@@ -3,50 +3,71 @@ using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
-using RangeAlias = Aspose.Email.Clients.Google.Range;
+using GoogleRange = Aspose.Email.Clients.Google.Range;
 
-class Program
+namespace AsposeEmailGmailFreeBusySample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize Gmail client with dummy OAuth credentials
-            IGmailClient gmailClient = GmailClient.GetInstance(
-                clientId: "clientId",
-                clientSecret: "clientSecret",
-                refreshToken: "refreshToken",
-                defaultEmail: "user@example.com");
-
-            using (gmailClient)
+            try
             {
-                // Define the time window for the free/busy query
-                DateTime timeMin = DateTime.UtcNow;
-                DateTime timeMax = timeMin.AddHours(2);
+                // Initialize Gmail client with placeholder credentials
+                IGmailClient gmailClient = GmailClient.GetInstance(
+                    "clientId",
+                    "clientSecret",
+                    "refreshToken",
+                    "user@example.com");
 
-                // List of calendar identifiers (email addresses) to query
-                string[] calendarIds = new string[] { "user1@example.com", "user2@example.com" };
-
-                // Build the free/busy request
-                FreebusyQuery query = new FreebusyQuery(timeMin, timeMax, calendarIds);
-
-                // Execute the query
-                FreebusyResponse response = gmailClient.GetFreebusyInfo(query);
-
-                // Output the busy periods for each calendar
-                foreach (KeyValuePair<string, FreebusyCalendarInfo> entry in response.Calendars)
+                // Ensure the client is disposed properly
+                using (gmailClient as IDisposable)
                 {
-                    Console.WriteLine($"Calendar ID: {entry.Key}");
-                    foreach (RangeAlias busy in entry.Value.Busy)
+                    // Define the time range for the free/busy query
+                    DateTime timeMin = DateTime.UtcNow;
+                    DateTime timeMax = timeMin.AddHours(8);
+
+                    // List of calendar IDs to query
+                    List<string> calendarIds = new List<string>
                     {
-                        Console.WriteLine($"  Busy from {busy.Start:u} to {busy.End:u}");
+                        "primary",               // Example: primary calendar of the user
+                        "othercalendar@example.com" // Example: another calendar ID
+                    };
+
+                    // Build the free/busy query
+                    FreebusyQuery query = new FreebusyQuery(timeMin, timeMax, calendarIds);
+
+                    // Retrieve free/busy information
+                    FreebusyResponse response = gmailClient.GetFreebusyInfo(query);
+
+                    // Process and display the results
+                    foreach (KeyValuePair<string, FreebusyCalendarInfo> kvp in response.Calendars)
+                    {
+                        string calendarId = kvp.Key;
+                        FreebusyCalendarInfo calendarInfo = kvp.Value;
+
+                        Console.WriteLine($"Calendar ID: {calendarId}");
+
+                        foreach (GoogleRange busyRange in calendarInfo.Busy)
+                        {
+                            Console.WriteLine($"  Busy from {busyRange.Start} to {busyRange.End}");
+                        }
+
+                        if (calendarInfo.Errors != null)
+                        {
+                            foreach (var error in calendarInfo.Errors)
+                            {
+                                Console.WriteLine($"  Error: {error}");
+                            }
+                        }
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return;
+            }
         }
     }
 }
