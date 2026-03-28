@@ -1,6 +1,6 @@
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 using Aspose.Email.Tools.Verifications;
 
@@ -10,43 +10,42 @@ class Program
     {
         try
         {
-            // Email address to validate
-            string emailAddress = "user@example.com";
+            // Server configuration
+            string host = "smtp.example.com";
+            int port = 587;
+            string username = "user@example.com";
+            string password = "password";
 
-            // Validate the email address and its mail server
+            // Validate the email address (includes mail server validation)
             EmailValidator validator = new EmailValidator();
             ValidationResult validationResult;
-            validator.Validate(emailAddress, out validationResult);
+            validator.Validate(username, out validationResult);
 
-            Console.WriteLine($"Validation ReturnCode: {validationResult.ReturnCode}");
-            Console.WriteLine($"Message: {validationResult.Message}");
-
-            // If validation succeeded, attempt to connect to the SMTP server
-            if (validationResult.ReturnCode == ValidationResponseCode.ValidationSuccess)
+            Console.WriteLine("Email validation ReturnCode: " + validationResult.ReturnCode);
+            Console.WriteLine("Message: " + validationResult.Message);
+            if (validationResult.LastException != null)
             {
-                // Example SMTP server settings (replace with real values as needed)
-                string smtpHost = "smtp.example.com";
-                int smtpPort = 587;
-                string username = "username";
-                string password = "password";
+                Console.WriteLine("Exception: " + validationResult.LastException.Message);
+            }
 
-                using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, username, password, SecurityOptions.Auto))
+            // Validate server connectivity and credentials
+            using (SmtpClient client = new SmtpClient(host, port, username, password, SecurityOptions.SSLImplicit))
+            {
+                try
                 {
-                    try
-                    {
-                        bool credentialsValid = client.ValidateCredentials();
-                        Console.WriteLine($"Credentials valid: {credentialsValid}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
-                    }
+                    bool credentialsValid = client.ValidateCredentials();
+                    Console.WriteLine("Credentials valid: " + credentialsValid);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error validating credentials: " + ex.Message);
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
