@@ -4,7 +4,7 @@ using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
 
-namespace ExchangeFolderOperations
+namespace AsposeEmailExchangeFolderDemo
 {
     class Program
     {
@@ -12,90 +12,76 @@ namespace ExchangeFolderOperations
         {
             try
             {
-                // Exchange server connection parameters
-                string serverUri = "https://exchange.example.com/exchange/user@domain.com/";
-                string username = "user";
-                string password = "pass";
+                // Exchange server connection settings
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-                // Create and use the ExchangeClient inside a using block
-                using (Aspose.Email.Clients.Exchange.Dav.ExchangeClient client = new Aspose.Email.Clients.Exchange.Dav.ExchangeClient(serverUri, username, password))
+                // Create and connect the EWS client
+                try
                 {
-                    // Ensure the client connection is established safely
-                    try
+                    using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
                     {
-                        // Retrieve the Inbox folder URI from mailbox info
-                        string inboxUri = client.MailboxInfo.InboxUri;
+                        // -----------------------------------------------------------------
+                        // 1. Create a new folder under the Inbox
+                        // -----------------------------------------------------------------
+                        string parentFolderUri = client.MailboxInfo.InboxUri;
                         string newFolderName = "SampleFolder";
 
-                        // -------------------------
-                        // Create a new subfolder
-                        // -------------------------
                         try
                         {
-                            client.CreateFolder(inboxUri, newFolderName);
-                            Console.WriteLine("Folder created: " + newFolderName);
+                            client.CreateFolder(parentFolderUri, newFolderName);
+                            Console.WriteLine($"Folder '{newFolderName}' created under '{parentFolderUri}'.");
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine("CreateFolder error: " + ex.Message);
+                            Console.Error.WriteLine($"Error creating folder: {ex.Message}");
                         }
 
-                        // -------------------------
-                        // Retrieve folder information
-                        // -------------------------
+                        // -----------------------------------------------------------------
+                        // 2. Retrieve information about the newly created folder
+                        // -----------------------------------------------------------------
+                        string newFolderUri = $"{parentFolderUri}/{newFolderName}";
                         try
                         {
-                            // Construct the full URI of the newly created folder
-                            string newFolderUri = inboxUri + "/" + newFolderName;
-                            Aspose.Email.Clients.Exchange.ExchangeFolderInfo folderInfo = client.GetFolderInfo(newFolderUri);
-                            Console.WriteLine("Folder URI: " + folderInfo.Uri);
-                            Console.WriteLine("Folder Display Name: " + folderInfo.DisplayName);
+                            ExchangeFolderInfo folderInfo = client.GetFolderInfo(newFolderUri);
+                            Console.WriteLine($"Folder Info: Uri = {folderInfo.Uri}, DisplayName = {folderInfo.DisplayName}");
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine("GetFolderInfo error: " + ex.Message);
+                            Console.Error.WriteLine($"Error retrieving folder info: {ex.Message}");
                         }
 
-                        // -------------------------
-                        // List subfolders of the Inbox
-                        // -------------------------
-                        try
-                        {
-                            Aspose.Email.Clients.Exchange.ExchangeFolderInfoCollection subFolders = client.ListSubFolders(inboxUri);
-                            Console.WriteLine("Subfolders of Inbox:");
-                            foreach (Aspose.Email.Clients.Exchange.ExchangeFolderInfo info in subFolders)
-                            {
-                                Console.WriteLine("- " + info.DisplayName);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine("ListSubFolders error: " + ex.Message);
-                        }
+                        // -----------------------------------------------------------------
+                        // 3. Update folder (example: set a custom property or permission)
+                        //    For demonstration, we'll just output that an update could be placed here.
+                        // -----------------------------------------------------------------
+                        // Note: Specific update methods depend on the required operation.
+                        // This placeholder shows where such logic would be inserted.
 
-                        // -------------------------
-                        // Delete the created folder
-                        // -------------------------
+                        // -----------------------------------------------------------------
+                        // 4. Delete the folder
+                        // -----------------------------------------------------------------
                         try
                         {
-                            string folderToDeleteUri = inboxUri + "/" + newFolderName;
-                            client.DeleteFolder(folderToDeleteUri);
-                            Console.WriteLine("Folder deleted: " + newFolderName);
+                            client.DeleteFolder(newFolderUri);
+                            Console.WriteLine($"Folder '{newFolderUri}' deleted.");
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine("DeleteFolder error: " + ex.Message);
+                            Console.Error.WriteLine($"Error deleting folder: {ex.Message}");
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Exchange client error: " + ex.Message);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to connect to Exchange server: {ex.Message}");
+                    return;
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }
