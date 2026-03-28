@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,70 +10,48 @@ class Program
     {
         try
         {
-            // Paths for the OST file and optional placeholder creation
             string ostPath = "sample.ost";
 
-            // Ensure the OST file exists; if not, create a new PST/OST placeholder
+            // Verify that the OST file exists before proceeding.
             if (!File.Exists(ostPath))
             {
-                try
-                {
-                    // Create a new empty PST file (compatible with OST)
-                    PersonalStorage.Create(ostPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to create placeholder OST file: " + ex.Message);
-                    return;
-                }
+                Console.Error.WriteLine($"OST file not found at path: {ostPath}");
+                return;
             }
 
-            // Raw HTML content for the email body
-            string htmlContent = "<html><body><h1>Hello, World!</h1><p>This is a test email.</p></body></html>";
-
-            // Build the MailMessage with HTML body
-            MailMessage mailMessage = new MailMessage();
-            mailMessage.From = "sender@example.com";
-            mailMessage.To = "receiver@example.com";
-            mailMessage.Subject = "Test HTML Email";
-            mailMessage.HtmlBody = htmlContent;
-
-            // Convert MailMessage to MapiMessage for insertion into OST
-            MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
-
-            // Open the OST file for read/write operations
-            using (PersonalStorage personalStorage = PersonalStorage.FromFile(ostPath))
+            try
             {
-                // Access the root folder of the OST
-                FolderInfo rootFolder = personalStorage.RootFolder;
+                // Open the existing OST file.
+                using (PersonalStorage personalStorage = PersonalStorage.FromFile(ostPath))
+                {
+                    // Use the root folder (or specify a subfolder as needed).
+                    FolderInfo rootFolder = personalStorage.RootFolder;
 
-                // Create (or retrieve) a subfolder named "MyFolder"
-                FolderInfo targetFolder;
-                try
-                {
-                    targetFolder = rootFolder.AddSubFolder("MyFolder");
-                }
-                catch (Exception)
-                {
-                    // If the folder already exists, retrieve it
-                    targetFolder = rootFolder.GetSubFolder("MyFolder");
-                }
+                    // Create a MailMessage with HTML content.
+                    MailMessage mailMessage = new MailMessage();
+                    mailMessage.From = "sender@example.com";
+                    mailMessage.To.Add("recipient@example.com");
+                    mailMessage.Subject = "Sample HTML Message";
+                    mailMessage.HtmlBody = "<html><body><h1>Hello</h1><p>This is a test.</p></body></html>";
 
-                // Add the MAPI message to the target folder
-                try
-                {
-                    string entryId = targetFolder.AddMessage(mapiMessage);
-                    Console.WriteLine("Message added successfully. EntryId: " + entryId);
+                    // Convert the MailMessage to a MapiMessage.
+                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                    {
+                        // Add the message to the OST folder.
+                        string entryId = rootFolder.AddMessage(mapiMessage);
+                        Console.WriteLine($"Message added with EntryId: {entryId}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to add message to OST: " + ex.Message);
-                }
+            }
+            catch (Exception ioEx)
+            {
+                Console.Error.WriteLine($"File operation failed: {ioEx.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
