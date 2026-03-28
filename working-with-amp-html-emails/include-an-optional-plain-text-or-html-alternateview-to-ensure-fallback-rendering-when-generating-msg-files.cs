@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Amp;
 using Aspose.Email.Mime;
-using System.Text;
 
 class Program
 {
@@ -10,47 +10,43 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string outputPath = "output.msg";
+            // Prepare output directory and file path
+            string outputDirectory = "output";
+            string outputPath = Path.Combine(outputDirectory, "ampMessage.msg");
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            if (!Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Create a new mail message
-            using (MailMessage message = new MailMessage())
+            // Create AMP message
+            using (AmpMessage ampMessage = new AmpMessage())
             {
-                message.From = "sender@example.com";
-                message.To = "recipient@example.com";
-                message.Subject = "Sample Message with Alternate Views";
+                ampMessage.From = "sender@example.com";
+                ampMessage.To.Add("recipient@example.com");
+                ampMessage.Subject = "AMP Email Example";
 
-                // Plain‑text alternate view
+                // Create plain‑text alternate view
                 using (AlternateView plainView = AlternateView.CreateAlternateViewFromString(
-                    "This is the plain‑text version of the email.",
-                    new ContentType("text/plain")))
+                    "This is the plain text version.", null, "text/plain"))
                 {
-                    message.AddAlternateView(plainView);
-                }
+                    // Create HTML alternate view
+                    using (AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                        "<html><body><h1>Hello AMP</h1></body></html>", null, "text/html"))
+                    {
+                        // Add alternate views to the message
+                        ampMessage.AlternateViews.Add(plainView);
+                        ampMessage.AlternateViews.Add(htmlView);
 
-                // HTML alternate view
-                using (AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
-                    "<html><body><h1>This is the HTML version of the email.</h1></body></html>",
-                    new ContentType("text/html")))
-                {
-                    message.AddAlternateView(htmlView);
+                        // Save the message as MSG with Unicode support
+                        ampMessage.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                    }
                 }
-
-                // Save the message as an Outlook MSG file
-                message.Save(outputPath);
-                Console.WriteLine($"Message saved to: {outputPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
