@@ -1,7 +1,7 @@
 using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
+using Aspose.Email.Clients.Google;
 
 class Program
 {
@@ -9,50 +9,36 @@ class Program
     {
         try
         {
-            // Define the output file path for the calendar event
-            string outputFilePath = "output/meeting.ics";
+            // Initialize Gmail client with dummy credentials
+            IGmailClient gmailClient = GmailClient.GetInstance(
+                clientId: "clientId",
+                clientSecret: "clientSecret",
+                refreshToken: "refreshToken",
+                defaultEmail: "user@example.com");
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputFilePath);
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Prepare attendees collection
+            // Prepare attendees list
             MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("alice@example.com"));
-            attendees.Add(new MailAddress("bob@example.com"));
-            attendees.Add(new MailAddress("carol@example.com"));
+            attendees.Add(new MailAddress("person1@domain.com"));
+            attendees.Add(new MailAddress("person2@domain.com"));
 
-            // Create the appointment
+            // Create an appointment
             Appointment appointment = new Appointment(
-                "Conference Room 1",
-                new DateTime(2023, 12, 15, 10, 0, 0),
-                new DateTime(2023, 12, 15, 11, 0, 0),
-                new MailAddress("organizer@example.com"),
-                attendees);
+                location: "Conference Room",
+                summary: "Project Sync",
+                description: "Weekly project synchronization meeting.",
+                startDate: new DateTime(2024, 5, 20, 10, 0, 0),
+                endDate: new DateTime(2024, 5, 20, 11, 0, 0),
+                organizer: new MailAddress("organizer@domain.com"),
+                attendees: attendees);
 
-            // Set additional properties
-            appointment.Summary = "Project Kickoff Meeting";
-            appointment.Description = "Discuss project goals, timelines, and responsibilities.";
-            appointment.Location = "Conference Room 1";
+            // Add the appointment to the primary calendar
+            Appointment created = gmailClient.CreateAppointment("primary", appointment);
 
-            // Save the appointment to an iCalendar file
-            try
-            {
-                appointment.Save(outputFilePath);
-                Console.WriteLine("Appointment saved successfully to: " + outputFilePath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Failed to save appointment: " + ex.Message);
-                return;
-            }
+            Console.WriteLine("Appointment created with UID: " + created.UniqueId);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

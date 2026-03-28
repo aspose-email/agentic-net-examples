@@ -9,35 +9,38 @@ class Program
         try
         {
             // Define output MSG file path
-            string outputPath = "output.msg";
-
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string outputPath = Path.Combine(Directory.GetCurrentDirectory(), "output.msg");
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create and configure the email message
+            // Compose the email
             using (MailMessage message = new MailMessage())
             {
                 message.From = new MailAddress("sender@example.com");
-                MailAddressCollection toAddresses = new MailAddressCollection();
-                toAddresses.Add(new MailAddress("recipient@example.com"));
-                message.To = toAddresses;
-                message.Subject = "Sample Email";
-                message.Body = "This is a sample email body.";
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Sample MSG Email";
+                message.Body = "This is a sample email saved as MSG format.";
 
-                // Save the message as MSG using MsgSaveOptions
+                // Save as MSG using MsgSaveOptions with the appropriate save type
                 MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                message.Save(outputPath, saveOptions);
+                try
+                {
+                    message.Save(outputPath, saveOptions);
+                    Console.WriteLine($"Message saved successfully to '{outputPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    return;
+                }
             }
-
-            Console.WriteLine("Message saved successfully to: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

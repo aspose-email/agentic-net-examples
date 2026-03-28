@@ -1,50 +1,53 @@
 using System;
-using System.Net;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Google;
 
-namespace EmailCaseSensitiveFilter
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-            try
+            // Initialize Gmail client with placeholder credentials
+            using (IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com"))
             {
-                // Define Exchange service URL and credentials (replace with real values)
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
-
-                // Create the EWS client inside a using block to ensure disposal
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
+                try
                 {
-                    // Build a case‑sensitive query: subject must contain the exact text "Invoice"
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.Subject.Contains("Invoice");
-                    MailQuery query = builder.GetQuery();
+                    // Retrieve list of message metadata
+                    List<GmailMessageInfo> messagesInfo = gmailClient.ListMessages();
 
-                    // List messages from the Inbox that match the query
-                    // The third parameter indicates whether to include subfolders (false = only Inbox)
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
-
-                    // Output the subject of each matching message
-                    foreach (ExchangeMessageInfo info in messages)
+                    foreach (GmailMessageInfo info in messagesInfo)
                     {
-                        Console.WriteLine("Subject: " + info.Subject);
+                        // Fetch full message to access subject and body
+                        using (MailMessage message = gmailClient.FetchMessage(info.Id))
+                        {
+                            // Case‑sensitive filter: subject must contain the exact word "Invoice"
+                            if (message.Subject != null && message.Subject.Contains("Invoice"))
+                            {
+                                Console.WriteLine($"Subject: {message.Subject}");
+                                Console.WriteLine($"From: {message.From}");
+                                Console.WriteLine($"Date: {message.Date}");
+                                Console.WriteLine(new string('-', 40));
+                            }
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during Gmail operations: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                // Write any errors to the error stream and exit gracefully
-                Console.Error.WriteLine("Error: " + ex.Message);
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }

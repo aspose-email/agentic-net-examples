@@ -3,61 +3,61 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace ExtractEmbeddedImages
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "sample.msg";
-
-            if (!File.Exists(msgPath))
+            try
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
-                return;
-            }
+                string msgFilePath = "sample.msg";
+                string outputDirectory = "ExtractedImages";
 
-            string outputDir = "ExtractedImages";
-
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
-            {
-                foreach (MapiAttachment att in msg.Attachments)
+                if (!File.Exists(msgFilePath))
                 {
-                    string extension = Path.GetExtension(att.FileName)?.ToLowerInvariant();
+                    Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                    return;
+                }
 
-                    bool isImage = extension == ".png" ||
-                                   extension == ".jpg" ||
-                                   extension == ".jpeg" ||
-                                   extension == ".gif" ||
-                                   extension == ".bmp" ||
-                                   extension == ".tiff";
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
 
-                    if (!isImage)
-                        continue;
-
-                    string outPath = Path.Combine(outputDir, att.FileName);
-                    int duplicateIndex = 1;
-
-                    while (File.Exists(outPath))
+                using (MapiMessage message = MapiMessage.Load(msgFilePath))
+                {
+                    foreach (MapiAttachment attachment in message.Attachments)
                     {
-                        string nameWithoutExt = Path.GetFileNameWithoutExtension(att.FileName);
-                        outPath = Path.Combine(outputDir, $"{nameWithoutExt}_{duplicateIndex}{extension}");
-                        duplicateIndex++;
-                    }
+                        string attachmentFileName = attachment.FileName;
+                        if (string.IsNullOrEmpty(attachmentFileName))
+                        {
+                            continue;
+                        }
 
-                    att.Save(outPath);
-                    Console.WriteLine($"Saved image: {outPath}");
+                        string fileExtension = Path.GetExtension(attachmentFileName).ToLowerInvariant();
+                        bool isImage = fileExtension == ".png" ||
+                                       fileExtension == ".jpg" ||
+                                       fileExtension == ".jpeg" ||
+                                       fileExtension == ".gif" ||
+                                       fileExtension == ".bmp" ||
+                                       fileExtension == ".tiff";
+
+                        if (!isImage)
+                        {
+                            continue;
+                        }
+
+                        string outputPath = Path.Combine(outputDirectory, attachmentFileName);
+                        attachment.Save(outputPath);
+                        Console.WriteLine($"Saved image: {outputPath}");
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

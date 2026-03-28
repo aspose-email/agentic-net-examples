@@ -9,47 +9,37 @@ class Program
     {
         try
         {
-            string inputPath = "input.html";
-            string outputPath = "output.oft";
+            string inputPath = "sample.html";
+            string outputPath = "template.oft";
 
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
                 return;
             }
 
-            string htmlContent;
-            try
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                htmlContent = File.ReadAllText(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to read input file: {ex.Message}");
-                return;
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            using (MailMessage mail = new MailMessage())
+            // Load the HTML document as a MailMessage
+            using (MailMessage mailMessage = MailMessage.Load(inputPath, new HtmlLoadOptions()))
             {
-                mail.HtmlBody = htmlContent;
-
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail, MapiConversionOptions.UnicodeFormat))
+                // Convert MailMessage to MapiMessage
+                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
                 {
-                    try
-                    {
-                        mapiMessage.SaveAsTemplate(outputPath);
-                        Console.WriteLine($"OFT file saved to: {outputPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save OFT file: {ex.Message}");
-                    }
+                    // Save the MapiMessage as an Outlook File Template (OFT)
+                    mapiMessage.SaveAsTemplate(outputPath);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

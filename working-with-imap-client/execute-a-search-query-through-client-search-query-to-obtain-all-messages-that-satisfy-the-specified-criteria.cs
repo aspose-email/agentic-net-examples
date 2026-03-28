@@ -1,7 +1,6 @@
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
@@ -11,39 +10,30 @@ class Program
     {
         try
         {
-            // Connection parameters
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create and use the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            // Initialize IMAP client with connection parameters
+            using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.Auto))
             {
-                // Select the folder to search
+                // Select the folder to search in
                 client.SelectFolder("INBOX");
 
                 // Build the search query (e.g., messages with "Report" in the subject)
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
+                MailQueryBuilder builder = new MailQueryBuilder();
                 builder.Subject.Contains("Report");
                 MailQuery query = builder.GetQuery();
 
-                // Execute the search
-                ImapMessageInfoCollection results = client.ListMessages(query);
+                // Execute the search using ListMessages with the built query
+                ImapMessageInfoCollection messages = client.ListMessages(query);
 
-                // Iterate over the results and fetch each message
-                foreach (ImapMessageInfo info in results)
+                // Process the resulting messages
+                foreach (ImapMessageInfo info in messages)
                 {
-                    using (MailMessage message = client.FetchMessage(info.UniqueId))
-                    {
-                        Console.WriteLine("Subject: " + message.Subject);
-                    }
+                    Console.WriteLine($"Subject: {info.Subject}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

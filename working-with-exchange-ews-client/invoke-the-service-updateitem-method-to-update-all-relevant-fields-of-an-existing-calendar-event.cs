@@ -1,49 +1,52 @@
 using System;
 using System.Net;
+using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Calendar;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients.Exchange.WebService.Models;
+using Aspose.Email.Mapi;
 
-public class Program
+class Program
 {
-    public static void Main()
+    static async Task Main(string[] args)
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Replace with actual mailbox URI and credentials
+            // Exchange server connection details (replace with real values)
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create the EWS client (service)
-            using (IEWSClient service = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Create and configure the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // UID of the existing appointment to be updated
-                string appointmentUid = "existing-appointment-uid";
+                // Ensure the client supports async operations
+                IAsyncEwsClient asyncClient = client as IAsyncEwsClient;
+                if (asyncClient == null)
+                {
+                    Console.Error.WriteLine("The EWS client does not support async operations.");
+                    return;
+                }
 
-                // Fetch the existing appointment
-                Aspose.Email.Calendar.Appointment appointment = service.FetchAppointment(appointmentUid);
+                // Build a MapiCalendar object with the updated fields
+                MapiCalendar calendar = new MapiCalendar(
+                    location: "Conference Room A",
+                    summary: "Project Sync",
+                    description: "Updated meeting details",
+                    startDate: DateTime.Now.AddHours(1),
+                    endDate: DateTime.Now.AddHours(2));
 
-                // Update relevant fields
-                appointment.Summary = "Updated Meeting Subject";
-                appointment.Description = "Updated description of the meeting.";
-                appointment.Location = "Conference Room B";
-                appointment.StartDate = new DateTime(2024, 5, 20, 10, 0, 0);
-                appointment.EndDate = new DateTime(2024, 5, 20, 11, 0, 0);
+                // Update specific properties as needed
+                calendar.Subject = "Updated Project Sync";
+                calendar.Location = "Conference Room B";
 
-                // Update attendees
-                Aspose.Email.MailAddressCollection attendees = new Aspose.Email.MailAddressCollection();
-                attendees.Add(new Aspose.Email.MailAddress("alice@example.com"));
-                attendees.Add(new Aspose.Email.MailAddress("bob@example.com"));
-                appointment.Attendees = attendees;
+                // Prepare the update request
+                EwsUpdateItem updateItem = EwsUpdateItem.Create(calendar);
 
-                // Apply the updates to the server
-                service.UpdateAppointment(appointment);
+                // Invoke the UpdateItem operation
+                await asyncClient.UpdateItemAsync(updateItem);
 
-                Console.WriteLine("Appointment updated successfully.");
+                Console.WriteLine("Calendar event updated successfully.");
             }
         }
         catch (Exception ex)

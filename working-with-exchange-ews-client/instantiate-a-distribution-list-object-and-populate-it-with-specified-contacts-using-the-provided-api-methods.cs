@@ -8,44 +8,39 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define mailbox URI and credentials (replace with real values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Initialize the EWS client
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            NetworkCredential credential = new NetworkCredential("username", "password");
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
             {
                 // Create a new distribution list object
                 ExchangeDistributionList distributionList = new ExchangeDistributionList();
                 distributionList.DisplayName = "Sample Distribution List";
 
-                // Prepare members collection
+                // Prepare the initial members collection
                 MailAddressCollection members = new MailAddressCollection();
                 members.Add(new MailAddress("alice@example.com"));
                 members.Add(new MailAddress("bob@example.com"));
 
                 // Create the distribution list on the server
                 string distributionListId = client.CreateDistributionList(distributionList, members);
-                distributionList.Id = distributionListId;
-                Console.WriteLine("Distribution List created with Id: " + distributionListId);
+                Console.WriteLine("Created Distribution List Id: " + distributionListId);
 
-                // Add an additional member
+                // Fetch and display the members to verify creation
+                MailAddressCollection fetchedMembers = client.FetchDistributionList(distributionList);
+                Console.WriteLine("Fetched members count: " + fetchedMembers.Count);
+                foreach (MailAddress address in fetchedMembers)
+                {
+                    Console.WriteLine(address.Address);
+                }
+
+                // Add an additional member to the existing distribution list
                 MailAddressCollection additionalMembers = new MailAddressCollection();
                 additionalMembers.Add(new MailAddress("charlie@example.com"));
                 client.AddToDistributionList(distributionList, additionalMembers);
-                Console.WriteLine("Added additional member to the distribution list.");
-
-                // Fetch members to verify
-                MailAddressCollection fetchedMembers = client.FetchDistributionList(distributionList);
-                Console.WriteLine("Members of the distribution list:");
-                foreach (MailAddress address in fetchedMembers)
-                {
-                    Console.WriteLine("- " + address.Address);
-                }
+                Console.WriteLine("Added new member to distribution list.");
             }
         }
         catch (Exception ex)

@@ -9,31 +9,39 @@ class Program
     {
         try
         {
-            // Path to the source MSG file
             string inputPath = "input.msg";
+            string outputPath = "output.eml";
 
-            // Verify that the input file exists
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 Console.Error.WriteLine($"Error: File not found – {inputPath}");
                 return;
             }
 
-            // Load the original message from the MSG file
-            using (MapiMessage originalMessage = MapiMessage.Load(inputPath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Clone the message to create a new independent instance
-                MapiMessage newMessage = (MapiMessage)originalMessage.Clone();
-
-                // Ensure the cloned message is disposed after use
-                using (newMessage)
+                try
                 {
-                    // Path for the new MSG file
-                    string outputPath = "output.msg";
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error: Unable to create output directory – {ex.Message}");
+                    return;
+                }
+            }
 
-                    // Save the new message, preserving all original properties
-                    newMessage.Save(outputPath);
-                    Console.WriteLine($"New message saved to: {outputPath}");
+            // Load the MSG file into a MapiMessage and convert to MailMessage preserving all properties
+            using (MapiMessage mapiMessage = MapiMessage.Load(inputPath))
+            {
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+                {
+                    // Save the new email object
+                    mailMessage.Save(outputPath);
                 }
             }
         }

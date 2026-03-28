@@ -1,56 +1,77 @@
+using Aspose.Email.Clients.Exchange;
 using System;
+using System.IO;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Exchange Web Services (EWS) connection parameters
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            try
+            // Create the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
             {
-                // Placeholder credentials and service URL
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
-
-                // Create the EWS client safely
+                // Ensure the client connection is valid
                 try
                 {
-                    using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                    // Retrieve mailbox information (e.g., Inbox URI)
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+
+                    // List messages in the Inbox folder
+                    ExchangeMessageInfoCollection messageInfos = client.ListMessages(mailboxInfo.InboxUri);
+
+                    // Prepare output directory for saved messages
+                    string outputDir = "Output";
+                    if (!Directory.Exists(outputDir))
                     {
-                        // List messages in the Inbox folder
+                        Directory.CreateDirectory(outputDir);
+                    }
+
+                    // Iterate through each message info
+                    foreach (ExchangeMessageInfo messageInfo in messageInfos)
+                    {
+                        // Fetch the full mail message using its unique URI
+                        MailMessage message = client.FetchMessage(messageInfo.UniqueUri);
+
+                        // Display basic information
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"Received: {message.Date}");
+
+                        // Save the message to a local .eml file
+                        string safeFileName = $"{Guid.NewGuid()}.eml";
+                        string outputPath = Path.Combine(outputDir, safeFileName);
                         try
                         {
-                            ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                            foreach (ExchangeMessageInfo info in messages)
-                            {
-                                Console.WriteLine("Subject: " + info.Subject);
-                                Console.WriteLine("From: " + (info.From != null ? info.From.DisplayName : "Unknown"));
-                                Console.WriteLine("Received: " + info.Date);
-                                Console.WriteLine(new string('-', 40));
-                            }
+                            message.Save(outputPath, SaveOptions.DefaultEml);
+                            Console.WriteLine($"Saved to: {outputPath}");
                         }
-                        catch (Exception ex)
+                        catch (Exception ioEx)
                         {
-                            Console.Error.WriteLine("Error listing messages: " + ex.Message);
+                            Console.Error.WriteLine($"Error saving message: {ioEx.Message}");
                         }
+
+                        // Dispose the fetched message
+                        message.Dispose();
                     }
                 }
-                catch (Exception ex)
+                catch (Exception clientEx)
                 {
-                    Console.Error.WriteLine("Error creating EWS client: " + ex.Message);
+                    Console.Error.WriteLine($"EWS operation failed: {clientEx.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

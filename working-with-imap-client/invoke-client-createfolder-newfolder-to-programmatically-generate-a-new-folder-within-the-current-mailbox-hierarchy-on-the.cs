@@ -1,38 +1,48 @@
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients;
 
-class Program
+namespace AsposeEmailImapCreateFolder
 {
-    static void Main()
+    class Program
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-        try
+        static void Main(string[] args)
         {
-            // Initialize the EWS client using the factory method.
-            // Replace the placeholder values with actual server URI and credentials.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            ICredentials credentials = new NetworkCredential("username", "password");
-
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            try
             {
+                // IMAP server connection settings
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "user@example.com";
+                string password = "password";
+                SecurityOptions security = SecurityOptions.Auto;
+
                 try
                 {
-                    // Create a new folder named "NewFolder" in the root of the mailbox.
-                    client.CreateFolder("NewFolder");
-                    Console.WriteLine("Folder 'NewFolder' created successfully.");
+                    // Initialize and connect the IMAP client
+                    using (ImapClient client = new ImapClient(host, port, username, password, security))
+                    {
+                        // Create a new folder named "NewFolder" in the mailbox
+                        client.CreateFolder("NewFolder");
+                        Console.WriteLine("Folder 'NewFolder' created successfully.");
+                    }
+                }
+                catch (ImapException imapEx)
+                {
+                    Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
+                    return;
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating folder: {ex.Message}");
+                    Console.Error.WriteLine($"Error: {ex.Message}");
+                    return;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            }
         }
     }
 }

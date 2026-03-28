@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using Aspose.Email;
+using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
 
 class Program
@@ -10,30 +11,28 @@ class Program
     {
         try
         {
-            string mboxPath = "sample.mbox";
+            string mboxPath = "storage.mbox";
 
-            // Guard against missing file
             if (!File.Exists(mboxPath))
             {
                 Console.Error.WriteLine($"Error: File not found – {mboxPath}");
                 return;
             }
 
-            // Specify the desired text encoding for loading MBOX messages
             MboxLoadOptions loadOptions = new MboxLoadOptions();
             loadOptions.PreferredTextEncoding = Encoding.UTF8;
 
-            // Open the MBOX file with the specified options
-            using (MboxrdStorageReader reader = new MboxrdStorageReader(mboxPath, loadOptions))
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
             {
-                MailMessage message;
-                // Read messages sequentially until none are left
-                while ((message = reader.ReadNextMessage()) != null)
+                foreach (MboxMessageInfo messageInfo in reader.EnumerateMessageInfo())
                 {
-                    using (message)
-                    {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                    }
+                    // Extract the full MIME message using the preferred encoding.
+                    MailMessage message = reader.ExtractMessage(messageInfo.EntryId, new EmlLoadOptions());
+
+                    // Example: output basic details.
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine($"From: {message.From}");
+                    Console.WriteLine($"To: {message.To}");
                 }
             }
         }

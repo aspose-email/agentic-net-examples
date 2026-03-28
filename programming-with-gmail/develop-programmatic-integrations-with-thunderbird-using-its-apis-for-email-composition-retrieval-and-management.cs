@@ -2,92 +2,90 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Imap;
 using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Clients.Imap;
 
-namespace ThunderbirdIntegrationSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Compose a new email message
+            using (MailMessage message = new MailMessage())
             {
-                // Prepare attachment file
-                string attachmentPath = "sample.txt";
-                if (!File.Exists(attachmentPath))
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Test Email";
+                message.Body = "This is a test email sent via Aspose.Email.";
+
+                // Add an attachment if the file exists
+                string attachmentPath = "attachment.txt";
+                if (File.Exists(attachmentPath))
                 {
                     try
                     {
-                        File.WriteAllText(attachmentPath, "Sample attachment content.");
+                        using (FileStream fs = File.OpenRead(attachmentPath))
+                        {
+                            Attachment attachment = new Attachment(fs, "attachment.txt");
+                            message.Attachments.Add(attachment);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to create attachment file: {ex.Message}");
-                        return;
+                        Console.Error.WriteLine($"Failed to add attachment: {ex.Message}");
                     }
                 }
 
-                // Compose email
-                using (MailMessage message = new MailMessage())
-                {
-                    message.From = new MailAddress("sender@example.com");
-                    message.To.Add(new MailAddress("recipient@example.com"));
-                    message.Subject = "Test Email via Aspose.Email";
-                    message.Body = "This is a test email sent from a sample integration with Thunderbird-like workflow.";
-
-                    using (Attachment attachment = new Attachment(attachmentPath))
-                    {
-                        message.Attachments.Add(attachment);
-
-                        // Send email via SMTP
-                        try
-                        {
-                            using (SmtpClient smtpClient = new SmtpClient("smtp.example.com", 587, "sender@example.com", "password", SecurityOptions.SSLExplicit))
-                            {
-                                smtpClient.Send(message);
-                                Console.WriteLine("Email sent successfully.");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"SMTP error: {ex.Message}");
-                            // Continue to retrieval attempt even if sending fails
-                        }
-                    }
-                }
-
-                // Retrieve email via IMAP
+                // Send the message using SMTP
                 try
                 {
-                    using (ImapClient imapClient = new ImapClient("imap.example.com", 993, "recipient@example.com", "password", SecurityOptions.SSLExplicit))
+                    using (SmtpClient smtpClient = new SmtpClient("smtp.example.com", 587, "username", "password"))
                     {
-                        imapClient.SelectFolder("INBOX");
-                        ImapMessageInfoCollection messages = imapClient.ListMessages();
-
-                        if (messages.Count > 0)
-                        {
-                            ImapMessageInfo firstInfo = messages[0];
-                            using (MailMessage fetchedMessage = imapClient.FetchMessage(firstInfo.UniqueId))
-                            {
-                                Console.WriteLine($"Fetched email subject: {fetchedMessage.Subject}");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("No messages found in INBOX.");
-                        }
+                        smtpClient.SecurityOptions = SecurityOptions.Auto;
+                        smtpClient.Send(message);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"IMAP error: {ex.Message}");
+                    Console.Error.WriteLine($"SMTP send failed: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Retrieve messages using IMAP
+            try
+            {
+                using (ImapClient imapClient = new ImapClient("imap.example.com", 993, "username", "password"))
+                {
+                    imapClient.SecurityOptions = SecurityOptions.Auto;
+
+                    // List messages in the INBOX folder
+                    var messageInfos = imapClient.ListMessages("INBOX");
+                    foreach (var info in messageInfos)
+                    {
+                        try
+                        {
+                            // Fetch the full message by its unique identifier
+                            MailMessage fetched = imapClient.FetchMessage(info.UniqueId);
+                            Console.WriteLine($"Subject: {fetched.Subject}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to fetch message {info.UniqueId}: {ex.Message}");
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

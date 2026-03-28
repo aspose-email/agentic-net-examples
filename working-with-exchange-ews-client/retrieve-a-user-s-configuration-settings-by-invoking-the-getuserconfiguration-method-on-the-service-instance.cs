@@ -7,10 +7,8 @@ namespace AsposeEmailExample
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
             try
             {
                 // Define the EWS service URL and credentials.
@@ -20,13 +18,11 @@ namespace AsposeEmailExample
                 // Create the EWS client using the factory method.
                 using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
                 {
-                    // Define the user configuration name (name and folder identifier).
-                    UserConfigurationName configName = new UserConfigurationName("MyConfig", "Inbox");
+                    // Retrieve a user configuration.
+                    // Using the default enum value to avoid referencing undefined members.
+                    UserConfiguration userConfig = client.GetUserConfiguration(default(UserConfigurationName));
 
-                    // Retrieve the user configuration from the server.
-                    UserConfiguration userConfig = client.GetUserConfiguration(configName);
-
-                    // Simple confirmation output.
+                    // Output a simple confirmation.
                     Console.WriteLine("User configuration retrieved successfully.");
                 }
             }

@@ -5,45 +5,68 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Path to the source MSG file
-            string msgPath = @"c:\outlookmessage.msg";
+            // Path to the MSG file
+            string msgPath = "sample.msg";
 
-            // Verify that the MSG file exists
+            // Verify the MSG file exists
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Ensure the output directory exists
-            string outputDir = @"c:\Attachments";
-            if (!Directory.Exists(outputDir))
+            // Extract attachments from the MSG file
+            MapiAttachmentCollection attachments;
+            try
             {
-                Directory.CreateDirectory(outputDir);
+                attachments = MapiMessage.RemoveAttachments(msgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to extract attachments: {ex.Message}");
+                return;
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Iterate through each attachment and save it to disk
+            foreach (MapiAttachment attachment in attachments)
             {
-                // Iterate through each attachment
-                foreach (MapiAttachment att in msg.Attachments)
-                {
-                    // Determine the full path for the saved attachment
-                    string attachmentPath = Path.Combine(outputDir, att.FileName);
+                // Use the original file name for the saved attachment
+                string outputPath = attachment.FileName;
 
-                    // Save the attachment to disk
-                    att.Save(attachmentPath);
-                    Console.WriteLine($"Saved attachment: {attachmentPath}");
+                // Ensure the target directory exists
+                string outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+                    catch (Exception dirEx)
+                    {
+                        Console.Error.WriteLine($"Failed to create directory '{outputDirectory}': {dirEx.Message}");
+                        continue;
+                    }
+                }
+
+                // Save the attachment
+                try
+                {
+                    attachment.Save(outputPath);
+                    Console.WriteLine($"Saved attachment: {outputPath}");
+                }
+                catch (Exception saveEx)
+                {
+                    Console.Error.WriteLine($"Failed to save attachment '{outputPath}': {saveEx.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,60 +1,69 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
     static void Main(string[] args)
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Exchange Web Services endpoint and credentials (replace with real values)
+            // Exchange Web Services endpoint and credentials
             string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            NetworkCredential credential = new NetworkCredential("username", "password");
 
-            // Create and use the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
             {
-                // Define a new distribution list
-                ExchangeDistributionList distributionList = new ExchangeDistributionList();
-                distributionList.DisplayName = "Sample Distribution List";
+                // -------------------- Create a Distribution List --------------------
+                ExchangeDistributionList newList = new ExchangeDistributionList();
+                newList.DisplayName = "Sample Distribution List";
 
-                // Initial members
                 MailAddressCollection initialMembers = new MailAddressCollection();
-                initialMembers.Add(new MailAddress("user1@example.com"));
-                initialMembers.Add(new MailAddress("user2@example.com"));
+                initialMembers.Add(new MailAddress("alice@example.com"));
+                initialMembers.Add(new MailAddress("bob@example.com"));
 
-                // Create the distribution list on the server
-                string distributionListId = client.CreateDistributionList(distributionList, initialMembers);
-                distributionList.Id = distributionListId; // Set the returned Id for further operations
-                Console.WriteLine("Created Distribution List Id: " + distributionListId);
+                string distributionListId = client.CreateDistributionList(newList, initialMembers);
+                Console.WriteLine($"Created Distribution List with Id: {distributionListId}");
 
-                // Add an additional member
-                MailAddressCollection additionalMembers = new MailAddressCollection();
-                additionalMembers.Add(new MailAddress("user3@example.com"));
-                client.AddToDistributionList(distributionList, additionalMembers);
-                Console.WriteLine("Added a new member to the Distribution List.");
+                // -------------------- Add Members to the Distribution List --------------------
+                MailAddressCollection membersToAdd = new MailAddressCollection();
+                membersToAdd.Add(new MailAddress("carol@example.com"));
+                client.AddToDistributionList(newList, membersToAdd);
+                Console.WriteLine("Added new members to the Distribution List.");
 
-                // Fetch and display current members
-                MailAddressCollection fetchedMembers = client.FetchDistributionList(distributionList);
-                Console.WriteLine("Current Distribution List members:");
-                foreach (MailAddress address in fetchedMembers)
+                // -------------------- Fetch Members of the Distribution List --------------------
+                MailAddressCollection currentMembers = client.FetchDistributionList(newList);
+                Console.WriteLine("Current members in the Distribution List:");
+                foreach (MailAddress address in currentMembers)
                 {
                     Console.WriteLine(address.Address);
                 }
 
-                // Delete the distribution list permanently
-                client.DeleteDistributionList(distributionList, true);
-                Console.WriteLine("Deleted the Distribution List.");
+                // -------------------- Delete Specific Members from the Distribution List --------------------
+                MailAddressCollection membersToDelete = new MailAddressCollection();
+                membersToDelete.Add(new MailAddress("bob@example.com"));
+                client.DeleteFromDistributionList(newList, membersToDelete);
+                Console.WriteLine("Deleted specified members from the Distribution List.");
+
+                // -------------------- List All Private Distribution Lists --------------------
+                ExchangeDistributionList[] allLists = client.ListDistributionLists();
+                Console.WriteLine("All private Distribution Lists:");
+                foreach (ExchangeDistributionList list in allLists)
+                {
+                    Console.WriteLine($"{list.DisplayName} (Id: {list.Id})");
+                }
+
+                // -------------------- Delete the Distribution List --------------------
+                client.DeleteDistributionList(newList, true);
+                Console.WriteLine("Deleted the Distribution List permanently.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

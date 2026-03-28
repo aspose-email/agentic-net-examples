@@ -3,69 +3,45 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Mapi;
-using Aspose.Email.Clients;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string icsPath = "sample.ics";
-            string msgPath = "updated.msg";
+            string inputPath = "sample.ics";
+            string outputPath = "output.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(icsPath))
+            // Ensure input file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
-                try
-                {
-                    File.WriteAllText(icsPath, "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder iCalendar file: {ex.Message}");
-                    return;
-                }
+                string placeholderIcs = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR";
+                File.WriteAllText(inputPath, placeholderIcs);
+            }
+
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
             }
 
             // Load the iCalendar file
-            Appointment appointment;
-            try
-            {
-                appointment = Appointment.Load(icsPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading iCalendar file: {ex.Message}");
-                return;
-            }
+            Appointment appointment = Appointment.Load(inputPath);
 
-            // Modify the appointment as required (example: change the summary)
+            // Modify the appointment as required (example: change summary)
             appointment.Summary = "Updated Summary";
 
-            // Convert the appointment to a MailMessage
-            using (MailMessage mailMessage = appointment.ToMailMessage())
+            // Convert to MSG (MAPI) format and save
+            using (MapiMessage mapiMessage = appointment.ToMapiMessage())
             {
-                // Prepare MSG save options (Unicode format)
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-
-                // Save the MailMessage as MSG
-                try
-                {
-                    mailMessage.Save(msgPath, saveOptions);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
-                    return;
-                }
+                mapiMessage.Save(outputPath);
             }
-
-            Console.WriteLine("iCalendar processed and saved as MSG successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

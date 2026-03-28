@@ -1,38 +1,55 @@
 using System;
 using System.IO;
-using System.Text;
+using Aspose.Email;
 
-namespace DirectoryTransferExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Define source and destination directories
+            string sourceDirectory = @"C:\Source";
+            string destinationDirectory = @"C:\Destination";
+
+            // Verify source directory exists
+            if (!Directory.Exists(sourceDirectory))
+            {
+                Console.Error.WriteLine($"Source directory does not exist: {sourceDirectory}");
+                return;
+            }
+
+            // Ensure destination directory exists
             try
             {
-                // Define source and destination directories
-                string sourceDirectory = @"C:\SourceDir";
-                string destinationDirectory = @"C:\DestDir";
-
-                // Verify source directory exists
-                if (!Directory.Exists(sourceDirectory))
-                {
-                    Console.Error.WriteLine("Source directory does not exist: " + sourceDirectory);
-                    return;
-                }
-
-                // Ensure destination directory exists
                 if (!Directory.Exists(destinationDirectory))
                 {
                     Directory.CreateDirectory(destinationDirectory);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create destination directory: {ex.Message}");
+                return;
+            }
 
-                // Get all files from source directory recursively
-                string[] sourceFiles = Directory.GetFiles(sourceDirectory, "*", SearchOption.AllDirectories);
+            // Get all files from source directory recursively
+            string[] allFiles;
+            try
+            {
+                allFiles = Directory.GetFiles(sourceDirectory, "*", SearchOption.AllDirectories);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to enumerate files: {ex.Message}");
+                return;
+            }
 
-                foreach (string sourceFilePath in sourceFiles)
+            foreach (string sourceFilePath in allFiles)
+            {
+                try
                 {
-                    // Compute relative path and destination file path
+                    // Compute relative path and destination path
                     string relativePath = Path.GetRelativePath(sourceDirectory, sourceFilePath);
                     string destinationFilePath = Path.Combine(destinationDirectory, relativePath);
                     string destinationFileDir = Path.GetDirectoryName(destinationFilePath);
@@ -43,48 +60,35 @@ namespace DirectoryTransferExample
                         Directory.CreateDirectory(destinationFileDir);
                     }
 
-                    // Copy file using streams
-                    using (FileStream sourceStream = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read))
+                    // If the file is an email message (EML), load and save using Aspose.Email to update internal references
+                    if (string.Equals(Path.GetExtension(sourceFilePath), ".eml", StringComparison.OrdinalIgnoreCase))
                     {
-                        using (FileStream destinationStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write))
+                        // Load the email message
+                        using (MailMessage mailMessage = MailMessage.Load(sourceFilePath))
                         {
-                            sourceStream.CopyTo(destinationStream);
+                            // Example placeholder: update any custom headers or properties if needed
+                            // mailMessage.Headers["X-Custom-Header"] = "UpdatedValue";
+
+                            // Save the email to the new location
+                            mailMessage.Save(destinationFilePath);
                         }
                     }
-
-                    // Update internal references inside the copied file (if it's a text file)
-                    try
+                    else
                     {
-                        // Read file content as text
-                        string fileContent;
-                        using (StreamReader reader = new StreamReader(destinationFilePath, Encoding.UTF8))
-                        {
-                            fileContent = reader.ReadToEnd();
-                        }
-
-                        // Replace occurrences of the source directory path with the destination directory path
-                        string updatedContent = fileContent.Replace(sourceDirectory, destinationDirectory, StringComparison.OrdinalIgnoreCase);
-
-                        // Write updated content back to the file
-                        using (StreamWriter writer = new StreamWriter(destinationFilePath, false, Encoding.UTF8))
-                        {
-                            writer.Write(updatedContent);
-                        }
-                    }
-                    catch (Exception innerEx)
-                    {
-                        // If the file is not a text file or another error occurs, ignore and continue
-                        Console.Error.WriteLine("Failed to update references in file: " + destinationFilePath);
-                        Console.Error.WriteLine(innerEx.Message);
+                        // For non-email files, perform a simple copy
+                        File.Copy(sourceFilePath, destinationFilePath, true);
                     }
                 }
-
-                Console.WriteLine("Directory transfer completed successfully.");
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error processing file '{sourceFilePath}': {ex.Message}");
+                    // Continue with next file
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("An error occurred: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

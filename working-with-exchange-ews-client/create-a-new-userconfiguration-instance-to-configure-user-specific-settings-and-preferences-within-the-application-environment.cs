@@ -2,44 +2,35 @@ using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailUserConfigSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Initialize EWS client
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            try
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Define the EWS service URL and credentials
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
+                // Define the user configuration name (folder identifier and configuration name)
+                UserConfigurationName configName = new UserConfigurationName("Inbox", "MyUserConfig");
 
-                // Create the EWS client
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
-                {
-                    // Define the configuration name (name and folder)
-                    UserConfigurationName configName = new UserConfigurationName("MyConfig", "Inbox");
+                // Create a new UserConfiguration instance
+                UserConfiguration userConfig = new UserConfiguration(configName);
 
-                    // Create a new user configuration instance
-                    UserConfiguration userConfig = new UserConfiguration(configName);
+                // Optionally, create the configuration on the server
+                client.CreateUserConfiguration(userConfig);
 
-                    // (Optional) Set configuration data here, e.g., XML data, binary data, etc.
-                    // userConfig.XmlData = new byte[0];
-
-                    // Create the configuration on the server
-                    client.CreateUserConfiguration(userConfig);
-
-                    Console.WriteLine("User configuration created successfully.");
-                }
+                Console.WriteLine("User configuration created successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

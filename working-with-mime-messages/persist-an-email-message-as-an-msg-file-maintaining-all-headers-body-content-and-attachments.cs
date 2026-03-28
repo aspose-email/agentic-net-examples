@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.PersonalInfo;
+using Aspose.Email.Tools.Verifications;
 
 class Program
 {
@@ -9,65 +9,39 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string outputMsgPath = "output.msg";
+            string inputPath = "sample.eml";
+            string outputPath = "sample.msg";
 
             // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Prepare a sample attachment file
-            string attachmentFilePath = "sample.txt";
-            if (!File.Exists(attachmentFilePath))
+            // Guarded file I/O for the input file
+            if (!File.Exists(inputPath))
             {
-                try
+                // Create a minimal placeholder email if the source file is missing
+                using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder Subject", "Placeholder body."))
                 {
-                    File.WriteAllText(attachmentFilePath, "This is a sample attachment.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating attachment file: {ex.Message}");
-                    return;
+                    placeholder.Save(inputPath);
                 }
             }
 
-            // Create a new MailMessage and populate its fields
-            using (MailMessage mailMessage = new MailMessage())
+            // Load the email message and save it as MSG preserving all data
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                mailMessage.From = new MailAddress("sender@example.com", "Sender Name");
-                mailMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
-                mailMessage.Subject = "Sample Email with Attachment";
-                mailMessage.Body = "Hello,\n\nThis email contains a sample attachment.\n\nBest regards.";
-                mailMessage.IsBodyHtml = false;
+                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                // Preserve original dates (default is true, set explicitly for clarity)
+                saveOptions.PreserveOriginalDates = true;
 
-                // Add the attachment
-                Attachment attachment = new Attachment(attachmentFilePath);
-                mailMessage.Attachments.Add(attachment);
-
-                // Set up MSG save options to preserve original dates
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
-                {
-                    PreserveOriginalDates = true
-                };
-
-                // Save the message as MSG
-                try
-                {
-                    mailMessage.Save(outputMsgPath, saveOptions);
-                    Console.WriteLine($"Message saved successfully to '{outputMsgPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
-                }
+                message.Save(outputPath, saveOptions);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

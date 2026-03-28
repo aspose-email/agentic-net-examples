@@ -7,44 +7,41 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Replace with your actual EWS service URL and credentials
+            // Initialize the EWS client
             string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
+            NetworkCredential credential = new NetworkCredential("username", "password");
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
             {
-                // Get the Inbox folder identifier
-                string inboxFolderId = client.MailboxInfo.InboxUri;
+                // Identify the folder to search (Inbox)
+                string folderId = client.MailboxInfo.InboxUri;
 
-                // Find all conversations in the Inbox folder
-                ExchangeConversation[] conversations = client.FindConversations(inboxFolderId);
-
-                // Iterate through each conversation
-                foreach (ExchangeConversation conversation in conversations)
+                // Find conversations in the specified folder
+                ExchangeConversation[] conversations = client.FindConversations(folderId);
+                if (conversations == null || conversations.Length == 0)
                 {
-                    // Fetch all messages belonging to the current conversation
-                    MailMessageCollection messages = client.FetchConversationMessages(conversation.ConversationId);
+                    Console.WriteLine("No conversations found in the folder.");
+                    return;
+                }
 
-                    // Iterate through each message and display its subject
-                    foreach (MailMessage message in messages)
+                // Select a conversation (e.g., the first one)
+                string conversationId = conversations[0].ConversationId;
+
+                // Retrieve all messages belonging to the selected conversation
+                MailMessageCollection messages = client.FetchConversationMessages(conversationId);
+                foreach (MailMessage message in messages)
+                {
+                    using (message)
                     {
-                        using (message)
-                        {
-                            Console.WriteLine("Subject: " + message.Subject);
-                        }
+                        Console.WriteLine($"Subject: {message.Subject}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

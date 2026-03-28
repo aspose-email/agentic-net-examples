@@ -9,49 +9,55 @@ class Program
     {
         try
         {
-            string emlPath = "sample.eml";
-            string outputMsgPath = "extractedImage.msg";
-
-            if (!File.Exists(emlPath))
+            string inputPath = "sample.eml";
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {emlPath}");
+                Console.Error.WriteLine($"Error: File not found – {inputPath}");
                 return;
             }
 
-            using (MailMessage eml = MailMessage.Load(emlPath))
+            string outputPath = "extracted_image.msg";
+
+            try
             {
-                if (eml.LinkedResources.Count == 0)
+                using (MailMessage originalMessage = MailMessage.Load(inputPath))
                 {
-                    Console.Error.WriteLine("No linked resources found in the email.");
-                    return;
-                }
-
-                LinkedResource resource = eml.LinkedResources[0];
-
-                using (Stream resourceStream = resource.ContentStream)
-                using (MemoryStream memory = new MemoryStream())
-                {
-                    resourceStream.CopyTo(memory);
-                    memory.Position = 0;
-
-                    using (MailMessage newMessage = new MailMessage())
+                    if (originalMessage.LinkedResources.Count == 0)
                     {
-                        // Create an attachment from the extracted image stream
-                        ContentType attachmentType = new ContentType(resource.ContentType.MediaType);
-                        Attachment attachment = new Attachment(memory, attachmentType);
-                        newMessage.Attachments.Add(attachment);
+                        Console.Error.WriteLine("No linked resources found in the email.");
+                        return;
+                    }
 
-                        // Save the new message (with the image as attachment) as MSG
-                        newMessage.Save(outputMsgPath);
+                    LinkedResource linked = originalMessage.LinkedResources[0];
+
+                    using (MemoryStream imageStream = new MemoryStream())
+                    {
+                        linked.ContentStream.CopyTo(imageStream);
+                        imageStream.Position = 0;
+
+                        using (MailMessage extractedMessage = new MailMessage())
+                        {
+                            extractedMessage.From = "extracted@example.com";
+                            extractedMessage.To = "extracted@example.com";
+                            extractedMessage.Subject = "Extracted Image";
+
+                            Attachment attachment = new Attachment(imageStream, linked.ContentType);
+                            extractedMessage.Attachments.Add(attachment);
+
+                            extractedMessage.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                        }
                     }
                 }
             }
-
-            Console.WriteLine($"Embedded image extracted and saved to {outputMsgPath}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing email: {ex.Message}");
+                return;
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

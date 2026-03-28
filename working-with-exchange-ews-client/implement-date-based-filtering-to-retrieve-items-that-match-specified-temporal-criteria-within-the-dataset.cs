@@ -1,56 +1,47 @@
+using Aspose.Email.Tools.Search;
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define connection parameters (replace with real values as needed)
+            // Placeholder connection details – replace with real values when testing.
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create credentials
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Initialize EWS client inside a using block to ensure disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Create the EWS client using the factory method.
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
             {
-                // Define the date range for filtering (last 7 days)
-                DateTime startDate = DateTime.UtcNow.AddDays(-7);
-                DateTime endDate = DateTime.UtcNow;
-
-                // Build the query using ExchangeQueryBuilder
+                // Build a query to retrieve messages sent in the last 7 days.
                 ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.InternalDate.Greater(startDate);
-                builder.InternalDate.Before(endDate);
+                builder.SentDate.Since(DateTime.Today.AddDays(-7));
                 MailQuery query = builder.GetQuery();
 
-                // Retrieve messages from the Inbox that match the date criteria
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
+                // List messages from the Inbox that match the query (non‑recursive).
+                ExchangeMessageInfoCollection infos = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
 
-                // Output basic metadata for each matching message
-                foreach (ExchangeMessageInfo info in messages)
+                foreach (ExchangeMessageInfo info in infos)
                 {
-                    Console.WriteLine("Subject: " + info.Subject);
-                    Console.WriteLine("From: " + info.From);
-                    Console.WriteLine("Date: " + info.Date);
-                    Console.WriteLine(new string('-', 40));
+                    // Fetch the full message using its unique URI.
+                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                    {
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"Sent: {message.Date}");
+                        Console.WriteLine(new string('-', 40));
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            // Write any errors to the error console without crashing the application
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

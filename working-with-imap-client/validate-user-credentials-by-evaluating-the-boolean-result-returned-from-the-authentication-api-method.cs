@@ -1,41 +1,41 @@
-using System;
 using Aspose.Email.Clients;
+using System;
+using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 
-namespace Sample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Connection parameters
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
-                string password = "password";
+            // Define connection parameters
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
 
-                // Create ImapClient and ensure it is disposed
-                using (ImapClient imapClient = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            // Initialize the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            {
+                try
                 {
-                    try
-                    {
-                        // Validate credentials
-                        bool isAuthenticated = imapClient.ValidateCredentials();
-                        Console.WriteLine("Authentication successful: " + isAuthenticated);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Authentication failed: " + ex.Message);
-                        return;
-                    }
+                    // Validate the credentials
+                    bool isValid = client.ValidateCredentials();
+
+                    // Output the result
+                    Console.WriteLine(isValid ? "Credentials are valid." : "Credentials are invalid.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

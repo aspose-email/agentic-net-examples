@@ -1,38 +1,41 @@
 using System;
 using System.IO;
 
-namespace SampleApp
+namespace DeleteDirectorySample
 {
-    public class Program
+    class Program
     {
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
+            // Top-level exception guard
             try
             {
-                string directoryPath = args.Length > 0 ? args[0] : @"C:\Temp\MyFolder";
+                // Specify the directory to delete
+                string directoryPath = "C:\\Temp\\MyFolder";
 
+                // Guard: ensure the directory exists before attempting deletion
                 if (!Directory.Exists(directoryPath))
                 {
-                    Console.Error.WriteLine($"Error: Directory does not exist – {directoryPath}");
+                    Console.Error.WriteLine($"Error: Directory not found – {directoryPath}");
                     return;
                 }
 
+                // Attempt to delete the directory and all its contents
                 try
                 {
-                    // Delete the directory and all its contents permanently
                     Directory.Delete(directoryPath, true);
-                    Console.WriteLine($"Directory deleted successfully: {directoryPath}");
+                    Console.WriteLine($"Directory deleted: {directoryPath}");
                 }
-                catch (Exception deleteEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error deleting directory – {deleteEx.Message}");
-                    return;
+                    // Handle any errors that occur during deletion
+                    Console.Error.WriteLine($"Error deleting directory: {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error – {ex.Message}");
-                return;
+                // Catch any unexpected errors in the program
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }

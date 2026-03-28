@@ -10,38 +10,46 @@ class Program
     {
         try
         {
-            // Define source MBOX file and destination PST file paths
-            string mboxFilePath = "input.mbox";
-            string pstFilePath = "output.pst";
+            // Paths for source PST (Thunderbird export) and target MBOX (Zimbra import)
+            string pstFilePath = "source.pst";
+            string mboxFilePath = "target.mbox";
 
-            // Verify that the source MBOX file exists
-            if (!File.Exists(mboxFilePath))
+            // Verify source PST exists; if not, exit gracefully
+            if (!File.Exists(pstFilePath))
             {
-                Console.Error.WriteLine($"Error: MBOX file not found – {mboxFilePath}");
+                Console.Error.WriteLine($"Input PST file not found: {pstFilePath}");
                 return;
             }
 
-            // Ensure the output directory exists
-            string pstDirectory = Path.GetDirectoryName(pstFilePath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            // Ensure the directory for the MBOX file exists
+            string mboxDirectory = Path.GetDirectoryName(mboxFilePath);
+            if (!string.IsNullOrEmpty(mboxDirectory) && !Directory.Exists(mboxDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(pstDirectory);
+                    Directory.CreateDirectory(mboxDirectory);
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create directory – {pstDirectory}. {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to create directory for MBOX file: {ex.Message}");
                     return;
                 }
             }
 
-            // Perform the conversion from MBOX to PST
-            using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath))
+            // Convert PST to MBOX using Aspose.Email's MailboxConverter
+            try
             {
-                // The conversion method returns a PersonalStorage object.
-                // Additional operations on pstStorage can be performed here if needed.
-                Console.WriteLine("Conversion completed successfully.");
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+                {
+                    // The third parameter is a MessageAcceptanceCallback; null means accept all messages
+                    MailboxConverter.ConvertPersonalStorageToMbox(pst, mboxFilePath, null);
+                }
+
+                Console.WriteLine($"Conversion completed successfully. MBOX saved to: {mboxFilePath}");
+            }
+            catch (Exception convEx)
+            {
+                Console.Error.WriteLine($"Conversion failed: {convEx.Message}");
             }
         }
         catch (Exception ex)

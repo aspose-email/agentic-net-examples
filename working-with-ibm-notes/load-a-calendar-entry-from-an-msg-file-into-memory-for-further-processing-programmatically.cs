@@ -9,25 +9,32 @@ class Program
     {
         try
         {
-            string msgPath = "calendar.msg";
+            // Path to the MSG file containing the calendar entry
+            string msgFilePath = "calendar.msg";
 
-            if (!File.Exists(msgPath))
+            // Verify that the file exists before attempting to load it
+            if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"File not found: {msgFilePath}");
                 return;
             }
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Load the MSG file as a MapiMessage
+            using (MapiMessage msg = MapiMessage.Load(msgFilePath))
             {
+                // Ensure the loaded message is a calendar item
                 if (msg.SupportedType == MapiItemType.Calendar)
                 {
-                    MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
-
-                    // Example processing of the calendar entry
-                    Console.WriteLine($"Subject: {calendar.Subject}");
-                    Console.WriteLine($"Start: {calendar.StartDate}");
-                    Console.WriteLine($"End: {calendar.EndDate}");
-                    Console.WriteLine($"Location: {calendar.Location}");
+                    // Convert the MAPI message to a MapiCalendar object
+                    using (MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem())
+                    {
+                        // Example processing: display basic calendar information
+                        Console.WriteLine($"Subject: {calendar.Subject}");
+                        Console.WriteLine($"Location: {calendar.Location}");
+                        Console.WriteLine($"Start: {calendar.StartDate}");
+                        Console.WriteLine($"End: {calendar.EndDate}");
+                        // Additional processing can be performed here
+                    }
                 }
                 else
                 {
