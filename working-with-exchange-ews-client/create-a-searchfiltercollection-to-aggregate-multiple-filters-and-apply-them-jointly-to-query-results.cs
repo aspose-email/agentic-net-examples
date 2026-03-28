@@ -1,47 +1,44 @@
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Tools.Search;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Service URL and credentials (replace with real values)
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create and use the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            // Initialize the EWS client (replace placeholders with real values)
+            IEWSClient client = EWSClient.GetEWSClient(
+                "https://example.com/EWS/Exchange.asmx",
+                new NetworkCredential("username", "password"));
+            using (client)
             {
-                // Build a query with multiple filters (From and Subject)
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.From.Contains("alice@example.com");
+                // Build a composite query (AND of multiple conditions)
+                MailQueryBuilder builder = new MailQueryBuilder();
                 builder.Subject.Contains("Report");
+                builder.From.Contains("test@example.com");
                 MailQuery query = builder.GetQuery();
 
                 // Retrieve messages from the Inbox that match the query
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
+                ExchangeMessageInfoCollection messages = client.ListMessages(
+                    client.MailboxInfo.InboxUri,
+                    query,
+                    false);
 
-                // Display basic information about each message
+                // Output the unique URI of each matching message
                 foreach (ExchangeMessageInfo info in messages)
                 {
-                    Console.WriteLine("Subject: " + info.Subject);
-                    Console.WriteLine("From: " + info.From);
-                    Console.WriteLine("Received: " + info.Date);
-                    Console.WriteLine(new string('-', 40));
+                    Console.WriteLine(info.UniqueUri);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
