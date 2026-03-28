@@ -10,38 +10,38 @@ class Program
         try
         {
             Console.WriteLine("Enter the full path to the MSG file:");
-            string inputPath = Console.ReadLine();
+            string msgPath = Console.ReadLine();
 
-            if (string.IsNullOrWhiteSpace(inputPath))
+            if (string.IsNullOrWhiteSpace(msgPath))
             {
                 Console.Error.WriteLine("Error: No path provided.");
                 return;
             }
 
-            if (!File.Exists(inputPath))
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                Console.Error.WriteLine($"Error: File not found – {msgPath}");
                 return;
             }
 
             try
             {
-                using (MapiMessage message = MapiMessage.Load(inputPath))
+                using (MapiMessage msg = MapiMessage.Load(msgPath))
                 {
-                    Console.WriteLine($"Subject: {message.Subject}");
-                    Console.WriteLine($"From: {message.SenderName}");
+                    Console.WriteLine($"Subject: {msg.Subject}");
+                    Console.WriteLine($"From: {msg.SenderName} <{msg.SenderEmailAddress}>");
                     Console.WriteLine("Body:");
-                    Console.WriteLine(message.Body);
+                    Console.WriteLine(msg.Body);
                     Console.WriteLine();
 
-                    if (message.Attachments != null && message.Attachments.Count > 0)
+                    if (msg.Attachments != null && msg.Attachments.Count > 0)
                     {
                         Console.WriteLine("Attachments:");
-                        foreach (MapiAttachment attachment in message.Attachments)
+                        foreach (MapiAttachment attachment in msg.Attachments)
                         {
-                            Console.WriteLine($"- FileName: {attachment.FileName}");
+                            Console.WriteLine($"- {attachment.FileName}");
                             // Save attachment to the same directory as the MSG file
-                            string attachmentPath = Path.Combine(Path.GetDirectoryName(inputPath) ?? string.Empty, attachment.FileName);
+                            string attachmentPath = Path.Combine(Path.GetDirectoryName(msgPath) ?? string.Empty, attachment.FileName);
                             try
                             {
                                 attachment.Save(attachmentPath);
