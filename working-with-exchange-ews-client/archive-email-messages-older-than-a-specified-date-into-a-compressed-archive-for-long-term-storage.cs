@@ -1,96 +1,98 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define mailbox connection parameters
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            ICredentials credentials = new NetworkCredential("username", "password");
+            // Configuration
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            NetworkCredential credentials = new NetworkCredential("username", "password");
+            DateTime archiveBeforeDate = new DateTime(2022, 1, 1);
+            string zipPath = "ArchivedEmails.zip";
 
-            // Create the EWS client inside a using block to ensure disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Ensure the directory for the zip file exists
+            try
             {
-                // Build a query to find messages older than 6 months
-                DateTime cutoffDate = DateTime.Now.AddMonths(-6);
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.InternalDate.Before(cutoffDate);
-                MailQuery query = builder.GetQuery();
-
-                // Retrieve messages from the Inbox that match the query
-                var messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-
-                // Prepare a temporary folder to store the exported messages
-                string tempFolder = Path.Combine(Path.GetTempPath(), "ArchiveTemp");
-                if (!Directory.Exists(tempFolder))
+                string zipDir = Path.GetDirectoryName(Path.GetFullPath(zipPath));
+                if (!Directory.Exists(zipDir))
                 {
-                    Directory.CreateDirectory(tempFolder);
+                    Directory.CreateDirectory(zipDir);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare archive directory: {ex.Message}");
+                return;
+            }
 
-                // Export each message to an .eml file
-                foreach (ExchangeMessageInfo info in messages)
+            // Create or open the zip archive
+            using (FileStream zipStream = new FileStream(zipPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Update))
+            {
+                // Connect to Exchange using EWS
+                try
                 {
-                    try
+                    using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
                     {
-                        // Generate a unique file name for each message
-                        string emlPath = Path.Combine(tempFolder, Guid.NewGuid().ToString() + ".eml");
-
-                        // Fetch the full message and save it
-                        using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                        // List messages in the Inbox folder
+                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                        foreach (ExchangeMessageInfo info in messages)
                         {
-                            message.Save(emlPath, SaveOptions.DefaultEml);
+                            // Filter messages older than the specified date
+                            if (info.Date < archiveBeforeDate)
+                            {
+                                // Fetch the full message
+                                MailMessage message = client.FetchMessage(info.UniqueUri);
+                                // Prepare a safe file name for the entry
+                                string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : MakeFileNameSafe(message.Subject);
+                                string entryName = $"{safeSubject}_{info.UniqueUri}.eml";
+
+                                // Save the message into the zip archive
+                                using (MemoryStream msgStream = new MemoryStream())
+                                {
+                                    message.Save(msgStream, SaveOptions.DefaultEml);
+                                    msgStream.Position = 0;
+                                    ZipArchiveEntry entry = archive.CreateEntry(entryName);
+                                    using (Stream entryStream = entry.Open())
+                                    {
+                                        msgStream.CopyTo(entryStream);
+                                    }
+                                }
+
+                                // Optionally, delete or move the original message after archiving
+                                // client.DeleteMessage(info.UniqueUri, true); // move to Deleted Items
+                            }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to export message {info.UniqueUri}: {ex.Message}");
-                    }
-                }
-
-                // Create a ZIP archive from the exported messages
-                string zipPath = Path.Combine(Environment.CurrentDirectory, "ArchivedEmails.zip");
-                try
-                {
-                    if (File.Exists(zipPath))
-                    {
-                        File.Delete(zipPath);
-                    }
-                    ZipFile.CreateFromDirectory(tempFolder, zipPath);
-                    Console.WriteLine($"Archived emails saved to: {zipPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create ZIP archive: {ex.Message}");
-                }
-
-                // Clean up the temporary folder
-                try
-                {
-                    if (Directory.Exists(tempFolder))
-                    {
-                        Directory.Delete(tempFolder, true);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to clean up temporary folder: {ex.Message}");
+                    Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
+    }
+
+    // Helper to replace invalid filename characters
+    private static string MakeFileNameSafe(string name)
+    {
+        foreach (char c in Path.GetInvalidFileNameChars())
+        {
+            name = name.Replace(c, '_');
+        }
+        return name;
     }
 }
