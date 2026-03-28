@@ -4,81 +4,59 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             string inputPath = "sample.msg";
-            string outputPath = "resource.bin";
+            string outputDirectory = "output";
 
             // Verify input file exists
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: Input file not found – {inputPath}");
+                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
                 return;
             }
 
             // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            if (!Directory.Exists(outputDirectory))
             {
-                try
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Load the MSG message
+            using (MailMessage message = MailMessage.Load(inputPath))
+            {
+                int resourceIndex = 0;
+                foreach (LinkedResource resource in message.LinkedResources)
                 {
-                    Directory.CreateDirectory(outputDir);
+                    // Determine output file name (preserve original extension if possible)
+                    string extension = Path.GetExtension(resource.ContentType.MediaType);
+                    if (string.IsNullOrEmpty(extension))
+                    {
+                        extension = ".bin";
+                    }
+                    string outputPath = Path.Combine(outputDirectory, $"resource_{resourceIndex}{extension}");
+
+                    // Copy the content stream to a file
+                    Stream contentStream = resource.ContentStream;
+                    if (contentStream.CanSeek)
+                    {
+                        contentStream.Position = 0;
+                    }
+
+                    using (FileStream fileStream = File.Create(outputPath))
+                    {
+                        contentStream.CopyTo(fileStream);
+                    }
+
+                    resourceIndex++;
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the MSG email
-            MailMessage message;
-            try
-            {
-                message = MailMessage.Load(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: Failed to load message – {ex.Message}");
-                return;
-            }
-
-            // Ensure there is at least one linked resource
-            if (message.LinkedResources == null || message.LinkedResources.Count == 0)
-            {
-                Console.Error.WriteLine("Error: No linked resources found in the message.");
-                return;
-            }
-
-            // Use the first linked resource for demonstration
-            LinkedResource linkedResource = message.LinkedResources[0];
-            Stream contentStream = linkedResource.ContentStream;
-
-            if (contentStream == null)
-            {
-                Console.Error.WriteLine("Error: Linked resource does not contain a content stream.");
-                return;
-            }
-
-            // Copy the content stream to a file
-            try
-            {
-                using (FileStream outputFile = File.Create(outputPath))
-                {
-                    contentStream.CopyTo(outputFile);
-                }
-                Console.WriteLine($"Linked resource saved to {outputPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: Failed to write linked resource – {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
