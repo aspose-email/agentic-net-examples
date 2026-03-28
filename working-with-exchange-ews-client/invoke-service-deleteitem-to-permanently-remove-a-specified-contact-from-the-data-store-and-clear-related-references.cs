@@ -1,34 +1,33 @@
 using System;
 using System.Net;
+using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Service URL and credentials for EWS
+            // Initialize the EWS client with placeholder credentials.
+            // Replace the placeholders with actual server URI, username, and password.
             string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            string username = "user@example.com";
+            string password = "password";
 
-            // Create the EWS client
-            using (IEWSClient service = EWSClient.GetEWSClient(serviceUrl, credentials))
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
             {
-                // URI of the contact to be deleted
+                // The URI of the contact to be permanently deleted.
+                // Replace with the actual contact URI obtained from a prior operation.
                 string contactUri = "https://exchange.example.com/EWS/Contacts/ContactId";
 
-                // Permanently delete the contact
-                service.DeleteItem(contactUri, DeletionOptions.DeletePermanently);
-
-                Console.WriteLine("Contact deleted permanently.");
+                // Delete the contact permanently.
+                client.DeleteItem(contactUri, DeletionOptions.DeletePermanently);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
