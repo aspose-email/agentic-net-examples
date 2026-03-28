@@ -2,41 +2,36 @@ using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Service URL and credentials
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            try
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
             {
-                // EWS service URL and user credentials
-                string ewsUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                string userName = "user@example.com";
-                string userPassword = "password";
+                // URI of the calendar event to delete
+                string eventUri = "https://exchange.example.com/EWS/Exchange.asmx/Calendar/ItemId";
 
-                NetworkCredential networkCredential = new NetworkCredential(userName, userPassword);
+                // Deletion options (default moves to Deleted Items)
+                DeletionOptions options = DeletionOptions.Default;
 
-                // Create the EWS client
-                using (IEWSClient ewsClient = EWSClient.GetEWSClient(ewsUrl, networkCredential))
-                {
-                    // URI of the calendar event to delete
-                    string eventUri = "https://exchange.example.com/EWS/Exchange.asmx/UniqueItemId";
+                // Delete the calendar event
+                client.DeleteItem(eventUri, options);
 
-                    // Delete the event permanently
-                    ewsClient.DeleteItem(eventUri, DeletionOptions.DeletePermanently);
-
-                    Console.WriteLine("Calendar event deleted successfully.");
-                }
+                Console.WriteLine("Calendar event deleted successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
