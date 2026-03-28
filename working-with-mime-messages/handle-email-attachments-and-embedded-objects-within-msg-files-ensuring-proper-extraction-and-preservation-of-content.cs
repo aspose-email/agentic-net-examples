@@ -5,62 +5,50 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string msgPath = "sample.msg";
+            // Path to the MSG file
+            string msgFilePath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(msgPath))
+            // Verify the MSG file exists
+            if (!File.Exists(msgFilePath))
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the MSG file.
-            try
-            {
-                using (MapiMessage msg = MapiMessage.Load(msgPath))
-                {
-                    Console.WriteLine($"Subject: {msg.Subject}");
-                    Console.WriteLine($"From: {msg.SenderName}");
-
-                    // Iterate through attachments and save each one.
-                    foreach (MapiAttachment attachment in msg.Attachments)
-                    {
-                        Console.WriteLine($"Attachment Name: {attachment.FileName}");
-                        try
-                        {
-                            // Save the attachment to the current directory.
-                            attachment.Save(attachment.FileName);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error saving attachment '{attachment.FileName}': {ex.Message}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
                 return;
+            }
+
+            // Directory where attachments will be saved
+            string outputDirectory = "ExtractedAttachments";
+
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Load the MSG file
+            using (MapiMessage message = MapiMessage.Load(msgFilePath))
+            {
+                Console.WriteLine($"Subject: {message.Subject}");
+
+                // Iterate through all attachments (including embedded objects)
+                foreach (MapiAttachment attachment in message.Attachments)
+                {
+                    // Build a full path for the attachment file
+                    string attachmentPath = Path.Combine(outputDirectory, attachment.FileName);
+
+                    // Save the attachment to disk
+                    attachment.Save(attachmentPath);
+
+                    Console.WriteLine($"Saved attachment: {attachment.FileName}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
