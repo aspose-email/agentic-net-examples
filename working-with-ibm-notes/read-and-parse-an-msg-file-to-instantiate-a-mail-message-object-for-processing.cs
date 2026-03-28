@@ -5,40 +5,52 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Path to the MSG file
-            string msgPath = "message.msg";
+            string msgPath = "sample.msg";
 
-            // Verify that the file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file into a MapiMessage instance
-            using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                // Display basic properties of the loaded message
-                Console.WriteLine($"Subject: {mapiMessage.Subject}");
-                Console.WriteLine($"From: {mapiMessage.SenderName}");
-                Console.WriteLine($"Body: {mapiMessage.Body}");
+                Console.WriteLine("Subject: " + msg.Subject);
+                Console.WriteLine("From: " + msg.SenderName);
+                Console.WriteLine("Body: " + msg.Body);
 
-                // Convert the MapiMessage to a MailMessage for further processing
-                using (MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions()))
+                // Process attachments
+                string attachmentFolder = "Attachments";
+                if (!Directory.Exists(attachmentFolder))
                 {
-                    // Example processing: output the MailMessage subject
-                    Console.WriteLine($"MailMessage Subject: {mailMessage.Subject}");
+                    Directory.CreateDirectory(attachmentFolder);
+                }
+
+                foreach (MapiAttachment att in msg.Attachments)
+                {
+                    Console.WriteLine("Attachment: " + att.FileName);
+                    string attPath = Path.Combine(attachmentFolder, att.FileName);
+                    using (FileStream fs = new FileStream(attPath, FileMode.Create, FileAccess.Write))
+                    {
+                        att.Save(fs);
+                    }
+                }
+
+                // Convert to MailMessage for further processing if needed
+                using (MailMessage mail = msg.ToMailMessage(new MailConversionOptions()))
+                {
+                    Console.WriteLine("MailMessage Subject: " + mail.Subject);
+                    // Additional processing of MailMessage can be done here
                 }
             }
         }
         catch (Exception ex)
         {
-            // Gracefully handle any unexpected errors
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
