@@ -1,34 +1,31 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-public class Program
+class Program
 {
-    public static void Main()
+    static void Main()
     {
         try
         {
-            // Placeholder credentials for token provider
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string tenantId = "tenantId";
+            // Initialize token provider (dummy credentials)
+            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken");
 
-            // Create token provider (Outlook provider expects exactly three arguments)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-            // Initialize Graph client using the token provider and tenant identifier
-            using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+            // Create Graph client
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com/v1.0"))
             {
-                // Retrieve messages from the Inbox folder (folder identifier can be "Inbox")
-                MessageInfoCollection messages = graphClient.ListMessages("Inbox");
+                // List messages from the Inbox folder (folder identifier can be "Inbox")
+                MessageInfoCollection messages = client.ListMessages("Inbox");
 
-                // Display basic information for each message
-                foreach (MessageInfo message in messages)
+                // Display subject of each message
+                foreach (MessageInfo info in messages)
                 {
-                    Console.WriteLine("Subject: " + message.Subject);
-                    Console.WriteLine("ItemId: " + message.ItemId);
-                    Console.WriteLine(new string('-', 40));
+                    // Use available properties of MessageInfo (e.g., Subject)
+                    Console.WriteLine("Subject: " + info.Subject);
                 }
             }
         }
