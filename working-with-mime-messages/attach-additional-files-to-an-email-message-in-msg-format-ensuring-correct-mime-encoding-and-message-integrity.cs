@@ -9,45 +9,69 @@ class Program
     {
         try
         {
-            // Paths to the files that will be attached
-            string attachmentPath1 = "attachment1.txt";
-            string attachmentPath2 = "attachment2.pdf";
+            // Output MSG file path
+            string outputMsgPath = "output.msg";
 
-            // Verify that the attachment files exist
-            if (!File.Exists(attachmentPath1) || !File.Exists(attachmentPath2))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Console.Error.WriteLine("Error: One or more attachment files were not found.");
-                return;
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create the email message
-            using (MailMessage message = new MailMessage())
+            // Create a new MAPI message
+            using (MapiMessage message = new MapiMessage(
+                "sender@example.com",
+                "receiver@example.com",
+                "Test Subject",
+                "This is the body of the message."))
             {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Test email with attachments";
-                message.Body = "Please see the attached files.";
+                // Path to the attachment file
+                string attachmentFilePath = "sample.txt";
 
-                // Add the first attachment
-                using (Attachment attachment1 = new Attachment(attachmentPath1))
+                // Verify the attachment file exists; create a minimal placeholder if missing
+                if (!File.Exists(attachmentFilePath))
                 {
-                    message.Attachments.Add(attachment1);
-
-                    // Add the second attachment
-                    using (Attachment attachment2 = new Attachment(attachmentPath2))
+                    try
                     {
-                        message.Attachments.Add(attachment2);
-
-                        // Save the message in MSG format with proper save options
-                        MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                        message.Save("EmailWithAttachments.msg", saveOptions);
+                        File.WriteAllText(attachmentFilePath, "Placeholder content");
                     }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error creating placeholder attachment: {ex.Message}");
+                        return;
+                    }
+                }
+
+                // Read the attachment data
+                byte[] attachmentData;
+                try
+                {
+                    attachmentData = File.ReadAllBytes(attachmentFilePath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error reading attachment file: {ex.Message}");
+                    return;
+                }
+
+                // Add the attachment to the message (name + byte[] overload)
+                message.Attachments.Add(Path.GetFileName(attachmentFilePath), attachmentData);
+
+                // Save the message as MSG
+                try
+                {
+                    message.Save(outputMsgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
