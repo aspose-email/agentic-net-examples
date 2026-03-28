@@ -1,4 +1,5 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
@@ -8,25 +9,20 @@ class Program
     {
         try
         {
-            string host = "imap.example.com";
-            int port = 993;
-            SecurityOptions security = SecurityOptions.SSLImplicit;
-            string username = "user@example.com";
-            string password = "password";
-
-            using (ImapClient client = new ImapClient(host, port, security))
+            // Initialize the IMAP client with server details
+            using (ImapClient client = new ImapClient("imap.example.com", 993, SecurityOptions.SSLImplicit))
             {
-                client.Username = username;
-                client.Password = password;
+                client.Username = "user@example.com";
+                client.Password = "password";
 
                 try
                 {
                     bool isValid = client.ValidateCredentials();
-                    Console.WriteLine(isValid ? "Credentials are valid." : "Invalid credentials.");
+                    Console.WriteLine(isValid ? "Connection successful." : "Invalid credentials.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
+                    Console.Error.WriteLine($"Validation failed: {ex.Message}");
                     return;
                 }
             }
