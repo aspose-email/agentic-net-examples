@@ -8,30 +8,44 @@ class Program
     {
         try
         {
-            string htmlFilePath = "sample.html";
-            // Ensure the HTML input file exists; create a minimal placeholder if missing.
+            string htmlFilePath = "input.html";
+            string mhtmlFilePath = "output.mhtml";
+
+            // Ensure the HTML input file exists
             if (!File.Exists(htmlFilePath))
             {
                 try
                 {
-                    File.WriteAllText(htmlFilePath, "<html><body><p>Placeholder content</p></body></html>");
+                    // Create a minimal placeholder HTML file
+                    string placeholderHtml = "<html><body><p>Placeholder content</p></body></html>";
+                    File.WriteAllText(htmlFilePath, placeholderHtml);
                 }
-                catch (Exception ex)
+                catch (Exception ioEx)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder HTML file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ioEx.Message}");
                     return;
                 }
             }
 
-            // Load the HTML file into a MailMessage object.
-            Aspose.Email.HtmlLoadOptions loadOptions = new Aspose.Email.HtmlLoadOptions();
-            using (Aspose.Email.MailMessage mailMessage = Aspose.Email.MailMessage.Load(htmlFilePath, loadOptions))
+            // Load the HTML file into a MailMessage object
+            try
             {
-                string mhtmlFilePath = "output.mhtml";
+                using (MailMessage mailMessage = MailMessage.Load(htmlFilePath, new HtmlLoadOptions()))
+                {
+                    // Configure MHTML save options to preserve resources
+                    MhtSaveOptions mhtOptions = new MhtSaveOptions
+                    {
+                        ExtractHTMLBodyResourcesAsAttachments = true
+                    };
 
-                // Save the MailMessage as MHTML using default options.
-                mailMessage.Save(mhtmlFilePath, Aspose.Email.SaveOptions.DefaultMhtml);
-                Console.WriteLine($"MHTML file saved to: {mhtmlFilePath}");
+                    // Save the message as MHTML
+                    mailMessage.Save(mhtmlFilePath, mhtOptions);
+                }
+            }
+            catch (Exception loadSaveEx)
+            {
+                Console.Error.WriteLine($"Error during load or save operation: {loadSaveEx.Message}");
+                return;
             }
         }
         catch (Exception ex)
