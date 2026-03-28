@@ -1,45 +1,51 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Path where the MSG file will be saved
             string outputPath = "output.msg";
 
-            // Ensure the target directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create a MailMessage and set its plain‑text body
-            using (MailMessage mail = new MailMessage())
+            // Create and configure the mail message
+            using (MailMessage message = new MailMessage())
             {
-                mail.From = "sender@example.com";
-                mail.To = "recipient@example.com";
-                mail.Subject = "Sample Subject";
-                mail.Body = "This is the plain text body of the message.";
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("receiver@example.com"));
+                message.Subject = "Test MSG";
+                message.Body = "This is the plain text body.";
+                // Uncomment to set HTML body instead
+                // message.HtmlBody = "<p>This is the <b>HTML</b> body.</p>";
 
-                // Convert the MailMessage to a MapiMessage (MSG format)
-                using (MapiMessage mapi = MapiMessage.FromMailMessage(mail))
+                // Prepare MSG save options
+                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+
+                // Save the message with file I/O guard
+                try
                 {
-                    // Save the MSG file
-                    mapi.Save(outputPath);
+                    message.Save(outputPath, saveOptions);
+                    Console.WriteLine($"Message saved to {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    return;
                 }
             }
-
-            Console.WriteLine($"Message saved to {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
