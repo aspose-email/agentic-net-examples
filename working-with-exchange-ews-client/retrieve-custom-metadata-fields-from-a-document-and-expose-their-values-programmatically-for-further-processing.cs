@@ -12,46 +12,41 @@ class Program
         {
             string msgPath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing.
+            // Ensure the input file exists; create a minimal placeholder if missing
             if (!File.Exists(msgPath))
             {
-                try
+                using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder", "Body"))
                 {
-                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder Body"))
-                    {
-                        placeholder.Save(msgPath);
-                    }
+                    placeholder.Save(msgPath);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the MSG file and retrieve custom metadata fields.
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(msgPath))
-                {
-                    MapiPropertyCollection customProperties = message.GetCustomProperties();
-
-                    foreach (KeyValuePair<long, MapiProperty> kvp in customProperties)
-                    {
-                        string propertyName = MapiPropertyTag.GetPropertyName(kvp.Key);
-                        Console.WriteLine($"Custom Property: {propertyName}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found. Created placeholder at {msgPath}.");
                 return;
+            }
+
+            // Load the Outlook message file
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            {
+                // Retrieve custom MAPI properties
+                MapiPropertyCollection customProps = msg.GetCustomProperties();
+
+                if (customProps == null || customProps.Count == 0)
+                {
+                    Console.WriteLine("No custom properties found.");
+                }
+                else
+                {
+                    foreach (KeyValuePair<long, MapiProperty> kvp in customProps)
+                    {
+                        // Access the property value using appropriate getter; here we use GetPropertyString as an example
+                        string value = msg.GetPropertyString(kvp.Key);
+                        Console.WriteLine($"Property Tag: 0x{kvp.Key:X}, Value: {value}");
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
