@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,42 +8,43 @@ class Program
     {
         try
         {
-            string msgPath = @"sample.msg";
+            string msgPath = @"c:\temp\sample.msg";
+            string attachmentNameToRemove = "unwanted.pdf";
+
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
 
-            using (MapiMessage message = MapiMessage.Load(msgPath))
+            using (MailMessage message = MailMessage.Load(msgPath))
             {
-                string targetAttachmentName = "unwanted.txt";
-                MapiAttachment attachmentToRemove = null;
-
-                foreach (MapiAttachment att in message.Attachments)
+                Attachment targetAttachment = null;
+                foreach (Attachment att in message.Attachments)
                 {
-                    if (string.Equals(att.FileName, targetAttachmentName, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(att.Name, attachmentNameToRemove, StringComparison.OrdinalIgnoreCase))
                     {
-                        attachmentToRemove = att;
+                        targetAttachment = att;
                         break;
                     }
                 }
 
-                if (attachmentToRemove != null)
+                if (targetAttachment != null)
                 {
-                    message.Attachments.Remove(attachmentToRemove);
+                    message.Attachments.Remove(targetAttachment);
+                    // Save the modified message back to the same file
                     message.Save(msgPath);
-                    Console.WriteLine($"Attachment '{targetAttachmentName}' removed.");
+                    Console.WriteLine($"Attachment '{attachmentNameToRemove}' removed successfully.");
                 }
                 else
                 {
-                    Console.WriteLine($"Attachment '{targetAttachmentName}' not found.");
+                    Console.WriteLine($"Attachment '{attachmentNameToRemove}' not found.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
