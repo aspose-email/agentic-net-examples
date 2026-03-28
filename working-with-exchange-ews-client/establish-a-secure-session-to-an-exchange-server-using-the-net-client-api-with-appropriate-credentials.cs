@@ -1,45 +1,54 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Exchange Web Services (EWS) endpoint and user credentials
+            // Define connection parameters
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create a NetworkCredential instance
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Initialize the EWS client (implements IDisposable)
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Create and connect the EWS client inside a using block for proper disposal
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
                 try
                 {
-                    // Access mailbox information to verify the connection
-                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
-                    Console.WriteLine("Connected to Exchange server successfully.");
-                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                    // Optionally retrieve server version to verify connection
+                    string versionInfo = client.GetVersionInfo();
+                    Console.WriteLine("Exchange Server Version: " + versionInfo);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Error communicating with Exchange server: " + ex.Message);
+                    Console.Error.WriteLine("Failed to retrieve server version: " + ex.Message);
                     return;
+                }
+
+                try
+                {
+                    // Get mailbox information
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+
+                    // Display some useful mailbox URIs
+                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                    Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                    Console.WriteLine("Drafts URI: " + mailboxInfo.DraftsUri);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Failed to get mailbox information: " + ex.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine("An unexpected error occurred: " + ex.Message);
         }
     }
 }
