@@ -1,48 +1,57 @@
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Tools.Search;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-        try
+        static void Main()
         {
-            // Define mailbox URI and credentials (replace with real values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            ICredentials credentials = new NetworkCredential("username", "password");
-
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            try
             {
-                // Build a query to find messages (example: subject contains "Report")
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.Subject.Contains("Report");
-                MailQuery query = builder.GetQuery();
-
-                // List messages that match the query in the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-
-                // Iterate over the matching messages and fetch full MailMessage objects
-                foreach (ExchangeMessageInfo info in messages)
+                // Initialize EWS client inside a using block to ensure disposal.
+                using (IEWSClient client = EWSClient.GetEWSClient(
+                    "https://example.com/EWS/Exchange.asmx",
+                    new NetworkCredential("username", "password")))
                 {
-                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                    try
                     {
-                        Console.WriteLine("Subject: " + message.Subject);
-                        Console.WriteLine("From: " + message.From);
-                        Console.WriteLine(new string('-', 40));
+                        // Build a query to find messages (example: subject contains "Report").
+                        ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
+                        builder.Subject.Contains("Report");
+                        MailQuery query = builder.GetQuery();
+
+                        // Retrieve message infos from the Inbox folder matching the query.
+                        ExchangeMessageInfoCollection messageInfos = client.ListMessages(
+                            client.MailboxInfo.InboxUri,
+                            query,
+                            false);
+
+                        // Iterate through each message info, fetch the full message, and display its subject.
+                        foreach (ExchangeMessageInfo info in messageInfos)
+                        {
+                            using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                            {
+                                Console.WriteLine($"Subject: {message.Subject}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error during EWS operations: {ex.Message}");
+                        return;
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                return;
+            }
         }
     }
 }
