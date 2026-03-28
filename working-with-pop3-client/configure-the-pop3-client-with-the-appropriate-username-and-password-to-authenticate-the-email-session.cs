@@ -2,39 +2,32 @@ using System;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace AsposeEmailPop3Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // POP3 server configuration
-                string host = "pop.example.com";
-                string username = "user@example.com";
-                string password = "password";
+            // Connection parameters
+            string host = "pop.example.com";
+            int port = 110;
+            string username = "user@example.com";
+            string password = "password";
 
-                // Initialize and authenticate the POP3 client
-                try
-                {
-                    using (Pop3Client client = new Pop3Client(host, username, password))
-                    {
-                        // Validate the provided credentials
-                        client.ValidateCredentials();
-                        Console.WriteLine("POP3 client authenticated successfully.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"POP3 client error: {ex.Message}");
-                    return;
-                }
-            }
-            catch (Exception ex)
+            // Initialize POP3 client with host, port, username, and password
+            using (Pop3Client client = new Pop3Client(host, port, username, password))
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                // Set security options if needed
+                client.SecurityOptions = SecurityOptions.Auto;
+
+                // Validate credentials
+                bool isAuthenticated = client.ValidateCredentials();
+                Console.WriteLine(isAuthenticated ? "Authentication succeeded." : "Authentication failed.");
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
