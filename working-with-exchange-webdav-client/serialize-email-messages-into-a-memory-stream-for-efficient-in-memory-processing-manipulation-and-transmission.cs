@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,31 +8,33 @@ class Program
     {
         try
         {
-            // Create a simple MailMessage
-            using (Aspose.Email.MailMessage mailMessage = new Aspose.Email.MailMessage(
-                "sender@example.com",
-                "recipient@example.com",
-                "Sample Subject",
-                "This is the body of the email."))
+            // Create a simple email message
+            MailMessage message = new MailMessage();
+            try
             {
-                // Convert MailMessage to MapiMessage
-                using (Aspose.Email.Mapi.MapiMessage mapiMessage = Aspose.Email.Mapi.MapiMessage.FromMailMessage(mailMessage))
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Sample Email";
+                message.Body = "This is a test email serialized into a memory stream.";
+
+                // Serialize the message into a memory stream
+                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    // Serialize MapiMessage to a memory stream
-                    using (MemoryStream memoryStream = new MemoryStream())
-                    {
-                        mapiMessage.Save(memoryStream);
-                        memoryStream.Position = 0;
+                    // Save the message in EML format to the stream
+                    message.Save(memoryStream, SaveOptions.DefaultEml);
 
-                        Console.WriteLine($"Serialized message size: {memoryStream.Length} bytes");
+                    // Reset stream position to the beginning for further processing
+                    memoryStream.Position = 0;
 
-                        // Optionally, load the message back from the stream
-                        using (Aspose.Email.MailMessage loadedMessage = Aspose.Email.MailMessage.Load(memoryStream))
-                        {
-                            Console.WriteLine($"Loaded Subject: {loadedMessage.Subject}");
-                        }
-                    }
+                    // Example: read the serialized bytes (could be sent over network, etc.)
+                    byte[] emailBytes = memoryStream.ToArray();
+                    Console.WriteLine($"Serialized email size: {emailBytes.Length} bytes");
                 }
+            }
+            finally
+            {
+                // Ensure the MailMessage is disposed
+                message.Dispose();
             }
         }
         catch (Exception ex)
