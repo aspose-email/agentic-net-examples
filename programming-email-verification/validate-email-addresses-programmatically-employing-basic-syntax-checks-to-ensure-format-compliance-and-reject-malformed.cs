@@ -13,29 +13,37 @@ class Program
             {
                 "john.doe@example.com",
                 "invalid-email",
-                "jane@domain",
-                "user@@example.com"
+                "jane@subdomain.example",
+                "bad@@example.com"
             };
 
+            // Create an instance of EmailValidator
             EmailValidator validator = new EmailValidator();
 
             foreach (string address in emailAddresses)
             {
-                ValidationResult result;
-                validator.Validate(address, out result);
-
-                Console.WriteLine($"Email: {address}");
-                Console.WriteLine($"ReturnCode: {result.ReturnCode}");
-                if (!string.IsNullOrEmpty(result.Message))
+                try
                 {
-                    Console.WriteLine($"Message: {result.Message}");
+                    ValidationResult result;
+                    validator.Validate(address, out result);
+
+                    Console.WriteLine($"Email: {address}");
+                    Console.WriteLine($"Return Code: {result.ReturnCode}");
+                    if (!string.IsNullOrEmpty(result.Message))
+                    {
+                        Console.WriteLine($"Message: {result.Message}");
+                    }
+                    Console.WriteLine();
                 }
-                Console.WriteLine();
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error validating '{address}': {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
