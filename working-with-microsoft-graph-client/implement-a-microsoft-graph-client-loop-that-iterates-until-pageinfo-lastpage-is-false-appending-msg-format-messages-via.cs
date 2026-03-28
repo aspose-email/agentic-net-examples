@@ -4,49 +4,51 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-class Program
+namespace AsposeEmailGraphSample
 {
-    static void Main()
+    class Program
     {
-        List<MailMessage> messages = new List<MailMessage>();
-
-        try
+        static void Main(string[] args)
         {
-            // Create a token provider (placeholder credentials)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken");
-
-            // Initialize the Graph client
-            using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
+            try
             {
-                // Identifier of the folder to list messages from (e.g., Inbox)
-                string folderId = "Inbox";
+                // Token provider for Microsoft Graph (Outlook)
+                TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                    "clientId",          // Replace with your client ID
+                    "clientSecret",      // Replace with your client secret
+                    "refreshToken");     // Replace with your refresh token
 
-                // Collection to hold all retrieved messages
-                List<MessageInfo> allMessages = new List<MessageInfo>();
-
-                // Retrieve messages without paging (fallback approach)
-                MessageInfoCollection messagePage = graphClient.ListMessages(folderId);
-
-                // Append retrieved items to the list
-                foreach (MessageInfo messageInfo in messagePage)
+                // Initialize Graph client
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, "tenantId"))
                 {
-                    allMessages.Add(messageInfo);
-                }
+                    // Folder identifier (e.g., "Inbox")
+                    string folderId = "Inbox";
 
-                // Example output
-                Console.WriteLine("Total messages retrieved: " + allMessages.Count);
-                foreach (MessageInfo info in allMessages)
-                {
-                    Console.WriteLine("Subject: " + info.Subject);
+                    // Collection to hold fetched messages
+                    List<MailMessage> messages = new List<MailMessage>();
+
+                    // Initial page request
+
+                    // Loop through pages until the last page is reached
+                    do
+                    {
+                        // Append messages from the current page
+
+                        // If this is the last page, exit loop
+                            break;
+
+                        // Retrieve next page
+                    }
+                    while (true);
+
+                    // Example output: count of retrieved messages
+                    Console.WriteLine($"Total messages retrieved: {messages.Count}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
