@@ -5,45 +5,40 @@ using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailExample
+class Program
 {
-    public class Program
+    static void Main()
     {
-        public static void Main(string[] args)
+        try
         {
-            try
+            // Initialize token provider (replace with real credentials)
+            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                "clientId", "clientSecret", "refreshToken");
+
+            // Create Graph client
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
             {
-                // Initialize token provider with dummy credentials
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken");
-
-                // Tenant identifier (dummy value)
-                string tenantId = "tenantId";
-
-                // Create Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+                try
                 {
                     // Retrieve inbox rules
-                    List<InboxRule> inboxRules = graphClient.ListRules();
+                    List<InboxRule> rules = client.ListRules();
 
-                    // Output rule information
-                    foreach (InboxRule rule in inboxRules)
+                    Console.WriteLine("Inbox Rules:");
+                    foreach (InboxRule rule in rules)
                     {
-                        Console.WriteLine("Rule ID: " + rule.RuleId);
-                        Console.WriteLine("Display Name: " + rule.DisplayName);
-                        Console.WriteLine("Enabled: " + rule.IsEnabled);
-                        Console.WriteLine("Priority: " + rule.Priority);
-                        Console.WriteLine(new string('-', 40));
+                        Console.WriteLine($"- {rule.DisplayName}");
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error retrieving rules: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Initialization error: {ex.Message}");
         }
     }
 }
