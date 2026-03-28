@@ -1,4 +1,3 @@
-using System.Net;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
@@ -8,35 +7,32 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Placeholder EWS service URL and credentials
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            // Initialize the EWS client with placeholder credentials.
+            using (IEWSClient client = EWSClient.GetEWSClient("https://example.com/EWS/Exchange.asmx", "username", "password"))
             {
-                // Initialize a new distribution list
-                ExchangeDistributionList distributionList = new ExchangeDistributionList();
-                distributionList.DisplayName = "Sample Distribution List";
+                // Create a new distribution list instance.
+                ExchangeDistributionList distributionList = new ExchangeDistributionList
+                {
+                    DisplayName = "Sample Distribution List"
+                };
 
-                // Prepare the list members
-                MailAddressCollection members = new MailAddressCollection();
-                members.Add(new MailAddress("member1@example.com"));
-                members.Add(new MailAddress("member2@example.com"));
+                // Prepare the list of members.
+                MailAddressCollection members = new MailAddressCollection
+                {
+                    new MailAddress("alice@example.com"),
+                    new MailAddress("bob@example.com")
+                };
 
-                // Create the distribution list on the server
-                string distributionListId = client.CreateDistributionList(distributionList, members);
-                Console.WriteLine("Created Distribution List Id: " + distributionListId);
+                // Create the distribution list on the Exchange server.
+                string listId = client.CreateDistributionList(distributionList, members);
+                Console.WriteLine($"Distribution List created with Id: {listId}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
