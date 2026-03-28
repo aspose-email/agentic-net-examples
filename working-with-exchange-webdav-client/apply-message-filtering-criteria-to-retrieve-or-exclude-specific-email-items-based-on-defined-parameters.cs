@@ -1,9 +1,8 @@
-using Aspose.Email.Clients.Exchange;
-using System;
-using System.Net;
-using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Tools.Search;
+using System;
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Clients.Exchange;
 
 namespace AsposeEmailExample
 {
@@ -11,47 +10,40 @@ namespace AsposeEmailExample
     {
         static void Main(string[] args)
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
             try
             {
-                // Define the Exchange Web Services (EWS) endpoint and credentials.
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
-
-                // Create the EWS client using the factory method.
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                // Initialize the Exchange WebDAV client
+                try
                 {
-                    try
+                    using (ExchangeClient client = new ExchangeClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
                     {
-                        // Build a query to filter messages where the subject contains "Report"
-                        // and the sender's address contains "alice@example.com".
+                        // Build a query to filter messages (e.g., subject contains "Invoice")
                         ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                        builder.Subject.Contains("Report");
-                        builder.From.Contains("alice@example.com");
+                        builder.Subject.Contains("Invoice");
                         MailQuery query = builder.GetQuery();
 
-                        // Retrieve messages from the Inbox that match the query.
+                        // Retrieve messages from the Inbox folder that match the query
                         ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", query, false);
 
-                        // Output basic metadata for each matching message.
+                        // Process and display the filtered messages
                         foreach (ExchangeMessageInfo info in messages)
                         {
-                            Console.WriteLine("Subject: " + info.Subject);
-                            Console.WriteLine("From: " + info.From);
-                            Console.WriteLine("Received: " + info.Date);
+                            Console.WriteLine($"Subject: {info.Subject}");
+                            Console.WriteLine($"Date: {info.Date}");
+                            Console.WriteLine($"From: {info.From}");
                             Console.WriteLine(new string('-', 40));
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Operation error: " + ex.Message);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Client error: {ex.Message}");
+                    return;
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }
