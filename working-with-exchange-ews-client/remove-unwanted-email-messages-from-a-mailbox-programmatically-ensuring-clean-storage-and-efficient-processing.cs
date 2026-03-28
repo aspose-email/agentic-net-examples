@@ -1,42 +1,54 @@
-using System.Net;
-using Aspose.Email.Clients.Exchange;
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Google;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        // Top‑level exception guard
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-            try
+            // Initialize Gmail client (connection safety)
+            using (IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",          // OAuth client ID
+                "clientSecret",      // OAuth client secret
+                "refreshToken",      // OAuth refresh token
+                "user@example.com")) // Gmail address
             {
-                // Mailbox connection details (replace with real values)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
-
-                // Create the EWS client using the factory method (returns IEWSClient)
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                try
                 {
-                    // Retrieve all messages from the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                    // Retrieve all messages in the mailbox
+                    List<GmailMessageInfo> messages = gmailClient.ListMessages();
 
-                    // Delete each message permanently
-                    foreach (ExchangeMessageInfo info in messages)
+                    foreach (GmailMessageInfo info in messages)
                     {
-                        client.DeleteItem(info.UniqueUri, DeletionOptions.DeletePermanently);
+                        // Fetch the full message to examine its properties
+                        MailMessage fullMessage = gmailClient.FetchMessage(info.Id);
+
+                        // Example criterion: delete messages whose subject contains "Unwanted"
+                        if (fullMessage?.Subject != null && fullMessage.Subject.Contains("Unwanted"))
+                        {
+                            // Permanently delete the message
+                            gmailClient.DeleteMessage(info.Id);
+                            Console.WriteLine($"Deleted message Id: {info.Id}");
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    // Handle errors that occur during message processing
+                    Console.Error.WriteLine($"Message processing error: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            // Handle any unexpected errors (e.g., client initialization failures)
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
