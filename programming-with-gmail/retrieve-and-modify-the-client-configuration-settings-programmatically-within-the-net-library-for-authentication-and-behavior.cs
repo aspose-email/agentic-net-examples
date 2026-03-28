@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
@@ -9,36 +11,45 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with dummy OAuth credentials
-            IGmailClient gmailClient = GmailClient.GetInstance(
+            // Initialize Gmail client with placeholder credentials
+            using (IGmailClient gmailClient = GmailClient.GetInstance(
                 "clientId",
                 "clientSecret",
                 "refreshToken",
-                "user@example.com");
-
-            using (gmailClient)
+                "user@example.com"))
             {
-                // Retrieve current configuration
-                string accessToken = gmailClient.AccessToken;
-                string defaultEmail = gmailClient.DefaultEmail;
-                int timeout = gmailClient.Timeout;
+                try
+                {
+                    // Retrieve current client settings
+                    Dictionary<string, string> settings = gmailClient.GetSettings();
+                    Console.WriteLine("Current Settings:");
+                    foreach (KeyValuePair<string, string> entry in settings)
+                    {
+                        Console.WriteLine($"{entry.Key}: {entry.Value}");
+                    }
 
-                Console.WriteLine($"Access Token: {accessToken}");
-                Console.WriteLine($"Default Email: {defaultEmail}");
-                Console.WriteLine($"Timeout (ms): {timeout}");
+                    // Modify authentication token
+                    gmailClient.AccessToken = "newAccessToken";
 
-                // Modify configuration: increase timeout and set a proxy
-                gmailClient.Timeout = 200000; // 200 seconds
+                    // Modify timeout (milliseconds)
+                    gmailClient.Timeout = 200000;
 
-                WebProxy proxy = new WebProxy("http://proxy.example.com:8080");
-                gmailClient.Proxy = proxy;
+                    // Set a proxy (example)
+                    WebProxy proxy = new WebProxy("http://proxy.example.com:8080");
+                    gmailClient.Proxy = proxy;
 
-                Console.WriteLine("Modified Timeout and Proxy settings applied.");
+                    Console.WriteLine("Client configuration updated successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during client operations: {ex.Message}");
+                    return;
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
