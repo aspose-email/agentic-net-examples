@@ -4,65 +4,83 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-namespace Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Path to the MSG file
+            string msgPath = "sample.msg";
+
+            // Verify the MSG file exists
+            if (!File.Exists(msgPath))
+            {
+                Console.Error.WriteLine($"File not found: {msgPath}");
+                return;
+            }
+
+            // Load the MSG file into a MailMessage object
+            MailMessage message;
             try
             {
-                // Path to the MSG file
-                string msgFilePath = "sample.msg";
+                message = MailMessage.Load(msgPath);
+            }
+            catch (Exception loadEx)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {loadEx.Message}");
+                return;
+            }
 
-                // Azure AD application credentials (replace with real values)
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string tenantId = "tenantId";
+            // Create a token provider for Microsoft Graph authentication
+            Aspose.Email.Clients.TokenProvider tokenProvider;
+            try
+            {
+                tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                    "clientId",          // Replace with your Azure AD app client ID
+                    "clientSecret",      // Replace with your Azure AD app client secret
+                    "refreshToken");     // Replace with a valid refresh token
+            }
+            catch (Exception tokenEx)
+            {
+                Console.Error.WriteLine($"Token provider initialization failed: {tokenEx.Message}");
+                message.Dispose();
+                return;
+            }
 
-                // Verify that the MSG file exists
-                if (!File.Exists(msgFilePath))
-                {
-                    Console.Error.WriteLine($"Message file not found: {msgFilePath}");
-                    return;
-                }
+            // Initialize the Graph client
+            IGraphClient client;
+            try
+            {
+                client = GraphClient.GetClient(tokenProvider, "tenantId"); // Replace with your tenant ID
+            }
+            catch (Exception clientEx)
+            {
+                Console.Error.WriteLine($"Graph client creation failed: {clientEx.Message}");
+                message.Dispose();
+                return;
+            }
 
-                // Create the Outlook token provider
-                Aspose.Email.Clients.ITokenProvider tokenProvider;
+            // Use the client to create the message in the Inbox folder
+            using (client)
+            {
                 try
                 {
-                    tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+                    client.CreateMessage("Inbox", message);
+                    Console.WriteLine("Message uploaded to Azure AD Admin Center project successfully.");
                 }
-                catch (Exception ex)
+                catch (Exception createEx)
                 {
-                    Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to create message: {createEx.Message}");
                 }
+            }
 
-                // Initialize the Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
-                {
-                    // Load the MSG file into a MailMessage object
-                    using (MailMessage mailMessage = MailMessage.Load(msgFilePath))
-                    {
-                        // Upload the message to the Inbox folder
-                        try
-                        {
-                            graphClient.CreateMessage("Inbox", mailMessage);
-                            Console.WriteLine("Message uploaded successfully.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to upload message: {ex.Message}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+            // Dispose the MailMessage
+            message.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
