@@ -1,48 +1,61 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Calendar;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
+using Aspose.Email.Calendar;
 
-public class Program
+namespace AsposeEmailSample
 {
-    public static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize Gmail client with dummy credentials
-            Aspose.Email.Clients.Google.IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com");
-
-            using (gmailClient)
+            try
             {
-                // Calendar and appointment identifiers
-                string calendarId = "primary";
-                string appointmentId = "appointmentId";
+                // Initialize Gmail client with placeholder credentials
+                try
+                {
+                    IGmailClient gmailClient = GmailClient.GetInstance(
+                        "clientId",
+                        "clientSecret",
+                        "refreshToken",
+                        "user@example.com");
 
-                // Fetch the existing appointment
-                Aspose.Email.Calendar.Appointment appointment = gmailClient.FetchAppointment(calendarId, appointmentId);
+                    using (gmailClient)
+                    {
+                        // Identify the calendar and the appointment to modify
+                        string calendarId = "primary"; // typically "primary" for the main calendar
+                        string appointmentId = "appointmentId"; // replace with actual appointment ID
 
-                // Modify appointment details
-                appointment.StartDate = new DateTime(2023, 12, 25, 10, 0, 0);
-                appointment.EndDate = new DateTime(2023, 12, 25, 11, 0, 0);
-                appointment.Location = "Conference Room B";
+                        // Fetch the existing appointment
+                        Appointment appointment = gmailClient.FetchAppointment(calendarId, appointmentId);
 
-                // Add a new attendee
-                appointment.Attendees.Add(new Aspose.Email.MailAddress("newattendee@example.com"));
+                        // Modify appointment details
+                        appointment.StartDate = new DateTime(2023, 12, 25, 10, 0, 0);
+                        appointment.EndDate = new DateTime(2023, 12, 25, 11, 0, 0);
+                        appointment.Summary = "Updated Meeting Summary";
+                        appointment.Description = "Updated description for the meeting.";
 
-                // Update the appointment on the server
-                Aspose.Email.Calendar.Appointment updatedAppointment = gmailClient.UpdateAppointment(calendarId, appointment);
+                        // Update attendees
+                        MailAddressCollection newAttendees = new MailAddressCollection();
+                        newAttendees.Add(new MailAddress("newperson@example.com"));
+                        appointment.Attendees = newAttendees;
 
-                Console.WriteLine("Appointment updated. New start time: " + updatedAppointment.StartDate);
+                        // Send the updated appointment back to the server
+                        Appointment updatedAppointment = gmailClient.UpdateAppointment(calendarId, appointment);
+                        Console.WriteLine("Appointment updated successfully. New Summary: " + updatedAppointment.Summary);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error during Gmail client operation: " + ex.Message);
+                    return;
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            }
         }
     }
 }
