@@ -8,27 +8,53 @@ class Program
     {
         try
         {
-            string htmlFilePath = "input.html";
-            string mhtmlFilePath = "output.mhtml";
+            string inputPath = "input.html";
+            string outputPath = "output.mhtml";
 
-            // Verify that the source HTML file exists
-            if (!File.Exists(htmlFilePath))
+            // Ensure the input HTML file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Source file not found: {htmlFilePath}");
+                try
+                {
+                    const string placeholderHtml = "<html><body><p>Placeholder content</p></body></html>";
+                    File.WriteAllText(inputPath, placeholderHtml);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the HTML document with HtmlLoadOptions.
+            HtmlLoadOptions loadOptions = new HtmlLoadOptions();
+            MailMessage mailMessage;
+            try
+            {
+                mailMessage = MailMessage.Load(inputPath, loadOptions);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load HTML as MailMessage: {ex.Message}");
                 return;
             }
 
-            // Load the HTML document into a MailMessage using HtmlLoadOptions
-            using (MailMessage message = MailMessage.Load(htmlFilePath, new HtmlLoadOptions()))
+            // Save the message directly to MHTML format.
+            using (mailMessage)
             {
-                // Save the MailMessage directly to MHTML format with default options
-                message.Save(mhtmlFilePath, SaveOptions.DefaultMhtml);
-                Console.WriteLine($"MHTML file saved to: {mhtmlFilePath}");
+                try
+                {
+                    mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save MHTML file: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
