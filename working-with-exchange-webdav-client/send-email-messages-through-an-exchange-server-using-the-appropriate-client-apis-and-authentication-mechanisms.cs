@@ -1,50 +1,51 @@
-using System.Net;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange.Dav;
 
-namespace AsposeEmailExample
+namespace ExchangeEmailSender
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-            // Top-level exception guard
             try
             {
-                // Connection safety guard
-                try
-                {
-                    // Initialize the EWS client with mailbox URI and credentials
-                    using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
-                    {
-                        // Create a mail message
-                        using (MailMessage message = new MailMessage())
-                        {
-                            message.From = "sender@example.com";
-                            message.To = "recipient@example.com";
-                            message.Subject = "Test Email";
-                            message.Body = "Hello from Aspose.Email!";
+                // Exchange server connection details (replace with real values)
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-                            // Send the message
+                // Initialize the Exchange client
+                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+                {
+                    // Optional: enable pre-authentication
+                    client.PreAuthenticate = true;
+
+                    // Create the email message
+                    using (MailMessage message = new MailMessage())
+                    {
+                        message.From = "user@example.com";
+                        message.To.Add("recipient@example.com");
+                        message.Subject = "Test Email via Exchange";
+                        message.Body = "Hello, this is a test email sent using Aspose.Email ExchangeClient.";
+
+                        // Send the message
+                        try
+                        {
                             client.Send(message);
-                            Console.WriteLine("Email sent successfully.");
+                            Console.WriteLine("Message sent successfully.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Error sending email: {ex.Message}");
+                            return;
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    // Handle connection or sending errors
-                    Console.Error.WriteLine("Error during Exchange operation: " + ex.Message);
-                    return;
                 }
             }
             catch (Exception ex)
             {
-                // Handle any unexpected errors
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }
