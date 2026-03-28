@@ -5,7 +5,7 @@
   "package_version": "26.1.0",
   "total_examples": 490,
   "total_categories": 13,
-  "last_updated": "2026-03-27",
+  "last_updated": "2026-03-28",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -917,11 +917,11 @@
         },
         {
           "name": "System.IO",
-          "count": 27
+          "count": 25
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 23
+          "count": 21
         },
         {
           "name": "System.Net",
