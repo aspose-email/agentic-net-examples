@@ -1,68 +1,72 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Google;
 
-namespace AsposeEmailOAuthSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static async Task Main(string[] args)
+        try
         {
-            try
+            // OAuth2 parameters (replace with real values)
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string authorizationCode = "authCode";
+            string redirectUri = "https://yourapp.example.com/oauth2callback";
+            string tokenEndpoint = "https://oauth2.googleapis.com/token";
+
+            // Exchange authorization code for refresh token
+            string refreshToken;
+            using (HttpClient httpClient = new HttpClient())
             {
-                // Authorization code obtained from the OAuth2 authorization step
-                string authorizationCode = "your-authorization-code";
+                var requestContent = new StringContent(
+                    $"code={authorizationCode}&client_id={clientId}&client_secret={clientSecret}&redirect_uri={redirectUri}&grant_type=authorization_code",
+                    Encoding.UTF8,
+                    "application/x-www-form-urlencoded");
 
-                // OAuth2 token endpoint (example for Microsoft identity platform)
-                string tokenEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
+                HttpResponseMessage response = httpClient.PostAsync(tokenEndpoint, requestContent).Result;
+                response.EnsureSuccessStatusCode();
 
-                // Client credentials
-                string clientId = "your-client-id";
-                string clientSecret = "your-client-secret";
-                string redirectUri = "your-redirect-uri";
-
-                using (HttpClient httpClient = new HttpClient())
+                string jsonResponse = response.Content.ReadAsStringAsync().Result;
+                using (JsonDocument jsonDoc = JsonDocument.Parse(jsonResponse))
                 {
-                    var requestData = new Dictionary<string, string>
+                    JsonElement root = jsonDoc.RootElement;
+                    if (root.TryGetProperty("refresh_token", out JsonElement refreshTokenElement))
                     {
-                        { "client_id", clientId },
-                        { "scope", "https://outlook.office.com/.default offline_access" },
-                        { "code", authorizationCode },
-                        { "redirect_uri", redirectUri },
-                        { "grant_type", "authorization_code" },
-                        { "client_secret", clientSecret }
-                    };
-
-                    using (HttpContent content = new FormUrlEncodedContent(requestData))
+                        refreshToken = refreshTokenElement.GetString();
+                    }
+                    else
                     {
-                        HttpResponseMessage response = await httpClient.PostAsync(tokenEndpoint, content);
-                        response.EnsureSuccessStatusCode();
-
-                        string jsonResponse = await response.Content.ReadAsStringAsync();
-
-                        using (JsonDocument jsonDoc = JsonDocument.Parse(jsonResponse))
-                        {
-                            JsonElement root = jsonDoc.RootElement;
-                            if (root.TryGetProperty("refresh_token", out JsonElement refreshTokenElement))
-                            {
-                                string refreshToken = refreshTokenElement.GetString();
-                                Console.WriteLine("Refresh token obtained:");
-                                Console.WriteLine(refreshToken);
-                            }
-                            else
-                            {
-                                Console.Error.WriteLine("Refresh token not found in the response.");
-                            }
-                        }
+                        Console.Error.WriteLine("Refresh token not found in the response.");
+                        return;
                     }
                 }
             }
-            catch (Exception ex)
+
+            // Create Gmail client using the obtained refresh token
+            string defaultEmail = "user@example.com";
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
+            using (gmailClient)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Refresh access token explicitly (optional, as it may happen automatically)
+                gmailClient.RefreshToken();
+
+                // Example: list messages (placeholder - actual usage may vary)
+                var messages = gmailClient.ListMessages();
+                foreach (var messageInfo in messages)
+                {
+                    // Fetch full message to read subject
+                    var mailMessage = gmailClient.FetchMessage(messageInfo.Id);
+                    Console.WriteLine(mailMessage.Subject);
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
