@@ -8,24 +8,41 @@ class Program
     {
         try
         {
-            string inputPath = "input.html";
-            if (!File.Exists(inputPath))
+            string inputHtmlPath = "input.html";
+            string outputMsgPath = "output.msg";
+
+            // Ensure the input HTML file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputHtmlPath))
             {
-                Console.Error.WriteLine($"Input file '{inputPath}' not found.");
-                return;
+                try
+                {
+                    File.WriteAllText(inputHtmlPath, "<html><body><p>Placeholder email content.</p></body></html>");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
+                    return;
+                }
             }
 
-            using (MailMessage message = MailMessage.Load(inputPath))
+            // Load the HTML email and convert it to MSG format.
+            try
             {
-                string outputPath = "output.mhtml";
-                // Export the loaded HTML email to MHTML format
-                message.Save(outputPath, SaveOptions.DefaultMhtml);
-                Console.WriteLine($"Converted '{inputPath}' to '{outputPath}'.");
+                using (MailMessage message = MailMessage.Load(inputHtmlPath, new HtmlLoadOptions()))
+                {
+                    // Save as Outlook MSG (Unicode) format.
+                    message.Save(outputMsgPath, SaveOptions.DefaultMsgUnicode);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during conversion: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
