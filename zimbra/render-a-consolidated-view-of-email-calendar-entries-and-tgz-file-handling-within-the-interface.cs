@@ -1,62 +1,102 @@
+using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
-using Aspose.Email.Calendar;
+using Aspose.Email.Clients.Imap;
 using Aspose.Email.Storage.Zimbra;
 
-class Program
+namespace AsposeEmailZimbraSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize Gmail client (replace with real token and email)
-            string accessToken = "YOUR_ACCESS_TOKEN";
-            string defaultEmail = "user@example.com";
-
-            IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail);
-
-            // Retrieve and display calendars
-            Aspose.Email.Clients.Google.Calendar[] calendars = gmailClient.ListCalendars();
-            Console.WriteLine("Calendars:");
-            foreach (Aspose.Email.Clients.Google.Calendar calendar in calendars)
+            try
             {
-                Console.WriteLine(" - Id: {0}, Summary: {1}", calendar.Id, calendar.Summary);
+                // ---------- TGZ (Zimbra) handling ----------
+                string tgzFilePath = "archive.tgz";
 
-                // Retrieve and display appointments for each calendar
-                Appointment[] appointments = gmailClient.ListAppointments(calendar.Id);
-                foreach (Appointment appointment in appointments)
+                if (!File.Exists(tgzFilePath))
                 {
-                    Console.WriteLine("   * {0} ({1} - {2})", appointment.Summary, appointment.StartDate, appointment.EndDate);
+                    Console.Error.WriteLine($"TGZ file not found at path: {tgzFilePath}");
                 }
-            }
-
-            // TGZ file handling (replace with actual path)
-            string tgzFilePath = "mailbox.tgz";
-
-            if (!File.Exists(tgzFilePath))
-            {
-                Console.Error.WriteLine("TGZ file not found: " + tgzFilePath);
-                return;
-            }
-
-            using (TgzReader tgzReader = new TgzReader(tgzFilePath))
-            {
-                Console.WriteLine("Messages in TGZ archive:");
-                while (tgzReader.ReadNextMessage())
+                else
                 {
-                    MailMessage message = tgzReader.CurrentMessage;
-                    if (message != null)
+                    try
                     {
-                        Console.WriteLine(" - Subject: {0}", message.Subject);
+                        using (TgzReader tgzReader = new TgzReader(tgzFilePath))
+                        {
+                            // Read messages until no more are available
+                            while (true)
+                            {
+                                try
+                                {
+                                    tgzReader.ReadNextMessage();
+                                }
+                                catch (EndOfStreamException)
+                                {
+                                    // Reached the end of the TGZ archive
+                                    break;
+                                }
+
+                                MailMessage currentMessage = tgzReader.CurrentMessage;
+                                if (currentMessage != null)
+                                {
+                                    Console.WriteLine($"[TGZ] Subject: {currentMessage.Subject}");
+                                    Console.WriteLine($"[TGZ] From: {currentMessage.From}");
+                                    Console.WriteLine($"[TGZ] Date: {currentMessage.Date}");
+                                    Console.WriteLine();
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error processing TGZ file: {ex.Message}");
                     }
                 }
+
+                // ---------- IMAP email handling ----------
+                string imapHost = "imap.example.com";
+                int imapPort = 993;
+                string imapUsername = "user@example.com";
+                string imapPassword = "password";
+
+                try
+                {
+                    using (ImapClient imapClient = new ImapClient(imapHost, imapPort, imapUsername, imapPassword))
+                    {
+                        imapClient.SecurityOptions = SecurityOptions.SSLImplicit;
+
+                        // List messages in the INBOX folder
+                        ImapMessageInfoCollection messageInfos = imapClient.ListMessages();
+
+                        foreach (ImapMessageInfo messageInfo in messageInfos)
+                        {
+                            try
+                            {
+                                MailMessage fetchedMessage = imapClient.FetchMessage(messageInfo.UniqueId);
+                                Console.WriteLine($"[IMAP] Subject: {fetchedMessage.Subject}");
+                                Console.WriteLine($"[IMAP] From: {fetchedMessage.From}");
+                                Console.WriteLine($"[IMAP] Date: {fetchedMessage.Date}");
+                                Console.WriteLine();
+                            }
+                            catch (Exception fetchEx)
+                            {
+                                Console.Error.WriteLine($"Failed to fetch message UID {messageInfo.UniqueId}: {fetchEx.Message}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception imapEx)
+                {
+                    Console.Error.WriteLine($"IMAP client error: {imapEx.Message}");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
