@@ -9,37 +9,29 @@ class Program
     {
         try
         {
-            // Path to the MSG file that contains the Notes document
-            string msgFilePath = "note.msg";
+            // Path to the MSG file that contains the Notes document.
+            const string msgFilePath = "notes_document.msg";
 
-            // The UNID identifier of the Notes document we want to retrieve
-            string targetUnid = "YOUR_UNID_HERE";
-
-            // Verify that the MSG file exists before attempting to load it
+            // Verify that the file exists before attempting to load it.
             if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                Console.Error.WriteLine($"File not found: {msgFilePath}");
                 return;
             }
 
-            // Load the MSG file as a MapiMessage
+            // Load the MSG file into a MapiMessage instance.
             using (MapiMessage msg = MapiMessage.Load(msgFilePath))
             {
-                // The ItemId property holds the unique identifier (UNID) for Notes documents
-                string messageUnid = msg.ItemId;
+                // Display basic properties to confirm successful loading.
+                Console.WriteLine($"Subject: {msg.Subject}");
+                Console.WriteLine($"Body: {msg.Body}");
 
-                if (string.Equals(messageUnid, targetUnid, StringComparison.OrdinalIgnoreCase))
-                {
-                    // The UNID matches – output the relevant content
-                    Console.WriteLine("Subject: " + msg.Subject);
-                    Console.WriteLine("Body: " + msg.Body);
-                    Console.WriteLine("Sender: " + msg.SenderName);
-                    Console.WriteLine("Sent: " + msg.ClientSubmitTime);
-                }
-                else
-                {
-                    Console.WriteLine("The specified UNID was not found in the provided MSG file.");
-                }
+                // The UNID (Universal ID) of a Notes document is stored as a MAPI property.
+                // Its tag is 0x0E03 (PidTagMessageId). Retrieve it as a string.
+                // Adjust the tag if a different property is used for UNID in your environment.
+                const long UNID_TAG = 0x0E03;
+                string unid = msg.GetPropertyString(UNID_TAG);
+                Console.WriteLine($"UNID: {unid}");
             }
         }
         catch (Exception ex)
