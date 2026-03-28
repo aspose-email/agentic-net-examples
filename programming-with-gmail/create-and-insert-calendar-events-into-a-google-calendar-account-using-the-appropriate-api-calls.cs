@@ -1,8 +1,8 @@
 using System;
 using Aspose.Email;
+using Aspose.Email.Calendar;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
-using Aspose.Email.Calendar;
 
 class Program
 {
@@ -10,46 +10,41 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with dummy credentials
+            // Initialize Gmail client with dummy OAuth credentials
             IGmailClient gmailClient = GmailClient.GetInstance(
                 "clientId",
                 "clientSecret",
                 "refreshToken",
                 "user@example.com");
 
-            try
+            using (gmailClient)
             {
-                // Create a new calendar
-                Calendar calendar = new Calendar("Sample Calendar");
-                string calendarId = gmailClient.CreateCalendar(calendar);
+                // Define the calendar identifier (primary calendar)
+                string calendarId = "primary";
 
-                // Prepare attendees
+                // Prepare attendees collection
                 MailAddressCollection attendees = new MailAddressCollection();
-                attendees.Add(new MailAddress("alice@example.com"));
-                attendees.Add(new MailAddress("bob@example.com"));
+                attendees.Add(new MailAddress("person1@example.com"));
+                attendees.Add(new MailAddress("person2@example.com"));
+                attendees.Add(new MailAddress("person3@example.com"));
 
-                // Create an appointment
+                // Organizer address
+                MailAddress organizer = new MailAddress("organizer@example.com");
+
+                // Create an appointment using a constructor that accepts all required details
                 Appointment appointment = new Appointment(
-                    "Conference Room A",
-                    new DateTime(2024, 5, 20, 10, 0, 0),
-                    new DateTime(2024, 5, 20, 11, 0, 0),
-                    new MailAddress("organizer@example.com"),
-                    attendees);
-                appointment.Summary = "Project Kickoff";
-                appointment.Description = "Discuss project goals and timelines.";
+                    "Conference Room",               // location
+                    "Team Meeting",                  // summary
+                    "Discuss project milestones",    // description
+                    DateTime.Now.AddHours(1),        // start date/time
+                    DateTime.Now.AddHours(2),        // end date/time
+                    organizer,                       // organizer
+                    attendees);                      // attendees
 
-                // Insert the appointment into the created calendar
-                Appointment createdAppointment = gmailClient.CreateAppointment(calendarId, appointment);
+                // Insert the appointment into the specified Google Calendar
+                Appointment created = gmailClient.CreateAppointment(calendarId, appointment);
 
-                Console.WriteLine("Appointment created with ID: " + createdAppointment.UniqueId);
-            }
-            finally
-            {
-                // Ensure the client is disposed
-                if (gmailClient is IDisposable disposableClient)
-                {
-                    disposableClient.Dispose();
-                }
+                Console.WriteLine("Appointment created with ID: " + created.UniqueId);
             }
         }
         catch (Exception ex)
