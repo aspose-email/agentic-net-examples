@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
@@ -11,56 +10,35 @@ class Program
     {
         try
         {
-            // Path to the MSG file that contains the task list identifier
-            string msgFilePath = "taskmsg.msg";
+            // Initialize token provider (replace with real credentials)
+            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken");
 
-            // Verify that the file exists before attempting to load it
-            if (!File.Exists(msgFilePath))
+            // Create Graph client
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
             {
-                Console.Error.WriteLine($"File not found: {msgFilePath}");
-                return;
-            }
+                // Retrieve all task lists
+                TaskListInfoCollection taskLists = client.ListTaskLists();
 
-            // Load the MSG file as a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(msgFilePath))
-            {
-                // Attempt to retrieve a custom header that holds the Task List ID
-                // (In a real scenario the MSG file should contain this identifier)
-                string taskListId = mailMessage.Headers["TaskListId"];
-                if (string.IsNullOrEmpty(taskListId))
+                foreach (TaskListInfo taskListInfo in taskLists)
                 {
-                    Console.Error.WriteLine("TaskListId header not found in the MSG file.");
-                    return;
-                }
+                    Console.WriteLine($"Task List: {taskListInfo.DisplayName}");
 
-                // Create a token provider for Microsoft Graph authentication
-                // Replace the placeholder strings with actual credentials
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken");
+                    // Retrieve tasks from the current task list
+                    MapiTaskCollection tasks = client.ListTasks(taskListInfo.ItemId);
 
-                // Initialize the Graph client using the token provider and tenant ID
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
-                {
-                    // Retrieve the tasks from the specified task list
-                    MapiTaskCollection tasks = graphClient.ListTasks(taskListId);
-
-                    // Output basic information about each task
                     foreach (MapiTask task in tasks)
                     {
-                        Console.WriteLine($"Subject: {task.Subject}");
-                        Console.WriteLine($"Start Date: {task.StartDate}");
-                        Console.WriteLine($"Due Date: {task.DueDate}");
-                        Console.WriteLine(new string('-', 40));
+                        Console.WriteLine($"- Subject: {task.Subject}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            // Gracefully handle any unexpected errors
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
