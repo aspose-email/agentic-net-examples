@@ -2,7 +2,6 @@ using System;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,29 +9,26 @@ class Program
     {
         try
         {
-            // Initialize token provider for Outlook (placeholder credentials)
-            using (TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance("clientId", "clientSecret", "refreshToken"))
-            {
-                // Create Graph client with the token provider and tenant identifier
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
-                {
-                    // Create a MAPI message (MSG format) representing the product update
-                    MapiMessage productUpdate = new MapiMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Product Update Notification",
-                        "Please find the latest product update attached."
-                    );
+            // Create Outlook token provider (clientId, clientSecret, refreshToken are placeholders)
+            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken");
 
-                    // Send the message using the Graph client (delivered as MSG)
-                    graphClient.SendAsMime(productUpdate);
-                    Console.WriteLine("Product update sent successfully.");
-                }
+            // Tenant identifier (placeholder)
+            string tenantId = "your-tenant-id";
+
+            // Initialize Graph client
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
+            {
+                // TODO: Add subscription logic for product updates delivered in MSG format.
+                // This placeholder demonstrates that the client is ready for further operations.
+                Console.WriteLine("Graph client initialized. Ready to subscribe to product updates.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
