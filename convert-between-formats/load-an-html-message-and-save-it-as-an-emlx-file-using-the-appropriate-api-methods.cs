@@ -12,10 +12,19 @@ class Program
             string targetPath = "message.emlx";
 
             if (!File.Exists(sourcePath))
-            {
-                Console.Error.WriteLine($"Source file not found: {sourcePath}");
-                return;
-            }
+{
+    try
+    {
+        string placeholderHtml = "<html><body><p>Placeholder HTML content.</p></body></html>";
+        File.WriteAllText(sourcePath, placeholderHtml);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder HTML: {ex.Message}");
+        return;
+    }
+}
+
 
             try
             {

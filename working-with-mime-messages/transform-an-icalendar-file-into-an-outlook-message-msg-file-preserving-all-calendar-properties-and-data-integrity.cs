@@ -18,10 +18,19 @@ namespace IcsToMsgConverter
 
                 // Verify that the input file exists before proceeding
                 if (!File.Exists(inputIcsPath))
-                {
-                    Console.Error.WriteLine($"Input file not found: {inputIcsPath}");
-                    return;
-                }
+{
+    try
+    {
+        string placeholderIcs = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Placeholder//EN\r\nBEGIN:VEVENT\r\nUID:placeholder\r\nDTSTAMP:20260101T000000Z\r\nDTSTART:20260101T000000Z\r\nDTEND:20260101T010000Z\r\nSUMMARY:Placeholder\r\nEND:VEVENT\r\nEND:VCALENDAR";
+        File.WriteAllText(inputIcsPath, placeholderIcs);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder ICS: {ex.Message}");
+        return;
+    }
+}
+
 
                 // Load the iCalendar file into an Appointment object
                 Appointment appointment = Appointment.Load(inputIcsPath);

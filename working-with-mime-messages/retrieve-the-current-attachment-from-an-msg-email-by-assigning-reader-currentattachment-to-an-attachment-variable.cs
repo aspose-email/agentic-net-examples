@@ -15,10 +15,19 @@ namespace Example
 
                 // Verify that the file exists before attempting to read it
                 if (!File.Exists(msgPath))
-                {
-                    Console.Error.WriteLine($"File not found: {msgPath}");
-                    return;
-                }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
                 // Open the MSG file with MapiMessageReader
                 using (MapiMessageReader reader = new MapiMessageReader(msgPath))

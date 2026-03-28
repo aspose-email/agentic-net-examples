@@ -13,10 +13,19 @@ class Program
             string outputEmlPath = "output.eml";
 
             if (!File.Exists(inputMsgPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {inputMsgPath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(inputMsgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             string outputDir = Path.GetDirectoryName(outputEmlPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))

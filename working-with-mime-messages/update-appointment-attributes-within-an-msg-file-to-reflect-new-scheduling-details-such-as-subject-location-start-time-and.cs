@@ -14,10 +14,19 @@ class Program
 
             // Verify the input MSG file exists
             if (!File.Exists(msgPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Load the existing appointment from the MSG file
             Appointment appointment;

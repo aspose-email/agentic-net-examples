@@ -13,10 +13,19 @@ class Program
 
             // Verify input file exists
             if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(inputPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Ensure output directory exists
             if (!Directory.Exists(outputDirectory))

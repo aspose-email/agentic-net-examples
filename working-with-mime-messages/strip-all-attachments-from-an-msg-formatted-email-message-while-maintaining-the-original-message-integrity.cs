@@ -12,10 +12,19 @@ class Program
             string outputPath = "message_no_attachments.msg";
 
             if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(inputPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Create a temporary copy to operate on, preserving the original file.
             string tempPath = Path.Combine(Path.GetDirectoryName(outputPath) ?? string.Empty,

@@ -35,10 +35,19 @@ class Program
 
             // Verify that the file was created before attempting to load it.
             if (!File.Exists(msgFilePath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgFilePath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Load the saved MSG file back into a MailMessage instance.
             using (MailMessage loadedMessage = MailMessage.Load(msgFilePath))

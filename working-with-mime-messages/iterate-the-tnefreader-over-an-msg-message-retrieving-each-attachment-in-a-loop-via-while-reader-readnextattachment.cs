@@ -13,10 +13,19 @@ class Program
 
             // Ensure the MSG file exists before attempting to read it
             if (!File.Exists(msgPath))
-            {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Read the MSG file using MapiMessageReader
             using (MapiMessageReader reader = new MapiMessageReader(msgPath))

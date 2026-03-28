@@ -13,10 +13,19 @@ class Program
 
             // Ensure the MSG file exists before attempting to load it.
             if (!File.Exists(msgPath))
-            {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Load the Outlook MSG file inside a using block to guarantee disposal.
             using (MapiMessage msg = MapiMessage.Load(msgPath))

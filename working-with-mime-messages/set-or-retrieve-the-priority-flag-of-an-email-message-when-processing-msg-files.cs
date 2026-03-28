@@ -13,10 +13,19 @@ class Program
             string outputPath = "sample_updated.msg";
 
             if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(inputPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             using (MapiMessage message = MapiMessage.Load(inputPath))
             {

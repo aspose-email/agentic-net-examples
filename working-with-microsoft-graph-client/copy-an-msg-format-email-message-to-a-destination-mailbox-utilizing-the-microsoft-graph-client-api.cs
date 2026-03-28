@@ -13,10 +13,19 @@ class Program
             // Path to the source MSG file
             string msgPath = "source.msg";
             if (!File.Exists(msgPath))
-            {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Destination folder identifier in the target mailbox (Graph folder ItemId)
             string destinationFolderId = "DESTINATION_FOLDER_ITEM_ID";

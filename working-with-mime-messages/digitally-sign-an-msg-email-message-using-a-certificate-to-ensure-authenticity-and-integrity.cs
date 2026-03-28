@@ -18,10 +18,19 @@ class Program
 
             // Verify that the source MSG file exists
             if (!File.Exists(msgFilePath))
-            {
-                Console.Error.WriteLine($"Source MSG file not found: {msgFilePath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgFilePath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Verify that the certificate file exists
             if (!File.Exists(certificatePath))

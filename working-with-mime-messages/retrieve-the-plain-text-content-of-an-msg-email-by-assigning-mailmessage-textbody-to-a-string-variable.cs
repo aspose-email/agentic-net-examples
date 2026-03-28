@@ -11,10 +11,19 @@ class Program
             string msgPath = "message.msg";
 
             if (!File.Exists(msgPath))
-            {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             using (MailMessage mailMessage = MailMessage.Load(msgPath))
             {

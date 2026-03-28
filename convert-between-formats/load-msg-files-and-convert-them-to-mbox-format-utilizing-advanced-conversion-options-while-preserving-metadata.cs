@@ -17,10 +17,19 @@ class Program
 
             // Verify input MSG file exists
             if (!File.Exists(msgFilePath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgFilePath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Ensure the directory for the output MBOX exists
             string mboxDirectory = Path.GetDirectoryName(mboxFilePath);

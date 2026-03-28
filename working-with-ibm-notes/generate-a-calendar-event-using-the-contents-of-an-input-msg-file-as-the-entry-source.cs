@@ -11,10 +11,19 @@ class Program
         {
             string inputPath = "calendar.msg";
             if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(inputPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Load the MSG file
             using (MapiMessage msg = MapiMessage.Load(inputPath))

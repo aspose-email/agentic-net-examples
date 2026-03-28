@@ -17,10 +17,19 @@ namespace AsposeEmailMsgCopy
 
                 // Verify that the input file exists
                 if (!File.Exists(inputMsgPath))
-                {
-                    Console.Error.WriteLine($"Error: Input file not found – {inputMsgPath}");
-                    return;
-                }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(inputMsgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
                 // Load the MSG file, preserve all properties, and save it back
                 using (MapiMessage message = MapiMessage.Load(inputMsgPath))

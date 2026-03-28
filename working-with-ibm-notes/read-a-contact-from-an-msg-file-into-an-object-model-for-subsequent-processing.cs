@@ -16,10 +16,19 @@ namespace AsposeEmailSample
 
                 // Verify that the file exists before attempting to load it
                 if (!File.Exists(msgFilePath))
-                {
-                    Console.Error.WriteLine($"File not found: {msgFilePath}");
-                    return;
-                }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgFilePath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
                 // Load the MSG file as a MapiMessage (IDisposable)
                 using (MapiMessage msg = MapiMessage.Load(msgFilePath))
