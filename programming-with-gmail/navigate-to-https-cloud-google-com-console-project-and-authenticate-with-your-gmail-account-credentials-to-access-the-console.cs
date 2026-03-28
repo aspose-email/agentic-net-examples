@@ -6,34 +6,33 @@ using Aspose.Email.Clients.Google;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // OAuth credentials (replace with real values)
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string defaultEmail = "user@example.com";
-
-            // Create Gmail client instance
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+            // Initialize Gmail client with OAuth credentials
+            using (IGmailClient gmailClient = GmailClient.GetInstance("clientId", "clientSecret", "refreshToken", "user@example.com"))
             {
-                // Retrieve list of messages (metadata only)
-                List<GmailMessageInfo> messages = gmailClient.ListMessages();
-
-                // Iterate through messages and fetch full details to read the subject
-                foreach (GmailMessageInfo messageInfo in messages)
+                try
                 {
-                    // Fetch the complete message using its Id
-                    MailMessage fullMessage = gmailClient.FetchMessage(messageInfo.Id);
-                    Console.WriteLine("Subject: " + fullMessage.Subject);
+                    // List messages in the mailbox
+                    List<GmailMessageInfo> messages = gmailClient.ListMessages();
+                    Console.WriteLine($"Total messages: {messages.Count}");
+                    foreach (GmailMessageInfo info in messages)
+                    {
+                        Console.WriteLine($"Message Id: {info.Id}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Gmail operation error: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
         }
     }
 }
