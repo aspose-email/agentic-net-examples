@@ -1,53 +1,31 @@
 using System;
-using System.Net;
+using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailExample
+class Program
 {
-    public class Program
+    static void Main()
     {
-        public static void Main()
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-            try
+            // Initialize the IMAP client (replace placeholders with real values)
+            using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.Auto))
             {
-                // Define the EWS service URL and user credentials
-                string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
+                // Retrieve the collection of messages from the default folder (INBOX)
+                ImapMessageInfoCollection messages = client.ListMessages();
 
-                // Create the EWS client using the factory method
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                // Iterate through the messages and output their unique identifiers
+                foreach (ImapMessageInfo info in messages)
                 {
-                    try
-                    {
-                        // Retrieve the collection of messages from the Inbox folder
-                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-
-                        // Iterate through the messages and display basic information
-                        foreach (ExchangeMessageInfo info in messages)
-                        {
-                            Console.WriteLine("Subject: " + info.Subject);
-                            Console.WriteLine("From: " + (info.From != null ? info.From.ToString() : "Unknown"));
-                            Console.WriteLine("Date: " + info.Date);
-                            Console.WriteLine(new string('-', 40));
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // Handle errors that occur during message retrieval
-                        Console.Error.WriteLine("Error listing messages: " + ex.Message);
-                        return;
-                    }
+                    Console.WriteLine($"Message UID: {info.UniqueId}");
                 }
             }
-            catch (Exception ex)
-            {
-                // Handle errors that occur during client creation or other unexpected failures
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            // Write any errors to the error console
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
