@@ -1,38 +1,59 @@
+using Aspose.Email.Clients;
 using System;
 using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-class Program
+namespace AsyncPop3Sample
 {
-    static async Task Main(string[] args)
+    class Program
     {
-        try
+        static async Task Main(string[] args)
         {
-            // Initialize the POP3 client with server details.
-            using (Pop3Client client = new Pop3Client("pop.example.com", 110, "username", "password", SecurityOptions.Auto))
+            try
             {
-                // Asynchronously retrieve the list of messages with main fields.
-                Pop3MessageInfoCollection messages = await client.ListMessagesAsync(Pop3ListFields.Main);
-                Console.WriteLine($"Total messages: {messages.Count}");
+                // POP3 server configuration
+                string host = "pop3.example.com";
+                int port = 110;
+                string username = "user@example.com";
+                string password = "password";
 
-                // Iterate through each message info.
-                foreach (Pop3MessageInfo info in messages)
+                // Initialize POP3 client
+                using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
-
-                    // Asynchronously fetch the full message and display the sender.
-                    using (MailMessage message = await client.FetchMessageAsync(info.SequenceNumber))
+                    try
                     {
-                        Console.WriteLine($"From: {message.From}");
+                        // Validate credentials asynchronously
+                        await client.ValidateCredentialsAsync();
+
+                        // Get total message count asynchronously
+                        int messageCount = await client.GetMessageCountAsync();
+                        Console.WriteLine($"Total messages: {messageCount}");
+
+                        // List messages asynchronously
+                        Pop3MessageInfoCollection messages = await client.ListMessagesAsync();
+
+                        foreach (Pop3MessageInfo messageInfo in messages)
+                        {
+                            // Fetch each message asynchronously
+                            using (MailMessage message = await client.FetchMessageAsync(messageInfo.SequenceNumber))
+                            {
+                                Console.WriteLine($"Subject: {message.Subject}");
+                                Console.WriteLine($"From: {message.From}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
+                        return;
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
