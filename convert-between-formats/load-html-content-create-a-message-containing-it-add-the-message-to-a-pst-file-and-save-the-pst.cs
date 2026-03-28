@@ -1,24 +1,25 @@
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define file paths
-            string htmlFilePath = "message.html";
-            string pstFilePath = "output.pst";
+            // Paths for the HTML source and the PST file
+            string htmlPath = "message.html";
+            string pstPath = "sample.pst";
 
-            // Ensure HTML file exists; create a minimal placeholder if missing
-            if (!File.Exists(htmlFilePath))
+            // Ensure the HTML file exists; create a minimal placeholder if missing
+            if (!File.Exists(htmlPath))
             {
                 try
                 {
-                    File.WriteAllText(htmlFilePath, "<html><body><p>Placeholder content</p></body></html>");
+                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder</p></body></html>");
                 }
                 catch (Exception ex)
                 {
@@ -27,16 +28,37 @@ class Program
                 }
             }
 
-            // Ensure PST file exists; create a new PST if missing
-            if (!File.Exists(pstFilePath))
+            // Read the HTML content
+            string htmlContent;
+            try
+            {
+                htmlContent = File.ReadAllText(htmlPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
+                return;
+            }
+
+            // Open existing PST or create a new one if it does not exist
+            PersonalStorage pst;
+            if (File.Exists(pstPath))
             {
                 try
                 {
-                    using (PersonalStorage pstCreator = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
-                    {
-                        // Create a default Inbox folder
-                        pstCreator.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
-                    }
+                    pst = PersonalStorage.FromFile(pstPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to open PST file: {ex.Message}");
+                    return;
+                }
+            }
+            else
+            {
+                try
+                {
+                    pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
                 }
                 catch (Exception ex)
                 {
@@ -45,69 +67,18 @@ class Program
                 }
             }
 
-            // Load HTML content
-            string htmlContent;
-            try
+            // Ensure the PST object is disposed properly
+            using (pst)
             {
-                htmlContent = File.ReadAllText(htmlFilePath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
-                return;
-            }
-
-            // Create a MapiMessage from the HTML content
-            MapiMessage mapiMessage;
-            try
-            {
-                mapiMessage = new MapiMessage(
-                    "sender@example.com",
-                    "recipient@example.com",
-                    "Sample Subject",
-                    htmlContent,
-                    OutlookMessageFormat.Unicode);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create MapiMessage: {ex.Message}");
-                return;
-            }
-
-            // Add the message to the PST file
-            try
-            {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+                // Create a new MAPI message and set its HTML body
+                using (MapiMessage message = new MapiMessage())
                 {
-                    // Retrieve the Inbox folder (or create if not present)
-                    FolderInfo inboxFolder;
-                    try
-                    {
-                        inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                    }
-                    catch
-                    {
-                        // Fallback: create Inbox folder manually
-                        pst.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
-                        inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                    }
+                    message.Subject = "HTML Message";
+                    message.SetBodyContent(htmlContent, BodyContentType.Html);
 
-                    // Add the message
-                    string entryId = inboxFolder.AddMessage(mapiMessage);
-                    Console.WriteLine($"Message added to PST. EntryId: {entryId}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to add message to PST: {ex.Message}");
-                return;
-            }
-            finally
-            {
-                // Dispose the MapiMessage explicitly
-                if (mapiMessage != null)
-                {
-                    mapiMessage.Dispose();
+                    // Add the message to the root folder of the PST
+                    string entryId = pst.RootFolder.AddMessage(message);
+                    Console.WriteLine($"Message added with EntryId: {entryId}");
                 }
             }
         }
