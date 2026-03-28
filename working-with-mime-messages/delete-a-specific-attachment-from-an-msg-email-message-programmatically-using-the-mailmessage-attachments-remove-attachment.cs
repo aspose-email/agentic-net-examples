@@ -1,55 +1,62 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mime;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgPath = "sample.msg";
+            string msgPath = @"c:\temp\sample.msg";
+            string attachmentNameToRemove = "unwanted.txt";
 
-            // Verify that the MSG file exists
+            // Verify the MSG file exists before attempting to load it.
             if (!File.Exists(msgPath))
             {
                 Console.Error.WriteLine($"Error: File not found – {msgPath}");
                 return;
             }
 
-            // Load the MSG file into a MailMessage instance
-            using (MailMessage message = MailMessage.Load(msgPath))
+            // Load the MSG file into a MailMessage instance.
+            using (MailMessage mailMessage = MailMessage.Load(msgPath))
             {
-                // Identify the attachment to remove (by name)
+                // Locate the attachment with the specified name.
                 Attachment attachmentToRemove = null;
-                foreach (Attachment att in message.Attachments)
+                foreach (Attachment att in mailMessage.Attachments)
                 {
-                    if (att.Name == "remove.txt")
+                    if (string.Equals(att.Name, attachmentNameToRemove, StringComparison.OrdinalIgnoreCase))
                     {
                         attachmentToRemove = att;
                         break;
                     }
                 }
 
+                // If the attachment was found, remove it.
                 if (attachmentToRemove != null)
                 {
-                    // Remove the attachment
-                    message.Attachments.Remove(attachmentToRemove);
-
-                    // Save the modified message back to the same file
-                    message.Save(msgPath, SaveOptions.DefaultMsg);
-                    Console.WriteLine("Attachment removed and message saved.");
+                    mailMessage.Attachments.Remove(attachmentToRemove);
+                    Console.WriteLine($"Attachment \"{attachmentNameToRemove}\" removed.");
                 }
                 else
                 {
-                    Console.WriteLine("Specified attachment not found.");
+                    Console.WriteLine($"Attachment \"{attachmentNameToRemove}\" not found.");
+                }
+
+                // Save the modified message back to the same file.
+                try
+                {
+                    mailMessage.Save(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving file: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
