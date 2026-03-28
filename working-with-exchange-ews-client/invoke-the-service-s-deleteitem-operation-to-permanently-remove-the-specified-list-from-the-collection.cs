@@ -2,37 +2,49 @@ using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailDeleteItemExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Server URI and credentials (replace with real values)
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            try
+            // Create EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
-                // Define service URL and credentials (replace with real values)
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
-
-                // Create EWS client inside a using block to ensure disposal
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+                try
                 {
-                    // Example item URI to delete (replace with actual item URI)
-                    string itemUri = "https://exchange.example.com/EWS/Exchange.asmx/Items/ABCDEF1234567890";
+                    // Retrieve distribution lists
+                    ExchangeDistributionList[] distributionLists = client.ListDistributionLists();
 
-                    // Delete the item permanently
-                    client.DeleteItem(itemUri, DeletionOptions.DeletePermanently);
+                    if (distributionLists == null || distributionLists.Length == 0)
+                    {
+                        Console.WriteLine("No distribution lists found.");
+                        return;
+                    }
 
-                    Console.WriteLine("Item deleted permanently.");
+                    // Select the first list for demonstration
+                    ExchangeDistributionList listToDelete = distributionLists[0];
+                    Console.WriteLine($"Deleting distribution list: {listToDelete.DisplayName}");
+
+                    // Delete permanently
+                    client.DeleteDistributionList(listToDelete, true);
+                    Console.WriteLine("Distribution list deleted permanently.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Operation error: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
