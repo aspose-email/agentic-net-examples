@@ -6,51 +6,31 @@ using Aspose.Email.Clients.Smtp;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Path to the MSG file
             string msgPath = "sample.msg";
 
-            // Verify that the MSG file exists
             if (!File.Exists(msgPath))
             {
                 Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG‑formatted email
-            MailMessage message;
-            try
+            using (MailMessage message = MailMessage.Load(msgPath))
             {
-                message = MailMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
-            }
-
-            // Ensure the MailMessage is disposed after use
-            using (message)
-            {
-                // SMTP server configuration
-                string smtpHost = "smtp.example.com";
-                int smtpPort = 587;
-                SecurityOptions security = SecurityOptions.Auto; // Adjust as needed (e.g., SSLImplicit, StartTLS)
-
-                // Create and configure the SmtpClient
-                using (SmtpClient smtpClient = new SmtpClient(smtpHost, smtpPort, security))
+                using (SmtpClient client = new SmtpClient())
                 {
+                    client.Host = "smtp.example.com";
+                    client.Port = 587;
+                    client.SecurityOptions = SecurityOptions.Auto;
+                    client.Username = "user@example.com";
+                    client.Password = "password";
+
                     try
                     {
-                        // Set authentication credentials (replace with real values)
-                        smtpClient.Username = "user@example.com";
-                        smtpClient.Password = "password";
-
-                        // Send the email
-                        smtpClient.Send(message);
+                        client.Send(message);
                         Console.WriteLine("Message sent successfully.");
                     }
                     catch (Exception ex)
