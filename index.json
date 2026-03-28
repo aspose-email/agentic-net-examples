@@ -3,13 +3,13 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 623,
+  "total_examples": 621,
   "total_categories": 14,
   "last_updated": "2026-03-28",
   "categories": [
     {
       "name": "convert-between-formats",
-      "file_count": 40,
+      "file_count": 39,
       "files": [
         "configure-an-htmlsaveoptions-object-with-custom-rendering-and-resource-settings-to-convert-an-eml-file-to-html.cs",
         "convert-an-eml-file-to-html-format-while-retaining-the-original-message-date-by-setting-preserveoriginaldate-to-true.cs",
@@ -26,7 +26,6 @@
         "load-an-eml-message-and-save-it-as-html-with-utf-8-output-encoding-correctly.cs",
         "load-an-eml-message-and-serialize-it-directly-into-an-oft-file-format-for-further-processing.cs",
         "load-an-eml-message-append-it-to-a-pst-store-and-then-persist-the-updated-pst-file.cs",
-        "load-an-eml-message-convert-it-to-ost-format-and-save-the-resulting-file-to-the-specified-location.cs",
         "load-an-eml-message-embed-its-linked-resources-and-export-the-content-as-a-standalone-html-file.cs",
         "load-an-eml-message-into-memory-and-serialize-it-directly-to-an-msg-file-while-preserving-all-properties.cs",
         "load-an-eml-message-transform-its-contents-and-export-it-as-an-ics-calendar-file.cs",
@@ -55,23 +54,23 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 40
+          "count": 39
         },
         {
           "name": "System.IO",
-          "count": 40
+          "count": 39
         },
         {
           "name": "Aspose.Email",
-          "count": 40
+          "count": 39
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 15
+          "count": 14
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 5
+          "count": 4
         },
         {
           "name": "Aspose.Email.Storage.Mbox",
@@ -151,7 +150,7 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 43,
+      "file_count": 42,
       "files": [
         "access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs",
         "add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs",
@@ -170,7 +169,6 @@
         "fetch-existing-google-calendar-events-and-modify-their-properties-programmatically-using-the-appropriate-api-calls.cs",
         "generate-and-write-email-messages-to-an-mbox-file-adhering-to-the-standard-mailbox-format.cs",
         "implement-a-c-solution-to-convert-thunderbird-email-files-into-compatible-formats-while-preserving-message-integrity.cs",
-        "implement-a-googleuser-class-that-handles-oauth-2-0-authentication-flows-and-token-management-including-token-acquisition.cs",
         "implement-email-file-conversion-in-a-thunderbird-based-application-using-the-c-api-covering-zimbra-integration-overview.cs",
         "implement-functionality-to-relocate-and-remove-calendar-events-within-a-google-calendar-using-the-api.cs",
         "implement-functionality-to-split-an-mbox-storage-file-into-separate-messages-and-provide-the-ability-to-abort-the-splitting.cs",
@@ -200,7 +198,7 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 43
+          "count": 42
         },
         {
           "name": "Aspose.Email",
