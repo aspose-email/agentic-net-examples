@@ -1,40 +1,29 @@
-using System.Net;
 using System;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // EWS service URL and credentials
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Define the EWS endpoint and credentials for the shared mailbox
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            NetworkCredential credentials = new NetworkCredential("username", "password", "domain");
 
-            // Email address of the shared mailbox
-            string sharedMailbox = "shared@example.com";
-
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            // Create the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
-                // Retrieve mailbox information for the shared mailbox
-                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo(sharedMailbox);
-
-                // Get the Inbox folder URI
-                string inboxUri = mailboxInfo.InboxUri;
-
-                Console.WriteLine("Shared mailbox Inbox URI: " + inboxUri);
+                // Retrieve the Inbox folder URI of the shared mailbox
+                string inboxFolderUri = client.MailboxInfo.InboxUri;
+                Console.WriteLine("Inbox folder URI: " + inboxFolderUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
