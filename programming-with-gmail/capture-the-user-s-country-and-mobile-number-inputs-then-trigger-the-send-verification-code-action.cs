@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Clients.Google;
 
 class Program
 {
@@ -15,42 +16,35 @@ class Program
             Console.Write("Enter your mobile number: ");
             string mobileNumber = Console.ReadLine();
 
-            // Generate a 6‑digit verification code
-            Random random = new Random();
-            int verificationCode = random.Next(100000, 1000000);
+            // Generate a simple verification code
+            Random rnd = new Random();
+            int verificationCode = rnd.Next(100000, 999999);
 
-            // Prepare the email message
-            MailMessage message = new MailMessage();
-            message.From = "no-reply@example.com";
-            message.To = "user@example.com"; // Replace with recipient address
-            message.Subject = "Your Verification Code";
-            message.Body = $"Country: {country}\nMobile: {mobileNumber}\nVerification Code: {verificationCode}";
-
-            // SMTP server configuration (replace placeholders with real values)
-            string smtpHost = "smtp.example.com";
-            int smtpPort = 587;
-            string smtpUser = "smtp_user";
-            string smtpPassword = "smtp_password";
-
-            // Send the email using SmtpClient
-            try
+            // Initialize Gmail client with dummy credentials
+            using (IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com"))
             {
-                using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPassword, SecurityOptions.Auto))
+                // Create the email message
+                using (MailMessage message = new MailMessage())
                 {
-                    client.Send(message);
-                }
+                    message.From = "no-reply@example.com";
+                    message.To = "recipient@example.com";
+                    message.Subject = "Your Verification Code";
+                    message.Body = $"Country: {country}\nMobile: {mobileNumber}\nVerification Code: {verificationCode}";
 
-                Console.WriteLine("Verification code sent successfully.");
+                    // Send the message
+                    gmailClient.SendMessage(message);
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error sending email: {ex.Message}");
-                return;
-            }
+
+            Console.WriteLine("Verification code sent successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
