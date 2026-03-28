@@ -10,34 +10,27 @@ class Program
     {
         try
         {
-            // Define SMTP server settings
-            string smtpHost = "smtp.example.com";
-            int smtpPort = 587;
-            string smtpUser = "user@example.com";
-            string smtpPass = "password";
-
-            // Path to the MSG file to be sent
             string msgPath = "email.msg";
 
-            // Verify that the MSG file exists
             if (!File.Exists(msgPath))
             {
                 Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
 
-            // Load the email message from the MSG file
             using (MailMessage message = MailMessage.Load(msgPath))
             {
-                // Create and configure the SMTP client
-                using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, SecurityOptions.Auto))
+                string host = "smtp.example.com";
+                int port = 587;
+                SecurityOptions security = SecurityOptions.Auto;
+
+                using (SmtpClient client = new SmtpClient(host, port, security))
                 {
-                    client.Username = smtpUser;
-                    client.Password = smtpPass;
+                    client.Username = "user@example.com";
+                    client.Password = "password";
 
                     try
                     {
-                        // Send the loaded message
                         client.Send(message);
                         Console.WriteLine("Email sent successfully.");
                     }
