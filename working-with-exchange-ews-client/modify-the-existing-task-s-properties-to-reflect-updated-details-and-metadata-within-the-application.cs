@@ -1,44 +1,61 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
 
-class Program
+public class Program
 {
-    static void Main()
+    public static void Main(string[] args)
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define mailbox URI and credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Initialize the EWS client using the factory method.
+            // Wrap client creation in a try/catch to handle connection/authentication errors.
+            IEWSClient client;
+            try
             {
-                // Build a simple query to filter messages by subject
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.Subject.Contains("Test");
-                MailQuery query = builder.GetQuery();
+                client = EWSClient.GetEWSClient(
+                    "https://example.com/EWS/Exchange.asmx",
+                    new NetworkCredential("username", "password"));
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Failed to create EWS client: " + ex.Message);
+                return;
+            }
 
-                // List messages in the Inbox folder that match the query
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-
-                // Iterate through the messages and display their subjects
-                foreach (ExchangeMessageInfo info in messages)
+            // Ensure the client is disposed after use.
+            using (client)
+            {
+                try
                 {
-                    MailMessage message = client.FetchMessage(info.UniqueUri);
-                    Console.WriteLine("Subject: " + message.Subject);
+                    // List messages in the Inbox folder.
+                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                    if (messages != null && messages.Count > 0)
+                    {
+                        // Fetch the first message using its UniqueUri.
+                        ExchangeMessageInfo firstInfo = messages[0];
+                        using (MailMessage mail = client.FetchMessage(firstInfo.UniqueUri))
+                        {
+                            Console.WriteLine("Subject: " + mail.Subject);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No messages found in the Inbox.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error while accessing mailbox: " + ex.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            // Top-level exception guard.
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
