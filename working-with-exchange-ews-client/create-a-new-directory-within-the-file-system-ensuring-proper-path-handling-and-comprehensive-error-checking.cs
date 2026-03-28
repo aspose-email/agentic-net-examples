@@ -1,44 +1,38 @@
 using System;
 using System.IO;
 
-namespace AsposeEmailDirectoryExample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Define the directory path to create
-                string basePath = Directory.GetCurrentDirectory();
-                string newFolderName = "NewFolder";
-                string newDirectoryPath = Path.Combine(basePath, newFolderName);
+            // Define the full path of the new directory.
+            string newDirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MyNewFolder");
 
-                // Check if the directory already exists
-                if (Directory.Exists(newDirectoryPath))
-                {
-                    Console.WriteLine($"Directory already exists: {newDirectoryPath}");
-                }
-                else
-                {
-                    // Attempt to create the directory with error handling
-                    try
-                    {
-                        DirectoryInfo createdDir = Directory.CreateDirectory(newDirectoryPath);
-                        Console.WriteLine($"Directory created successfully: {createdDir.FullName}");
-                    }
-                    catch (Exception ioEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create directory '{newDirectoryPath}': {ioEx.Message}");
-                        return;
-                    }
-                }
-            }
-            catch (Exception ex)
+            // Ensure the parent directory exists.
+            string parentDirectory = Path.GetDirectoryName(newDirectoryPath);
+            if (!Directory.Exists(parentDirectory))
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                return;
+                Directory.CreateDirectory(parentDirectory);
             }
+
+            // Create the new directory if it does not already exist.
+            if (!Directory.Exists(newDirectoryPath))
+            {
+                Directory.CreateDirectory(newDirectoryPath);
+                Console.WriteLine($"Directory created: {newDirectoryPath}");
+            }
+            else
+            {
+                Console.WriteLine($"Directory already exists: {newDirectoryPath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Output any errors to the error stream and exit gracefully.
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            return;
         }
     }
 }
