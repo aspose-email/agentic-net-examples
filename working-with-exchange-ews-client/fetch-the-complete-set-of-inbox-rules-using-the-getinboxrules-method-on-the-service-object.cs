@@ -1,49 +1,44 @@
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
 
-public class Program
+namespace AsposeEmailInboxRulesSample
 {
-    public static void Main()
+    class Program
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-        try
+        static void Main()
         {
-            // Service URL and credentials (replace with actual values)
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create the EWS client and ensure it is disposed properly
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            try
             {
+                // Initialize the EWS client inside a nested try/catch to handle connection issues.
                 try
                 {
-                    // Fetch all inbox rules
-                    InboxRule[] rules = client.GetInboxRules();
-
-                    // Display each rule's details
-                    foreach (InboxRule rule in rules)
+                    // Replace the service URL, username, and password with valid credentials.
+                    using (IEWSClient client = EWSClient.GetEWSClient(
+                        "https://exchange.example.com/EWS/Exchange.asmx",
+                        new NetworkCredential("username", "password")))
                     {
-                        Console.WriteLine("Rule Name: " + rule.DisplayName);
-                        Console.WriteLine("Enabled: " + rule.IsEnabled);
-                        Console.WriteLine("Priority: " + rule.Priority);
-                        Console.WriteLine(new string('-', 40));
+                        // Retrieve all inbox rules for the default mailbox.
+                        InboxRule[] inboxRules = client.GetInboxRules();
+
+                        Console.WriteLine($"Total inbox rules: {inboxRules.Length}");
+                        foreach (InboxRule rule in inboxRules)
+                        {
+                            Console.WriteLine($"Rule: {rule.DisplayName}, Enabled: {rule.IsEnabled}");
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Handle errors while retrieving rules
-                    Console.Error.WriteLine("Error retrieving inbox rules: " + ex.Message);
+                    Console.Error.WriteLine($"Error initializing or using EWS client: {ex.Message}");
+                    return;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // Handle errors during client creation or other failures
-            Console.Error.WriteLine("Failed to create EWS client: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
