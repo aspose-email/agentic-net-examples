@@ -4,66 +4,36 @@ using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Exchange Web Services endpoint and credentials
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            try
+            // Create and connect the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
             {
-                // Define mailbox connection parameters
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
+                // Identify the distribution list to be removed (replace with actual Id)
+                string distributionListId = "DL_ID";
 
-                // Create network credentials (avoid naming conflict with any existing 'credential' variable)
-                NetworkCredential networkCredential = new NetworkCredential(username, password);
+                // Prepare the distribution list object with the known Id
+                ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                distributionList.Id = distributionListId;
 
-                // Initialize EWS client inside a using block for proper disposal
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, networkCredential))
-                {
-                    // List all private distribution lists
-                    ExchangeDistributionList[] distributionLists = client.ListDistributionLists();
+                // Delete the distribution list permanently
+                client.DeleteDistributionList(distributionList, true);
 
-                    // Find the distribution list to remove (replace with actual display name)
-                    ExchangeDistributionList targetList = null;
-                    foreach (ExchangeDistributionList dl in distributionLists)
-                    {
-                        if (dl.DisplayName == "My Distribution List")
-                        {
-                            targetList = dl;
-                            break;
-                        }
-                    }
-
-                    if (targetList == null)
-                    {
-                        Console.WriteLine("Distribution list not found.");
-                        return;
-                    }
-
-                    // Fetch members of the distribution list
-                    MailAddressCollection members = client.FetchDistributionList(targetList);
-
-                    // Remove all members from the distribution list (if any)
-                    if (members != null && members.Count > 0)
-                    {
-                        client.DeleteFromDistributionList(targetList, members);
-                    }
-
-                    // Delete the distribution list permanently
-                    client.DeleteDistributionList(targetList, true);
-
-                    Console.WriteLine("Distribution list removed successfully.");
-                }
+                Console.WriteLine("Distribution list deleted successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
