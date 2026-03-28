@@ -1,56 +1,55 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-namespace AsposeEmailGraphExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // Initialize token provider (replace placeholders with real values)
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken");
+            // File path for the MSG message
+            string msgPath = "sample.msg";
 
+            // Verify the MSG file exists
+            if (!File.Exists(msgPath))
+            {
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
+            }
+
+            // Load the MSG message
+            using (MailMessage message = MailMessage.Load(msgPath))
+            {
+                // Extract the sender address
+                MailAddress sender = message.From;
+
+                // Create a classification override (e.g., classify as Focused)
+                ClassificationOverride classificationOverride = new ClassificationOverride(sender, ClassificationType.Focused);
+
+                // Prepare token provider (replace placeholders with real values)
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+                // Tenant identifier (replace with actual tenant ID)
                 string tenantId = "tenantId";
 
-                // Create Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+                // Initialize Graph client
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
                 {
-                    // Path to the MSG file
-                    string msgPath = "message.msg";
-
-                    // Verify the MSG file exists
-                    if (!File.Exists(msgPath))
-                    {
-                        Console.Error.WriteLine($"File not found: {msgPath}");
-                        return;
-                    }
-
-                    // Load the MSG file into a MapiMessage
-                    using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
-                    {
-                        // Target folder identifier (e.g., "Inbox")
-                        string folderId = "Inbox";
-
-                        // Create (or update) the message in the specified folder
-                        MapiMessage createdMessage = graphClient.CreateMessage(folderId, mapiMessage);
-
-                        Console.WriteLine($"Message created. ItemId: {createdMessage.ItemId}");
-                    }
+                    // Create or update the override
+                    ClassificationOverride result = client.CreateOrUpdateOverride(classificationOverride);
+                    Console.WriteLine($"Override created/updated. ID: {result.Id}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
