@@ -1,47 +1,44 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-namespace Example
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Service URL and user credentials
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+            // Email address of the shared mailbox
+            string sharedMailbox = "shared@example.com";
 
-            try
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // EWS endpoint of the shared mailbox
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                // Credentials of a user who has access to the shared mailbox
-                NetworkCredential credentials = new NetworkCredential("user@example.com", "password");
+                // Obtain mailbox information for the shared mailbox
+                ExchangeMailboxInfo sharedInfo = client.GetMailboxInfo(sharedMailbox);
 
-                // Create and dispose the EWS client
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                // List messages in the Inbox of the shared mailbox
+                ExchangeMessageInfoCollection messageInfos = client.ListMessages(sharedInfo.InboxUri);
+
+                foreach (ExchangeMessageInfo messageInfo in messageInfos)
                 {
-                    // Retrieve messages from the Inbox folder of the shared mailbox
-                    ExchangeMessageInfoCollection messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
-
-                    foreach (ExchangeMessageInfo info in messageInfos)
+                    // Fetch the full message using its unique URI
+                    using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
                     {
-                        // Fetch the full mail message for each item
-                        using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                        {
-                            Console.WriteLine("Subject: " + message.Subject);
-                            Console.WriteLine("From: " + (message.From != null ? message.From.Address : "Unknown"));
-                            Console.WriteLine("Received: " + message.Date);
-                            Console.WriteLine(new string('-', 40));
-                        }
+                        Console.WriteLine("Subject: " + (message.Subject ?? string.Empty));
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
