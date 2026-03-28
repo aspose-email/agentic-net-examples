@@ -1,7 +1,8 @@
 using System;
 using System.Net;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Graph;
+using Aspose.Email;
+using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -9,40 +10,24 @@ class Program
     {
         try
         {
-            // Initialize token provider (replace with real credentials)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken"
-            );
+            // Initialize credentials (replace with real values)
+            NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            // Create Graph client
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "tenantId"))
+            // Create the EWS client (variable name must be 'client')
+            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
             {
-                try
+                // Create a MAPI message to be stored as a list item
+                using (MapiMessage message = new MapiMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is a test message."))
                 {
-                    // Prepare a new task list
-                    TaskListInfo newList = new TaskListInfo();
-                    // Set required properties (e.g., display name) – adjust as per actual API
-                    // newList.DisplayName = "My Sample Task List";
-
-                    // Create the task list on the server
-                    TaskListInfo createdList = client.CreateTaskList(newList);
-
-                    Console.WriteLine("Task list created successfully.");
-                    // Optionally output identifier
-                    // Console.WriteLine("List ID: " + createdList.Id);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error during Graph operation: " + ex.Message);
-                    return;
+                    // Create the item on the server (default folder)
+                    string itemId = client.CreateItem(message);
+                    Console.WriteLine("Item created with ID: " + itemId);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
