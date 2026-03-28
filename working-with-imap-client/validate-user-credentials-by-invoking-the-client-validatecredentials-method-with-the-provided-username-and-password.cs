@@ -1,35 +1,30 @@
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
-namespace Example
+namespace ValidateCredentialsSample
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             try
             {
-                // Connection parameters
+                // Define server and user credentials
                 string host = "imap.example.com";
+                int port = 993;
                 string username = "user@example.com";
                 string password = "password";
 
-                // Create ImapClient and validate credentials
-                using (Aspose.Email.Clients.Imap.ImapClient imapClient = new Aspose.Email.Clients.Imap.ImapClient(host, username, password))
+                // Create the IMAP client and ensure it is disposed properly
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
                 {
                     try
                     {
-                        bool isValid = imapClient.ValidateCredentials();
-                        if (isValid)
-                        {
-                            Console.WriteLine("Credentials are valid.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid credentials.");
-                        }
+                        // Validate the provided credentials
+                        bool isValid = client.ValidateCredentials();
+                        Console.WriteLine(isValid ? "Credentials are valid." : "Credentials are invalid.");
                     }
                     catch (Exception ex)
                     {
