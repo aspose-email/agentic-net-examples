@@ -4,73 +4,69 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgPath = "sample.msg";
+            // Input MSG file path
+            string inputMsgPath = "message.msg";
 
-            if (!File.Exists(msgPath))
+            // Verify the input file exists
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
                 return;
             }
 
-            // Load the MSG file as a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(msgPath))
+            // Output directory for linked resources
+            string outputDir = "LinkedResources";
+            if (!Directory.Exists(outputDir))
             {
-                string outputDir = "LinkedResources";
+                Directory.CreateDirectory(outputDir);
+            }
 
-                if (!Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-
+            // Load the MSG file into a MailMessage
+            using (MailMessage mailMessage = MailMessage.Load(inputMsgPath))
+            {
+                // Iterate through each linked resource
                 int index = 0;
-                foreach (LinkedResource linkedResource in mailMessage.LinkedResources)
+                foreach (LinkedResource lr in mailMessage.LinkedResources)
                 {
-                    string extension = GetExtension(linkedResource.ContentType.MediaType);
-                    string filePath = Path.Combine(outputDir, $"resource_{index}{extension}");
-
-                    try
+                    // Build a file name for the resource
+                    string fileName = $"resource_{index}";
+                    // Try to use ContentId if available
+                    if (!string.IsNullOrEmpty(lr.ContentId))
                     {
-                        linkedResource.Save(filePath);
-                        Console.WriteLine($"Saved linked resource to {filePath}");
+                        fileName = lr.ContentId;
                     }
-                    catch (Exception ex)
+                    // Append appropriate extension if known (fallback to .bin)
+                    string extension = ".bin";
+                    if (!string.IsNullOrEmpty(lr.ContentType?.MediaType))
                     {
-                        Console.Error.WriteLine($"Error saving linked resource: {ex.Message}");
+                        // Simple mapping for common types
+                        if (lr.ContentType.MediaType.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase))
+                            extension = ".jpg";
+                        else if (lr.ContentType.MediaType.Equals("image/png", StringComparison.OrdinalIgnoreCase))
+                            extension = ".png";
+                        else if (lr.ContentType.MediaType.Equals("image/gif", StringComparison.OrdinalIgnoreCase))
+                            extension = ".gif";
+                    }
+                    string outputPath = Path.Combine(outputDir, fileName + extension);
+
+                    // Save the linked resource to disk
+                    using (LinkedResource resource = lr)
+                    {
+                        resource.Save(outputPath);
                     }
 
+                    Console.WriteLine($"Saved linked resource to: {outputPath}");
                     index++;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    static string GetExtension(string mediaType)
-    {
-        if (string.IsNullOrEmpty(mediaType))
-            return string.Empty;
-
-        switch (mediaType.ToLowerInvariant())
-        {
-            case "image/jpeg":
-                return ".jpg";
-            case "image/png":
-                return ".png";
-            case "image/gif":
-                return ".gif";
-            case "text/plain":
-                return ".txt";
-            case "text/html":
-                return ".html";
-            default:
-                return ".bin";
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
