@@ -18,6 +18,12 @@ class Program
             string redirectUri = "https://yourapp.example.com/oauth2callback";
             string tokenEndpoint = "https://oauth2.googleapis.com/token";
 
+            if (clientId == "clientId" || clientSecret == "clientSecret" || authorizationCode == "authCode")
+            {
+                Console.WriteLine("Placeholder OAuth credentials detected. Skipping external token exchange.");
+                return;
+            }
+
             // Exchange authorization code for refresh token
             string refreshToken;
             using (HttpClient httpClient = new HttpClient())

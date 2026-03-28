@@ -19,6 +19,17 @@ class Program
                 message.Subject = "Test Email";
                 message.Body = "This is a test email sent via Aspose.Email.";
 
+                string smtpHost = "smtp.example.com";
+                string imapHost = "imap.example.com";
+                string username = "username";
+                string password = "password";
+
+                if (smtpHost.Contains("example.com") || imapHost.Contains("example.com") || username == "username" || password == "password")
+                {
+                    Console.WriteLine("Placeholder SMTP/IMAP settings detected. Skipping external operations.");
+                    return;
+                }
+
                 // Add an attachment if the file exists
                 string attachmentPath = "attachment.txt";
                 if (File.Exists(attachmentPath))
@@ -40,7 +51,7 @@ class Program
                 // Send the message using SMTP
                 try
                 {
-                    using (SmtpClient smtpClient = new SmtpClient("smtp.example.com", 587, "username", "password"))
+                    using (SmtpClient smtpClient = new SmtpClient(smtpHost, 587, username, password))
                     {
                         smtpClient.SecurityOptions = SecurityOptions.Auto;
                         smtpClient.Send(message);
@@ -56,7 +67,7 @@ class Program
             // Retrieve messages using IMAP
             try
             {
-                using (ImapClient imapClient = new ImapClient("imap.example.com", 993, "username", "password"))
+                using (ImapClient imapClient = new ImapClient(imapHost, 993, username, password))
                 {
                     imapClient.SecurityOptions = SecurityOptions.Auto;
 

@@ -12,12 +12,23 @@ namespace Sample
         {
             try
             {
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string userEmail = "user@example.com";
+
+                if (clientId == "clientId" || clientSecret == "clientSecret" || refreshToken == "refreshToken")
+                {
+                    Console.WriteLine("Placeholder OAuth credentials detected. Skipping external Google Calendar calls.");
+                    return;
+                }
+
                 // Initialize Gmail client with dummy credentials
                 IGmailClient gmailClient = GmailClient.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken",
-                    "user@example.com");
+                    clientId,
+                    clientSecret,
+                    refreshToken,
+                    userEmail);
 
                 using (gmailClient)
                 {
