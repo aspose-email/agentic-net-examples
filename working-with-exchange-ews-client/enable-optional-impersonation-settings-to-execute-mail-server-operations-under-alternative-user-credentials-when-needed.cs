@@ -8,37 +8,44 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Mailbox URI and credentials for the service account
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("admin@example.com", "password");
-
-            // Create the EWS client (implements IEWSClient)
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Initialize EWS client with placeholder credentials
+            using (IEWSClient client = EWSClient.GetEWSClient(
+                "https://exchange.example.com/EWS/Exchange.asmx",
+                new NetworkCredential("username", "password")))
             {
-                // Impersonate another user (e.g., using SMTP address)
-                client.ImpersonateUser(ItemChoice.SmtpAddress, "impersonated@example.com");
-
-                // List messages in the impersonated user's Inbox
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                foreach (ExchangeMessageInfo info in messages)
+                try
                 {
-                    Console.WriteLine("Subject: " + info.Subject);
-                    Console.WriteLine("From: " + info.From);
-                    Console.WriteLine("Received: " + info.Date);
-                    Console.WriteLine(new string('-', 40));
-                }
+                    // Enable impersonation using primary SMTP address
+                    client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, "impersonated@example.com");
 
-                // Reset impersonation when done
-                client.ResetImpersonation();
+                    // List messages in the impersonated user's Inbox
+                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                    if (messages != null && messages.Count > 0)
+                    {
+                        // Fetch the first message using its UniqueUri
+                        MailMessage firstMessage = client.FetchMessage(messages[0].UniqueUri);
+                        Console.WriteLine("Subject: " + firstMessage.Subject);
+                    }
+                    else
+                    {
+                        Console.WriteLine("No messages found in the Inbox.");
+                    }
+
+                    // Reset impersonation after operation
+                    client.ResetImpersonation();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error during EWS operations: " + ex.Message);
+                    return;
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine("Failed to initialize EWS client: " + ex.Message);
         }
     }
 }
