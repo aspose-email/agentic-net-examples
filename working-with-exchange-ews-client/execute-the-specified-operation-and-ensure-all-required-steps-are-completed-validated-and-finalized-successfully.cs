@@ -3,48 +3,49 @@ using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Initialize the EWS client using the factory method.
+            // Replace placeholder values with actual server URL and credentials.
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            try
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
             {
-                // Define connection parameters (replace with real values or keep placeholders)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
-
-                // Create the EWS client using the factory method (returns IEWSClient)
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+                try
                 {
-                    // Build a simple query to find messages with a specific subject keyword
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.Subject.Contains("Invoice");
-                    MailQuery query = builder.GetQuery();
+                    // Retrieve mailbox information.
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
 
-                    // List messages from the Inbox that match the query
-                    var messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
+                    // List messages in the Inbox folder.
+                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
 
-                    // Output basic metadata for each message
-                    foreach (var info in messages)
+                    Console.WriteLine("Total messages in Inbox: " + messages.Count);
+
+                    if (messages.Count > 0)
                     {
-                        Console.WriteLine($"Subject: {info.Subject}");
-                        Console.WriteLine($"From: {info.From}");
-                        Console.WriteLine($"Received: {info.Date}");
-                        Console.WriteLine(new string('-', 40));
+                        // Fetch the first message using its UniqueUri.
+                        MailMessage firstMessage = client.FetchMessage(messages[0].UniqueUri);
+                        Console.WriteLine("Subject of first message: " + firstMessage.Subject);
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("EWS operation failed: " + ex.Message);
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            return;
         }
     }
 }
