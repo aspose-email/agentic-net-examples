@@ -1,48 +1,38 @@
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Tools.Search;
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Initialize EWS client with placeholder credentials
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://example.com/EWS/Exchange.asmx",
-                new NetworkCredential("user@example.com", "password")))
+            // Initialize EWS client using the correct factory method
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            NetworkCredential credentials = new NetworkCredential("username", "password");
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
-                // Build an AQS query: Subject contains "Invoice" AND From contains "john@example.com"
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.Subject.Contains("Invoice");
-                builder.From.Contains("john@example.com");
+                // Build an AQS query (e.g., subject contains "Report" and from a specific sender)
+                MailQueryBuilder builder = new MailQueryBuilder();
+                builder.Subject.Contains("Report");
+                builder.From.Contains("sender@example.com");
                 MailQuery query = builder.GetQuery();
 
-                // List messages from the Inbox that match the query (non-recursive)
-                ExchangeMessageInfoCollection messages = client.ListMessages(
-                    client.MailboxInfo.InboxUri,
-                    query,
-                    false);
-
-                // Output basic metadata for each matching message
+                // List messages in the Inbox that match the query (non‑recursive)
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
                 foreach (ExchangeMessageInfo info in messages)
                 {
-                    Console.WriteLine("Subject: " + info.Subject);
-                    Console.WriteLine("From: " + info.From);
-                    Console.WriteLine("Received: " + info.Date);
-                    Console.WriteLine(new string('-', 40));
+                    Console.WriteLine($"Subject: {info.Subject}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
