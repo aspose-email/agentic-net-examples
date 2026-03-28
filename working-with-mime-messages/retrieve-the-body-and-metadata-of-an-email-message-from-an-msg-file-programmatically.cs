@@ -1,43 +1,36 @@
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailMsgReader
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgFilePath = "message.msg";
-
-            if (!File.Exists(msgFilePath))
+            try
             {
-                Console.Error.WriteLine("File not found: " + msgFilePath);
-                return;
-            }
+                string msgPath = "message.msg";
 
-            using (MapiMessage message = MapiMessage.Load(msgFilePath))
-            {
-                string subject = message.Subject ?? string.Empty;
-                string sender = message.SenderName ?? message.SenderEmailAddress ?? string.Empty;
-                string body = message.Body ?? string.Empty;
-
-                Console.WriteLine("Subject: " + subject);
-                Console.WriteLine("From: " + sender);
-                Console.WriteLine("Body: " + body);
-
-                foreach (MapiAttachment attachment in message.Attachments)
+                if (!File.Exists(msgPath))
                 {
-                    Console.WriteLine("Attachment: " + attachment.FileName);
-                    // Example: save attachment to current directory
-                    string attachmentPath = Path.Combine(Directory.GetCurrentDirectory(), attachment.FileName);
-                    attachment.Save(attachmentPath);
+                    Console.Error.WriteLine($"File not found: {msgPath}");
+                    return;
+                }
+
+                using (MapiMessage msg = MapiMessage.Load(msgPath))
+                {
+                    Console.WriteLine($"Subject: {msg.Subject}");
+                    Console.WriteLine($"From: {msg.SenderName} <{msg.SenderEmailAddress}>");
+                    Console.WriteLine($"Sent: {msg.ClientSubmitTime}");
+                    Console.WriteLine($"Body: {msg.Body}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
