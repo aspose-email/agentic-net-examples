@@ -8,26 +8,19 @@ class Program
     {
         try
         {
+            // Create an EmailValidator instance
+            EmailValidator validator = new EmailValidator();
+
             // Email address to validate
             string email = "example@example.com";
 
-            // Create an EmailValidator instance (not IDisposable)
-            EmailValidator validator = new EmailValidator();
-
-            // Perform validation
+            // Validate the email address
             ValidationResult result;
             validator.Validate(email, out result);
 
-            // Display validation outcome
-            Console.WriteLine("ReturnCode: " + result.ReturnCode);
-            if (!string.IsNullOrEmpty(result.Message))
-            {
-                Console.WriteLine("Message: " + result.Message);
-            }
-            if (result.LastException != null)
-            {
-                Console.WriteLine("Exception: " + result.LastException.Message);
-            }
+            // Display the validation outcome
+            Console.WriteLine("Return Code: " + result.ReturnCode);
+            Console.WriteLine("Message: " + result.Message);
         }
         catch (Exception ex)
         {
