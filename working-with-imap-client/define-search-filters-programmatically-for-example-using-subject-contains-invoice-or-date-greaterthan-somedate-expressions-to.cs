@@ -1,64 +1,51 @@
+using Aspose.Email.Clients;
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
-namespace AsposeEmailSearchExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            // Connection parameters (replace with real values)
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
 
-            try
+            // Use ImapClient inside a using block for proper disposal
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
-                // Define EWS service URL and credentials
-                string serviceUrl = "https://example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
-
-                // Create and dispose the EWS client safely
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+                try
                 {
-                    try
-                    {
-                        // Build the search query: Subject contains "Invoice" and SentDate within the last 30 days
-                        ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                        builder.Subject.Contains("Invoice");
-                        DateTime fromDate = DateTime.UtcNow.AddDays(-30);
-                        builder.SentDate.Greater(fromDate);
-                        MailQuery query = builder.GetQuery();
+                    // Build a search query: Subject contains "Invoice" and SentDate >= 1 Jan 2023
+                    ImapQueryBuilder builder = new ImapQueryBuilder();
+                    builder.Subject.Contains("Invoice");
+                    DateTime sinceDate = new DateTime(2023, 1, 1);
+                    builder.SentDate.Since(sinceDate);
+                    MailQuery query = builder.GetQuery();
 
-                        // Retrieve messages from the Inbox that match the query
-                        ExchangeMessageInfoCollection messageInfos = client.ListMessages(client.MailboxInfo.InboxUri, query);
+                    // Retrieve matching messages
+                    ImapMessageInfoCollection messages = client.ListMessages(query);
 
-                        // Iterate over the results and display basic information
-                        foreach (ExchangeMessageInfo info in messageInfos)
-                        {
-                            // Fetch the full message to access its properties
-                            using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                            {
-                                Console.WriteLine($"Subject: {message.Subject}");
-                                Console.WriteLine($"From: {message.From}");
-                                Console.WriteLine($"Sent: {message.Date}");
-                                Console.WriteLine(new string('-', 40));
-                            }
-                        }
-                    }
-                    catch (Exception ex)
+                    // Display basic information about each matched message
+                    foreach (ImapMessageInfo info in messages)
                     {
-                        Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
-                        return;
+                        Console.WriteLine($"UID: {info.UniqueId}, Subject: {info.Subject}");
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"IMAP operation error: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unhandled error: {ex.Message}");
         }
     }
 }
