@@ -8,19 +8,28 @@ class Program
     {
         try
         {
-            string emlPath = "input.eml";
-            string msgPath = "output.msg";
+            // Define input and output file paths
+            string inputPath = "input.eml";
+            string outputPath = "output.msg";
 
-            if (!File.Exists(emlPath))
+            // Verify that the input EML file exists
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file not found: {emlPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            using (MailMessage message = MailMessage.Load(emlPath))
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                // Export the loaded EML message to MSG format
-                message.Save(msgPath, SaveOptions.DefaultMsg);
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Load the EML file and save it as MSG
+            using (MailMessage message = MailMessage.Load(inputPath))
+            {
+                message.Save(outputPath, SaveOptions.DefaultMsg);
             }
         }
         catch (Exception ex)
