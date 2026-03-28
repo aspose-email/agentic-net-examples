@@ -1,49 +1,49 @@
 using System;
-using System.Net;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Google;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Initialize Gmail client with placeholder credentials
+            using (IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com"))
             {
-                // Connection parameters (replace with actual values)
-                string mailboxUri = "https://exchange.example.com/exchange/user@example.com/";
-                string username = "user@example.com";
-                string password = "password";
-
-                // Create network credentials
-                System.Net.NetworkCredential credentials = new System.Net.NetworkCredential(username, password);
-
-                // Initialize Exchange WebDAV client
-                using (Aspose.Email.Clients.Exchange.Dav.ExchangeClient client = new Aspose.Email.Clients.Exchange.Dav.ExchangeClient(mailboxUri, credentials))
+                try
                 {
-                    // Retrieve messages from the Inbox folder
-                    Aspose.Email.Clients.Exchange.ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
+                    // Retrieve list of message infos
+                    List<GmailMessageInfo> messageInfos = gmailClient.ListMessages();
 
-                    // Iterate through each message info
-                    foreach (Aspose.Email.Clients.Exchange.ExchangeMessageInfo info in messages)
+                    foreach (GmailMessageInfo info in messageInfos)
                     {
-                        // Fetch the full message to access the plain‑text body
-                        using (Aspose.Email.MailMessage message = client.FetchMessage(info.UniqueUri))
-                        {
-                            Console.WriteLine("Subject: " + info.Subject);
-                            Console.WriteLine("From: " + info.From);
-                            Console.WriteLine("Body: " + message.Body);
-                            Console.WriteLine(new string('-', 40));
-                        }
+                        // Fetch the full message to access its plain‑text body
+                        MailMessage fullMessage = gmailClient.FetchMessage(info.Id);
+                        string subject = fullMessage.Subject ?? string.Empty;
+                        string body = fullMessage.Body ?? string.Empty;
+
+                        Console.WriteLine("Subject: {0}", subject);
+                        Console.WriteLine("Body: {0}", body);
+                        Console.WriteLine(new string('-', 40));
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error while listing or fetching messages: " + ex.Message);
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
