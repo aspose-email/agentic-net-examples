@@ -5,42 +5,50 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string msgPath = "sample.msg";
+            string msgFilePath = "outlookmessage.msg";
 
-            if (!File.Exists(msgPath))
+            if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                Console.Error.WriteLine($"File not found: {msgFilePath}");
                 return;
             }
 
-            using (MapiMessage message = MapiMessage.Load(msgPath))
+            try
             {
-                Console.WriteLine($"Subject: {message.Subject}");
-                Console.WriteLine($"From: {message.SenderName}");
-                Console.WriteLine($"Body: {message.Body}");
-
-                foreach (MapiAttachment attachment in message.Attachments)
+                using (MapiMessage message = MapiMessage.Load(msgFilePath))
                 {
-                    string attachmentPath = attachment.FileName;
-                    try
+                    Console.WriteLine("Subject: " + message.Subject);
+                    Console.WriteLine("From: " + message.SenderEmailAddress);
+                    Console.WriteLine("Body: " + message.Body);
+
+                    foreach (MapiAttachment attachment in message.Attachments)
                     {
-                        attachment.Save(attachmentPath);
-                        Console.WriteLine($"Saved attachment: {attachmentPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save attachment {attachment.FileName}: {ex.Message}");
+                        Console.WriteLine("Attachment: " + attachment.FileName);
+                        try
+                        {
+                            attachment.Save(attachment.FileName);
+                            Console.WriteLine($"Saved attachment to {attachment.FileName}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save attachment {attachment.FileName}: {ex.Message}");
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
