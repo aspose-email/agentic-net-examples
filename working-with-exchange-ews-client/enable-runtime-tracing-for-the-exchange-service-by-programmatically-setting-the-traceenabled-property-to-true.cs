@@ -1,4 +1,3 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
@@ -8,30 +7,33 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Initialize EWS client with placeholder credentials
+            // Initialize the EWS client with placeholder credentials.
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             NetworkCredential credentials = new NetworkCredential("username", "password");
 
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
-                // Enable tracing/logging by specifying a log file.
-                // The TraceEnabled property is not available in this version;
-                // using LogFileName and UseDateInLogFileName provides similar tracing.
-                client.LogFileName = "ews_trace.log";
-                client.UseDateInLogFileName = true;
+                // Enable logging (runtime tracing) by specifying a log file.
+                client.LogFileName = "exchange_trace.log";
+                client.UseDateInLogFileName = true; // optional: include date in log file name
 
-                // Example operation to verify the client works (list inbox messages)
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                Console.WriteLine($"Retrieved {messages.Count} messages from the inbox.");
+                // Example operation to verify the client works.
+                try
+                {
+                    string versionInfo = client.GetVersionInfo();
+                    Console.WriteLine($"Exchange server version: {versionInfo}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during operation: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
