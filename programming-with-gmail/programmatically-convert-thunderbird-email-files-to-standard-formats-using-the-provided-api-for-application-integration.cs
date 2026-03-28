@@ -10,34 +10,51 @@ class Program
     {
         try
         {
-            // Paths for the source Thunderbird MBOX file and the target PST file
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
+            // Define input MBOX file and output PST file paths
+            string inputMboxPath = "input.mbox";
+            string outputPstPath = "output.pst";
 
-            // Verify that the source MBOX file exists
-            if (!File.Exists(mboxPath))
+            // Verify that the input file exists
+            if (!File.Exists(inputMboxPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {mboxPath}");
+                Console.Error.WriteLine($"Error: Input file not found – {inputMboxPath}");
                 return;
             }
 
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPstPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(pstDirectory);
+                try
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Error creating output directory: {dirEx.Message}");
+                    return;
+                }
             }
 
             // Perform the conversion from MBOX to PST
-            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath))
+            try
             {
-                Console.WriteLine("MBOX to PST conversion completed successfully.");
+                using (PersonalStorage pst = MailStorageConverter.MboxToPst(inputMboxPath, outputPstPath))
+                {
+                    // Conversion succeeded; additional processing can be added here if needed
+                    Console.WriteLine("MBOX to PST conversion completed successfully.");
+                }
+            }
+            catch (Exception convEx)
+            {
+                Console.Error.WriteLine($"Error during conversion: {convEx.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            // Global exception handling
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            return;
         }
     }
 }
