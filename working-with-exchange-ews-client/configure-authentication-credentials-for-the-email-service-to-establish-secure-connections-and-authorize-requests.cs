@@ -1,34 +1,31 @@
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define the EWS service URL
+            // Define connection parameters
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Create network credentials
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Initialize the EWS client with the service URL and credentials
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Initialize the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // The client is now authenticated and ready for operations
-                Console.WriteLine("EWS client authenticated successfully.");
-                // Example operation: list messages in the Inbox folder
-                // (Uncomment the following lines if you wish to retrieve messages)
-                // var messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                // foreach (var info in messages)
-                // {
-                //     Console.WriteLine($"Subject: {info.Subject}");
-                // }
+                // Validate the supplied credentials
+                bool credentialsValid = false;
+                if (client is EmailClient emailClient)
+                {
+                    credentialsValid = emailClient.ValidateCredentials();
+                }
+
+                Console.WriteLine(credentialsValid ? "Credentials are valid." : "Invalid credentials.");
+                // Further EWS operations can be performed here
             }
         }
         catch (Exception ex)
