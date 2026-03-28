@@ -1,40 +1,39 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-            try
+            // Initialize the EWS client (replace placeholders with real values)
+            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
             {
-                // Mailbox connection parameters (replace with real values)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
-
-                // Create the EWS client using the factory method
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                try
                 {
-                    // Identifier of the conversation to be removed (replace with a real ID)
-                    string conversationId = "AAMkAD...";
+                    // Folder URI where the conversation resides (e.g., Inbox)
+                    string folderUri = client.MailboxInfo.InboxUri;
 
-                    // Delete all items belonging to the specified conversation.
-                    // This operation removes the messages and clears associated metadata.
-                    client.DeleteConversationItems(conversationId);
+                    // Identify the conversation to delete.
+                    // In a real scenario, you would obtain this ID from FindConversations or other logic.
+                    string conversationId = "YOUR_CONVERSATION_ID";
+
+                    // Delete all items belonging to the specified conversation within the folder.
+                    client.DeleteConversationItems(conversationId, folderUri);
 
                     Console.WriteLine("Conversation items deleted successfully.");
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during conversation deletion: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
