@@ -1,26 +1,33 @@
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
 namespace ImapPrerequisiteCheck
 {
-    public class Program
+    class Program
     {
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
             try
             {
-                // Define connection parameters
+                // Define connection parameters (replace with real values as needed)
                 string host = "imap.example.com";
                 int port = 993;
                 string username = "user@example.com";
                 string password = "password";
+                SecurityOptions security = SecurityOptions.Auto;
 
-                // Verify that required parameters are provided
+                // Verify that all required parameters are provided
                 if (string.IsNullOrWhiteSpace(host))
                 {
                     Console.Error.WriteLine("IMAP host is not specified.");
+                    return;
+                }
+
+                if (port <= 0 || port > 65535)
+                {
+                    Console.Error.WriteLine("IMAP port is invalid.");
                     return;
                 }
 
@@ -36,36 +43,19 @@ namespace ImapPrerequisiteCheck
                     return;
                 }
 
-                // Create the IMAP client inside a using block to ensure disposal
-                using (Aspose.Email.Clients.Imap.ImapClient imapClient = new Aspose.Email.Clients.Imap.ImapClient(host, port, username, password, Aspose.Email.Clients.SecurityOptions.SSLImplicit))
+                // Create and use the IMAP client inside a using block to ensure disposal
+                using (ImapClient client = new ImapClient(host, port, username, password, security))
                 {
-                    // Optional: enable logging for troubleshooting
-                    imapClient.EnableLogger = true;
-                    imapClient.LogFileName = "imap_log.txt";
-
-                    // Verify the connection by sending a NOOP command
                     try
                     {
-                        imapClient.Noop();
-                        Console.WriteLine("IMAP connection verified successfully.");
+                        // Attempt to select the INBOX folder to verify connection and credentials
+                        client.SelectFolder("INBOX");
+                        Console.WriteLine("IMAP connection and credentials are valid. INBOX folder selected successfully.");
                     }
-                    catch (Exception ex)
+                    catch (Exception connectionEx)
                     {
-                        Console.Error.WriteLine($"Failed to verify IMAP connection: {ex.Message}");
-                        return;
-                    }
-
-                    // Additional check: ensure the INBOX folder exists and can be selected
-                    string inboxFolder = "INBOX";
-                    try
-                    {
-                        imapClient.SelectFolder(inboxFolder);
-                        Console.WriteLine($"Folder '{inboxFolder}' selected successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to select folder '{inboxFolder}': {ex.Message}");
-                        return;
+                        Console.Error.WriteLine($"Failed to connect or authenticate to IMAP server: {connectionEx.Message}");
+                        // No rethrow; exit gracefully
                     }
                 }
             }
