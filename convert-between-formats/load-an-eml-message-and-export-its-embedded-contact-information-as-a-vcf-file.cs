@@ -1,64 +1,87 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Mime;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Input EML file path
-            string emlPath = "input.eml";
-            // Output VCF file path
-            string vcfPath = "contact.vcf";
+            string emlPath = "sample.eml";
+            string outputDirectory = "output";
 
-            // Verify input file exists
+            // Verify input EML file exists
             if (!File.Exists(emlPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {emlPath}");
+                Console.Error.WriteLine($"Input file not found: {emlPath}");
                 return;
             }
 
-            // Load the EML message with default options
-            using (MailMessage mailMessage = MailMessage.Load(emlPath, new EmlLoadOptions()))
+            // Ensure output directory exists
+            if (!Directory.Exists(outputDirectory))
             {
-                // Convert the MailMessage to a MapiMessage
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                try
                 {
-                    // Check if the MapiMessage represents a contact
-                    if (mapiMessage.SupportedType == MapiItemType.Contact)
-                    {
-                        // Convert to MapiContact
-                        MapiContact contact = (MapiContact)mapiMessage.ToMapiMessageItem();
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
+                }
+            }
 
-                        // Save the contact as VCF
+            // Load the EML message
+            using (MailMessage message = MailMessage.Load(emlPath))
+            {
+                bool vcardFound = false;
+
+                // Iterate through attachments to find vCard files
+                foreach (Attachment attachment in message.Attachments)
+                {
+                    string attachmentName = attachment.Name ?? string.Empty;
+                    string mediaType = attachment.ContentType.MediaType ?? string.Empty;
+
+                    bool isVCard = mediaType.Equals("text/vcard", StringComparison.OrdinalIgnoreCase) ||
+                                   attachmentName.EndsWith(".vcf", StringComparison.OrdinalIgnoreCase);
+
+                    if (isVCard)
+                    {
+                        vcardFound = true;
+                        string vcfPath = Path.Combine(outputDirectory, string.IsNullOrEmpty(attachmentName) ? "contact.vcf" : attachmentName);
+
                         try
                         {
-                            contact.Save(vcfPath);
-                            Console.WriteLine($"Contact saved to {vcfPath}");
+                            using (FileStream fileStream = new FileStream(vcfPath, FileMode.Create, FileAccess.Write))
+                            {
+                                // Ensure the attachment stream is at the beginning
+                                if (attachment.ContentStream.CanSeek)
+                                {
+                                    attachment.ContentStream.Position = 0;
+                                }
+                                attachment.ContentStream.CopyTo(fileStream);
+                            }
+
+                            Console.WriteLine($"Exported vCard to: {vcfPath}");
                         }
-                        catch (Exception ex)
+                        catch (Exception ioEx)
                         {
-                            Console.Error.WriteLine($"Error saving VCF: {ex.Message}");
-                        }
-                        finally
-                        {
-                            if (contact != null)
-                                contact.Dispose();
+                            Console.Error.WriteLine($"Failed to save vCard '{attachmentName}': {ioEx.Message}");
                         }
                     }
-                    else
-                    {
-                        Console.Error.WriteLine("The loaded message does not contain a contact.");
-                    }
+                }
+
+                if (!vcardFound)
+                {
+                    Console.WriteLine("No vCard attachments were found in the EML message.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }
