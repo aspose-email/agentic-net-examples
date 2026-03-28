@@ -2,53 +2,37 @@ using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-            try
+            // Initialize the EWS client (replace placeholders with real values)
+            NetworkCredential credentials = new NetworkCredential("username", "password");
+            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
             {
-                // Define mailbox connection parameters (replace with actual values)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
+                // Example rule identifier to delete (replace with actual rule IDs)
+                string[] ruleIdsToDelete = new string[] { "rule-id-1", "rule-id-2" };
 
-                // Create the EWS client inside a using block to ensure proper disposal
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                foreach (string ruleId in ruleIdsToDelete)
                 {
                     try
                     {
-                        // Retrieve all inbox rules for the default mailbox
-                        InboxRule[] inboxRules = client.GetInboxRules();
-
-                        // Delete each rule by its identifier
-                        foreach (InboxRule rule in inboxRules)
-                        {
-                            if (!string.IsNullOrEmpty(rule.RuleId))
-                            {
-                                client.DeleteInboxRule(rule.RuleId);
-                            }
-                        }
-
-                        Console.WriteLine("All inbox rules have been removed successfully.");
+                        client.DeleteInboxRule(ruleId);
+                        Console.WriteLine($"Deleted rule with ID: {ruleId}");
                     }
                     catch (Exception ex)
                     {
-                        // Handle errors that occur while processing rules
-                        Console.Error.WriteLine("Error processing inbox rules: " + ex.Message);
+                        Console.Error.WriteLine($"Failed to delete rule {ruleId}: {ex.Message}");
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                // Handle errors that occur during client creation or connection
-                Console.Error.WriteLine("Failed to connect to Exchange server: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
