@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients;
 
 class Program
 {
@@ -10,77 +10,80 @@ class Program
     {
         try
         {
-            // Connection parameters
+            // IMAP server connection parameters
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
+            SecurityOptions security = SecurityOptions.Auto;
 
-            // Log file path
-            string logFilePath = "imap_log.txt";
+            // Path for the activity log file
+            string logPath = "imap_activity.log";
 
-            // Prepare log file (delete if exists)
+            // Ensure the log file directory exists
             try
             {
-                if (File.Exists(logFilePath))
+                string logDirectory = Path.GetDirectoryName(Path.GetFullPath(logPath));
+                if (!Directory.Exists(logDirectory))
                 {
-                    File.Delete(logFilePath);
+                    Directory.CreateDirectory(logDirectory);
                 }
             }
-            catch (Exception ex)
+            catch (Exception dirEx)
             {
-                Console.Error.WriteLine($"Failed to prepare log file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to prepare log directory: {dirEx.Message}");
                 return;
             }
 
-            // Create and use ImapClient
-            try
+            // Create and configure the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, security))
             {
-                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+                // Enable activity logging
+                client.EnableLogger = true;
+                client.LogFileName = logPath;
+
+                // Attempt to connect and authenticate
+                try
                 {
-                    // Enable logging
-                    client.EnableLogger = true;
-                    client.LogFileName = logFilePath;
-
-                    // Execute a simple command to generate log entries
-                    client.Noop();
-
-                    // Disable logging and reset settings
-                    client.EnableLogger = false;
-                    client.ResetLogSettings();
+                    client.Noop(); // Triggers connection and authentication
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"IMAP client error: {ex.Message}");
-                return;
-            }
-
-            // Read and display the log file
-            try
-            {
-                if (!File.Exists(logFilePath))
+                catch (ImapException imapEx)
                 {
-                    Console.Error.WriteLine("Log file was not created.");
+                    Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
                     return;
                 }
-
-                using (FileStream logStream = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (StreamReader reader = new StreamReader(logStream))
+                catch (Exception ex)
                 {
-                    Console.WriteLine("IMAP Server Activity Log:");
-                    Console.WriteLine(reader.ReadToEnd());
+                    Console.Error.WriteLine($"Unexpected error during IMAP connection: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
+
+            // Read and display the activity log
+            try
             {
-                Console.Error.WriteLine($"Error reading log file: {ex.Message}");
-                return;
+                if (File.Exists(logPath))
+                {
+                    string[] logLines = File.ReadAllLines(logPath);
+                    Console.WriteLine("=== IMAP Activity Log ===");
+                    foreach (string line in logLines)
+                    {
+                        Console.WriteLine(line);
+                    }
+                }
+                else
+                {
+                    Console.Error.WriteLine("Log file was not created.");
+                }
+            }
+            catch (Exception logEx)
+            {
+                Console.Error.WriteLine($"Failed to read log file: {logEx.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
