@@ -1,81 +1,49 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Storage;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             string inputPath = "input.html";
-            string outputPath = "output.mhtml";
+            string outputPath = "output.mht";
 
-            // Ensure input HTML file exists; create a minimal placeholder if missing.
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
-                try
-                {
-                    File.WriteAllText(inputPath, "<html><body><p>Placeholder content</p></body></html>");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure output directory exists.
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
-
-            string htmlContent;
-            try
-            {
-                htmlContent = File.ReadAllText(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
+                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
                 return;
             }
 
-            using (MailMessage message = new MailMessage())
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                // Set minimal required fields.
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.HtmlBody = htmlContent;
+                Directory.CreateDirectory(outputDirectory);
+            }
 
-                // Configure custom MHTML save options.
+            // Load the HTML document into a MailMessage
+            HtmlLoadOptions loadOptions = new HtmlLoadOptions();
+            using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
+            {
+                // Configure custom MHTML save options
                 MhtSaveOptions saveOptions = new MhtSaveOptions();
-                saveOptions.MhtFormatOptions = MhtFormatOptions.WriteHeader | MhtFormatOptions.WriteCompleteEmailAddress;
+                saveOptions.MhtFormatOptions = MhtFormatOptions.WriteHeader | MhtFormatOptions.WriteOutlineAttachments;
+                saveOptions.CheckBodyContentEncoding = true;
+                saveOptions.ExtractHTMLBodyResourcesAsAttachments = false;
+                saveOptions.SaveAllHeaders = true;
 
-                try
-                {
-                    message.Save(outputPath, saveOptions);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MHTML file: {ex.Message}");
-                    return;
-                }
+                // Save the message as MHTML
+                message.Save(outputPath, saveOptions);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
