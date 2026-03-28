@@ -8,40 +8,26 @@ class Program
         try
         {
             // URL that initiates the authorization flow
-            string authorizationUrl = "https://example.com/authorize";
+            string authorizationUrl = "https://example.com/oauth2/authorize";
 
-            // Open the default web browser to let the user complete the flow
-            ProcessStartInfo startInfo = new ProcessStartInfo
+            // Open the default browser to let the user complete the required actions
+            ProcessStartInfo startInfo = new ProcessStartInfo(authorizationUrl)
             {
-                FileName = authorizationUrl,
                 UseShellExecute = true
             };
-
-            try
-            {
-                Process.Start(startInfo);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to open browser: {ex.Message}");
-                return;
-            }
+            Process.Start(startInfo);
 
             // Prompt the user to paste the resulting authorization code
-            Console.WriteLine("After completing the authorization, please enter the authorization code:");
+            Console.Write("Enter the authorization code: ");
             string authorizationCode = Console.ReadLine();
 
-            if (string.IsNullOrWhiteSpace(authorizationCode))
-            {
-                Console.Error.WriteLine("No authorization code was entered.");
-                return;
-            }
-
-            Console.WriteLine($"Authorization code received: {authorizationCode}");
+            // Output the retrieved code (or handle it as needed)
+            Console.WriteLine("Authorization code received: " + authorizationCode);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
+            return;
         }
     }
 }

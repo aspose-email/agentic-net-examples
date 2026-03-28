@@ -8,46 +8,47 @@ class Program
     {
         try
         {
-            string inputHtmlPath = "input.html";
-            string outputEmlPath = "output.eml";
+            string inputPath = "input.html";
+            string outputPath = "output.eml";
 
-            // Verify that the input HTML file exists
-            if (!File.Exists(inputHtmlPath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputHtmlPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Load the HTML file into a MailMessage
-            Aspose.Email.MailMessage mailMessage = null;
-            try
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                mailMessage = Aspose.Email.MailMessage.Load(inputHtmlPath, new Aspose.Email.HtmlLoadOptions());
-            }
-            catch (Exception loadEx)
-            {
-                Console.Error.WriteLine($"Failed to load HTML file: {loadEx.Message}");
-                return;
-            }
-
-            // Ensure the MailMessage is disposed after use
-            using (mailMessage)
-            {
-                // Configure EML save options to preserve embedded message format
-                Aspose.Email.EmlSaveOptions emlSaveOptions = new Aspose.Email.EmlSaveOptions(Aspose.Email.MailMessageSaveType.EmlFormat)
-                {
-                    PreserveEmbeddedMessageFormat = true
-                };
-
-                // Save the MailMessage as an EML file
                 try
                 {
-                    mailMessage.Save(outputEmlPath, emlSaveOptions);
+                    Directory.CreateDirectory(outputDirectory);
                 }
-                catch (Exception saveEx)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Failed to save EML file: {saveEx.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
                 }
+            }
+
+            try
+            {
+                // Load HTML file as MailMessage with default options
+                HtmlLoadOptions loadOptions = new HtmlLoadOptions();
+                using (MailMessage mailMessage = MailMessage.Load(inputPath, loadOptions))
+                {
+                    // Save as EML preserving structure
+                    EmlSaveOptions saveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
+                    mailMessage.Save(outputPath, saveOptions);
+                    Console.WriteLine("HTML file successfully serialized to EML.");
+                }
+            }
+            catch (Exception processingEx)
+            {
+                Console.Error.WriteLine($"Error processing email: {processingEx.Message}");
+                return;
             }
         }
         catch (Exception ex)

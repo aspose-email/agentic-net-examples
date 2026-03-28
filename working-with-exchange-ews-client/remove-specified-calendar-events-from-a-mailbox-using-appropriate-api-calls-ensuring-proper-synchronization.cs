@@ -1,52 +1,68 @@
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Calendar;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Google;
 
-namespace RemoveCalendarEvents
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
+            // Initialize Gmail client with placeholder credentials
+            IGmailClient client;
             try
             {
-                // Exchange Web Services endpoint and credentials (replace with real values)
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
-                NetworkCredential credentials = new NetworkCredential(username, password);
-
-                // Create the EWS client
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
-                {
-                    // Build a query to find calendar events to delete (e.g., subject contains "Obsolete")
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.Subject.Contains("Obsolete");
-                    MailQuery query = builder.GetQuery();
-
-                    // Get the calendar folder URI
-                    string calendarFolderUri = client.MailboxInfo.CalendarUri;
-
-                    // List calendar items that match the query
-                    ExchangeMessageInfoCollection messages = client.ListMessages(calendarFolderUri, query);
-
-                    // Delete each matching calendar event
-                    foreach (ExchangeMessageInfo info in messages)
-                    {
-                        client.DeleteItem(info.UniqueUri, DeletionOptions.DeletePermanently);
-                        Console.WriteLine("Deleted event: " + info.Subject);
-                    }
-                }
+                client = GmailClient.GetInstance(
+                    "clientId",          // Client ID
+                    "clientSecret",      // Client Secret
+                    "refreshToken",      // Refresh Token
+                    "user@example.com"); // User Email
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Error: " + ex.Message);
+                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                return;
             }
+
+            // Ensure the client is disposed properly
+            using (client)
+            {
+                // Identifier of the calendar to clean (e.g., "primary")
+                string calendarId = "primary";
+
+                // Retrieve all appointments from the specified calendar
+                Appointment[] appointments;
+                try
+                {
+                    appointments = client.ListAppointments(calendarId);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to list appointments: {ex.Message}");
+                    return;
+                }
+
+                // Delete each appointment
+                foreach (Appointment appt in appointments)
+                {
+                    try
+                    {
+                        // UniqueId holds the appointment identifier required for deletion
+                        client.DeleteAppointment(calendarId, appt.UniqueId);
+                        Console.WriteLine($"Deleted appointment with ID: {appt.UniqueId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to delete appointment {appt.UniqueId}: {ex.Message}");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

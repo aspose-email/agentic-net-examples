@@ -1,8 +1,7 @@
 using System;
-using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
-using Aspose.Email.Mime;
+using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Clients;
 
 class Program
 {
@@ -10,32 +9,24 @@ class Program
     {
         try
         {
-            // Define output file path
-            string outputPath = "output.msg";
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Create a MAPI message
-            using (MapiMessage message = new MapiMessage(
-                "sender@example.com",
-                "recipient@example.com",
-                "Test Subject",
-                "This is the body of the email."))
+            // Create a mail message
+            using (MailMessage message = new MailMessage("sender@example.com", "recipient@example.com", "Test Subject", "This is the body."))
             {
                 // Add a custom header
                 message.Headers.Add("X-Custom-Header", "MyValue");
 
-                // Save the message to a file
-                message.Save(outputPath);
-                Console.WriteLine("Message saved with custom header to: " + outputPath);
+                // Initialize SMTP client
+                using (SmtpClient client = new SmtpClient("smtp.example.com", 587, "username", "password"))
+                {
+                    client.SecurityOptions = SecurityOptions.Auto;
+                    // Send the message
+                    client.Send(message);
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

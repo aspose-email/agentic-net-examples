@@ -1,49 +1,55 @@
-using System;
-using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
+using System;
+using Aspose.Email;
+using Aspose.Email.Clients.Imap;
 
-namespace EmailRetrievalExample
+namespace AsposeEmailImapExample
 {
     class Program
     {
         static void Main(string[] args)
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
             try
             {
-                // Define Exchange service URL and credentials (replace with real values)
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                // IMAP server connection parameters (replace with real values or keep placeholders)
+                string host = "imap.example.com";
+                int port = 993;
                 string username = "user@example.com";
                 string password = "password";
+                SecurityOptions security = SecurityOptions.SSLExplicit;
 
-                // Create the EWS client using the factory method
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
+                // Create and connect the IMAP client inside a using block to ensure disposal
+                using (ImapClient client = new ImapClient(host, port, username, password, security))
                 {
-                    // Build a query to retrieve all messages (no filters)
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    MailQuery query = builder.GetQuery();
-
-                    // List messages from the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-
-                    // Iterate through each message and display its subject
-                    foreach (ExchangeMessageInfo info in messages)
+                    try
                     {
-                        using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                        // List messages in the INBOX folder
+                        ImapMessageInfoCollection messagesInfo = client.ListMessages("INBOX");
+
+                        Console.WriteLine($"Total messages in INBOX: {messagesInfo.Count}");
+
+                        // Iterate through each message info, fetch the full message and display its subject
+                        foreach (ImapMessageInfo info in messagesInfo)
                         {
-                            Console.WriteLine("Subject: " + message.Subject);
+                            // Fetch the full MailMessage using the unique identifier (UID)
+                            MailMessage message = client.FetchMessage(info.UniqueId);
+                            string subject = message.Subject ?? string.Empty;
+                            Console.WriteLine($"Subject: {subject}");
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Handle any errors that occur during mailbox operations
+                        Console.Error.WriteLine($"Error accessing mailbox: {ex.Message}");
+                        return;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Error: " + ex.Message);
+                // Top-level exception guard
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                return;
             }
         }
     }

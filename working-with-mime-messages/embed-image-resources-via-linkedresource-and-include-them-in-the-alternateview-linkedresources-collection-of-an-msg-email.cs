@@ -9,57 +9,47 @@ class Program
     {
         try
         {
-            // Define file paths
+            // Paths for the image and the output MSG file
             string imagePath = "1.jpg";
             string outputPath = "EmbeddedImage_out.msg";
 
-            // Ensure the image file exists; create a minimal placeholder if missing
+            // Verify that the image file exists before proceeding
             if (!File.Exists(imagePath))
             {
-                using (FileStream fs = File.Create(imagePath))
-                {
-                    // Minimal JPEG header (optional)
-                    byte[] jpegHeader = new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 };
-                    fs.Write(jpegHeader, 0, jpegHeader.Length);
-                }
+                Console.Error.WriteLine($"Image file '{imagePath}' not found.");
+                return;
             }
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Create the mail message and set basic properties
+            using (MailMessage eml = new MailMessage())
             {
-                Directory.CreateDirectory(outputDir);
-            }
+                eml.From = "AndrewIrwin@from.com";
+                eml.To = "SusanMarc@to.com";
+                eml.Subject = "This is an email";
 
-            // Create the email message
-            using (MailMessage message = new MailMessage())
-            {
-                message.From = "AndrewIrwin@from.com";
-                message.To = "SusanMarc@to.com";
-                message.Subject = "This is an email";
-
-                // Create the plain text view
+                // Create the plain‑text alternate view
                 using (AlternateView plainView = AlternateView.CreateAlternateViewFromString(
                     "This is my plain text content", null, "text/plain"))
                 {
-                    // Create the HTML view with a CID reference to the image
+                    // Create the HTML alternate view with a CID reference to the image
                     using (AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
                         "Here is an embedded image. <img src=cid:barcode>", null, "text/html"))
                     {
-                        // Create the linked resource (embedded image)
-                        using (LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg))
+                        // Create the linked resource (the image) and assign a Content‑Id
+                        using (LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg)
                         {
-                            barcode.ContentId = "barcode";
-
+                            ContentId = "barcode"
+                        })
+                        {
                             // Add the linked resource to the message
-                            message.LinkedResources.Add(barcode);
+                            eml.LinkedResources.Add(barcode);
 
-                            // Add alternate views to the message
-                            message.AlternateViews.Add(plainView);
-                            message.AlternateViews.Add(htmlView);
+                            // Add the alternate views to the message
+                            eml.AlternateViews.Add(plainView);
+                            eml.AlternateViews.Add(htmlView);
 
-                            // Save the message as an MSG file with Unicode options
-                            message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                            // Save the message as an MSG file with Unicode support
+                            eml.Save(outputPath, SaveOptions.DefaultMsgUnicode);
                         }
                     }
                 }
@@ -67,7 +57,7 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

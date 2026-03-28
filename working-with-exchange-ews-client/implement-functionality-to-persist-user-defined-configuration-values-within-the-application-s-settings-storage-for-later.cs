@@ -1,7 +1,8 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
-using Aspose.Email;
+using System.IO;
+using System.Text;
+using System.Text.Json;
 
 class Program
 {
@@ -9,81 +10,76 @@ class Program
     {
         try
         {
-            string configFilePath = "userconfig.txt";
-
-            // Ensure the directory for the config file exists
-            string directoryPath = Path.GetDirectoryName(Path.GetFullPath(configFilePath));
-            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+            // Define a folder to store configuration files
+            string configDirectory = Path.Combine(Environment.CurrentDirectory, "Config");
+            if (!Directory.Exists(configDirectory))
             {
-                Directory.CreateDirectory(directoryPath);
+                Directory.CreateDirectory(configDirectory);
             }
 
-            // Load existing configuration into a dictionary
-            Dictionary<string, string> settings = new Dictionary<string, string>();
-            if (File.Exists(configFilePath))
-            {
-                try
-                {
-                    using (FileStream readStream = new FileStream(configFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    using (StreamReader reader = new StreamReader(readStream))
-                    {
-                        string line;
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            int separatorIndex = line.IndexOf('=');
-                            if (separatorIndex > 0)
-                            {
-                                string key = line.Substring(0, separatorIndex);
-                                string value = line.Substring(separatorIndex + 1);
-                                settings[key] = value;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error reading configuration: " + ex.Message);
-                    return;
-                }
-            }
+            // Full path to the settings file
+            string configFilePath = Path.Combine(configDirectory, "settings.json");
 
-            // Prompt user for a configuration key and value
-            Console.Write("Enter configuration key: ");
-            string inputKey = Console.ReadLine();
-            Console.Write("Enter configuration value: ");
-            string inputValue = Console.ReadLine();
+            // Prepare configuration values to persist
+            Dictionary<string, string> settingsToSave = new Dictionary<string, string>();
+            settingsToSave["ServerUrl"] = "https://example.com/ews";
+            settingsToSave["Username"] = "user@example.com";
+            settingsToSave["Password"] = "P@ssw0rd";
 
-            // Update the settings dictionary
-            settings[inputKey] = inputValue;
+            // Serialize the dictionary to JSON
+            string jsonString = JsonSerializer.Serialize(settingsToSave, new JsonSerializerOptions { WriteIndented = true });
 
-            // Save the updated settings back to the file
+            // Write the JSON to the file (guarded with try/catch)
             try
             {
-                using (FileStream writeStream = new FileStream(configFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                using (StreamWriter writer = new StreamWriter(writeStream))
+                using (FileStream fileStream = new FileStream(configFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (StreamWriter writer = new StreamWriter(fileStream, Encoding.UTF8))
                 {
-                    foreach (KeyValuePair<string, string> kvp in settings)
-                    {
-                        writer.WriteLine(kvp.Key + "=" + kvp.Value);
-                    }
+                    writer.Write(jsonString);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ioEx)
             {
-                Console.Error.WriteLine("Error writing configuration: " + ex.Message);
+                Console.Error.WriteLine($"Failed to write configuration file: {ioEx.Message}");
                 return;
             }
 
-            // Display all stored configuration values
-            Console.WriteLine("Current configuration values:");
-            foreach (KeyValuePair<string, string> kvp in settings)
+            // Ensure the file exists before attempting to read
+            if (!File.Exists(configFilePath))
             {
-                Console.WriteLine(kvp.Key + " = " + kvp.Value);
+                Console.Error.WriteLine("Configuration file not found.");
+                return;
+            }
+
+            // Load the configuration values back into a dictionary
+            Dictionary<string, string> loadedSettings;
+            try
+            {
+                using (FileStream fileStream = new FileStream(configFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (StreamReader reader = new StreamReader(fileStream, Encoding.UTF8))
+                {
+                    string readJson = reader.ReadToEnd();
+                    loadedSettings = JsonSerializer.Deserialize<Dictionary<string, string>>(readJson);
+                }
+            }
+            catch (Exception ioEx)
+            {
+                Console.Error.WriteLine($"Failed to read configuration file: {ioEx.Message}");
+                return;
+            }
+
+            // Demonstrate usage of the loaded settings
+            if (loadedSettings != null)
+            {
+                foreach (KeyValuePair<string, string> kvp in loadedSettings)
+                {
+                    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

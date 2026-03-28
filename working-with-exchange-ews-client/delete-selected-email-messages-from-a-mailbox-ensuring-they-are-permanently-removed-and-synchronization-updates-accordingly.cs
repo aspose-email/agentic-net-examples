@@ -1,46 +1,39 @@
-using System.Net;
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Google;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Mailbox connection details (replace with real values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Initialize Gmail client with placeholder credentials
+            IGmailClient gmailClient = GmailClient.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken",
+                "user@example.com");
 
-            // Create and dispose the EWS client safely
-            using (Aspose.Email.Clients.Exchange.WebService.IEWSClient client = Aspose.Email.Clients.Exchange.WebService.EWSClient.GetEWSClient(mailboxUri, username, password))
+            // List all messages in the mailbox
+            List<GmailMessageInfo> allMessages = gmailClient.ListMessages();
+
+            // Select messages to delete (e.g., first 5 messages)
+            int messagesToDelete = Math.Min(5, allMessages.Count);
+            for (int i = 0; i < messagesToDelete; i++)
             {
-                // Get the Inbox folder URI
-                string inboxUri = client.MailboxInfo.InboxUri;
-
-                // Retrieve all messages from the Inbox
-                Aspose.Email.Clients.Exchange.ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
-
-                // Iterate and delete selected messages permanently
-                foreach (Aspose.Email.Clients.Exchange.ExchangeMessageInfo info in messages)
-                {
-                    // Example condition: delete messages whose subject contains "DeleteMe"
-                    if (info.Subject != null && info.Subject.Contains("DeleteMe"))
-                    {
-                        client.DeleteItem(info.UniqueUri, Aspose.Email.Clients.Exchange.WebService.DeletionOptions.DeletePermanently);
-                        System.Console.WriteLine("Deleted: " + info.Subject);
-                    }
-                }
+                GmailMessageInfo messageInfo = allMessages[i];
+                // Permanently delete the message (moveToTrash = false)
+                gmailClient.DeleteMessage(messageInfo.Id, false);
+                Console.WriteLine($"Deleted message with ID: {messageInfo.Id}");
             }
+
+            // Optional: synchronize changes (Gmail client updates automatically)
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
-            System.Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

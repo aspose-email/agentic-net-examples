@@ -1,4 +1,6 @@
+using Aspose.Email.Clients;
 using System;
+using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
@@ -8,31 +10,39 @@ class Program
     {
         try
         {
-            // Create an IMAP query builder instance
-            ImapQueryBuilder imapBuilder = new ImapQueryBuilder();
+            // Initialize IMAP client with connection parameters.
+            // Replace placeholder values with actual server details.
+            using (ImapClient client = new ImapClient("imap.example.com", "username", "password", SecurityOptions.Auto))
+            {
+                // Select the folder to search.
+                client.SelectFolder("INBOX");
 
-            // Add search criteria
-            imapBuilder.From.Contains("alice@example.com");
-            imapBuilder.Subject.Contains("Quarterly Report");
-            imapBuilder.Body.Contains("confidential");
+                // Build a complex search query.
+                ImapQueryBuilder builder = new ImapQueryBuilder();
+                // Find messages where the subject contains "Report".
+                builder.Subject.Contains("Report");
+                // Find messages from a specific domain.
+                builder.From.Contains("@example.com");
+                // Exclude messages marked as deleted.
+                builder.HasNoFlags(ImapMessageFlags.Deleted);
 
-            // Build the first query
-            MailQuery firstQuery = imapBuilder.GetQuery();
+                // Retrieve the constructed MailQuery.
+                MailQuery query = builder.GetQuery();
 
-            // Create a second query using the base MailQueryBuilder
-            MailQueryBuilder secondBuilder = new MailQueryBuilder();
-            secondBuilder.Subject.Contains("Invoice");
-            MailQuery secondQuery = secondBuilder.GetQuery();
+                // Execute the search and retrieve matching messages.
+                ImapMessageInfoCollection messages = client.ListMessages(query);
 
-            // Combine the two queries with OR
-            MailQuery combinedQuery = imapBuilder.Or(firstQuery, secondQuery);
-
-            // The combinedQuery can now be used with ImapClient.ListMessages(combinedQuery)
-            Console.WriteLine("IMAP query constructed successfully.");
+                // Output basic information about each matched message.
+                foreach (ImapMessageInfo info in messages)
+                {
+                    Console.WriteLine($"UID: {info.UniqueId}, Subject: {info.Subject}");
+                }
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            // Log any unexpected errors.
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

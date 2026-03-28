@@ -8,32 +8,60 @@ class Program
     {
         try
         {
-            string inputPath = "message.msg";
+            string inputPath = @"input.msg";
+            string outputPath = @"output.msg";
+
+            // Guard input file existence
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Remove all attachments from the MSG file.
-            // The method returns the collection of removed attachments.
-            MapiAttachmentCollection removedAttachments = MapiMessage.RemoveAttachments(inputPath);
-            Console.WriteLine($"Removed {removedAttachments.Count} attachment(s).");
-
-            // Load the message to verify its content and optionally save it without attachments.
-            using (MapiMessage message = MapiMessage.Load(inputPath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Console.WriteLine($"Subject: {message.Subject}");
-                Console.WriteLine($"Body: {message.Body}");
+                try
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
+                }
+            }
 
-                string outputPath = "message_no_attachments.msg";
-                message.Save(outputPath);
-                Console.WriteLine($"Message saved without attachments to: {outputPath}");
+            // Remove all attachments from the MSG file
+            try
+            {
+                MapiAttachmentCollection removedAttachments = MapiMessage.RemoveAttachments(inputPath);
+                // Optionally, you can inspect removedAttachments here
+            }
+            catch (Exception removeEx)
+            {
+                Console.Error.WriteLine($"Failed to remove attachments: {removeEx.Message}");
+                return;
+            }
+
+            // Load the modified message and save to a new file
+            try
+            {
+                using (MapiMessage message = MapiMessage.Load(inputPath))
+                {
+                    message.Save(outputPath);
+                }
+                Console.WriteLine($"Attachments stripped successfully. Saved to: {outputPath}");
+            }
+            catch (Exception loadSaveEx)
+            {
+                Console.Error.WriteLine($"Error loading or saving message: {loadSaveEx.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

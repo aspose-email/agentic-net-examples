@@ -1,4 +1,3 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
 using System.Net;
@@ -9,12 +8,10 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define the log file path
-            string logFilePath = @"C:\Logs\exchange.log";
+            // Define log file location
+            string logFilePath = @"C:\Logs\EwsLog.txt";
 
             // Ensure the directory for the log file exists
             string logDirectory = Path.GetDirectoryName(logFilePath);
@@ -23,33 +20,25 @@ class Program
                 Directory.CreateDirectory(logDirectory);
             }
 
-            // Exchange server URI and credentials
+            // Prepare connection parameters
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            NetworkCredential credentials = new NetworkCredential("user@example.com", "password");
 
-            // Create the EWS client and configure logging
+            // Create the EWS client inside a using block
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
+                // Configure logging to the specified file
                 client.LogFileName = logFilePath;
-                client.UseDateInLogFileName = false; // optional: disable date suffix
-
-                Console.WriteLine("Logging is configured. Log file: " + client.LogFileName);
 
                 // Example operation to verify the client works (list inbox messages)
-                try
-                {
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                    Console.WriteLine("Inbox contains " + messages.Count + " messages.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to list messages: " + ex.Message);
-                }
+                // This is optional and can be removed if only logging configuration is needed
+                var messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                Console.WriteLine($"Retrieved {messages.Count} messages from Inbox.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

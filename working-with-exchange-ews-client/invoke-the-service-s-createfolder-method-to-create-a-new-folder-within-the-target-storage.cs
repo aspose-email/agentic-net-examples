@@ -1,45 +1,35 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-namespace CreateFolderSample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-            try
+            // Initialize the EWS client (replace with real server URL and credentials)
+            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
             {
-                // Define service URL and credentials (replace with actual values)
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
-
-                // Create the EWS client safely
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+                try
                 {
-                    // Get the URI of the parent folder (e.g., Inbox)
+                    // Get the URI of the parent folder (Inbox in this example)
                     string parentFolderUri = client.MailboxInfo.InboxUri;
 
-                    // Name of the new folder to create
-                    string newFolderName = "MyNewFolder";
+                    // Create a new folder under the parent folder
+                    client.CreateFolder(parentFolderUri, "NewFolder");
 
-                    // Create the folder
-                    ExchangeFolderInfo newFolderInfo = client.CreateFolder(parentFolderUri, newFolderName);
-
-                    // Output the result
-                    Console.WriteLine("Folder created successfully.");
-                    Console.WriteLine("Folder Name: " + newFolderInfo.DisplayName);
-                    Console.WriteLine("Folder URI: " + newFolderInfo.Uri);
+                    Console.WriteLine("Folder 'NewFolder' created successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error while creating folder: " + ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }

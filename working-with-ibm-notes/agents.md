@@ -20,17 +20,11 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 ## Required Namespaces
 - `using System;` (28 file(s))
 - `using System.IO;` (28 file(s))
+- `using Aspose.Email;` (28 file(s))
 - `using Aspose.Email.Mapi;` (27 file(s))
-- `using Aspose.Email;` (26 file(s))
-- `using Aspose.Email.Clients;` (2 file(s))
-- `using System.Net;` (1 file(s))
-- `using System.Threading;` (1 file(s))
-- `using System.Threading.Tasks;` (1 file(s))
-- `using Aspose.Email.Clients.Imap;` (1 file(s))
-- `using Aspose.Email.Storage.Nsf;` (1 file(s))
-- `using Aspose.Email.Clients.Graph;` (1 file(s))
+- `using Aspose.Email.Storage.Nsf;` (2 file(s))
 - `using System.Text;` (1 file(s))
-- `using System.Collections.Generic;` (1 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
@@ -38,14 +32,15 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs](./add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs) | add a notesattachment to the document and assign the msg file as its content |
 | [configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs](./configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs) | configure replication parameters for processing an input msg file to ensure accurate message duplication |
 | [construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs](./construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs) | construct a new email object using the contents of an input msg file preserving all original message properties |
+| [design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs](./design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs) | design a user interface form that accepts msg files as input directly for processing |
 | [generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs](./generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs) | generate a calendar event using the contents of an input msg file as the entry source |
-| [generate-a-new-contact-entry-by-processing-an-input-msg-file-and-extracting-its-contact-details.cs](./generate-a-new-contact-entry-by-processing-an-input-msg-file-and-extracting-its-contact-details.cs) | generate a new contact entry by processing an input msg file and extracting its contact details |
 | [generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs](./generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs) | generate a new ibm notes database using an msg file as the source input |
 | [generate-a-new-notes-document-using-an-msg-file-as-input-preserving-the-message-content-and-metadata.cs](./generate-a-new-notes-document-using-an-msg-file-as-input-preserving-the-message-content-and-metadata.cs) | generate a new notes document using an msg file as input preserving the message content and metadata |
 | [generate-a-new-task-object-based-on-the-provided-input-message-msg-for-subsequent-processing.cs](./generate-a-new-task-object-based-on-the-provided-input-message-msg-for-subsequent-processing.cs) | generate a new task object based on the provided input message msg for subsequent processing |
 | [generate-a-rich-text-rtf-file-from-an-input-msg-email-message-while-preserving-formatting.cs](./generate-a-rich-text-rtf-file-from-an-input-msg-email-message-while-preserving-formatting.cs) | generate a rich text rtf file from an input msg email message while preserving formatting |
 | [implement-a-user-interface-view-that-accepts-msg-files-as-input-for-processing-and-display.cs](./implement-a-user-interface-view-that-accepts-msg-files-as-input-for-processing-and-display.cs) | implement a user interface view that accepts msg files as input for processing and display |
 | [implement-an-agent-that-accepts-a-msg-object-as-input-and-processes-it-according-to-defined-business-logic.cs](./implement-an-agent-that-accepts-a-msg-object-as-input-and-processes-it-according-to-defined-business-logic.cs) | implement an agent that accepts a msg object as input and processes it according to defined business logic |
+| [instantiate-the-notesdocument-class-and-populate-its-fields-with-the-input-msg-to-create-a-new-notes-document.cs](./instantiate-the-notesdocument-class-and-populate-its-fields-with-the-input-msg-to-create-a-new-notes-document.cs) | instantiate the notesdocument class and populate its fields with the input msg to create a new notes document |
 | [load-a-calendar-entry-from-an-msg-file-into-memory-for-further-processing-programmatically.cs](./load-a-calendar-entry-from-an-msg-file-into-memory-for-further-processing-programmatically.cs) | load a calendar entry from an msg file into memory for further processing programmatically |
 | [load-a-notes-document-by-its-unid-employing-the-notesdocument-class-to-read-the-provided-msg-file.cs](./load-a-notes-document-by-its-unid-employing-the-notesdocument-class-to-read-the-provided-msg-file.cs) | load a notes document by its unid employing the notesdocument class to read the provided msg file |
 | [load-a-notes-document-from-an-msg-file-using-its-unid-identifier-ensuring-accurate-retrieval-of-content.cs](./load-a-notes-document-from-an-msg-file-using-its-unid-identifier-ensuring-accurate-retrieval-of-content.cs) | load a notes document from an msg file using its unid identifier ensuring accurate retrieval of content |
@@ -59,7 +54,6 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [programmatically-add-a-new-attachment-to-an-email-message-using-an-input-msg-file.cs](./programmatically-add-a-new-attachment-to-an-email-message-using-an-input-msg-file.cs) | programmatically add a new attachment to an email message using an input msg file |
 | [read-a-contact-from-an-msg-file-into-an-object-model-for-subsequent-processing.cs](./read-a-contact-from-an-msg-file-into-an-object-model-for-subsequent-processing.cs) | read a contact from an msg file into an object model for subsequent processing |
 | [read-and-parse-an-input-msg-file-to-instantiate-the-corresponding-task-object-in-memory.cs](./read-and-parse-an-input-msg-file-to-instantiate-the-corresponding-task-object-in-memory.cs) | read and parse an input msg file to instantiate the corresponding task object in memory |
-| [read-and-parse-an-msg-file-to-access-its-form-data-within-the-application.cs](./read-and-parse-an-msg-file-to-access-its-form-data-within-the-application.cs) | read and parse an msg file to access its form data within the application |
 | [read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs](./read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs) | read and parse an msg file to instantiate a mail message object for processing |
 | [read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs](./read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs) | read replication settings from an msg file and map them to the appropriate configuration objects |
 | [when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs](./when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs) | when saving the parent msg file attachments are automatically persisted within the resulting output message file |
@@ -74,5 +68,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_021422` | [examples/batch-20260328_021422](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260328_021422) |
+| 2026-03-28 | `20260328_163036` | examples/batch-20260328_163036 |
 <!-- AUTOGENERATED:END -->

@@ -3,36 +3,48 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace Example
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string inputPath = "input.msg";
-                string outputPath = "output.oft";
+            string inputPath = "input.msg";
+            string outputPath = "output.oft";
 
-                // Verify that the input MSG file exists
-                if (!File.Exists(inputPath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
+            {
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
+            }
+
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                     return;
                 }
-
-                // Load the MSG file and save it as an OFT template preserving all properties
-                using (Aspose.Email.Mapi.MapiMessage message = Aspose.Email.Mapi.MapiMessage.Load(inputPath))
-                {
-                    message.Save(outputPath, Aspose.Email.SaveOptions.DefaultOft);
-                }
-
-                Console.WriteLine($"Message saved as template to '{outputPath}'.");
             }
-            catch (Exception ex)
+
+            // Load MSG and save as OFT template
+            using (MapiMessage message = MapiMessage.Load(inputPath))
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                message.SaveAsTemplate(outputPath);
             }
+
+            Console.WriteLine("Conversion completed successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

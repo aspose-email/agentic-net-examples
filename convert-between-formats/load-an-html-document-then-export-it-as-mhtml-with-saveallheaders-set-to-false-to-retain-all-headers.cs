@@ -2,64 +2,57 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace AsposeEmailMhtmlExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string inputPath = "input.html";
-            string outputPath = "output.mht";
-
-            // Verify input file exists
-            if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
-                return;
-            }
-
-            // Load HTML content
-            string htmlContent;
             try
             {
-                htmlContent = File.ReadAllText(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error reading file: {ex.Message}");
-                return;
-            }
+                string htmlPath = "input.html";
+                if (!File.Exists(htmlPath))
+                {
+                    Console.Error.WriteLine($"Input file '{htmlPath}' does not exist.");
+                    return;
+                }
 
-            // Create a MailMessage with the HTML body
-            using (MailMessage message = new MailMessage())
-            {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Converted HTML to MHTML";
-                message.IsBodyHtml = true;
-                message.HtmlBody = htmlContent;
-
-                // Configure MHTML save options
-                MhtSaveOptions saveOptions = new MhtSaveOptions();
-                saveOptions.SaveAllHeaders = false; // retain all headers as per requirement
-
-                // Save as MHTML
+                string htmlContent;
                 try
                 {
-                    message.Save(outputPath, saveOptions);
+                    htmlContent = File.ReadAllText(htmlPath);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error saving MHTML: {ex.Message}");
+                    Console.Error.WriteLine($"Error reading HTML file: {ex.Message}");
                     return;
                 }
-            }
 
-            Console.WriteLine($"MHTML file saved to: {outputPath}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                using (MailMessage message = new MailMessage())
+                {
+                    message.HtmlBody = htmlContent;
+
+                    MhtSaveOptions mhtOptions = new MhtSaveOptions();
+                    mhtOptions.SaveAllHeaders = false;
+
+                    string outputPath = "output.mht";
+                    try
+                    {
+                        message.Save(outputPath, mhtOptions);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error saving MHTML: {ex.Message}");
+                        return;
+                    }
+
+                    Console.WriteLine($"MHTML saved to '{outputPath}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

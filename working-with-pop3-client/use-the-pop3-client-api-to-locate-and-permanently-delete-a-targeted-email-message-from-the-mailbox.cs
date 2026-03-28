@@ -1,51 +1,61 @@
+using Aspose.Email.Tools.Search;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace Pop3DeleteExample
+
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // POP3 server credentials
+            string host = "pop3.example.com";
+            int port = 110;
+            string username = "user@example.com";
+            string password = "password";
+
+            // Initialize POP3 client inside a using block for proper disposal
+            using (Pop3Client client = new Pop3Client(host, port, username, password))
             {
-                // POP3 server connection settings (replace with real values)
-                string host = "pop3.example.com";
-                int port = 995;
-                string username = "user@example.com";
-                string password = "password";
-
-                // Initialize the POP3 client
-                using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+                try
                 {
-                    // Retrieve the list of messages in the mailbox
-                    Pop3MessageInfoCollection messages = client.ListMessages();
+                    // Build a query to locate the targeted email (e.g., subject contains "Target")
+                    MailQueryBuilder builder = new MailQueryBuilder();
+                    builder.Subject.Contains("Target");
+                    MailQuery query = builder.GetQuery();
 
-                    // Define the criteria to locate the target message (e.g., by subject)
-                    string targetSubjectKeyword = "Target Subject";
+                    // Retrieve messages matching the query
+                    Pop3MessageInfoCollection messages = client.ListMessages(query);
 
-                    foreach (Pop3MessageInfo info in messages)
+                    // If a matching message is found, delete it permanently
+                    if (messages != null && messages.Count > 0)
                     {
-                        if (!string.IsNullOrEmpty(info.Subject) && info.Subject.Contains(targetSubjectKeyword))
-                        {
-                            // Mark the message for deletion using its sequence number
-                            client.DeleteMessage(info.SequenceNumber);
+                        // Delete the first matching message by its sequence number
+                        int sequenceNumber = messages[0].SequenceNumber;
+                        client.DeleteMessage(sequenceNumber);
 
-                            // Permanently remove all messages marked as deleted
-                            client.CommitDeletes();
-
-                            Console.WriteLine($"Deleted message with subject: {info.Subject}");
-                            break;
-                        }
+                        // Commit deletions to permanently remove the message from the mailbox
+                        client.CommitDeletes();
+                        Console.WriteLine("Message deleted successfully.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No matching messages found.");
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during POP3 operations: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

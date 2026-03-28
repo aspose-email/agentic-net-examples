@@ -1,42 +1,41 @@
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Initialize the EWS client with placeholder credentials.
-            string ewsUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, credentials))
+            // Initialize the EWS client (replace placeholders with real values)
+            using (IEWSClient client = EWSClient.GetEWSClient("https://example.com/EWS/Exchange.asmx", "username", "password"))
             {
-                // Retrieve all inbox rules for the default mailbox.
-                InboxRule[] rules = client.GetInboxRules();
-
-                // Display each rule's key properties.
-                foreach (InboxRule rule in rules)
+                try
                 {
-                    Console.WriteLine("Rule ID      : " + rule.RuleId);
-                    Console.WriteLine("Display Name : " + rule.DisplayName);
-                    Console.WriteLine("Enabled      : " + rule.IsEnabled);
-                    Console.WriteLine("Read Only    : " + rule.IsReadOnly);
-                    Console.WriteLine("Priority     : " + rule.Priority);
-                    Console.WriteLine("Has Conditions: " + (rule.Conditions != null));
-                    Console.WriteLine("Has Actions   : " + (rule.Actions != null));
-                    Console.WriteLine(new string('-', 40));
+                    // Retrieve all inbox rules
+                    InboxRule[] rules = client.GetInboxRules();
+
+                    // Display rule details
+                    foreach (InboxRule rule in rules)
+                    {
+                        Console.WriteLine($"Name: {rule.DisplayName}");
+                        Console.WriteLine($"Enabled: {rule.IsEnabled}");
+                        Console.WriteLine($"Priority: {rule.Priority}");
+                        Console.WriteLine($"Rule ID: {rule.RuleId}");
+                        Console.WriteLine(new string('-', 40));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error retrieving inbox rules: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

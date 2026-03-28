@@ -1,39 +1,38 @@
 using System;
-using System.Net;
 using System.Threading.Tasks;
-using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static async Task Main(string[] args)
     {
-        static async Task Main(string[] args)
+        try
         {
-            try
+            // Initialize IMAP client with placeholder credentials
+            using (ImapClient client = new ImapClient("imap.example.com", 993, "user@example.com", "password", SecurityOptions.Auto))
             {
-                // Define connection parameters (replace with real values)
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
-                string password = "password";
-                string messageUid = "12345"; // Unique ID of the message to delete
-
-                // Create and configure the IMAP client
-                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.SSLImplicit))
+                try
                 {
-                    // Select the folder containing the message
-                    await client.SelectFolderAsync("INBOX");
+                    // Connect to the IMAP server
 
-                    // Permanently delete the message and commit the deletion
+                    // Unique identifier of the message to delete (replace with actual UID)
+                    string messageUid = "12345";
+
+                    // Permanently delete the message and commit the deletion immediately
                     await client.DeleteMessageAsync(messageUid, true);
+                    Console.WriteLine("Message permanently deleted.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

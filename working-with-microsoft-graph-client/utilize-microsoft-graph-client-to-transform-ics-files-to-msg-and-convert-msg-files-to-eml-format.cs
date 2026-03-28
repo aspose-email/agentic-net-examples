@@ -1,25 +1,35 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Calendar;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
+using Aspose.Email.Mapi;
+using Aspose.Email.Calendar;
 
-namespace AsposeEmailGraphExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Paths for input and output files
-                string icsPath = "sample.ics";
-                string msgPath = "output.msg";
-                string emlPath = "output.eml";
+            // Initialize token provider for Outlook (3‑argument overload)
+            Aspose.Email.Clients.TokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                clientId: "YOUR_CLIENT_ID",
+                clientSecret: "YOUR_CLIENT_SECRET",
+                refreshToken: "YOUR_REFRESH_TOKEN");
 
-                // Guard input file existence
+            // Create Graph client (variable name must be exactly 'client')
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
+            {
+                // Simple example: list messages in the default Inbox folder
+                // Folder identifier is obtained via ItemId; using empty string lists the default folder
+                foreach (var messageInfo in client.ListMessages(string.Empty))
+                {
+                    Console.WriteLine($"Message Subject: {messageInfo.Subject}");
+                }
+
+                // ----- Convert an .ics file to .msg -----
+                string icsPath = "sample.ics";
                 if (!File.Exists(icsPath))
                 {
                     Console.Error.WriteLine($"Error: File not found – {icsPath}");
@@ -27,42 +37,73 @@ namespace AsposeEmailGraphExample
                 }
 
                 // Load the iCalendar file
-                Appointment appointment = Appointment.Load(icsPath);
+                Appointment appointment;
+                try
+                {
+                    appointment = Appointment.Load(icsPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error loading .ics file: {ex.Message}");
+                    return;
+                }
 
-                // Convert the appointment to a MAPI message (MSG)
+                // Convert to MAPI message (MSG)
                 MapiMessage msg = appointment.ToMapiMessage();
 
-                // Save the MSG file
-                msg.Save(msgPath);
-
-                // Load the saved MSG file
-                MapiMessage loadedMsg = MapiMessage.Load(msgPath);
-
-                // Convert the MAPI message to a MailMessage (EML)
-                MailMessage mail = loadedMsg.ToMailMessage(new MailConversionOptions());
-
-                // Save the EML file
-                mail.Save(emlPath);
-
-                // Initialize Graph client (placeholder credentials)
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken");
-
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
+                string msgPath = "converted.msg";
+                try
                 {
-                    // Example operation: send the MSG as MIME using Graph client
-                    // This demonstrates usage of the Graph client as required
-                    graphClient.SendAsMime(msg);
+                    msg.Save(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving .msg file: {ex.Message}");
+                    return;
+                }
+
+                // ----- Convert the .msg file to .eml -----
+                if (!File.Exists(msgPath))
+                {
+                    Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                    return;
+                }
+
+                MapiMessage loadedMsg;
+                try
+                {
+                    loadedMsg = MapiMessage.Load(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error loading .msg file: {ex.Message}");
+                    return;
+                }
+
+                using (loadedMsg)
+                {
+                    // Convert MAPI message to MailMessage
+                    MailMessage mail = loadedMsg.ToMailMessage(new MailConversionOptions());
+
+                    // Save as EML using proper SaveOptions
+                    string emlPath = "converted.eml";
+                    try
+                    {
+                        mail.Save(emlPath, SaveOptions.DefaultEml);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error saving .eml file: {ex.Message}");
+                        return;
+                    }
                 }
 
                 Console.WriteLine("Conversion completed successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }

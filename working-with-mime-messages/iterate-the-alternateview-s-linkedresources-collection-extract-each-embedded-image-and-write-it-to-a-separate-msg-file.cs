@@ -8,69 +8,52 @@ class Program
     {
         try
         {
-            // Input message file path
             string inputPath = "sample.msg";
 
-            // Verify input file exists
+            // Verify the input file exists before attempting to load it
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: Input file not found – {inputPath}");
+                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDir = "output";
-            try
+            // Load the message from the file
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                if (!Directory.Exists(outputDir))
+                // Iterate through each AlternateView in the message
+                foreach (AlternateView view in message.AlternateViews)
                 {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error creating output directory: {ex.Message}");
-                return;
-            }
-
-            // Load the mail message
-            using (MailMessage mailMessage = MailMessage.Load(inputPath))
-            {
-                int viewIndex = 0;
-                foreach (AlternateView alternateView in mailMessage.AlternateViews)
-                {
-                    int resourceIndex = 0;
-                    foreach (LinkedResource linkedResource in alternateView.LinkedResources)
+                    // Iterate through each linked resource (embedded image) in the view
+                    foreach (LinkedResource resource in view.LinkedResources)
                     {
-                        // Build a file name for the embedded resource
-                        string resourceId = !string.IsNullOrEmpty(linkedResource.ContentId)
-                                            ? linkedResource.ContentId
-                                            : $"view{viewIndex}_res{resourceIndex}";
-                        string outputPath = Path.Combine(outputDir, $"{resourceId}.msg");
-
-                        // Save the linked resource as a MSG file
                         try
                         {
-                            using (LinkedResource resource = linkedResource)
+                            // Create a unique file name for the extracted resource
+                            string resourceId = string.IsNullOrEmpty(resource.ContentId) ? "resource" : resource.ContentId;
+                            string outputPath = $"{resourceId}_{Guid.NewGuid()}.msg";
+
+                            // Save the resource's content stream to a MSG file
+                            using (FileStream fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
                             {
-                                resource.Save(outputPath);
+                                if (resource.ContentStream != null)
+                                {
+                                    resource.ContentStream.CopyTo(fileStream);
+                                }
                             }
-                            Console.WriteLine($"Saved embedded resource to: {outputPath}");
+
+                            Console.WriteLine($"Saved linked resource to '{outputPath}'.");
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Error saving resource '{resourceId}': {ex.Message}");
+                            Console.Error.WriteLine($"Failed to save linked resource: {ex.Message}");
                         }
-
-                        resourceIndex++;
                     }
-                    viewIndex++;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

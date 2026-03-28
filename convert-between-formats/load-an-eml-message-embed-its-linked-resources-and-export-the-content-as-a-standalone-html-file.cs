@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mime;
 
 class Program
 {
@@ -11,21 +10,32 @@ class Program
         {
             string emlPath = "EmailWithAttachEmbedded.eml";
 
+            // Verify that the input EML file exists
             if (!File.Exists(emlPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {emlPath}");
+                Console.Error.WriteLine($"Input file not found: {emlPath}");
                 return;
             }
 
-            using (MailMessage eml = MailMessage.Load(emlPath))
+            // Load the EML message and export it as a standalone HTML file with embedded resources
+            using (MailMessage message = MailMessage.Load(emlPath))
             {
-                HtmlSaveOptions options = new HtmlSaveOptions();
-                options.ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml;
+                HtmlSaveOptions saveOptions = new HtmlSaveOptions
+                {
+                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                };
 
                 string htmlPath = emlPath + ".html";
 
-                eml.Save(htmlPath, options);
-                Console.WriteLine($"HTML saved to {htmlPath}");
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(htmlPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                message.Save(htmlPath, saveOptions);
+                Console.WriteLine($"HTML file saved to: {htmlPath}");
             }
         }
         catch (Exception ex)
