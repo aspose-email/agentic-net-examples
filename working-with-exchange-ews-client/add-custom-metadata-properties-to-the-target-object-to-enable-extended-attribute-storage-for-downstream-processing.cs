@@ -1,8 +1,7 @@
 using System;
-using System.IO;
-using System.Text;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,57 +9,53 @@ class Program
     {
         try
         {
-            // Define the path for the MSG file.
-            string msgPath = "sample.msg";
-
-            // Ensure the directory exists.
-            string directory = Path.GetDirectoryName(Path.GetFullPath(msgPath));
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            // If the file does not exist, create a minimal placeholder MSG file.
-            if (!File.Exists(msgPath))
-            {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to create placeholder message: " + ex.Message);
-                    return;
-                }
-            }
-
-            // Load the existing MSG file, add a custom property, and save it back.
+            // Initialize the EWS client
+            IEWSClient client;
             try
             {
-                using (MapiMessage message = MapiMessage.Load(msgPath))
-                {
-                    // Add a custom Unicode property.
-                    byte[] customData = Encoding.UTF8.GetBytes("CustomValue");
-                    message.AddCustomProperty(MapiPropertyType.PT_UNICODE, customData, "X-Custom-Property");
-
-                    // Save the updated message.
-                    message.Save(msgPath);
-                }
+                client = EWSClient.GetEWSClient(
+                    "https://exchange.example.com/EWS/Exchange.asmx",
+                    new NetworkCredential("username", "password"));
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Error processing message: " + ex.Message);
+                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
                 return;
             }
 
-            Console.WriteLine("Custom property added successfully.");
+            // Create a new mail message with custom metadata
+            using (MailMessage message = new MailMessage())
+            {
+                message.From = "sender@example.com";
+                message.To.Add("recipient@example.com");
+                message.Subject = "Test with custom metadata";
+                message.Body = "This email contains custom metadata properties.";
+
+                // Add custom metadata as headers
+                message.Headers.Add("X-Custom-Property1", "Value1");
+                message.Headers.Add("X-Custom-Property2", "Value2");
+
+                // Send the message
+                try
+                {
+                    client.Send(message);
+                    Console.WriteLine("Message sent successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to send message: {ex.Message}");
+                }
+            }
+
+            // Dispose the client if it implements IDisposable
+            if (client is IDisposable disposableClient)
+            {
+                disposableClient.Dispose();
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
