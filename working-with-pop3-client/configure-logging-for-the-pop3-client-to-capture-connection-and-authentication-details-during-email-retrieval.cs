@@ -11,46 +11,49 @@ class Program
         try
         {
             // POP3 server configuration
-            string host = "pop3.example.com";
-            int port = 995;
+            string host = "pop.example.com";
+            int port = 110;
             string username = "user@example.com";
             string password = "password";
-            SecurityOptions security = SecurityOptions.SSLImplicit;
 
             // Log file configuration
-            string logDirectory = Path.Combine(Environment.CurrentDirectory, "Logs");
-            string logPath = Path.Combine(logDirectory, "pop3_log.txt");
-
-            // Ensure the log directory exists
-            if (!Directory.Exists(logDirectory))
+            string logFilePath = "pop3log.txt";
+            string logDirectory = Path.GetDirectoryName(logFilePath);
+            if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
             {
                 Directory.CreateDirectory(logDirectory);
             }
 
-            // Initialize POP3 client with logging enabled
-            using (Pop3Client client = new Pop3Client(host, port, username, password, security))
+            // Initialize POP3 client
+            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
             {
+                // Enable logging
                 client.EnableLogger = true;
-                client.LogFileName = logPath;
+                client.LogFileName = logFilePath;
                 client.UseDateInLogFileName = false;
 
-                // Retrieve the list of messages
-                Pop3MessageInfoCollection messages = client.ListMessages();
-
-                Console.WriteLine($"Total messages: {messages.Count}");
-
-                // Fetch and display the first message if available
-                if (messages.Count > 0)
+                // Optional: capture connection event
+                client.OnConnect += (sender, e) =>
                 {
-                    Pop3MessageInfo firstInfo = messages[0];
-                    MailMessage message = client.FetchMessage(firstInfo.UniqueId);
-                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine("Connected to POP3 server.");
+                };
+
+                // Perform a simple operation to trigger connection and authentication
+                try
+                {
+                    int messageCount = client.GetMessageCount();
+                    Console.WriteLine($"Total messages: {messageCount}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during POP3 operations: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
