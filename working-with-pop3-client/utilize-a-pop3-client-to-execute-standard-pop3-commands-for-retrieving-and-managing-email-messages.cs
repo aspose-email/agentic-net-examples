@@ -4,68 +4,83 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
+
 class Program
 {
     static void Main()
     {
         try
         {
-            // POP3 server configuration
+            // POP3 server connection parameters
             string host = "pop3.example.com";
-            int port = 995;
+            int port = 110;
             string username = "user@example.com";
             string password = "password";
+            SecurityOptions security = SecurityOptions.None;
 
-            // Initialize POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+            // Initialize and connect the POP3 client
+            using (Pop3Client client = new Pop3Client(host, port, username, password, security))
             {
                 try
                 {
-                    // Retrieve list of messages
-                    Pop3MessageInfoCollection messages = client.ListMessages();
+                    // Validate credentials
+                    client.ValidateCredentials();
 
-                    foreach (Pop3MessageInfo info in messages)
+                    // Get mailbox status
+                    Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    Console.WriteLine($"Message Count: {mailboxInfo.MessageCount}");
+                    Console.WriteLine($"Occupied Size: {mailboxInfo.OccupiedSize} bytes");
+
+                    // List messages (default fields)
+                    Pop3MessageInfoCollection messageInfos = client.ListMessages();
+                    foreach (Pop3MessageInfo info in messageInfos)
                     {
-                        Console.WriteLine($"Message #{info.SequenceNumber} - Subject: {info.Subject}");
-
-                        // Fetch full message
-                        using (MailMessage message = client.FetchMessage(info.SequenceNumber))
-                        {
-                            // Ensure output directory exists
-                            string outputDir = "SavedMessages";
-                            if (!Directory.Exists(outputDir))
-                            {
-                                Directory.CreateDirectory(outputDir);
-                            }
-
-                            // Define file path
-                            string filePath = Path.Combine(outputDir, $"Message_{info.SequenceNumber}.eml");
-
-                            // Save message to file
-                            try
-                            {
-                                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                                {
-                                    message.Save(fs, SaveOptions.DefaultEml);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to save message #{info.SequenceNumber}: {ex.Message}");
-                                continue;
-                            }
-                        }
-
-                        // Mark message for deletion
-                        client.DeleteMessage(info.SequenceNumber);
+                        Console.WriteLine($"Seq#: {info.SequenceNumber} | Subject: {info.Subject} | Size: {info.Size} bytes");
                     }
 
-                    // Commit deletions on the server
-                    client.CommitDeletes();
+                    // If there is at least one message, fetch and save it
+                    if (messageInfos.Count > 0)
+                    {
+                        Pop3MessageInfo firstInfo = messageInfos[0];
+                        MailMessage message = client.FetchMessage(firstInfo.SequenceNumber);
+
+                        // Prepare file path for saving the message
+                        string saveDirectory = Path.Combine(Environment.CurrentDirectory, "SavedMessages");
+                        string savePath = Path.Combine(saveDirectory, $"Message_{firstInfo.SequenceNumber}.eml");
+
+                        // Ensure the directory exists
+                        if (!Directory.Exists(saveDirectory))
+                        {
+                            Directory.CreateDirectory(saveDirectory);
+                        }
+
+                        // Save the message to a file
+                        try
+                        {
+                            message.Save(savePath, SaveOptions.DefaultEml);
+                            Console.WriteLine($"Message saved to: {savePath}");
+                        }
+                        catch (Exception fileEx)
+                        {
+                            Console.Error.WriteLine($"Failed to save message: {fileEx.Message}");
+                        }
+
+                        // Optionally delete the message from the server
+                        try
+                        {
+                            client.DeleteMessage(firstInfo.SequenceNumber);
+                            client.CommitDeletes();
+                            Console.WriteLine("Message deleted from server.");
+                        }
+                        catch (Exception deleteEx)
+                        {
+                            Console.Error.WriteLine($"Failed to delete message: {deleteEx.Message}");
+                        }
+                    }
                 }
-                catch (Exception ex)
+                catch (Exception clientEx)
                 {
-                    Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
+                    Console.Error.WriteLine($"POP3 operation failed: {clientEx.Message}");
                 }
             }
         }
