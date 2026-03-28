@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
@@ -11,54 +10,51 @@ class Program
     {
         try
         {
-            // Input MSG file path
-            string msgFilePath = "sample.msg";
+            // Path to the MSG file
+            string msgPath = "sample.msg";
 
-            // Verify the MSG file exists
-            if (!File.Exists(msgFilePath))
+            // Verify the input file exists
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file into a MapiMessage
-            using (MapiMessage msg = MapiMessage.Load(msgFilePath))
+            // Load the MSG file into a MailMessage (disposed after use)
+            using (FileStream msgStream = File.OpenRead(msgPath))
             {
-                // Prepare a Notebook object (using the subject as the notebook name)
+                using (MailMessage message = MailMessage.Load(msgStream))
+                {
+                    // Message loaded – you can access its properties if needed
+                    // For this example we only need to ensure the file is read successfully
+                }
+            }
+
+            // Create a token provider for Outlook (3‑argument overload)
+            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken");
+
+            // Initialize the Graph client (disposable)
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, ""))
+            {
+                // Define a new OneNote notebook
                 Notebook notebook = new Notebook
                 {
-                    DisplayName = string.IsNullOrEmpty(msg.Subject) ? "Untitled Notebook" : msg.Subject
+                    DisplayName = "ImportedNotebook"
                 };
 
-                // Token provider credentials (replace with real values)
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string tenantId = "tenantId";
+                // Create the notebook in the user's OneNote library
+                Notebook createdNotebook = client.CreateNotebook(notebook);
 
-                // Create token provider
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-                // Initialize Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
-                {
-                    try
-                    {
-                        // Create the notebook in OneNote
-                        Notebook createdNotebook = graphClient.CreateNotebook(notebook);
-                        Console.WriteLine($"Notebook created with ID: {createdNotebook.Id}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Graph operation failed: {ex.Message}");
-                        return;
-                    }
-                }
+                // Output the identifier of the created notebook
+                Console.WriteLine($"Notebook created with ID: {createdNotebook.Id}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
