@@ -1,68 +1,52 @@
 using System;
 using System.IO;
+using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
-using Aspose.Email.Mapi;
 
-namespace AsposeEmailGraphExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Create token provider for Outlook (Microsoft Graph)
+            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
+                "clientId",
+                "clientSecret",
+                "refreshToken");
+
+            string tenantId = "yourTenantId";
+
+            // Initialize Graph client
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
             {
-                // Initialize token provider (dummy credentials)
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken");
+                // ID of the MSG message to retrieve
+                string messageId = "message-id";
 
-                // Create Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
+                // Fetch the message as a MapiMessage
+                using (MapiMessage msg = client.FetchMessage(messageId))
                 {
-                    // ID of the message to retrieve (dummy value)
-                    string messageId = "messageId";
+                    // Define output path
+                    string outputPath = "output.msg";
+                    string directory = Path.GetDirectoryName(outputPath);
 
-                    // Fetch the MSG-formatted message
-                    using (MapiMessage message = graphClient.FetchMessage(messageId))
+                    // Ensure the directory exists
+                    if (!Directory.Exists(directory))
                     {
-                        // Output basic properties
-                        Console.WriteLine("Subject: " + message.Subject);
-                        Console.WriteLine("From: " + (message.SenderEmailAddress ?? "Unknown"));
-                        Console.WriteLine("Body: " + message.Body);
-
-                        // Process attachments
-                        foreach (MapiAttachment attachment in message.Attachments)
-                        {
-                            Console.WriteLine("Attachment: " + attachment.FileName);
-                            string attachmentsFolder = "Attachments";
-
-                            try
-                            {
-                                // Ensure the output directory exists
-                                if (!Directory.Exists(attachmentsFolder))
-                                {
-                                    Directory.CreateDirectory(attachmentsFolder);
-                                }
-
-                                // Save attachment to file
-                                string filePath = Path.Combine(attachmentsFolder, attachment.FileName);
-                                attachment.Save(filePath);
-                                Console.WriteLine("Saved attachment to: " + filePath);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine("Failed to save attachment: " + ex.Message);
-                            }
-                        }
+                        Directory.CreateDirectory(directory);
                     }
+
+                    // Save the message in MSG format
+                    msg.Save(outputPath);
+                    Console.WriteLine($"Message saved to {outputPath}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
