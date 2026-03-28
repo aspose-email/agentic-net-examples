@@ -1,44 +1,53 @@
 using System;
 using System.Net;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            try
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
             {
-                // Define connection parameters
-                string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-                string userName = "user@example.com";
-                string password = "password";
+                // Retrieve existing inbox rules
+                InboxRule[] inboxRules = client.GetInboxRules();
 
-                // Create network credentials (avoid naming conflict with any existing variable)
-                NetworkCredential networkCredential = new NetworkCredential(userName, password);
-
-                // Initialize the EWS client inside a using block for proper disposal
-                using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, networkCredential))
+                // Find the rule to modify (by display name)
+                InboxRule ruleToUpdate = null;
+                foreach (InboxRule rule in inboxRules)
                 {
-                    // Create a new inbox rule
-                    InboxRule rule = new InboxRule();
-                    rule.DisplayName = "Sample Rule";
-                    rule.IsEnabled = true;
-                    // Additional rule configuration can be added here (conditions, actions, etc.)
-
-                    // Update the rule on the server
-                    ewsClient.UpdateInboxRule(rule);
-                    Console.WriteLine("Inbox rule updated successfully.");
+                    if (rule.DisplayName == "Sample Rule")
+                    {
+                        ruleToUpdate = rule;
+                        break;
+                    }
                 }
+
+                if (ruleToUpdate == null)
+                {
+                    Console.WriteLine("Specified inbox rule not found.");
+                    return;
+                }
+
+                // Example modification: disable the rule
+                ruleToUpdate.IsEnabled = false;
+
+                // Apply the update to the server
+                client.UpdateInboxRule(ruleToUpdate);
+
+                Console.WriteLine("Inbox rule updated successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

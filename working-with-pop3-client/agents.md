@@ -18,22 +18,24 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (40 file(s))
-- `using Aspose.Email.Clients;` (40 file(s))
-- `using Aspose.Email.Clients.Pop3;` (40 file(s))
-- `using Aspose.Email;` (31 file(s))
+- `using System;` (38 file(s))
+- `using Aspose.Email.Clients.Pop3;` (38 file(s))
+- `using Aspose.Email.Clients;` (34 file(s))
+- `using Aspose.Email;` (27 file(s))
 - `using System.IO;` (12 file(s))
-- `using Aspose.Email.Tools.Search;` (8 file(s))
-- `using System.Threading.Tasks;` (5 file(s))
-- `using System.Net;` (3 file(s))
-- `using System.Threading;` (3 file(s))
-- `using System.Collections.Generic;` (2 file(s))
+- `using Aspose.Email.Tools.Search;` (7 file(s))
+- `using System.Threading.Tasks;` (4 file(s))
+- `using System.Threading;` (2 file(s))
+- `using Aspose.Email.Clients.Pop3.Models;` (2 file(s))
+- `using Aspose.Email.Tools;` (1 file(s))
+- `using System.Net;` (1 file(s))
+- `using Aspose.Email.Mime;` (1 file(s))
+- `using System.Collections.Generic;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
 | [configure-logging-for-the-pop3-client-to-capture-connection-and-authentication-details-during-email-retrieval.cs](./configure-logging-for-the-pop3-client-to-capture-connection-and-authentication-details-during-email-retrieval.cs) | configure logging for the pop3 client to capture connection and authentication details during email retrieval |
-| [configure-the-pop3-client-by-assigning-appropriate-property-values-to-control-its-behavior-and-connection-settings.cs](./configure-the-pop3-client-by-assigning-appropriate-property-values-to-control-its-behavior-and-connection-settings.cs) | configure the pop3 client by assigning appropriate property values to control its behavior and connection settings |
 | [configure-the-pop3-client-to-record-all-pop3-operations-and-generate-detailed-activity-logs-for-troubleshooting.cs](./configure-the-pop3-client-to-record-all-pop3-operations-and-generate-detailed-activity-logs-for-troubleshooting.cs) | configure the pop3 client to record all pop3 operations and generate detailed activity logs for troubleshooting |
 | [configure-the-pop3-client-with-the-appropriate-username-and-password-to-authenticate-the-email-session.cs](./configure-the-pop3-client-with-the-appropriate-username-and-password-to-authenticate-the-email-session.cs) | configure the pop3 client with the appropriate username and password to authenticate the email session |
 | [delete-selected-emails-from-a-pop3-server-using-the-pop3-client-api-ensuring-proper-session-handling.cs](./delete-selected-emails-from-a-pop3-server-using-the-pop3-client-api-ensuring-proper-session-handling.cs) | delete selected emails from a pop3 server using the pop3 client api ensuring proper session handling |
@@ -41,7 +43,6 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [establish-a-pop3-client-connection-to-a-mail-server-using-net-apis-with-appropriate-authentication.cs](./establish-a-pop3-client-connection-to-a-mail-server-using-net-apis-with-appropriate-authentication.cs) | establish a pop3 client connection to a mail server using net apis with appropriate authentication |
 | [implement-a-pop3-client-operation-that-removes-messages-from-the-server-whose-subject-matches-a-given-pattern.cs](./implement-a-pop3-client-operation-that-removes-messages-from-the-server-whose-subject-matches-a-given-pattern.cs) | implement a pop3 client operation that removes messages from the server whose subject matches a given pattern |
 | [implement-a-pop3-client-to-connect-to-a-mail-server-fetch-messages-and-perform-standard-management-operations.cs](./implement-a-pop3-client-to-connect-to-a-mail-server-fetch-messages-and-perform-standard-management-operations.cs) | implement a pop3 client to connect to a mail server fetch messages and perform standard management operations |
-| [implement-asynchronous-email-retrieval-processing-and-deletion-using-the-pop3-client-class-pop3client-in-net-applications.cs](./implement-asynchronous-email-retrieval-processing-and-deletion-using-the-pop3-client-class-pop3client-in-net-applications.cs) | implement asynchronous email retrieval processing and deletion using the pop3 client class pop3client in net applications |
 | [implement-pop3-client-callback-handling-to-process-server-events-and-responses-appropriately-within-an-asynchronous-workflow.cs](./implement-pop3-client-callback-handling-to-process-server-events-and-responses-appropriately-within-an-asynchronous-workflow.cs) | implement pop3 client callback handling to process server events and responses appropriately within an asynchronous workflow |
 | [implement-pop3-client-functionality-to-connect-to-a-mail-server-and-fetch-email-messages.cs](./implement-pop3-client-functionality-to-connect-to-a-mail-server-and-fetch-email-messages.cs) | implement pop3 client functionality to connect to a mail server and fetch email messages |
 | [implement-pop3-client-functionality-to-filter-retrieved-messages-based-on-specified-criteria-and-process-them-accordingly.cs](./implement-pop3-client-functionality-to-filter-retrieved-messages-based-on-specified-criteria-and-process-them-accordingly.cs) | implement pop3 client functionality to filter retrieved messages based on specified criteria and process them accordingly |
@@ -74,7 +75,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [validate-required-conditions-by-connecting-with-a-pop3-client-before-proceeding-with-email-operations.cs](./validate-required-conditions-by-connecting-with-a-pop3-client-before-proceeding-with-email-operations.cs) | validate required conditions by connecting with a pop3 client before proceeding with email operations |
 
 ## Category Statistics
-- Total examples: 40
+- Total examples: 38
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -83,5 +84,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_021422` | [examples/batch-20260328_021422](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260328_021422) |
+| 2026-03-28 | `20260328_182303` | examples/batch-20260328_182303 |
 <!-- AUTOGENERATED:END -->

@@ -1,67 +1,59 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
-using Aspose.Email;
+using System.IO;
+using System.Text;
+using System.Text.Json;
 
-public class Program
+namespace ConfigLoader
 {
-    public static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string configFilePath = "userconfig.txt";
-
-            if (!File.Exists(configFilePath))
+            try
             {
-                Console.Error.WriteLine("Configuration file not found: " + configFilePath);
-                return;
-            }
+                string configPath = "config.json";
 
-            Dictionary<string, string> settings = new Dictionary<string, string>();
-
-            using (StreamReader reader = new StreamReader(configFilePath))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                // Ensure the configuration file exists
+                if (!File.Exists(configPath))
                 {
-                    line = line.Trim();
-
-                    // Skip empty lines and comments
-                    if (line.Length == 0 || line.StartsWith("#"))
+                    // Create a minimal placeholder configuration file
+                    using (FileStream createStream = File.Create(configPath))
                     {
-                        continue;
+                        byte[] placeholderBytes = Encoding.UTF8.GetBytes("{}");
+                        createStream.Write(placeholderBytes, 0, placeholderBytes.Length);
                     }
+                    Console.WriteLine("Created placeholder config file.");
+                }
 
-                    int separatorIndex = line.IndexOf('=');
-                    if (separatorIndex <= 0 || separatorIndex == line.Length - 1)
-                    {
-                        Console.Error.WriteLine("Invalid configuration line: " + line);
-                        continue;
-                    }
+                // Read the configuration file content
+                string jsonContent;
+                using (FileStream readStream = File.OpenRead(configPath))
+                using (StreamReader reader = new StreamReader(readStream))
+                {
+                    jsonContent = reader.ReadToEnd();
+                }
 
-                    string key = line.Substring(0, separatorIndex).Trim();
-                    string value = line.Substring(separatorIndex + 1).Trim();
+                // Parse JSON into a dictionary of settings
+                Dictionary<string, string> settings = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent);
 
-                    if (!settings.ContainsKey(key))
+                if (settings != null)
+                {
+                    foreach (KeyValuePair<string, string> entry in settings)
                     {
-                        settings.Add(key, value);
-                    }
-                    else
-                    {
-                        settings[key] = value;
+                        Console.WriteLine($"{entry.Key}: {entry.Value}");
                     }
                 }
+                else
+                {
+                    Console.WriteLine("No settings found in the configuration file.");
+                }
             }
-
-            Console.WriteLine("Loaded configuration settings:");
-            foreach (KeyValuePair<string, string> entry in settings)
+            catch (Exception ex)
             {
-                Console.WriteLine(entry.Key + " = " + entry.Value);
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

@@ -1,50 +1,37 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
     static void Main()
     {
+        // Top‑level exception guard
         try
         {
-            string inputMsgPath = "input.msg";
-            if (!File.Exists(inputMsgPath))
+            // Input MSG file path
+            string inputPath = "sample.msg";
+
+            // Desired output path (EML format in this example)
+            string outputPath = "output.eml";
+
+            // Verify that the input file exists
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputMsgPath}");
+                Console.Error.WriteLine($"Error: File not found – {inputPath}");
                 return;
             }
 
-            // Load the MSG file as a MapiMessage
-            using (MapiMessage mapiMsg = MapiMessage.Load(inputMsgPath))
+            // Load the MSG file into a MailMessage instance
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Convert to MailMessage for formats supported by MailMessage.Save
-                MailMessage mailMsg = mapiMsg.ToMailMessage(new MailConversionOptions());
-
-                // Save as EML
-                string emlPath = Path.ChangeExtension(inputMsgPath, ".eml");
-                mailMsg.Save(emlPath, SaveOptions.DefaultEml);
-                Console.WriteLine($"Saved EML to {emlPath}");
-
-                // The following formats (PDF, DOCX) are not directly supported via SaveOptions in this version.
-                // If needed, they can be implemented using appropriate Aspose.Email conversion APIs
-                // when such overloads become available.
-                /*
-                // Example placeholder for PDF conversion (requires a valid PdfSaveOptions class)
-                // string pdfPath = Path.ChangeExtension(inputMsgPath, ".pdf");
-                // var pdfOptions = new Aspose.Email.Pdf.PdfSaveOptions();
-                // mailMsg.Save(pdfPath, pdfOptions);
-
-                // Example placeholder for DOCX conversion (requires a valid DocxSaveOptions class)
-                // string docxPath = Path.ChangeExtension(inputMsgPath, ".docx");
-                // var docxOptions = new Aspose.Email.Docx.DocxSaveOptions();
-                // mailMsg.Save(docxPath, docxOptions);
-                */
+                // Save the message as EML using the default EML save options
+                message.Save(outputPath, SaveOptions.DefaultEml);
             }
         }
         catch (Exception ex)
         {
+            // Friendly error output
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }

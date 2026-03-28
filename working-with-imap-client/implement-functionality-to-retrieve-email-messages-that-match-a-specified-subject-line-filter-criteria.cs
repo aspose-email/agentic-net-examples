@@ -1,11 +1,10 @@
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
-namespace EmailSubjectFilterExample
+namespace AsposeEmailImapSearch
 {
     class Program
     {
@@ -18,49 +17,40 @@ namespace EmailSubjectFilterExample
                 int port = 993;
                 string username = "user@example.com";
                 string password = "password";
+                SecurityOptions security = SecurityOptions.Auto;
 
-                // Create and use the IMAP client
-                using (Aspose.Email.Clients.Imap.ImapClient imapClient = new Aspose.Email.Clients.Imap.ImapClient(
-                    host,
-                    port,
-                    username,
-                    password,
-                    Aspose.Email.Clients.SecurityOptions.Auto))
+                // Create and connect the IMAP client inside a using block to ensure disposal
+                using (ImapClient client = new ImapClient(host, port, username, password, security))
                 {
-                    try
+                    // Build a search query for messages whose subject contains the specified text
+                    ImapQueryBuilder builder = new ImapQueryBuilder();
+                    builder.Subject.Contains("Your Subject Text");
+                    MailQuery query = builder.GetQuery();
+
+                    // Retrieve the list of messages that match the query
+                    ImapMessageInfoCollection infos = client.ListMessages(query);
+
+                    Console.WriteLine($"Found {infos.Count} message(s) matching the subject filter.");
+
+                    // Iterate through the matched messages and fetch full details
+                    foreach (ImapMessageInfo info in infos)
                     {
-                        // Select the INBOX folder
-                        imapClient.SelectFolder("INBOX");
-
-                        // Build a query to filter messages by subject
-                        ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                        builder.Subject.Contains("Your Subject Filter");
-                        MailQuery query = builder.GetQuery();
-
-                        // Retrieve messages that match the query
-                        Aspose.Email.Clients.Imap.ImapMessageInfoCollection messages = imapClient.ListMessages(query);
-
-                        // Iterate through the matched messages
-                        foreach (Aspose.Email.Clients.Imap.ImapMessageInfo info in messages)
-                        {
-                            // Fetch the full message
-                            using (Aspose.Email.MailMessage message = imapClient.FetchMessage(info.UniqueId))
-                            {
-                                Console.WriteLine("Subject: " + (message.Subject ?? string.Empty));
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("IMAP operation error: " + ex.Message);
-                        return;
+                        // Fetch the full mail message using the unique identifier
+                        MailMessage message = client.FetchMessage(info.UniqueId);
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"Date: {message.Date}");
+                        Console.WriteLine(new string('-', 40));
                     }
                 }
             }
+            catch (ImapException imapEx)
+            {
+                Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
+            }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
-                return;
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }

@@ -1,41 +1,60 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Input MSG file path
-            string inputPath = "sample.msg";
-            // Output EML file path
-            string outputPath = "sample.eml";
+            string inputMsgPath = "input.msg";
+            string outputEmlPath = "output.eml";
 
-            // Verify input file exists
-            if (!File.Exists(inputPath))
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                Console.Error.WriteLine($"Error: File not found – {inputMsgPath}");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string outputDir = Path.GetDirectoryName(outputEmlPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                try
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error: Unable to create directory – {outputDir}. {ex.Message}");
+                    return;
+                }
             }
 
-            // Load MSG as MailMessage and save as EML
-            using (Aspose.Email.MailMessage message = Aspose.Email.MailMessage.Load(inputPath))
+            try
             {
-                message.Save(outputPath, Aspose.Email.SaveOptions.DefaultEml);
+                using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
+                {
+                    MailConversionOptions conversionOptions = new MailConversionOptions();
+                    using (MailMessage mail = msg.ToMailMessage(conversionOptions))
+                    {
+                        SaveOptions emlSaveOptions = SaveOptions.DefaultEml;
+                        mail.Save(outputEmlPath, emlSaveOptions);
+                    }
+                }
+
+                Console.WriteLine($"MSG file converted to EML successfully: {outputEmlPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during conversion: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

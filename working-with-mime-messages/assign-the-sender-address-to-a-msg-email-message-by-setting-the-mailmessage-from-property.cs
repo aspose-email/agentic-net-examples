@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,30 +8,31 @@ class Program
     {
         try
         {
-            // Define the output MSG file path
-            string msgPath = Path.Combine(Environment.CurrentDirectory, "output.msg");
-
-            // Ensure the target directory exists
-            string directory = Path.GetDirectoryName(msgPath);
-            if (!Directory.Exists(directory))
+            string outputPath = "output.msg";
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create a MailMessage and set the sender address
-            MailMessage mailMessage = new MailMessage();
-            mailMessage.From = new MailAddress("sender@example.com");
-            mailMessage.To.Add(new MailAddress("recipient@example.com"));
-            mailMessage.Subject = "Sample Message";
-            mailMessage.Body = "This is a test email.";
-
-            // Convert to MapiMessage and save as MSG
-            using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+            using (MailMessage message = new MailMessage())
             {
-                mapiMessage.Save(msgPath);
-            }
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Test Subject";
+                message.Body = "This is a test email.";
 
-            Console.WriteLine($"Message saved to: {msgPath}");
+                try
+                {
+                    message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                    Console.WriteLine($"Message saved to {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    return;
+                }
+            }
         }
         catch (Exception ex)
         {

@@ -9,39 +9,49 @@ class Program
     {
         try
         {
-            string outputFile = "Message.msg";
-            string outputDir = Path.GetDirectoryName(outputFile);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
+            // Define output MSG file path
+            string outputPath = Path.Combine(Environment.CurrentDirectory, "sample.msg");
+            string outputDirectory = Path.GetDirectoryName(outputPath);
 
-            // Create a new MAPI message with standard fields
-            using (MapiMessage message = new MapiMessage(
-                "sender@example.com",
-                "recipient@example.com",
-                "Sample Subject",
-                "This is the message body.",
-                OutlookMessageFormat.Unicode))
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDirectory))
             {
-                // Assign additional standard fields
-                message.Subject = "Updated Subject";
-                message.Body = "Updated body content.";
-                message.SenderEmailAddress = "sender@example.com";
-                message.SenderName = "Sender Name";
-
-                // Save the message to an MSG file
-                using (FileStream stream = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
+                try
                 {
-                    message.Save(stream);
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create directory '{outputDirectory}': {dirEx.Message}");
+                    return;
                 }
             }
 
-            Console.WriteLine("MSG file created at: " + Path.GetFullPath(outputFile));
+            // Create a new MapiMessage with standard fields
+            MapiMessage message = new MapiMessage(
+                "alice@example.com",                     // From
+                "bob@example.com;carol@example.com",    // To (multiple recipients separated by semicolon)
+                "Sample Subject",                       // Subject
+                "This is the body of the message.");    // Body
+
+            // Save the message as an MSG file
+            try
+            {
+                using (MapiMessage disposableMessage = message)
+                {
+                    disposableMessage.Save(outputPath);
+                }
+                Console.WriteLine($"MSG file saved successfully to '{outputPath}'.");
+            }
+            catch (Exception saveEx)
+            {
+                Console.Error.WriteLine($"Failed to save MSG file: {saveEx.Message}");
+                return;
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

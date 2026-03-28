@@ -1,30 +1,56 @@
 using System;
-using Aspose.Email;
+using System.Reflection;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-class Program
+namespace AsposeEmailGmailColorsExample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize Gmail client with placeholder credentials
-            IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com");
+            try
+            {
+                // Initialize Gmail client with dummy credentials.
+                // Replace with real values when running in a real environment.
+                using (IGmailClient gmailClient = GmailClient.GetInstance(
+                    "accessToken",
+                    "user@example.com"))
+                {
+                    // Retrieve color information.
+                    // GetColors returns a ColorsInfo object containing Gmail UI color settings.
+                    // The exact members of ColorsInfo are not documented here,
+                    // so we enumerate its public properties via reflection.
+                    object colorsInfo = gmailClient.GetColors();
 
-            // Retrieve color information from the Gmail account
-            var colorsInfo = gmailClient.GetColors();
+                    if (colorsInfo == null)
+                    {
+                        Console.Error.WriteLine("Failed to retrieve color information.");
+                        return;
+                    }
 
-            // Output the retrieved color information
-            Console.WriteLine("Colors Info: " + colorsInfo);
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+                    Type colorsType = colorsInfo.GetType();
+                    PropertyInfo[] properties = colorsType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+                    Console.WriteLine("Gmail Color Attributes:");
+                    foreach (PropertyInfo prop in properties)
+                    {
+                        try
+                        {
+                            object value = prop.GetValue(colorsInfo);
+                            Console.WriteLine($"{prop.Name}: {value}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Unable to read property '{prop.Name}': {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

@@ -3,35 +3,39 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace RetrieveMsgBody
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "message.msg";
-
-            if (!File.Exists(msgPath))
+            try
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
+                string msgPath = "sample.msg";
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+                if (!File.Exists(msgPath))
+                {
+                    Console.Error.WriteLine($"File not found: {msgPath}");
+                    return;
+                }
+
+                using (MapiMessage msg = MapiMessage.Load(msgPath))
+                {
+                    string plainBody = msg.Body;
+                    string htmlBody = msg.BodyHtml;
+
+                    Console.WriteLine("Plain Text Body:");
+                    Console.WriteLine(plainBody);
+                    Console.WriteLine();
+
+                    Console.WriteLine("HTML Body:");
+                    Console.WriteLine(htmlBody);
+                }
+            }
+            catch (Exception ex)
             {
-                string plainBody = msg.Body ?? string.Empty;
-                string htmlBody = msg.BodyHtml ?? string.Empty;
-
-                Console.WriteLine("Plain Text Body:");
-                Console.WriteLine(plainBody);
-                Console.WriteLine("---");
-                Console.WriteLine("HTML Body:");
-                Console.WriteLine(htmlBody);
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
         }
     }
 }

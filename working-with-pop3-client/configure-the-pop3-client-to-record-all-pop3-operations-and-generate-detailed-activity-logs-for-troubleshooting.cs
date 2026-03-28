@@ -4,25 +4,28 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-class Program
+public class Program
 {
-    static void Main()
+    public static void Main()
     {
         try
         {
-            // Prepare log file location
-            string logDirectory = Path.Combine(Environment.CurrentDirectory, "Logs");
-            string logFilePath = Path.Combine(logDirectory, "pop3_activity.log");
-
-            // Ensure the log directory exists
-            if (!Directory.Exists(logDirectory))
+            // Define log file path and ensure its directory exists
+            string logFilePath = "pop3_log.txt";
+            string logDirectory = Path.GetDirectoryName(logFilePath);
+            if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
             {
                 Directory.CreateDirectory(logDirectory);
             }
 
-            // Initialize POP3 client with placeholder credentials
-            using (Pop3Client client = new Pop3Client("pop3.example.com", 110, "username", "password", SecurityOptions.Auto))
+            // Initialize POP3 client with required credentials
+            using (Pop3Client client = new Pop3Client())
             {
+                client.Host = "pop.example.com";
+                client.Username = "user@example.com";
+                client.Password = "password";
+                client.SecurityOptions = SecurityOptions.Auto;
+
                 // Enable detailed activity logging
                 client.EnableLogger = true;
                 client.LogFileName = logFilePath;
@@ -30,31 +33,14 @@ class Program
 
                 try
                 {
-                    // Verify connection
-                    client.Noop();
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Connection test failed: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    // Get total message count
+                    // Perform a simple operation to generate logs
                     int messageCount = client.GetMessageCount();
-                    Console.WriteLine($"Total messages: {messageCount}");
-
-                    // List message metadata
-                    Pop3MessageInfoCollection infos = client.ListMessages();
-                    foreach (Pop3MessageInfo info in infos)
-                    {
-                        Console.WriteLine($"UID: {info.UniqueId}, Size: {info.Size} bytes");
-                    }
+                    Console.WriteLine($"Message count: {messageCount}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
+                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    return;
                 }
             }
         }

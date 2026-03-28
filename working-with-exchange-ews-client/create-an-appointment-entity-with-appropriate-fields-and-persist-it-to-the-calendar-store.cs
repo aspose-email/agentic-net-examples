@@ -1,55 +1,42 @@
 using System;
-using System.IO;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Calendar;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Prepare attendees
-            MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("person1@example.com"));
-            attendees.Add(new MailAddress("person2@example.com"));
-            attendees.Add(new MailAddress("person3@example.com"));
+            // Initialize credentials and mailbox URI
+            NetworkCredential credentials = new NetworkCredential("username", "password");
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
 
-            // Create the appointment
-            Appointment appointment = new Appointment(
-                "Conference Room 1",
-                new DateTime(2023, 12, 15, 10, 0, 0),
-                new DateTime(2023, 12, 15, 11, 0, 0),
-                new MailAddress("organizer@example.com"),
-                attendees);
-
-            appointment.Summary = "Project Kickoff Meeting";
-            appointment.Description = "Discuss project goals, timeline, and responsibilities.";
-
-            // Define the file path to persist the appointment
-            string filePath = "appointment.ics";
-
-            // Ensure the target directory exists
-            string directory = Path.GetDirectoryName(filePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Create and connect the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
-                Directory.CreateDirectory(directory);
-            }
+                // Prepare attendees list
+                MailAddressCollection attendees = new MailAddressCollection();
+                attendees.Add(new MailAddress("attendee1@example.com"));
+                attendees.Add(new MailAddress("attendee2@example.com"));
 
-            // Save the appointment to an iCalendar file
-            try
-            {
-                using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                {
-                    appointment.Save(fileStream, AppointmentSaveFormat.Ics);
-                }
+                // Define appointment details
+                DateTime start = new DateTime(2023, 12, 1, 10, 0, 0);
+                DateTime end = start.AddHours(1);
+                Appointment appointment = new Appointment(
+                    "Conference Room",
+                    "Team Meeting",
+                    "Discuss project milestones",
+                    start,
+                    end,
+                    new MailAddress("organizer@example.com"),
+                    attendees);
 
-                Console.WriteLine("Appointment saved to: " + Path.GetFullPath(filePath));
-            }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine("Failed to save appointment: " + ioEx.Message);
-                return;
+                // Persist the appointment to the Exchange calendar
+                string uid = client.CreateAppointment(appointment);
+                Console.WriteLine("Created appointment UID: " + uid);
             }
         }
         catch (Exception ex)

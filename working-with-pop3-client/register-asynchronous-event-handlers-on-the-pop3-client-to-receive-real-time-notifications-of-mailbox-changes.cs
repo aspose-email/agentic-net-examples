@@ -1,75 +1,112 @@
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
+using Aspose.Email.Clients;
 
-class Program
+namespace Pop3EventSample
 {
-    static void Main()
+    class Pop3Monitor : IDisposable
     {
-        try
+        private readonly Pop3Client _client;
+        private readonly CancellationTokenSource _cancellationSource = new CancellationTokenSource();
+        private int _previousMessageCount = -1;
+        private Task _monitoringTask;
+
+        public event EventHandler MailboxChanged;
+
+        public Pop3Monitor(Pop3Client client)
         {
-            // Initialize POP3 client with placeholder credentials
-            using (Pop3Client client = new Pop3Client("pop.example.com", 110, "user", "pass", SecurityOptions.Auto))
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        public void Start()
+        {
+            _monitoringTask = Task.Run(async () => await MonitorAsync(_cancellationSource.Token));
+        }
+
+        public void Stop()
+        {
+            _cancellationSource.Cancel();
+            try
             {
-                // Register event handler for successful connection
-                client.OnConnect += (sender, e) =>
-                {
-                    Console.WriteLine("POP3 client connected.");
-                };
+                _monitoringTask?.Wait();
+            }
+            catch (AggregateException) { }
+        }
 
-                // Register BindIPEndPointHandler to control local endpoint selection
-
-                // Validate credentials to trigger connection establishment
+        private async Task MonitorAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
                 try
                 {
-                    client.ValidateCredentials();
-                    Console.WriteLine("Credentials validated.");
-                }
-                catch (Pop3Exception ex)
-                {
-                    Console.Error.WriteLine($"POP3 error: {ex.Message}");
-                    return;
-                }
-
-                // Start a background task that periodically sends NOOP to keep the connection alive
-                using (CancellationTokenSource cts = new CancellationTokenSource())
-                {
-                    Task keepAliveTask = Task.Run(async () =>
+                    int currentCount = await _client.GetMessageCountAsync(cancellationToken);
+                    if (_previousMessageCount != -1 && currentCount != _previousMessageCount)
                     {
-                        while (!cts.Token.IsCancellationRequested)
-                        {
-                            try
-                            {
-                                await client.NoopAsync(cts.Token);
-                                Console.WriteLine("NOOP sent.");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"NOOP failed: {ex.Message}");
-                                break;
-                            }
-
-                            await Task.Delay(TimeSpan.FromMinutes(5), cts.Token);
-                        }
-                    }, cts.Token);
-
-                    // Wait for user input to stop the sample
-                    Console.WriteLine("Press any key to stop...");
-                    Console.ReadKey();
-
-                    // Cancel the background task and wait for it to finish
-                    cts.Cancel();
-                    keepAliveTask.Wait();
+                        MailboxChanged?.Invoke(this, EventArgs.Empty);
+                    }
+                    _previousMessageCount = currentCount;
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error while checking mailbox: {ex.Message}");
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
             }
         }
-        catch (Exception ex)
+
+        public void Dispose()
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Stop();
+            _cancellationSource.Dispose();
+        }
+    }
+
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            try
+            {
+                // Configure POP3 client credentials
+                string host = "pop3.example.com";
+                string username = "user@example.com";
+                string password = "password";
+
+                using (Pop3Client client = new Pop3Client(host, username, password, SecurityOptions.Auto))
+                {
+                    try
+                    {
+                    }
+                    catch (Exception connEx)
+                    {
+                        Console.Error.WriteLine($"Connection error: {connEx.Message}");
+                        return;
+                    }
+
+                    using (Pop3Monitor monitor = new Pop3Monitor(client))
+                    {
+                        monitor.MailboxChanged += (sender, e) =>
+                        {
+                            Console.WriteLine("Mailbox change detected.");
+                        };
+
+                        monitor.Start();
+
+                        Console.WriteLine("Monitoring mailbox changes. Press Enter to stop.");
+                        Console.ReadLine();
+
+                        monitor.Stop();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

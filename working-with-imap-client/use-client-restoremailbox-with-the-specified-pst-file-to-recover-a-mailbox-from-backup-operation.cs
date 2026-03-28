@@ -1,7 +1,7 @@
+using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Storage.Pst;
 
@@ -11,50 +11,45 @@ class Program
     {
         try
         {
-            // Path to the PST file that contains the backup.
-            string pstFilePath = "backup.pst";
+            // Define IMAP server connection parameters
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
+            SecurityOptions security = SecurityOptions.Auto;
 
-            // Verify that the PST file exists before attempting to open it.
-            if (!File.Exists(pstFilePath))
+            // Path to the PST file that contains the backup
+            string pstPath = "backup.pst";
+
+            // Verify that the PST file exists before proceeding
+            if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"PST file not found: {pstFilePath}");
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
                 return;
             }
 
-            // Open the PST file inside a using block to ensure proper disposal.
-            using (PersonalStorage personalStorage = PersonalStorage.FromFile(pstFilePath))
+            // Load the PST file into a PersonalStorage object
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Create and configure the IMAP client.
-                using (ImapClient imapClient = new ImapClient("imap.example.com", 993, Aspose.Email.Clients.SecurityOptions.Auto))
+                // Configure restore settings
+                RestoreSettings restoreSettings = new RestoreSettings();
+                // Use desired restore options (e.g., recursive restore and removal of nonexistent items)
+                restoreSettings.Options = RestoreOptions.Recursive | RestoreOptions.RemoveNonexistentItems;
+
+                // Create and connect the IMAP client
+                try
                 {
-                    // Set authentication credentials.
-                    imapClient.Username = "user@example.com";
-                    imapClient.Password = "password";
-
-                    // Optional: verify connection by issuing a NOOP command.
-                    try
+                    using (ImapClient client = new ImapClient(host, port, username, password, security))
                     {
-                        imapClient.Noop();
+                        // Begin the restore operation
+                        client.Restore(pst, restoreSettings);
+                        Console.WriteLine("Mailbox restored successfully from PST.");
                     }
-                    catch (Exception connectionEx)
-                    {
-                        Console.Error.WriteLine($"Failed to connect to IMAP server: {connectionEx.Message}");
-                        return;
-                    }
-
-                    // Prepare restore settings (default settings are sufficient for a basic restore).
-                    RestoreSettings restoreSettings = new RestoreSettings();
-
-                    // Perform the restore operation.
-                    try
-                    {
-                        imapClient.Restore(personalStorage, restoreSettings);
-                        Console.WriteLine("Mailbox restored successfully from the PST backup.");
-                    }
-                    catch (Exception restoreEx)
-                    {
-                        Console.Error.WriteLine($"Error during restore: {restoreEx.Message}");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"IMAP client error: {ex.Message}");
+                    return;
                 }
             }
         }

@@ -1,51 +1,48 @@
 using System;
 using System.IO;
+using System.Text;
 using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Define input and output file paths
             string inputPath = "sample.eml";
             string outputPath = "sample.html";
 
-            // Ensure the input EML file exists
+            // Ensure the input file exists; create a minimal placeholder if missing
             if (!File.Exists(inputPath))
             {
-                try
-                {
-                    // Create a minimal placeholder EML file
-                    string placeholder = "From: placeholder@example.com\r\nTo: placeholder@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(inputPath, placeholder);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
-                    return;
-                }
+                string placeholder = "From: sender@example.com\r\nTo: receiver@example.com\r\nSubject: Test\r\n\r\nThis is a test email.";
+                File.WriteAllText(inputPath, placeholder, Encoding.UTF8);
             }
 
-            // Load the EML message and save as HTML using default HTML options (UTF‑8)
-            using (MailMessage message = MailMessage.Load(inputPath))
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                try
-                {
-                    message.Save(outputPath, SaveOptions.DefaultHtml);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save HTML file: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            Console.WriteLine($"EML file '{inputPath}' successfully converted to HTML at '{outputPath}'.");
+            // Load the EML message with UTF‑8 preferred encoding
+            EmlLoadOptions loadOptions = new EmlLoadOptions
+            {
+                PreferredTextEncoding = Encoding.UTF8
+            };
+
+            using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
+            {
+                // Save the message as HTML; DefaultHtml uses UTF‑8 encoding internally
+                message.Save(outputPath, SaveOptions.DefaultHtml);
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
+            return;
         }
     }
 }

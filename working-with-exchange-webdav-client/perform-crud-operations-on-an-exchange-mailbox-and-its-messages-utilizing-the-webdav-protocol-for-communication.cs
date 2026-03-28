@@ -1,6 +1,7 @@
 using System;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Clients.Exchange;
 
 class Program
@@ -9,120 +10,60 @@ class Program
     {
         try
         {
-            // Mailbox connection details (replace with real values)
-            string mailboxUri = "https://exchange.example.com/exchange/user@domain.com/";
-            string username = "user";
+            // Exchange server connection details (replace with real values)
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
-            // Initialize the WebDAV client
-            using (Aspose.Email.Clients.Exchange.Dav.ExchangeClient client = new Aspose.Email.Clients.Exchange.Dav.ExchangeClient(mailboxUri, username, password))
+            // Create and use the Exchange WebDAV client
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
             {
-                // -----------------------------------------------------------------
-                // CREATE: Create a test folder under the Inbox
-                // -----------------------------------------------------------------
-                try
+                // Get mailbox information
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+
+                // Define the target folder (a subfolder of Inbox)
+                string parentFolderUri = mailboxInfo.InboxUri;
+                string newFolderName = "TestFolder";
+                string newFolderUri = $"{parentFolderUri}/{newFolderName}";
+
+                // Ensure the folder does not already exist, then create it
+                if (!client.FolderExists(parentFolderUri, newFolderName, out ExchangeFolderInfo _))
                 {
-                    string testFolderName = "TestFolder";
-                    string inboxUri = client.MailboxInfo.InboxUri;
-                    client.CreateFolder(testFolderName, inboxUri);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error creating folder: " + ex.Message);
+                    client.CreateFolder(parentFolderUri, newFolderName);
                 }
 
-                // -----------------------------------------------------------------
-                // CREATE: Create a simple email message
-                // -----------------------------------------------------------------
-                Aspose.Email.MailMessage message = new Aspose.Email.MailMessage();
-                message.From = "user@domain.com";
-                message.To = "recipient@domain.com";
-                message.Subject = "Test Message";
-                message.Body = "This is a test message created via Aspose.Email WebDAV client.";
+                // Create a simple email message
+                MailMessage message = new MailMessage(
+                    "from@example.com",
+                    "to@example.com",
+                    "Test Subject",
+                    "This is a test message created via Aspose.Email.");
 
-                // -----------------------------------------------------------------
-                // CREATE: Append the message to the test folder
-                // -----------------------------------------------------------------
-                try
+                // Append the message to the newly created folder
+                client.AppendMessage(newFolderUri, message);
+
+                // List messages in the folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(newFolderUri);
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    client.AppendMessage("TestFolder", message);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error appending message: " + ex.Message);
+                    // Fetch the full message to read its properties
+                    MailMessage fetched = client.FetchMessage(info.UniqueUri);
+                    Console.WriteLine($"Fetched Message Subject: {fetched.Subject}");
                 }
 
-                // -----------------------------------------------------------------
-                // READ: List messages in the test folder and fetch each one
-                // -----------------------------------------------------------------
-                try
+                // Delete the first message if any exist
+                if (messages.Count > 0)
                 {
-                    Aspose.Email.Clients.Exchange.ExchangeMessageInfoCollection messages = client.ListMessages("TestFolder");
-                    foreach (Aspose.Email.Clients.Exchange.ExchangeMessageInfo info in messages)
-                    {
-                        Console.WriteLine("Subject: " + info.Subject);
-                        Console.WriteLine("URI: " + info.UniqueUri);
-
-                        // Fetch full message content
-                        Aspose.Email.MailMessage fetched = client.FetchMessage(info.UniqueUri);
-                        Console.WriteLine("Body: " + fetched.Body);
-
-                        // DELETE: Remove the message after processing
-                        client.DeleteMessage(info.UniqueUri);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error listing or processing messages: " + ex.Message);
+                    client.DeleteMessage(messages[0].UniqueUri);
                 }
 
-                // -----------------------------------------------------------------
-                // CREATE: Create an archive folder
-                // -----------------------------------------------------------------
-                try
-                {
-                    string archiveFolderName = "ArchiveFolder";
-                    string inboxUri = client.MailboxInfo.InboxUri;
-                    client.CreateFolder(archiveFolderName, inboxUri);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error creating archive folder: " + ex.Message);
-                }
-
-                // -----------------------------------------------------------------
-                // UPDATE: Move any remaining messages from TestFolder to ArchiveFolder
-                // -----------------------------------------------------------------
-                try
-                {
-                    Aspose.Email.Clients.Exchange.ExchangeMessageInfoCollection remaining = client.ListMessages("TestFolder");
-                    foreach (Aspose.Email.Clients.Exchange.ExchangeMessageInfo info in remaining)
-                    {
-                        client.MoveMessage(info, "ArchiveFolder");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error moving messages: " + ex.Message);
-                }
-
-                // -----------------------------------------------------------------
-                // DELETE: Clean up folders
-                // -----------------------------------------------------------------
-                try
-                {
-                    client.DeleteFolder("TestFolder");
-                    client.DeleteFolder("ArchiveFolder");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error deleting folders: " + ex.Message);
-                }
+                // Delete the test folder
+                client.DeleteFolder(newFolderUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

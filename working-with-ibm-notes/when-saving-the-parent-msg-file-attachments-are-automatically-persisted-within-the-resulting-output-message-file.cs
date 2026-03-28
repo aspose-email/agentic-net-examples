@@ -9,37 +9,38 @@ class Program
     {
         try
         {
-            // Define paths
+            // Define paths for the attachment and the output MSG file
             string attachmentPath = "attachment.txt";
             string outputMsgPath = "output.msg";
 
-            // Ensure attachment file exists; create a placeholder if missing
-            if (!File.Exists(attachmentPath))
+            // Ensure the attachment file exists; create a minimal placeholder if missing
+            try
             {
-                try
+                if (!File.Exists(attachmentPath))
                 {
-                    File.WriteAllText(attachmentPath, "Sample attachment content.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating attachment file: {ex.Message}");
-                    return;
+                    // Create a simple text file as a placeholder attachment
+                    File.WriteAllText(attachmentPath, "Placeholder attachment content.");
                 }
             }
-
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            catch (Exception ex)
             {
-                try
+                Console.Error.WriteLine($"Error preparing attachment file: {ex.Message}");
+                return;
+            }
+
+            // Ensure the directory for the output MSG file exists
+            try
+            {
+                string outputDirectory = Path.GetDirectoryName(outputMsgPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
                 {
                     Directory.CreateDirectory(outputDirectory);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating output directory: {ex.Message}");
-                    return;
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error preparing output directory: {ex.Message}");
+                return;
             }
 
             // Create a MailMessage and add the attachment
@@ -47,30 +48,27 @@ class Program
             {
                 mailMessage.From = "sender@example.com";
                 mailMessage.To.Add("recipient@example.com");
-                mailMessage.Subject = "Test Message with Attachment";
-                mailMessage.Body = "This is the body of the email.";
+                mailMessage.Subject = "Sample Email with Attachment";
+                mailMessage.Body = "This email contains an attachment. The attachment will be persisted when saved as MSG.";
 
-                try
+                using (Attachment attachment = new Attachment(attachmentPath))
                 {
-                    mailMessage.Attachments.Add(new Attachment(attachmentPath));
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error adding attachment: {ex.Message}");
-                    return;
+                    mailMessage.Attachments.Add(attachment);
                 }
 
-                // Convert MailMessage to MapiMessage (attachments are preserved)
+                // Convert the MailMessage to a MapiMessage (MSG format)
                 using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
                 {
                     try
                     {
+                        // Save the MapiMessage as an MSG file; attachments are automatically persisted
                         mapiMessage.Save(outputMsgPath);
-                        Console.WriteLine($"Message saved successfully to '{outputMsgPath}'.");
+                        Console.WriteLine($"MSG file saved successfully to '{outputMsgPath}'.");
                     }
                     catch (Exception ex)
                     {
                         Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
+                        return;
                     }
                 }
             }

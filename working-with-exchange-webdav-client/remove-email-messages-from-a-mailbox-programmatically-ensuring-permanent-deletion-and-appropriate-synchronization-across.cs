@@ -1,38 +1,41 @@
 using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
+        // Top‑level exception guard
         try
         {
-            // Mailbox connection settings
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create the EWS client via the factory method (returns IEWSClient)
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+            // Initialize the Exchange WebDav client (replace placeholders with real values)
+            using (ExchangeClient client = new ExchangeClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
             {
                 // Retrieve all messages from the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
 
-                // Permanently delete each message
-                foreach (ExchangeMessageInfo info in messages)
+                // Iterate through each message and delete it permanently
+                foreach (ExchangeMessageInfo messageInfo in messages)
                 {
-                    client.DeleteItem(info.UniqueUri, DeletionOptions.DeletePermanently);
-                    Console.WriteLine($"Deleted message: {info.Subject}");
+                    try
+                    {
+                        // Delete the message using its unique URI
+                        client.DeleteMessage(messageInfo.UniqueUri);
+                        Console.WriteLine($"Deleted message: {messageInfo.Subject}");
+                    }
+                    catch (Exception deleteEx)
+                    {
+                        // Log any deletion errors but continue processing other messages
+                        Console.Error.WriteLine($"Failed to delete message '{messageInfo.Subject}': {deleteEx.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
+            // Log any errors that occur during client initialization or processing
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }

@@ -1,52 +1,59 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Storage;
+using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             string mboxFilePath = "sample.mbox";
-            string htmlOutputPath = "email.html";
+            string outputDirectory = "output";
 
-            // Verify the MBOX file exists before attempting to load.
+            // Verify MBOX file exists
             if (!File.Exists(mboxFilePath))
             {
-                Console.Error.WriteLine($"Error: File not found – {mboxFilePath}");
+                Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
                 return;
             }
 
-            // Load the email message from the MBOX file.
-            // MailMessage.Load will attempt to parse the file; if the format is unsupported,
-            // an exception will be caught by the outer try/catch.
-            using (MailMessage message = MailMessage.Load(mboxFilePath))
+            // Ensure output directory exists
+            if (!Directory.Exists(outputDirectory))
             {
-                // Prefer the HTML body if available; otherwise fall back to plain text.
-                string htmlContent = message.HtmlBody;
-                if (string.IsNullOrEmpty(htmlContent))
-                {
-                    // Simple conversion of plain text to HTML.
-                    string plainBody = message.Body ?? string.Empty;
-                    htmlContent = $"<pre>{System.Net.WebUtility.HtmlEncode(plainBody)}</pre>";
-                }
+                Directory.CreateDirectory(outputDirectory);
+            }
 
-                // Write the HTML content to the output file.
-                try
+            // Create reader for the MBOX file
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
+            {
+                // Iterate through each message info in the storage
+                foreach (MboxMessageInfo mboxMessageInfo in mboxReader.EnumerateMessageInfo())
                 {
-                    File.WriteAllText(htmlOutputPath, htmlContent);
-                    Console.WriteLine($"HTML export completed: {htmlOutputPath}");
-                }
-                catch (Exception writeEx)
-                {
-                    Console.Error.WriteLine($"Error writing HTML file: {writeEx.Message}");
+                    // Extract the full MailMessage using the entry identifier
+                    using (MailMessage mailMessage = mboxReader.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions()))
+                    {
+                        // Build a safe file name for the HTML output
+                        string safeSubject = string.IsNullOrEmpty(mboxMessageInfo.Subject) ? "Untitled" : mboxMessageInfo.Subject;
+                        foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(invalidChar, '_');
+                        }
+
+                        string htmlFilePath = Path.Combine(outputDirectory, $"{safeSubject}.html");
+
+                        // Save the message as HTML
+                        mailMessage.Save(htmlFilePath, new HtmlSaveOptions());
+                        Console.WriteLine($"Saved HTML: {htmlFilePath}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

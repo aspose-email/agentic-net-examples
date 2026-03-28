@@ -1,69 +1,67 @@
 using System;
 using System.Reflection;
+using Aspose.Email;
 using Aspose.Email.Mapi;
 
-public class Program
+class Program
 {
-    public static void Main()
+    static void Main()
     {
         try
         {
-            // Get the type representing the MSG handling class.
-            Type mapMessageType = typeof(MapiMessage);
+            // Obtain the type representing the MSG handling class.
+            Type mapMsgType = typeof(MapiMessage);
+            Console.WriteLine("Capabilities for handling MSG format (MapiMessage):");
 
-            Console.WriteLine("=== MapiMessage Capabilities ===");
-
-            // List constructors.
-            ConstructorInfo[] constructors = mapMessageType.GetConstructors();
+            // List all public constructors.
+            ConstructorInfo[] constructors = mapMsgType.GetConstructors();
+            Console.WriteLine("\nConstructors:");
             foreach (ConstructorInfo ctor in constructors)
             {
-                ParameterInfo[] ctorParams = ctor.GetParameters();
-                string paramList = string.Empty;
-                for (int i = 0; i < ctorParams.Length; i++)
+                ParameterInfo[] parameters = ctor.GetParameters();
+                string paramList = "";
+                for (int i = 0; i < parameters.Length; i++)
                 {
-                    ParameterInfo p = ctorParams[i];
-                    paramList += p.ParameterType.Name + " " + p.Name;
-                    if (i < ctorParams.Length - 1)
-                    {
-                        paramList += ", ";
-                    }
+                    paramList += parameters[i].ParameterType.Name + " " + parameters[i].Name;
+                    if (i < parameters.Length - 1) paramList += ", ";
                 }
-                Console.WriteLine($"Constructor: {mapMessageType.Name}({paramList})");
+                Console.WriteLine($"  {mapMsgType.Name}({paramList})");
             }
 
-            // List properties.
-            PropertyInfo[] properties = mapMessageType.GetProperties();
+            // List all public properties.
+            PropertyInfo[] properties = mapMsgType.GetProperties();
+            Console.WriteLine("\nProperties:");
             foreach (PropertyInfo prop in properties)
             {
+                // Show get/set availability.
                 string accessor = "";
                 if (prop.CanRead) accessor += "get; ";
                 if (prop.CanWrite) accessor += "set; ";
-                Console.WriteLine($"Property: {prop.PropertyType.Name} {prop.Name} {{ {accessor}}}");
+                Console.WriteLine($"  {prop.PropertyType.Name} {prop.Name} {{ {accessor}}}");
             }
 
-            // List public instance methods (excluding property accessors).
-            MethodInfo[] methods = mapMessageType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            // List all public methods defined on MapiMessage (excluding inherited Object methods).
+            MethodInfo[] methods = mapMsgType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
+            Console.WriteLine("\nMethods:");
             foreach (MethodInfo method in methods)
             {
-                if (method.IsSpecialName) continue; // Skip getters/setters and other special methods.
+                if (method.DeclaringType != mapMsgType) continue; // Skip inherited members.
 
-                ParameterInfo[] methodParams = method.GetParameters();
-                string paramList = string.Empty;
-                for (int i = 0; i < methodParams.Length; i++)
+                string staticModifier = method.IsStatic ? "static " : "";
+                string signature = $"{staticModifier}{method.ReturnType.Name} {method.Name}(";
+                ParameterInfo[] parms = method.GetParameters();
+                for (int i = 0; i < parms.Length; i++)
                 {
-                    ParameterInfo p = methodParams[i];
-                    paramList += p.ParameterType.Name + " " + p.Name;
-                    if (i < methodParams.Length - 1)
-                    {
-                        paramList += ", ";
-                    }
+                    signature += $"{parms[i].ParameterType.Name} {parms[i].Name}";
+                    if (i < parms.Length - 1) signature += ", ";
                 }
-                Console.WriteLine($"Method: {method.ReturnType.Name} {method.Name}({paramList})");
+                signature += ")";
+                Console.WriteLine($"  {signature}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

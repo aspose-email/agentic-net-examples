@@ -4,7 +4,6 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-
 class Program
 {
     static void Main()
@@ -13,41 +12,67 @@ class Program
         {
             string msgPath = "sample.msg";
 
+            // Ensure the input MSG file exists; create a minimal placeholder if missing.
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Subject", "Body"))
+                {
+                    placeholder.Save(msgPath);
+                }
+                Console.Error.WriteLine($"Input file not found. Created placeholder at {msgPath}.");
                 return;
             }
 
-            // Load the MSG file
-            using (MailMessage mailMessage = MailMessage.Load(msgPath))
+            // Load the MSG file.
+            MailMessage message;
+            try
             {
-                MailAddress senderAddress = mailMessage.From;
-                Console.WriteLine($"Sender: {senderAddress.Address}");
+                message = MailMessage.Load(msgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                return;
+            }
 
-                // Prepare token provider (replace placeholder values with real credentials)
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+            using (message)
+            {
+                string senderEmail = message.From?.Address ?? "unknown@example.com";
 
-                // Tenant identifier (replace with actual tenant ID)
-                string tenantId = "tenantId";
+                // Initialize token provider for Outlook (dummy credentials).
+                Aspose.Email.Clients.TokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
+                    "clientId", "clientSecret", "refreshToken");
 
-                // Initialize Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+                // Create Graph client.
+                IGraphClient client;
+                try
                 {
-                    // Create or update an override for the sender.
-                    // NOTE: Replace the cast with a valid ClassificationType enum value as required.
-                    ClassificationType classification = (ClassificationType)0;
-                    graphClient.CreateOrUpdateOverride(new MailAddress(senderAddress.Address), classification);
-                    Console.WriteLine("Override created or updated successfully.");
+                    client = GraphClient.GetClient(tokenProvider, "tenantId");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create Graph client: {ex.Message}");
+                    return;
+                }
+
+                using (client)
+                {
+                    // Create or update a classification override for the sender.
+                    try
+                    {
+                        client.CreateOrUpdateOverride(new MailAddress(senderEmail), ClassificationType.Focused);
+                        Console.WriteLine("Override created/updated successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create/update override: {ex.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -3,7 +3,6 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -11,63 +10,101 @@ class Program
     {
         try
         {
-            // Path to the MSG file that contains the TaskList ID
-            string msgPath = "tasklist.msg";
+            // Prepare MSG file path
+            string msgPath = "sample.msg";
 
-            // Verify that the file exists
+            // Ensure the MSG file exists; create a minimal placeholder if missing
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder", "This is a placeholder message."))
+                    {
+                        placeholder.Save(msgPath, SaveOptions.DefaultMsg);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file
+            MailMessage message;
+            try
+            {
+                message = MailMessage.Load(msgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
                 return;
             }
 
-            // Load the MSG file into a MailMessage (disposable)
-            using (MailMessage mailMessage = MailMessage.Load(msgPath))
+            // Use the loaded message as needed (e.g., extract subject)
+            Console.WriteLine($"Loaded message subject: {message.Subject}");
+
+            // Prepare token provider (Outlook) with dummy credentials
+            TokenProvider tokenProvider;
+            try
             {
-                // Assume the TaskList ID is stored in the message body
-                string taskListId = mailMessage.Body.Trim();
-                if (string.IsNullOrEmpty(taskListId))
+                tokenProvider = TokenProvider.Outlook.GetInstance("clientId", "clientSecret", "refreshToken");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
+                return;
+            }
+
+            // Initialize Graph client (requires token provider and tenant ID)
+            IGraphClient client;
+            try
+            {
+                client = GraphClient.GetClient(tokenProvider, "tenantId");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create Graph client: {ex.Message}");
+                return;
+            }
+
+            // Use the client within a using block to ensure disposal
+            using (client)
+            {
+                // Define the Task List ID to delete and later retrieve tasks from
+                string taskListId = "tasklist-id";
+
+                // Delete the specified Task List
+                try
                 {
-                    Console.Error.WriteLine("Task list ID not found in the message body.");
-                    return;
+                    client.DeleteTaskList(taskListId);
+                    Console.WriteLine($"Deleted Task List with ID: {taskListId}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to delete Task List: {ex.Message}");
+                    // Continue to attempt retrieval (may be empty)
                 }
 
-                // Create a token provider (Outlook) with dummy credentials
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken");
-
-                // Initialize the Graph client (disposable)
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, "tenantId"))
+                // Retrieve tasks from the (now deleted) Task List
+                try
                 {
-                    // Delete the specified TaskList
-                    try
+                    var tasks = client.ListTasks(taskListId);
+                    Console.WriteLine($"Tasks in Task List '{taskListId}':");
+                    foreach (var task in tasks)
                     {
-                        graphClient.DeleteTaskList(taskListId);
-                        Console.WriteLine($"Deleted TaskList with ID: {taskListId}");
+                        Console.WriteLine($"- {task.Subject}");
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to delete TaskList: {ex.Message}");
-                    }
-
-                    // Retrieve tasks from the (now deleted) TaskList
-                    try
-                    {
-                        MapiTaskCollection tasks = graphClient.ListTasks(taskListId);
-                        Console.WriteLine($"Tasks in TaskList {taskListId}:");
-                        foreach (MapiTask task in tasks)
-                        {
-                            Console.WriteLine($"- {task.Subject}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to list tasks: {ex.Message}");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to list tasks: {ex.Message}");
                 }
             }
+
+            // Dispose the loaded message
+            message.Dispose();
         }
         catch (Exception ex)
         {

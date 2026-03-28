@@ -1,43 +1,46 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Exchange Web Services endpoint and admin credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("adminUser", "adminPass");
+            // Server URL and delegate credentials
+            string serverUrl = "https://exchange.example.com/exchange";
+            string delegateUsername = "delegateUser";
+            string delegatePassword = "password";
 
-            // Create the EWS client (returns an IEWSClient instance)
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Target mailbox (different user)
+            string targetMailbox = "targetUser@example.com";
+
+            // Construct the mailbox URI for the target user
+            string mailboxUri = $"{serverUrl}/{targetMailbox}";
+
+            // Initialize the Exchange WebDAV client with delegate credentials
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, delegateUsername, delegatePassword))
             {
-                // Impersonate the target user whose mailbox we want to access
-                client.ImpersonateUser(ItemChoice.SmtpAddress, "targetuser@example.com");
+                // Retrieve messages from the Inbox folder of the target mailbox
+                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
 
-                // Retrieve the collection of messages from the target user's Inbox
-                ExchangeMessageInfoCollection messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
-
-                foreach (ExchangeMessageInfo info in messageInfos)
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    // Fetch the full MailMessage for each item
+                    // Fetch the full message using its unique URI
                     using (MailMessage message = client.FetchMessage(info.UniqueUri))
                     {
-                        Console.WriteLine("Subject: " + message.Subject);
+                        Console.WriteLine($"Subject: {message.Subject}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
