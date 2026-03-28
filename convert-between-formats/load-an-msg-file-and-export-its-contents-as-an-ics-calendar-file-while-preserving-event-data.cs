@@ -5,52 +5,45 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgPath = "calendar.msg";
+            string msgPath = "input.msg";
+            string icsPath = "output.ics";
 
+            // Verify input file exists
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"Input file \"{msgPath}\" not found.");
                 return;
             }
 
-            string icsPath = "calendar.ics";
-            string outputDir = Path.GetDirectoryName(icsPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            try
-            {
-                using (MapiMessage msg = MapiMessage.Load(msgPath))
+                // Ensure the message contains a calendar item
+                if (msg.SupportedType != MapiItemType.Calendar)
                 {
-                    if (msg.SupportedType != MapiItemType.Calendar)
-                    {
-                        Console.Error.WriteLine("The MSG file does not contain a calendar item.");
-                        return;
-                    }
-
-                    MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
-                    using (calendar)
-                    {
-                        calendar.Save(icsPath, MapiCalendarSaveOptions.DefaultIcs);
-                        Console.WriteLine($"Calendar exported to {icsPath}");
-                    }
+                    Console.Error.WriteLine("The provided MSG file does not contain a calendar.");
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing file: {ex.Message}");
-                return;
+
+                // Convert to MapiCalendar
+                using (MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem())
+                {
+                    // Prepare save options for iCalendar (ICS) format
+                    MapiCalendarIcsSaveOptions saveOptions = new MapiCalendarIcsSaveOptions();
+
+                    // Save the calendar as an .ics file
+                    calendar.Save(icsPath, saveOptions);
+                    Console.WriteLine($"Calendar exported successfully to \"{icsPath}\".");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
