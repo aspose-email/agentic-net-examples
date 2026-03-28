@@ -5,104 +5,69 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Input MSG file path
             string inputMsgPath = "sample.msg";
+            // Output HTML file path
             string outputHtmlPath = "output.html";
+            // Folder to save extracted attachments
+            string attachmentsFolder = "Attachments";
 
-            // Verify input MSG file exists
+            // Verify that the input MSG file exists
             if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Error: Input file not found – {inputMsgPath}");
+                Console.Error.WriteLine($"Input file '{inputMsgPath}' does not exist.");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputHtmlPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure the attachments folder exists
+            try
             {
-                try
+                if (!Directory.Exists(attachmentsFolder))
                 {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {dirEx.Message}");
-                    return;
+                    Directory.CreateDirectory(attachmentsFolder);
                 }
             }
-
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
+            catch (Exception ex)
             {
-                // Prepare HTML content
-                string bodyContent = msg.BodyHtml;
-                if (string.IsNullOrEmpty(bodyContent))
+                Console.Error.WriteLine($"Failed to create attachments folder: {ex.Message}");
+                return;
+            }
+
+            // Load the MSG file into a MapiMessage
+            using (MapiMessage mapiMessage = MapiMessage.Load(inputMsgPath))
+            {
+                // Convert the MapiMessage to a MailMessage preserving formatting
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
                 {
-                    // Fallback to plain text body if HTML is not available
-                    bodyContent = $"<pre>{System.Net.WebUtility.HtmlEncode(msg.Body)}</pre>";
+                    // Save the MailMessage as HTML with embedded resources
+                    HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
+                    htmlOptions.ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml;
+                    mailMessage.Save(outputHtmlPath, htmlOptions);
                 }
 
-                // Begin building the HTML document
-                string html = "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<title>"
-                              + System.Net.WebUtility.HtmlEncode(msg.Subject ?? "Message")
-                              + "</title>\n</head>\n<body>\n";
-
-                html += "<h1>" + System.Net.WebUtility.HtmlEncode(msg.Subject ?? "(No Subject)") + "</h1>\n";
-                html += "<h3>From: " + System.Net.WebUtility.HtmlEncode(msg.SenderName ?? msg.SenderEmailAddress) + "</h3>\n";
-                html += "<h3>To: " + System.Net.WebUtility.HtmlEncode(msg.DisplayTo) + "</h3>\n";
-
-                html += "<div>" + bodyContent + "</div>\n";
-
-                // Process attachments
-                if (msg.Attachments != null && msg.Attachments.Count > 0)
+                // Extract and save each attachment
+                foreach (MapiAttachment attachment in mapiMessage.Attachments)
                 {
-                    html += "<h2>Attachments</h2>\n<ul>\n";
-                    int attachmentIndex = 0;
-                    foreach (MapiAttachment attachment in msg.Attachments)
+                    string attachmentPath = Path.Combine(attachmentsFolder, attachment.FileName);
+                    try
                     {
-                        string safeFileName = Path.GetFileName(attachment.FileName);
-                        if (string.IsNullOrEmpty(safeFileName))
-                        {
-                            safeFileName = $"attachment_{attachmentIndex}";
-                        }
-
-                        string attachmentPath = Path.Combine(Path.GetDirectoryName(outputHtmlPath) ?? "", safeFileName);
-                        try
-                        {
-                            attachment.Save(attachmentPath);
-                        }
-                        catch (Exception attEx)
-                        {
-                            Console.Error.WriteLine($"Warning: Failed to save attachment '{safeFileName}' – {attEx.Message}");
-                            continue;
-                        }
-
-                        html += $"<li><a href=\"{System.Net.WebUtility.HtmlEncode(safeFileName)}\">{System.Net.WebUtility.HtmlEncode(safeFileName)}</a></li>\n";
-                        attachmentIndex++;
+                        attachment.Save(attachmentPath);
                     }
-                    html += "</ul>\n";
-                }
-
-                html += "\n</body>\n</html>";
-
-                // Write HTML to file
-                try
-                {
-                    File.WriteAllText(outputHtmlPath, html);
-                    Console.WriteLine($"HTML document created at: {outputHtmlPath}");
-                }
-                catch (Exception writeEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to write HTML file – {writeEx.Message}");
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
