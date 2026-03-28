@@ -1,50 +1,32 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-public class Program
+class Program
 {
-    public static void Main(string[] args)
+    static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
-        // Top‑level exception guard
         try
         {
-            // Prepare credentials (replace with real values)
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            // Initialize the EWS client with mailbox URI and credentials.
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Client connection safety guard
-            try
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Create EWS client via factory; returns an IEWSClient instance
-                using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
-                {
-                    // Target folder URI to delete (replace with actual folder URI)
-                    string folderUri = "Inbox/TargetFolder";
+                // Construct the target folder URI. Adjust the path as needed.
+                string targetFolderUri = client.MailboxInfo.InboxUri + "/TargetFolder";
 
-                    // Attempt to delete the folder
-                    try
-                    {
-                        client.DeleteFolder(folderUri);
-                        Console.WriteLine("Folder deleted successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Error deleting folder: " + ex.Message);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error creating or using the EWS client: " + ex.Message);
-                return;
+                // Delete the specified folder.
+                client.DeleteFolder(targetFolderUri);
+
+                Console.WriteLine("Folder deleted successfully.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
