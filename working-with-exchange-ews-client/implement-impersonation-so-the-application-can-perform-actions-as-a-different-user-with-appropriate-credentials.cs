@@ -1,49 +1,47 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Service account mailbox URI and credentials
-            string serviceMailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential serviceCredentials = new NetworkCredential("serviceUser", "servicePassword", "DOMAIN");
+            // Exchange server URL and credentials
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string adminUsername = "admin@example.com";
+            string adminPassword = "adminPassword";
+            string domain = "example.com";
+            string impersonatedMailbox = "user@example.com";
 
-            // Create EWS client for the service account
-            using (IEWSClient ewsClient = EWSClient.GetEWSClient(serviceMailboxUri, serviceCredentials))
+            // Create EWS client with admin credentials
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(adminUsername, adminPassword, domain)))
             {
-                // Impersonate the target user
-                string impersonatedUser = "impersonatedUser@example.com";
-                ewsClient.ImpersonateUser(ItemChoice.PrimarySmtpAddress, impersonatedUser);
-
-                // Build a query to find messages with a specific subject keyword
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.Subject.Contains("Test");
-                MailQuery query = builder.GetQuery();
-
-                // List messages in the impersonated user's Inbox that match the query
-                ExchangeMessageInfoCollection messages = ewsClient.ListMessages(ewsClient.MailboxInfo.InboxUri, query, false);
-                foreach (ExchangeMessageInfo info in messages)
+                try
                 {
-                    // Fetch and display each message's subject
-                    using (MailMessage message = ewsClient.FetchMessage(info.UniqueUri))
+                    // Impersonate the target mailbox
+                    client.MailboxUri = impersonatedMailbox;
+
+                    // Example operation: list subjects of messages in the Inbox
+                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                    foreach (ExchangeMessageInfo messageInfo in messages)
                     {
-                        Console.WriteLine("Subject: " + message.Subject);
+                        Console.WriteLine(messageInfo.Subject);
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during impersonated operations: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
