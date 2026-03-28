@@ -8,28 +8,79 @@ class Program
     {
         try
         {
-            string msgPath = "message.msg";
+            string inputPath = "message.msg";
+            string outputPath = "message_no_attachments.msg";
 
-            if (!File.Exists(msgPath))
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Remove all attachments from the MSG file.
-            MapiAttachmentCollection removedAttachments = MapiMessage.RemoveAttachments(msgPath);
+            // Create a temporary copy to operate on, preserving the original file.
+            string tempPath = Path.Combine(Path.GetDirectoryName(outputPath) ?? string.Empty,
+                                           Path.GetFileNameWithoutExtension(outputPath) + "_temp.msg");
 
-            // List the names of the removed attachments (optional).
-            foreach (MapiAttachment attachment in removedAttachments)
+            try
             {
-                Console.WriteLine($"Removed attachment: {attachment.FileName}");
+                File.Copy(inputPath, tempPath, true);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to copy file: {ex.Message}");
+                return;
             }
 
-            Console.WriteLine("All attachments have been stripped from the message.");
+            // Remove all attachments from the temporary MSG file.
+            try
+            {
+                MapiAttachmentCollection removed = MapiMessage.RemoveAttachments(tempPath);
+                // Optionally, you could iterate over 'removed' to log removed attachment names.
+                // foreach (MapiAttachment att in removed)
+                // {
+                //     Console.WriteLine($"Removed attachment: {att.FileName}");
+                // }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to remove attachments: {ex.Message}");
+                return;
+            }
+
+            // Load the cleaned message and save it to the desired output path.
+            try
+            {
+                using (MapiMessage cleanedMessage = MapiMessage.Load(tempPath))
+                {
+                    cleanedMessage.Save(outputPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save cleaned message: {ex.Message}");
+                return;
+            }
+            finally
+            {
+                // Clean up the temporary file.
+                try
+                {
+                    if (File.Exists(tempPath))
+                    {
+                        File.Delete(tempPath);
+                    }
+                }
+                catch
+                {
+                    // Suppress any errors during cleanup.
+                }
+            }
+
+            Console.WriteLine($"Attachments stripped successfully. Output saved to: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
