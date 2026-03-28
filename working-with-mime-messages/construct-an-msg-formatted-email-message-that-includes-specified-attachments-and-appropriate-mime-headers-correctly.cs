@@ -1,58 +1,69 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
-using Aspose.Email.Mime;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define paths for the output MSG file and an attachment.
-            string outputMsgPath = "output.msg";
-            string attachmentPath = "example.txt";
-
-            // Ensure the output directory exists.
-            string outputDir = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Ensure the attachment file exists; create a minimal placeholder if missing.
+            // Prepare attachment file
+            string attachmentPath = "sample.txt";
             if (!File.Exists(attachmentPath))
             {
                 try
                 {
-                    File.WriteAllText(attachmentPath, "Placeholder attachment content.");
+                    File.WriteAllText(attachmentPath, "Sample attachment content");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create attachment file: {ex.Message}");
                     return;
                 }
             }
 
-            // Create a MailMessage, set basic fields, add a custom header and the attachment.
-            using (MailMessage mail = new MailMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is the body of the email."))
+            // Create the email message
+            using (MailMessage message = new MailMessage())
             {
-                mail.Headers.Add("X-Custom-Header", "CustomValue");
-                mail.Attachments.Add(new Attachment(attachmentPath));
+                message.From = "sender@example.com";
+                message.To = "receiver@example.com";
+                message.Subject = "Test MSG with attachment";
+                message.Body = "This is the body of the message.";
 
-                // Convert the MailMessage to a MapiMessage.
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail))
+                // Add attachment
+                using (Attachment attachment = new Attachment(attachmentPath))
                 {
-                    // Save the MapiMessage as an MSG file.
+                    message.Attachments.Add(attachment);
+
+                    // Prepare save options for MSG format
+                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+
+                    // Define output path and ensure directory exists
+                    string outputPath = "output.msg";
+                    string outputDir = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                    {
+                        try
+                        {
+                            Directory.CreateDirectory(outputDir);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                            return;
+                        }
+                    }
+
+                    // Save the message as MSG
                     try
                     {
-                        mapiMessage.Save(outputMsgPath);
+                        message.Save(outputPath, saveOptions);
+                        Console.WriteLine($"Message saved successfully to {outputPath}");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                        return;
+                        Console.Error.WriteLine($"Failed to save message: {ex.Message}");
                     }
                 }
             }
