@@ -8,52 +8,59 @@ class Program
     {
         try
         {
-            // Path to the file that will be attached
+            // Define paths
             string attachmentPath = "sample.txt";
+            string outputMsgPath = "output.msg";
 
-            // Ensure the attachment file exists; create a minimal placeholder if missing
+            // Ensure attachment file exists; create a minimal placeholder if missing
             if (!File.Exists(attachmentPath))
             {
                 try
                 {
-                    File.WriteAllText(attachmentPath, "Placeholder content");
+                    File.WriteAllText(attachmentPath, "Placeholder attachment content.");
                 }
-                catch (Exception ioEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder file: {ioEx.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
                     return;
                 }
             }
 
-            // Construct the email message
-            using (MailMessage message = new MailMessage())
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                message.From = "sender@example.com";
-                message.To = "receiver@example.com";
-                message.Subject = "Test email with attachment";
-                message.Body = "Please see the attached file.";
-
-                // Attach the file
                 try
                 {
-                    message.Attachments.Add(new Attachment(attachmentPath));
+                    Directory.CreateDirectory(outputDir);
                 }
-                catch (Exception attachEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error adding attachment: {attachEx.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                     return;
                 }
+            }
 
-                // Save the message as an MSG file
-                string msgPath = "output.msg";
+            // Create the email message and add the attachment
+            using (MailMessage message = new MailMessage())
+            {
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Sample Email with Attachment";
+                message.Body = "Please see the attached file.";
+
+                // Add attachment
+                message.Attachments.Add(new Attachment(attachmentPath));
+
+                // Save the message as MSG
                 try
                 {
-                    message.Save(msgPath, SaveOptions.DefaultMsg);
-                    Console.WriteLine($"Message saved to {msgPath}");
+                    message.Save(outputMsgPath, SaveOptions.DefaultMsgUnicode);
+                    Console.WriteLine($"Message saved to {outputMsgPath}");
                 }
-                catch (Exception saveEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error saving MSG file: {saveEx.Message}");
+                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
                 }
             }
         }
