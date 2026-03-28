@@ -1,5 +1,4 @@
 using System;
-using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
@@ -9,32 +8,53 @@ class Program
     {
         try
         {
-            // Create and configure the IMAP client
-            using (ImapClient imapClient = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.SSLImplicit))
+            // Initialize and connect the IMAP client
+            using (ImapClient client = new ImapClient())
             {
-                // Select the inbox folder
-                imapClient.SelectFolder("INBOX");
-
-                // Retrieve the list of messages in the folder
-                ImapMessageInfoCollection messages = imapClient.ListMessages();
-
-                // Iterate through each message and obtain its size
-                foreach (ImapMessageInfo info in messages)
+                try
                 {
-                    long sizeInBytes = info.Size;
-                    Console.WriteLine($"Message UID: {info.UniqueId}, Size: {sizeInBytes} bytes");
+                    client.Host = "imap.example.com";
+                    client.Port = 993;
+                    client.SecurityOptions = SecurityOptions.SSLImplicit;
+                    client.Username = "username";
+                    client.Password = "password";
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to connect IMAP client: {ex.Message}");
+                    return;
+                }
 
-                    // Example of size‑based conditional handling
-                    if (sizeInBytes > 1_048_576) // larger than 1 MB
+                try
+                {
+                    // Select the INBOX folder
+                    client.SelectFolder("INBOX");
+
+                    // Retrieve message information objects
+                    var messages = client.ListMessages();
+
+                    foreach (var msgInfo in messages)
                     {
-                        Console.WriteLine("Large message detected – apply special processing.");
+                        // Get the size of the current email message in bytes
+                        long sizeInBytes = msgInfo.Size;
+                        Console.WriteLine($"Message ID: {msgInfo.UniqueId}, Size: {sizeInBytes} bytes");
+
+                        // Conditional handling based on size (example: flag large messages)
+                        if (sizeInBytes > 1_048_576) // larger than 1 MB
+                        {
+                            Console.WriteLine("Large message detected.");
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error retrieving messages: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
