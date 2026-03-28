@@ -11,80 +11,71 @@ class Program
     {
         try
         {
-            // Input MBOX file path
-            string mboxPath = "input.mbox";
-            // Output folder where split parts will be created
-            string outputFolder = "SplitParts";
-            // Approximate size of each split part (10 MB)
-            long chunkSize = 10L * 1024L * 1024L;
+            string mboxPath = "storage.mbox";
+            string outputDirectory = "SplitParts";
+            long partSizeInBytes = 10 * 1024 * 1024; // 10 MB per part
 
             // Verify input file exists
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
                 return;
             }
 
             // Ensure output directory exists
-            if (!Directory.Exists(outputFolder))
+            try
             {
-                try
+                if (!Directory.Exists(outputDirectory))
                 {
-                    Directory.CreateDirectory(outputFolder);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
+                    Directory.CreateDirectory(outputDirectory);
                 }
             }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                return;
+            }
 
-            // Create a cancellation token source to allow aborting the split operation
             using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
             {
+                // Listen for a key press to abort the operation
+                Task.Run(() =>
+                {
+                    Console.WriteLine("Press 'c' to cancel the splitting process...");
+                    while (true)
+                    {
+                        if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.C)
+                        {
+                            cancellationSource.Cancel();
+                            break;
+                        }
+                        Thread.Sleep(100);
+                    }
+                });
+
                 // Create the MBOX reader
                 using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
                 {
-                    // Start the asynchronous split operation
-                    Task splitTask = mboxReader.SplitIntoAsync(chunkSize, outputFolder, cancellationSource.Token);
-
-                    Console.WriteLine("Splitting in progress... Press 'c' to cancel.");
-
-                    // Monitor for user cancellation
-                    while (!splitTask.IsCompleted)
-                    {
-                        if (Console.KeyAvailable)
-                        {
-                            ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
-                            if (keyInfo.KeyChar == 'c' || keyInfo.KeyChar == 'C')
-                            {
-                                cancellationSource.Cancel();
-                                Console.WriteLine("Cancellation requested.");
-                                break;
-                            }
-                        }
-                        await Task.Delay(100);
-                    }
-
                     try
                     {
-                        await splitTask;
+                        // Perform the split operation asynchronously with cancellation support
+                        await mboxReader.SplitIntoAsync(partSizeInBytes, outputDirectory, cancellationSource.Token);
                         Console.WriteLine("MBOX splitting completed successfully.");
                     }
                     catch (OperationCanceledException)
                     {
-                        Console.WriteLine("MBOX splitting was canceled by the user.");
+                        Console.WriteLine("MBOX splitting was cancelled by the user.");
                     }
-                    catch (Exception ex)
+                    catch (Exception splitEx)
                     {
-                        Console.Error.WriteLine($"Error during splitting: {ex.Message}");
+                        Console.Error.WriteLine($"Error during splitting: {splitEx.Message}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
