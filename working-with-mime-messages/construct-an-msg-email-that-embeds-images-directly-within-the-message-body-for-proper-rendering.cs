@@ -10,78 +10,52 @@ class Program
     {
         try
         {
-            // Define paths
-            string outputPath = "EmbeddedImageMessage.msg";
-            string imagePath = "image.png";
-
-            // Ensure output directory exists
-            try
+            // Prepare output MSG file path
+            string outputMsgPath = "EmbeddedImage.msg";
+            string outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputMsgPath));
+            if (!Directory.Exists(outputDirectory))
             {
-                string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-                if (!Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
-                return;
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Create the mail message
-            using (MailMessage mail = new MailMessage())
+            // Create a new MailMessage
+            using (MailMessage message = new MailMessage())
             {
-                mail.From = "sender@example.com";
-                mail.To.Add("recipient@example.com");
-                mail.Subject = "Message with Embedded Image";
-                // HTML body referencing the image via Content-ID
-                mail.HtmlBody = "<html><body><h1>Hello</h1><p>Here is an embedded image:</p><img src=\"cid:myImage\"/></body></html>";
+                message.From = "sender@example.com";
+                message.To.Add("recipient@example.com");
+                message.Subject = "Email with Embedded Image";
 
-                // Add the image as a linked resource if the file exists
-                if (File.Exists(imagePath))
+                // HTML body referencing the embedded image via Content-ID
+                string contentId = "image1";
+                message.HtmlBody = $"<html><body><h1>Hello</h1><img src=\"cid:{contentId}\" alt=\"Embedded Image\"/></body></html>";
+                message.IsBodyHtml = true;
+
+                // Create a simple PNG image in memory (1x1 pixel, red)
+                byte[] pngBytes = Convert.FromBase64String(
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==");
+
+                using (MemoryStream imageStream = new MemoryStream(pngBytes))
                 {
-                    try
+                    // Create a linked resource for the image
+                    LinkedResource linkedImage = new LinkedResource(imageStream, "image/png")
                     {
-                        byte[] imageBytes = File.ReadAllBytes(imagePath);
-                        using (MemoryStream imgStream = new MemoryStream(imageBytes))
-                        {
-                            LinkedResource resource = new LinkedResource(imgStream, "image/png")
-                            {
-                                ContentId = "myImage"
-                            };
-                            mail.LinkedResources.Add(resource);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to load image: {ex.Message}");
-                        // Continue without the image
-                    }
-                }
-                else
-                {
-                    Console.Error.WriteLine("Image file not found; proceeding without embedding an image.");
+                        ContentId = contentId,
+                        TransferEncoding = Aspose.Email.Mime.TransferEncoding.Base64
+                    };
+
+                    // Add the linked resource to the message
+                    message.LinkedResources.Add(linkedImage);
                 }
 
-                // Convert to MAPI message and save as MSG
-                using (MapiMessage mapiMsg = MapiMessage.FromMailMessage(mail))
-                {
-                    try
-                    {
-                        mapiMsg.Save(outputPath);
-                        Console.WriteLine($"Message saved to {outputPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                    }
-                }
+                // Save the message as MSG
+                message.Save(outputMsgPath, SaveOptions.DefaultMsg);
             }
+
+            Console.WriteLine("MSG file created successfully: " + Path.GetFullPath(outputMsgPath));
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
