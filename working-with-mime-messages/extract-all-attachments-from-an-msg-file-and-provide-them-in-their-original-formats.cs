@@ -5,45 +5,40 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
+            // Path to the MSG file
             string msgPath = "sample.msg";
 
-            // Verify the MSG file exists
+            // Verify that the MSG file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"The file '{msgPath}' does not exist.");
                 return;
             }
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(msgPath) ?? Directory.GetCurrentDirectory();
-            if (!Directory.Exists(outputDir))
+            // Load the MSG file and extract its attachments
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                try
+                MapiAttachmentCollection attachments = msg.Attachments;
+
+                if (attachments == null || attachments.Count == 0)
                 {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create directory '{outputDir}': {ex.Message}");
+                    Console.WriteLine("No attachments found in the message.");
                     return;
                 }
-            }
 
-            // Load the MSG file and extract attachments
-            using (MapiMessage message = MapiMessage.Load(msgPath))
-            {
-                MapiAttachmentCollection attachments = message.Attachments;
                 foreach (MapiAttachment attachment in attachments)
                 {
-                    Console.WriteLine($"Attachment Name: {attachment.FileName}");
-                    string attachmentPath = Path.Combine(outputDir, attachment.FileName);
+                    // Output attachment information
+                    Console.WriteLine($"Saving attachment: {attachment.FileName}");
+
+                    // Save the attachment using its original file name
                     try
                     {
-                        attachment.Save(attachmentPath);
+                        attachment.Save(attachment.FileName);
                     }
                     catch (Exception ex)
                     {
@@ -54,7 +49,7 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }
