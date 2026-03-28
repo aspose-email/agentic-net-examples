@@ -5,7 +5,7 @@ using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
@@ -17,37 +17,42 @@ class Program
                 return;
             }
 
-            // Create a reader for the MBOX file with default load options
-            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                // Iterate through each message info entry in the MBOX storage
-                foreach (MboxMessageInfo mboxMessageInfo in mboxReader.EnumerateMessageInfo())
+                foreach (Aspose.Email.Storage.Mbox.MboxMessageInfo messageInfo in mbox.EnumerateMessageInfo())
                 {
-                    Console.WriteLine($"Subject: {mboxMessageInfo.Subject}");
-                    Console.WriteLine($"From: {mboxMessageInfo.From}");
-                    Console.WriteLine($"To: {mboxMessageInfo.To}");
+                    Console.WriteLine($"Subject: {messageInfo.Subject}");
+                    Console.WriteLine($"From: {messageInfo.From}");
+                    Console.WriteLine($"To: {messageInfo.To}");
 
-                    // Extract the full MIME message using the entry ID
-                    using (MailMessage eml = mboxReader.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions()))
+                    using (MailMessage eml = mbox.ExtractMessage(messageInfo.EntryId, new EmlLoadOptions()))
                     {
-                        // Use a safe filename based on the subject
-                        string safeSubject = string.IsNullOrWhiteSpace(eml.Subject) ? "Untitled" : eml.Subject;
+                        string subject = string.IsNullOrEmpty(eml.Subject) ? "message" : eml.Subject;
                         foreach (char c in Path.GetInvalidFileNameChars())
                         {
-                            safeSubject = safeSubject.Replace(c, '_');
+                            subject = subject.Replace(c, '_');
                         }
 
-                        string fileName = $"{safeSubject}.eml";
+                        string outputPath = $"{subject}.eml";
 
-                        // Save the extracted message as an .eml file
-                        eml.Save(fileName);
+                        try
+                        {
+                            eml.Save(outputPath);
+                            Console.WriteLine($"Saved: {outputPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                        }
                     }
+
+                    Console.WriteLine(new string('-', 40));
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
