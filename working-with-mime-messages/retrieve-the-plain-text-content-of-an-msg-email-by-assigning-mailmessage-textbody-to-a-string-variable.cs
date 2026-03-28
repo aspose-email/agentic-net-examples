@@ -18,15 +18,15 @@ class Program
 
             using (MailMessage mailMessage = MailMessage.Load(msgPath))
             {
-                // Retrieve the plain‑text body of the MSG email
-                string plainText = mailMessage.Body ?? string.Empty;
+                // Retrieve the plain‑text body of the MSG file
+                string plainText = mailMessage.Body;
                 Console.WriteLine("Plain text body:");
                 Console.WriteLine(plainText);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
