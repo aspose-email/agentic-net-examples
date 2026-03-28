@@ -1,53 +1,37 @@
-using System.Net;
-using System;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
+using System;
+using System.Net;
+using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define the EWS service URL and user credentials.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Set up credentials (replace with real values)
+            NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            // Create the EWS client using the factory method.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Create and connect the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
             {
-                // Verify that the client can access mailbox information.
-                try
-                {
-                    Aspose.Email.Clients.Exchange.ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to retrieve mailbox info: {ex.Message}");
-                    return;
-                }
-
-                // Get the URI of the Inbox folder.
+                // Get the URI of the Inbox folder
                 string inboxUri = client.MailboxInfo.InboxUri;
 
-                // List messages in the Inbox folder.
+                // Retrieve messages from the Inbox
                 ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+
+                // Output basic information about each message
                 foreach (ExchangeMessageInfo info in messages)
                 {
                     Console.WriteLine($"Subject: {info.Subject}");
-                    Console.WriteLine($"From: {info.From}");
-                    Console.WriteLine($"Date: {info.Date}");
-                    Console.WriteLine(new string('-', 40));
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
