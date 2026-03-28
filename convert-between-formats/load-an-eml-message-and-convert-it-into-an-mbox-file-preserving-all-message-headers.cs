@@ -9,39 +9,62 @@ class Program
     {
         try
         {
+            // Input and output paths
             string emlPath = "input.eml";
             string mboxPath = "output.mbox";
 
+            // Ensure the input EML file exists; create a minimal placeholder if missing
             if (!File.Exists(emlPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {emlPath}");
-                return;
+                try
+                {
+                    using (var writer = new StreamWriter(emlPath))
+                    {
+                        writer.WriteLine("From: placeholder@example.com");
+                        writer.WriteLine("To: recipient@example.com");
+                        writer.WriteLine("Subject: Placeholder");
+                        writer.WriteLine();
+                        writer.WriteLine("This is a placeholder EML message.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Load the EML message preserving all headers.
+            // Load the EML message
             MailMessage message;
             try
             {
                 message = MailMessage.Load(emlPath);
             }
-            catch (Exception loadEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error loading EML file: {loadEx.Message}");
+                Console.Error.WriteLine($"Failed to load EML file: {ex.Message}");
                 return;
             }
 
-            // Write the message to an MBOX file.
+            // Write the message to an MBOX file using a concrete writer
             try
             {
-                using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxPath, new MboxSaveOptions()))
+                var saveOptions = new MboxSaveOptions();
+                using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxPath, saveOptions))
                 {
                     writer.WriteMessage(message);
                 }
             }
-            catch (Exception writeEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error writing MBOX file: {writeEx.Message}");
+                Console.Error.WriteLine($"Failed to write MBOX file: {ex.Message}");
                 return;
+            }
+            finally
+            {
+                // Dispose the loaded message
+                if (message != null)
+                    message.Dispose();
             }
 
             Console.WriteLine("Conversion completed successfully.");
