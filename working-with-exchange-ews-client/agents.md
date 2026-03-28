@@ -18,29 +18,31 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (148 file(s))
-- `using Aspose.Email;` (132 file(s))
-- `using System.Net;` (124 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (122 file(s))
-- `using Aspose.Email.Clients.Exchange;` (87 file(s))
-- `using Aspose.Email.Tools.Search;` (40 file(s))
-- `using System.IO;` (26 file(s))
-- `using Aspose.Email.Clients;` (9 file(s))
-- `using Aspose.Email.Mapi;` (9 file(s))
-- `using Aspose.Email.Calendar;` (7 file(s))
-- `using System.Collections.Generic;` (7 file(s))
-- `using System.Text;` (4 file(s))
+- `using System;` (159 file(s))
+- `using Aspose.Email;` (142 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (129 file(s))
+- `using System.Net;` (116 file(s))
+- `using Aspose.Email.Clients.Exchange;` (85 file(s))
+- `using System.IO;` (24 file(s))
+- `using Aspose.Email.Tools.Search;` (24 file(s))
+- `using Aspose.Email.Clients;` (15 file(s))
+- `using System.Collections.Generic;` (12 file(s))
+- `using Aspose.Email.Clients.Google;` (10 file(s))
+- `using Aspose.Email.Calendar;` (8 file(s))
+- `using Aspose.Email.Mapi;` (6 file(s))
 - `using Aspose.Email.PersonalInfo;` (4 file(s))
-- `using System.Threading.Tasks;` (2 file(s))
-- `using Aspose.Email.Clients.Google;` (2 file(s))
-- `using Aspose.Email.Clients.Graph;` (2 file(s))
+- `using System.Threading.Tasks;` (4 file(s))
+- `using System.Text;` (3 file(s))
+- `using System.Linq;` (2 file(s))
+- `using System.Text.Json;` (2 file(s))
+- `using System.Threading;` (2 file(s))
+- `using Aspose.Email.Clients.Imap;` (2 file(s))
 - `using System.IO.Compression;` (1 file(s))
-- `using Aspose.Email.Mime;` (1 file(s))
+- `using Aspose.Email.Clients.Smtp;` (1 file(s))
 - `using System.Diagnostics;` (1 file(s))
 - `using Aspose.Email.Storage.Pst;` (1 file(s))
-- `using Aspose.Email.Clients.Imap;` (1 file(s))
-- `using System.Threading;` (1 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService.Models;` (1 file(s))
+- `using Aspose.Email.Clients.Graph;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
@@ -56,6 +58,8 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [apply-modifications-to-an-existing-inbox-rule-by-invoking-the-service-updateinboxrule-method-within-your-application.cs](./apply-modifications-to-an-existing-inbox-rule-by-invoking-the-service-updateinboxrule-method-within-your-application.cs) | apply modifications to an existing inbox rule by invoking the service updateinboxrule method within your application |
 | [archive-email-messages-older-than-a-specified-date-into-a-compressed-archive-for-long-term-storage.cs](./archive-email-messages-older-than-a-specified-date-into-a-compressed-archive-for-long-term-storage.cs) | archive email messages older than a specified date into a compressed archive for long term storage |
 | [archive-exchange-email-messages-via-the-ews-api-ensuring-they-are-stored-securely-and-indexed-appropriately.cs](./archive-exchange-email-messages-via-the-ews-api-ensuring-they-are-stored-securely-and-indexed-appropriately.cs) | archive exchange email messages via the ews api ensuring they are stored securely and indexed appropriately |
+| [assign-the-obtained-oauth-token-to-the-exchangeservice-credentials-property-to-enable-authenticated-operations-for-subsequent.cs](./assign-the-obtained-oauth-token-to-the-exchangeservice-credentials-property-to-enable-authenticated-operations-for-subsequent.cs) | assign the obtained oauth token to the exchangeservice credentials property to enable authenticated operations for subsequent |
+| [authenticate-exchangeservice-operations-by-supplying-an-oauth-token-for-authorization-in-api-requests-during-integration.cs](./authenticate-exchangeservice-operations-by-supplying-an-oauth-token-for-authorization-in-api-requests-during-integration.cs) | authenticate exchangeservice operations by supplying an oauth token for authorization in api requests during integration |
 | [configure-and-apply-a-custom-email-header-to-outgoing-messages-using-the-provided-api.cs](./configure-and-apply-a-custom-email-header-to-outgoing-messages-using-the-provided-api.cs) | configure and apply a custom email header to outgoing messages using the provided api |
 | [configure-authentication-by-assigning-a-networkcredential-instance-containing-the-required-username-password-and-domain.cs](./configure-authentication-by-assigning-a-networkcredential-instance-containing-the-required-username-password-and-domain.cs) | configure authentication by assigning a networkcredential instance containing the required username password and domain |
 | [configure-authentication-credentials-for-the-email-service-to-establish-secure-connections-and-authorize-requests.cs](./configure-authentication-credentials-for-the-email-service-to-establish-secure-connections-and-authorize-requests.cs) | configure authentication credentials for the email service to establish secure connections and authorize requests |
@@ -63,6 +67,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [configure-retrieve-and-update-user-mail-settings-and-preferences-on-an-exchange-server-programmatically.cs](./configure-retrieve-and-update-user-mail-settings-and-preferences-on-an-exchange-server-programmatically.cs) | configure retrieve and update user mail settings and preferences on an exchange server programmatically |
 | [configure-the-ews-client-in-c-to-record-activity-logs-for-debugging-and-monitoring-purposes.cs](./configure-the-ews-client-in-c-to-record-activity-logs-for-debugging-and-monitoring-purposes.cs) | configure the ews client in c to record activity logs for debugging and monitoring purposes |
 | [configure-the-exchange-server-endpoint-by-providing-its-url-correctly-in-the-client-settings.cs](./configure-the-exchange-server-endpoint-by-providing-its-url-correctly-in-the-client-settings.cs) | configure the exchange server endpoint by providing its url correctly in the client settings |
+| [configure-the-exchange-web-services-ews-endpoint-url-manually-or-enable-automatic-discovery-at-runtime.cs](./configure-the-exchange-web-services-ews-endpoint-url-manually-or-enable-automatic-discovery-at-runtime.cs) | configure the exchange web services ews endpoint url manually or enable automatic discovery at runtime |
 | [configure-the-exchangeservice-object-with-appropriate-authentication-credentials-to-enable-authorized-connections-for-mailbox.cs](./configure-the-exchangeservice-object-with-appropriate-authentication-credentials-to-enable-authorized-connections-for-mailbox.cs) | configure the exchangeservice object with appropriate authentication credentials to enable authorized connections for mailbox |
 | [configure-the-exchangeservice-s-impersonateduserid-property-to-operate-under-the-shared-mailbox-context-for-authenticated.cs](./configure-the-exchangeservice-s-impersonateduserid-property-to-operate-under-the-shared-mailbox-context-for-authenticated.cs) | configure the exchangeservice s impersonateduserid property to operate under the shared mailbox context for authenticated |
 | [configure-the-service-s-authentication-credentials-to-enable-authorized-access-for-subsequent-programmatic-api-operations.cs](./configure-the-service-s-authentication-credentials-to-enable-authorized-access-for-subsequent-programmatic-api-operations.cs) | configure the service s authentication credentials to enable authorized access for subsequent programmatic api operations |
@@ -71,6 +76,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [connect-to-the-mail-server-and-retrieve-items-from-a-specific-mailbox-folder-using-the-provided-api.cs](./connect-to-the-mail-server-and-retrieve-items-from-a-specific-mailbox-folder-using-the-provided-api.cs) | connect to the mail server and retrieve items from a specific mailbox folder using the provided api |
 | [construct-a-searchfiltercollection-that-merges-several-individual-filters-by-applying-the-logicaloperator-and-operator-to.cs](./construct-a-searchfiltercollection-that-merges-several-individual-filters-by-applying-the-logicaloperator-and-operator-to.cs) | construct a searchfiltercollection that merges several individual filters by applying the logicaloperator and operator to |
 | [construct-aqs-queries-to-filter-items-using-supported-operators-and-criteria-within-the-application.cs](./construct-aqs-queries-to-filter-items-using-supported-operators-and-criteria-within-the-application.cs) | construct aqs queries to filter items using supported operators and criteria within the application |
+| [construct-complex-search-queries-by-combining-keywords-using-and-and-or-logical-operators-appropriately.cs](./construct-complex-search-queries-by-combining-keywords-using-and-and-or-logical-operators-appropriately.cs) | construct complex search queries by combining keywords using and and or logical operators appropriately |
 | [create-a-new-appointment-instance-using-its-constructor-then-configure-required-event-properties-appropriately.cs](./create-a-new-appointment-instance-using-its-constructor-then-configure-required-event-properties-appropriately.cs) | create a new appointment instance using its constructor then configure required event properties appropriately |
 | [create-a-new-archive-directory-or-determine-the-existing-one-for-storing-email-assets.cs](./create-a-new-archive-directory-or-determine-the-existing-one-for-storing-email-assets.cs) | create a new archive directory or determine the existing one for storing email assets |
 | [create-a-new-contact-entry-in-the-address-book-with-specified-fields-and-persist-it.cs](./create-a-new-contact-entry-in-the-address-book-with-specified-fields-and-persist-it.cs) | create a new contact entry in the address book with specified fields and persist it |
@@ -88,6 +94,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [create-modify-or-delete-distribution-lists-on-an-exchange-server-using-the-provided-api.cs](./create-modify-or-delete-distribution-lists-on-an-exchange-server-using-the-provided-api.cs) | create modify or delete distribution lists on an exchange server using the provided api |
 | [delete-selected-email-messages-from-a-mailbox-ensuring-they-are-permanently-removed-and-synchronization-updates-accordingly.cs](./delete-selected-email-messages-from-a-mailbox-ensuring-they-are-permanently-removed-and-synchronization-updates-accordingly.cs) | delete selected email messages from a mailbox ensuring they are permanently removed and synchronization updates accordingly |
 | [display-the-generated-log-output-in-the-console-or-designated-ui-component-for-diagnostic-review.cs](./display-the-generated-log-output-in-the-console-or-designated-ui-component-for-diagnostic-review.cs) | display the generated log output in the console or designated ui component for diagnostic review |
+| [enable-autodiscover-to-programmatically-resolve-the-ews-endpoint-url-using-the-user-s-email-address.cs](./enable-autodiscover-to-programmatically-resolve-the-ews-endpoint-url-using-the-user-s-email-address.cs) | enable autodiscover to programmatically resolve the ews endpoint url using the user s email address |
 | [enable-creation-retrieval-updating-and-deletion-of-exchange-server-mailbox-rules-through-the-exchange-web-services-interface.cs](./enable-creation-retrieval-updating-and-deletion-of-exchange-server-mailbox-rules-through-the-exchange-web-services-interface.cs) | enable creation retrieval updating and deletion of exchange server mailbox rules through the exchange web services interface |
 | [enable-diagnostic-tracing-for-the-service-at-runtime-by-assigning-true-to-its-traceenabled-property.cs](./enable-diagnostic-tracing-for-the-service-at-runtime-by-assigning-true-to-its-traceenabled-property.cs) | enable diagnostic tracing for the service at runtime by assigning true to its traceenabled property |
 | [enable-optional-impersonation-settings-to-execute-mail-server-operations-under-alternative-user-credentials-when-needed.cs](./enable-optional-impersonation-settings-to-execute-mail-server-operations-under-alternative-user-credentials-when-needed.cs) | enable optional impersonation settings to execute mail server operations under alternative user credentials when needed |
@@ -103,6 +110,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [filter-email-messages-to-retrieve-those-with-timestamps-earlier-than-the-specified-cutoff-date.cs](./filter-email-messages-to-retrieve-those-with-timestamps-earlier-than-the-specified-cutoff-date.cs) | filter email messages to retrieve those with timestamps earlier than the specified cutoff date |
 | [generate-a-follow-up-task-based-on-the-current-item-to-track-subsequent-actions-within-the-application-workflow.cs](./generate-a-follow-up-task-based-on-the-current-item-to-track-subsequent-actions-within-the-application-workflow.cs) | generate a follow up task based on the current item to track subsequent actions within the application workflow |
 | [identify-and-verify-all-required-dependencies-and-environment-settings-properly-before-implementing-the-solution.cs](./identify-and-verify-all-required-dependencies-and-environment-settings-properly-before-implementing-the-solution.cs) | identify and verify all required dependencies and environment settings properly before implementing the solution |
+| [implement-a-query-to-retrieve-unread-email-messages-from-a-mailbox-using-the-api.cs](./implement-a-query-to-retrieve-unread-email-messages-from-a-mailbox-using-the-api.cs) | implement a query to retrieve unread email messages from a mailbox using the api |
 | [implement-a-searchfilter-isgreaterthanorequalto-condition-targeting-the-receivedtime-property-to-filter-email-messages-based-on.cs](./implement-a-searchfilter-isgreaterthanorequalto-condition-targeting-the-receivedtime-property-to-filter-email-messages-based-on.cs) | implement a searchfilter isgreaterthanorequalto condition targeting the receivedtime property to filter email messages based on |
 | [implement-asynchronous-oauth-token-acquisition-and-renewal-for-managing-ews-email-operations-using-c.cs](./implement-asynchronous-oauth-token-acquisition-and-renewal-for-managing-ews-email-operations-using-c.cs) | implement asynchronous oauth token acquisition and renewal for managing ews email operations using c |
 | [implement-date-based-filtering-to-retrieve-items-that-match-specified-temporal-criteria-within-the-dataset.cs](./implement-date-based-filtering-to-retrieve-items-that-match-specified-temporal-criteria-within-the-dataset.cs) | implement date based filtering to retrieve items that match specified temporal criteria within the dataset |
@@ -130,6 +138,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [interpret-and-retrieve-conversation-threads-from-email-messages-preserving-hierarchical-relationships-and-metadata-for-proper.cs](./interpret-and-retrieve-conversation-threads-from-email-messages-preserving-hierarchical-relationships-and-metadata-for-proper.cs) | interpret and retrieve conversation threads from email messages preserving hierarchical relationships and metadata for proper |
 | [invoke-deleteitem-for-every-message-to-permanently-delete-each-item-from-the-mailbox-store.cs](./invoke-deleteitem-for-every-message-to-permanently-delete-each-item-from-the-mailbox-store.cs) | invoke deleteitem for every message to permanently delete each item from the mailbox store |
 | [invoke-finditems-to-programmatically-extract-email-messages-from-all-folders-within-a-shared-mailbox.cs](./invoke-finditems-to-programmatically-extract-email-messages-from-all-folders-within-a-shared-mailbox.cs) | invoke finditems to programmatically extract email messages from all folders within a shared mailbox |
+| [invoke-service-createitem-method-to-asynchronously-create-and-register-a-new-task-within-the-system.cs](./invoke-service-createitem-method-to-asynchronously-create-and-register-a-new-task-within-the-system.cs) | invoke service createitem method to asynchronously create and register a new task within the system |
 | [invoke-service-deleteitem-method-to-permanently-remove-a-specified-task-entity-from-the-system-s-storage.cs](./invoke-service-deleteitem-method-to-permanently-remove-a-specified-task-entity-from-the-system-s-storage.cs) | invoke service deleteitem method to permanently remove a specified task entity from the system s storage |
 | [invoke-service-deleteitem-to-permanently-remove-a-specified-contact-from-the-data-store-and-clear-related-references.cs](./invoke-service-deleteitem-to-permanently-remove-a-specified-contact-from-the-data-store-and-clear-related-references.cs) | invoke service deleteitem to permanently remove a specified contact from the data store and clear related references |
 | [invoke-the-createinboxrule-method-on-the-service-object-to-configure-and-add-a-new-inbox-rule.cs](./invoke-the-createinboxrule-method-on-the-service-object-to-configure-and-add-a-new-inbox-rule.cs) | invoke the createinboxrule method on the service object to configure and add a new inbox rule |
@@ -137,6 +146,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [invoke-the-createitem-method-on-the-service-object-to-upload-the-contact-to-the-server.cs](./invoke-the-createitem-method-on-the-service-object-to-upload-the-contact-to-the-server.cs) | invoke the createitem method on the service object to upload the contact to the server |
 | [invoke-the-findfolders-method-to-search-for-and-retrieve-the-target-folder-within-the-mailbox-hierarchy.cs](./invoke-the-findfolders-method-to-search-for-and-retrieve-the-target-folder-within-the-mailbox-hierarchy.cs) | invoke the findfolders method to search for and retrieve the target folder within the mailbox hierarchy |
 | [invoke-the-finditems-method-to-retrieve-all-matching-message-objects-from-the-mailbox-collection.cs](./invoke-the-finditems-method-to-retrieve-all-matching-message-objects-from-the-mailbox-collection.cs) | invoke the finditems method to retrieve all matching message objects from the mailbox collection |
+| [invoke-the-moveitem-method-of-the-service-for-each-message-to-transfer-it-to-the-target-location.cs](./invoke-the-moveitem-method-of-the-service-for-each-message-to-transfer-it-to-the-target-location.cs) | invoke the moveitem method of the service for each message to transfer it to the target location |
 | [invoke-the-service-s-createfolder-method-to-create-a-new-folder-within-the-target-storage.cs](./invoke-the-service-s-createfolder-method-to-create-a-new-folder-within-the-target-storage.cs) | invoke the service s createfolder method to create a new folder within the target storage |
 | [invoke-the-service-s-deleteitem-operation-to-permanently-remove-the-specified-list-from-the-collection.cs](./invoke-the-service-s-deleteitem-operation-to-permanently-remove-the-specified-list-from-the-collection.cs) | invoke the service s deleteitem operation to permanently remove the specified list from the collection |
 | [invoke-the-service-updateitem-method-to-update-all-relevant-fields-of-an-existing-calendar-event.cs](./invoke-the-service-updateitem-method-to-update-all-relevant-fields-of-an-existing-calendar-event.cs) | invoke the service updateitem method to update all relevant fields of an existing calendar event |
@@ -150,11 +160,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [modify-the-task-s-properties-by-invoking-the-service-updateitem-method-with-the-required-parameters-in-code.cs](./modify-the-task-s-properties-by-invoking-the-service-updateitem-method-with-the-required-parameters-in-code.cs) | modify the task s properties by invoking the service updateitem method with the required parameters in code |
 | [optionally-configure-an-inbox-rule-that-automatically-archives-received-messages-based-on-defined-criteria.cs](./optionally-configure-an-inbox-rule-that-automatically-archives-received-messages-based-on-defined-criteria.cs) | optionally configure an inbox rule that automatically archives received messages based on defined criteria |
 | [perform-an-aqs-query-against-the-data-source-to-retrieve-matching-items-using-specified-criteria.cs](./perform-an-aqs-query-against-the-data-source-to-retrieve-matching-items-using-specified-criteria.cs) | perform an aqs query against the data source to retrieve matching items using specified criteria |
+| [perform-asynchronous-email-retrieval-to-fetch-messages-without-blocking-the-calling-thread-supporting-cancellation-tokens-and.cs](./perform-asynchronous-email-retrieval-to-fetch-messages-without-blocking-the-calling-thread-supporting-cancellation-tokens-and.cs) | perform asynchronous email retrieval to fetch messages without blocking the calling thread supporting cancellation tokens and |
 | [perform-contact-management-operations-on-an-exchange-server-via-the-exchange-web-services-protocol.cs](./perform-contact-management-operations-on-an-exchange-server-via-the-exchange-web-services-protocol.cs) | perform contact management operations on an exchange server via the exchange web services protocol |
 | [perform-creation-retrieval-updating-and-deletion-of-calendar-items-through-the-exchange-web-services-api.cs](./perform-creation-retrieval-updating-and-deletion-of-calendar-items-through-the-exchange-web-services-api.cs) | perform creation retrieval updating and deletion of calendar items through the exchange web services api |
 | [perform-creation-retrieval-updating-and-deletion-of-exchange-server-tasks-via-the-ews-api.cs](./perform-creation-retrieval-updating-and-deletion-of-exchange-server-tasks-via-the-ews-api.cs) | perform creation retrieval updating and deletion of exchange server tasks via the ews api |
 | [perform-folder-operations-on-an-exchange-server-including-creation-retrieval-updating-and-deletion-via-api.cs](./perform-folder-operations-on-an-exchange-server-including-creation-retrieval-updating-and-deletion-via-api.cs) | perform folder operations on an exchange server including creation retrieval updating and deletion via api |
 | [programmatically-define-and-configure-inbox-rules-to-automate-email-handling-based-on-specified-criteria.cs](./programmatically-define-and-configure-inbox-rules-to-automate-email-handling-based-on-specified-criteria.cs) | programmatically define and configure inbox rules to automate email handling based on specified criteria |
+| [read-and-access-message-properties-including-sender-recipients-subject-and-custom-fields-using-the-net-library.cs](./read-and-access-message-properties-including-sender-recipients-subject-and-custom-fields-using-the-net-library.cs) | read and access message properties including sender recipients subject and custom fields using the net library |
 | [remove-a-contact-entry-from-the-address-book-programmatically-using-the-appropriate-net-api-method.cs](./remove-a-contact-entry-from-the-address-book-programmatically-using-the-appropriate-net-api-method.cs) | remove a contact entry from the address book programmatically using the appropriate net api method |
 | [remove-a-specified-calendar-event-by-invoking-the-deleteitem-method-on-the-service-instance-ensuring-proper-synchronization.cs](./remove-a-specified-calendar-event-by-invoking-the-deleteitem-method-on-the-service-instance-ensuring-proper-synchronization.cs) | remove a specified calendar event by invoking the deleteitem method on the service instance ensuring proper synchronization |
 | [remove-a-specified-directory-and-all-its-contents-from-the-file-system-handling-errors-appropriately.cs](./remove-a-specified-directory-and-all-its-contents-from-the-file-system-handling-errors-appropriately.cs) | remove a specified directory and all its contents from the file system handling errors appropriately |
@@ -172,6 +184,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [rename-the-specified-directory-to-a-new-name-updating-all-relevant-file-system-references-accordingly.cs](./rename-the-specified-directory-to-a-new-name-updating-all-relevant-file-system-references-accordingly.cs) | rename the specified directory to a new name updating all relevant file system references accordingly |
 | [retrieve-a-user-s-configuration-settings-by-invoking-the-getuserconfiguration-method-on-the-service-instance.cs](./retrieve-a-user-s-configuration-settings-by-invoking-the-getuserconfiguration-method-on-the-service-instance.cs) | retrieve a user s configuration settings by invoking the getuserconfiguration method on the service instance |
 | [retrieve-all-messages-belonging-to-a-specific-conversation-thread-by-invoking-the-findconversationitems-operation.cs](./retrieve-all-messages-belonging-to-a-specific-conversation-thread-by-invoking-the-findconversationitems-operation.cs) | retrieve all messages belonging to a specific conversation thread by invoking the findconversationitems operation |
+| [retrieve-all-unread-messages-from-a-mailbox-by-applying-the-is-unread-filter-keyword-in-the-query.cs](./retrieve-all-unread-messages-from-a-mailbox-by-applying-the-is-unread-filter-keyword-in-the-query.cs) | retrieve all unread messages from a mailbox by applying the is unread filter keyword in the query |
 | [retrieve-an-azure-ad-access-token-using-the-oauth-2-0-client-credentials-flow-for-authenticated-api-calls.cs](./retrieve-an-azure-ad-access-token-using-the-oauth-2-0-client-credentials-flow-for-authenticated-api-calls.cs) | retrieve an azure ad access token using the oauth 2 0 client credentials flow for authenticated api calls |
 | [retrieve-and-display-the-complete-set-of-rule-definitions-programmatically-supported-by-the-system.cs](./retrieve-and-display-the-complete-set-of-rule-definitions-programmatically-supported-by-the-system.cs) | retrieve and display the complete set of rule definitions programmatically supported by the system |
 | [retrieve-and-filter-messages-from-an-exchange-mailbox-based-on-specified-criteria-such-as-sender-date-or-folder.cs](./retrieve-and-filter-messages-from-an-exchange-mailbox-based-on-specified-criteria-such-as-sender-date-or-folder.cs) | retrieve and filter messages from an exchange mailbox based on specified criteria such as sender date or folder |
@@ -195,7 +208,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [utilize-the-service-createitem-method-to-programmatically-instantiate-a-new-list-on-the-server-side-repository.cs](./utilize-the-service-createitem-method-to-programmatically-instantiate-a-new-list-on-the-server-side-repository.cs) | utilize the service createitem method to programmatically instantiate a new list on the server side repository |
 
 ## Category Statistics
-- Total examples: 148
+- Total examples: 159
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -204,5 +217,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_021422` | [examples/batch-20260328_021422](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260328_021422) |
+| 2026-03-28 | `20260328_134048` | [examples/batch-20260328_134048](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260328_134048) |
 <!-- AUTOGENERATED:END -->
