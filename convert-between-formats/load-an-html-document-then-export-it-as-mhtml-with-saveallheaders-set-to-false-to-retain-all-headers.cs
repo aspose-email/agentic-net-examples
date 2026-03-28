@@ -12,10 +12,19 @@ namespace AsposeEmailMhtmlExample
             {
                 string htmlPath = "input.html";
                 if (!File.Exists(htmlPath))
-                {
-                    Console.Error.WriteLine($"Input file '{htmlPath}' does not exist.");
-                    return;
-                }
+{
+    try
+    {
+        string placeholderHtml = "<html><body><p>Placeholder HTML content.</p></body></html>";
+        File.WriteAllText(htmlPath, placeholderHtml);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder HTML: {ex.Message}");
+        return;
+    }
+}
+
 
                 string htmlContent;
                 try

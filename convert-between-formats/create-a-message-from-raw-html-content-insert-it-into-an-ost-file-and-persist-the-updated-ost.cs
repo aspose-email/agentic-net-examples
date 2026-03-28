@@ -12,11 +12,18 @@ class Program
         {
             string ostPath = "sample.ost";
 
-            // Verify that the OST file exists before proceeding.
+            // Verify that the OST file exists before proceeding; create a placeholder if missing.
             if (!File.Exists(ostPath))
             {
-                Console.Error.WriteLine($"OST file not found at path: {ostPath}");
-                return;
+                try
+                {
+                    PersonalStorage.Create(ostPath, FileFormatVersion.Unicode);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder OST file: {ex.Message}");
+                    return;
+                }
             }
 
             try

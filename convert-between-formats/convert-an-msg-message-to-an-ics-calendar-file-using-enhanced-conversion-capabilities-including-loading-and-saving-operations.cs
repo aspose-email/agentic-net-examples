@@ -14,10 +14,19 @@ class Program
 
             // Ensure the input MSG file exists
             if (!File.Exists(msgPath))
-            {
-                Console.Error.WriteLine($"Input file '{msgPath}' does not exist.");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Load the MSG file
             using (MapiMessage msg = MapiMessage.Load(msgPath))

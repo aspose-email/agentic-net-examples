@@ -18,10 +18,19 @@ class Program
 
             // Verify that the input MSG file exists
             if (!File.Exists(inputMsgPath))
-            {
-                Console.Error.WriteLine($"Input file '{inputMsgPath}' does not exist.");
-                return;
-            }
+{
+    try
+    {
+        MailMessage placeholderMsg = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG.");
+        placeholderMsg.Save(inputMsgPath, SaveOptions.DefaultMsgUnicode);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+        return;
+    }
+}
+
 
             // Ensure the attachments folder exists
             try
