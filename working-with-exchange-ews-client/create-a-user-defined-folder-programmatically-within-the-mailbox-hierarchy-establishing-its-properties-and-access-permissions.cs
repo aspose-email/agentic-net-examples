@@ -1,50 +1,41 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define connection parameters (replace with real values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            // Initialize EWS client
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Get the URI of the parent folder (e.g., Inbox)
-                string parentFolderUri = client.MailboxInfo.InboxUri;
+                // Get the URI of the Inbox folder (parent folder)
+                string inboxUri = client.MailboxInfo.InboxUri;
 
-                // Define the user who will have access to the new folder
-                ExchangeFolderUserInfo userInfo = new ExchangeFolderUserInfo
-                {
-                    PrimarySmtpAddress = "user@example.com",
-                    DisplayName = "Sample User"
-                };
-
-                // Create a permission for the user (owner level)
-                ExchangeFolderPermission permission = new ExchangeFolderPermission(userInfo)
-                {
-                    PermissionLevel = ExchangeFolderPermissionLevel.Owner
-                };
-
-                // Add the permission to a collection
+                // Prepare folder permissions
                 ExchangeFolderPermissionCollection permissions = new ExchangeFolderPermissionCollection();
+
+                ExchangeFolderUserInfo userInfo = new ExchangeFolderUserInfo();
+                userInfo.PrimarySmtpAddress = "delegate@example.com";
+
+                ExchangeFolderPermission permission = new ExchangeFolderPermission(userInfo);
+                permission.PermissionLevel = ExchangeFolderPermissionLevel.Editor; // grant edit rights
+
                 permissions.Add(permission);
 
-                // Create the new folder with the specified permissions
-                ExchangeFolderInfo newFolder = client.CreateFolder(parentFolderUri, "MyCustomFolder", permissions);
+                // Create a new folder under the Inbox with the specified permissions
+                string folderName = "MyCustomFolder";
+                ExchangeFolderInfo newFolder = client.CreateFolder(inboxUri, folderName, permissions);
 
-                Console.WriteLine("Folder created successfully:");
-                Console.WriteLine("Name: " + newFolder.DisplayName);
-                Console.WriteLine("URI: " + newFolder.Uri);
+                Console.WriteLine("Folder created: " + newFolder.Uri);
             }
         }
         catch (Exception ex)
