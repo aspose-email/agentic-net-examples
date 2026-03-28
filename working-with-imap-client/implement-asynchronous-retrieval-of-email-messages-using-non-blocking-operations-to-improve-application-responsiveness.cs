@@ -1,11 +1,10 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
-namespace ImapAsyncExample
+namespace AsposeEmailImapAsyncSample
 {
     class Program
     {
@@ -13,39 +12,44 @@ namespace ImapAsyncExample
         {
             try
             {
-                // Initialize IMAP client with host, username, password, and security options
-                using (ImapClient imapClient = new ImapClient("imap.example.com", "username", "password", SecurityOptions.Auto))
+                // IMAP server connection settings (replace with real values)
+                string host = "imap.example.com";
+                string username = "user@example.com";
+                string password = "password";
+
+                // Create and connect the IMAP client inside a using block to ensure disposal
+                using (ImapClient client = new ImapClient(host, username, password))
                 {
-                    // Verify connection by sending a NOOP command
                     try
                     {
-                        await imapClient.NoopAsync();
+                        // Asynchronously retrieve the list of message infos from the default folder
+                        ImapMessageInfoCollection messageInfos = await client.ListMessagesAsync(CancellationToken.None);
+
+                        foreach (Aspose.Email.Clients.Imap.ImapMessageInfo info in messageInfos)
+                        {
+                            // Asynchronously fetch the full message using its unique identifier
+                            using (MailMessage message = await client.FetchMessageAsync(info.UniqueId, CancellationToken.None))
+                            {
+                                Console.WriteLine($"Subject: {message.Subject}");
+                                Console.WriteLine($"From: {message.From}");
+                                Console.WriteLine($"Date: {message.Date}");
+                                Console.WriteLine(new string('-', 40));
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"IMAP connection failed: {ex.Message}");
+                        // Handle errors related to IMAP operations
+                        Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
                         return;
-                    }
-
-                    // Select the INBOX folder
-                    await imapClient.SelectFolderAsync("INBOX");
-
-                    // Retrieve up to 10 messages asynchronously
-                    ImapMessageInfoCollection messageInfos = await imapClient.ListMessagesAsync(10);
-
-                    // Iterate through the retrieved message infos
-                    foreach (ImapMessageInfo messageInfo in messageInfos)
-                    {
-                        // Fetch the full message using its unique identifier
-                        MailMessage message = await imapClient.FetchMessageAsync(messageInfo.UniqueId);
-                        string subject = message.Subject ?? string.Empty;
-                        Console.WriteLine($"Subject: {subject}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Handle errors related to client creation or other unexpected issues
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                return;
             }
         }
     }
