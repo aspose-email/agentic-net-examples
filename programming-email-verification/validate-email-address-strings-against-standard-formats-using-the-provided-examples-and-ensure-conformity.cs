@@ -8,27 +8,23 @@ class Program
     {
         try
         {
-            string[] emails = { "valid@example.com", "invalid-email", "test@nonexistentdomain.xyz" };
-
+            // Create an instance of EmailValidator
             EmailValidator validator = new EmailValidator();
 
-            foreach (string email in emails)
-            {
-                ValidationResult result;
-                validator.Validate(email, out result);
+            // Email address to validate
+            string email = "example@example.com";
 
-                Console.WriteLine($"Email: {email}");
-                Console.WriteLine($"ReturnCode: {result.ReturnCode}");
-                if (!string.IsNullOrEmpty(result.Message))
-                {
-                    Console.WriteLine($"Message: {result.Message}");
-                }
-                Console.WriteLine();
-            }
+            // Perform validation
+            ValidationResult result;
+            validator.Validate(email, out result);
+
+            // Output validation result
+            Console.WriteLine("Return Code: " + result.ReturnCode);
+            Console.WriteLine("Message: " + result.Message);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
