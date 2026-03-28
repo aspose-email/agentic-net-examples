@@ -1,41 +1,42 @@
+using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string msgPath = "message.msg";
+            // Path to the MSG file that contains the email to be sent
+            string msgPath = "email.msg";
 
-            // Verify that the MSG file exists before attempting to load it.
+            // Verify that the MSG file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"The file '{msgPath}' does not exist.");
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
 
-            // Load the message from the MSG file.
+            // Load the email message from the MSG file
             using (MailMessage message = MailMessage.Load(msgPath))
             {
-                // Create and configure the SMTP client.
-                // Use SSLExplicit to initiate STARTTLS (STARTTLS is represented by SSLExplicit).
-                try
+                // Create and configure the SMTP client
+                // Replace the placeholder values with actual server details and credentials
+                using (SmtpClient client = new SmtpClient("smtp.example.com", 587, "username", "password", SecurityOptions.Auto))
                 {
-                    using (SmtpClient client = new SmtpClient("smtp.example.com", "username", "password", SecurityOptions.SSLExplicit))
+                    try
                     {
+                        // Send the loaded message
                         client.Send(message);
-                        Console.WriteLine("Email sent successfully.");
+                        Console.WriteLine("Message sent successfully.");
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error sending email: {ex.Message}");
-                    return;
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error sending email: {ex.Message}");
+                    }
                 }
             }
         }
