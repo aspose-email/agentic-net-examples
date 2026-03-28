@@ -1,4 +1,5 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
@@ -8,27 +9,18 @@ class Program
     {
         try
         {
-            // POP3 server configuration (replace with real values)
-            string host = "pop3.example.com";
-            int port = 995;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Initialize the POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+            // Initialize POP3 client with host, username and password
+            using (Pop3Client client = new Pop3Client("pop3.example.com", "username", "password"))
             {
                 try
                 {
-                    // Retrieve the collection of message infos
+                    // Retrieve the list of messages from the server
                     Pop3MessageInfoCollection messages = client.ListMessages();
 
-                    // Display basic information for each message
+                    // Iterate through the messages and display their unique identifiers
                     foreach (Pop3MessageInfo info in messages)
                     {
-                        Console.WriteLine($"Subject: {info.Subject}");
-                        Console.WriteLine($"From: {info.From}");
-                        Console.WriteLine($"Size: {info.Size} bytes");
-                        Console.WriteLine(new string('-', 40));
+                        Console.WriteLine($"Message UID: {info.UniqueId}");
                     }
                 }
                 catch (Exception ex)
