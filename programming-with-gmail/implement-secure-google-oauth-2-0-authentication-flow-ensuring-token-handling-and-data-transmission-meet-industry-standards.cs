@@ -1,55 +1,64 @@
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-class Program
+namespace GmailOAuthSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // OAuth 2.0 credentials (replace with real values)
-            string clientId = "your-client-id";
-            string clientSecret = "your-client-secret";
-            string refreshToken = "your-refresh-token";
-            string defaultEmail = "user@example.com";
-
-            // Create Gmail client instance safely
-            IGmailClient gmailClient = null;
             try
             {
-                gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
-                return;
-            }
+                // Replace these placeholder values with real credentials.
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string defaultEmail = "user@example.com";
 
-            // Ensure the client is disposed properly
-            using (gmailClient)
-            {
+                // Create the Gmail client using OAuth 2.0 credentials.
+                IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
                 try
                 {
-                    // List messages in the mailbox
-                    var messages = gmailClient.ListMessages();
-                    foreach (GmailMessageInfo messageInfo in messages)
+                    // List messages in the mailbox.
+                    List<GmailMessageInfo> messages = gmailClient.ListMessages();
+
+                    Console.WriteLine($"Total messages: {messages.Count}");
+
+                    foreach (GmailMessageInfo info in messages)
                     {
-                        // Fetch the full message to access its properties
-                        MailMessage fullMessage = gmailClient.FetchMessage(messageInfo.Id);
-                        Console.WriteLine($"Subject: {fullMessage.Subject}");
+                        // Fetch the full message to access detailed properties.
+                        using (MailMessage fullMessage = gmailClient.FetchMessage(info.Id))
+                        {
+                            string subject = fullMessage.Subject ?? string.Empty;
+                            string from = fullMessage.From?.Address ?? string.Empty;
+                            Console.WriteLine($"Subject: {subject}");
+                            Console.WriteLine($"From: {from}");
+                            Console.WriteLine(new string('-', 40));
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during Gmail operations: {ex.Message}");
+                    Console.Error.WriteLine($"Gmail operation failed: {ex.Message}");
+                    return;
+                }
+                finally
+                {
+                    // Ensure the client is properly disposed.
+                    if (gmailClient != null)
+                    {
+                        gmailClient.Dispose();
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                return;
+            }
         }
     }
 }
