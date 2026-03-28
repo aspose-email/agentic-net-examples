@@ -1,6 +1,4 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
 class Program
@@ -9,14 +7,14 @@ class Program
     {
         try
         {
-            // POP3 server configuration
+            // POP3 server connection details
             string host = "pop.example.com";
             int port = 110; // default POP3 port
             string username = "user@example.com";
             string password = "password";
 
-            // Initialize the POP3 client with the specified settings
-            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+            // Create and configure the POP3 client
+            using (Pop3Client client = new Pop3Client(host, port, username, password))
             {
                 try
                 {
@@ -26,7 +24,8 @@ class Program
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Credential validation error: {ex.Message}");
+                    Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
+                    return;
                 }
             }
         }
