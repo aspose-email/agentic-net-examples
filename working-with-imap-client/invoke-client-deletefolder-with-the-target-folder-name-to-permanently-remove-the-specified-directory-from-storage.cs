@@ -1,4 +1,5 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
@@ -8,31 +9,24 @@ class Program
     {
         try
         {
-            // Connection parameters
+            // Define connection parameters
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
             string folderName = "TargetFolder";
 
-            // Create and dispose the IMAP client
-            using (ImapClient imapClient = new ImapClient(host, port, username, password, SecurityOptions.SSLImplicit))
+            // Create and connect the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
-                try
-                {
-                    // Delete the specified folder permanently
-                    imapClient.DeleteFolder(folderName);
-                    Console.WriteLine($"Folder '{folderName}' deleted successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error deleting folder: {ex.Message}");
-                }
+                // Delete the specified folder permanently
+                client.DeleteFolder(folderName);
+                Console.WriteLine($"Folder '{folderName}' has been deleted successfully.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
