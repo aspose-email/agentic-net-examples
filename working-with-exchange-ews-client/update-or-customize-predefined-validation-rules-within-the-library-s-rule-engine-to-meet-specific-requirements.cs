@@ -1,47 +1,36 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define the EWS endpoint and credentials (replace with actual values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create the EWS client using the factory method; it returns an IEWSClient instance
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Initialize the EWS client using the factory method.
+            using (IEWSClient client = EWSClient.GetEWSClient(
+                "https://example.com/EWS/Exchange.asmx",
+                new NetworkCredential("username", "password")))
             {
-                try
-                {
-                    // Retrieve the collection of messages from the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                // List messages from the Inbox folder.
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
 
-                    // Iterate through each message info and fetch the full message to display its subject
-                    foreach (ExchangeMessageInfo info in messages)
-                    {
-                        using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                        {
-                            Console.WriteLine("Subject: " + message.Subject);
-                        }
-                    }
-                }
-                catch (Exception ex)
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    Console.Error.WriteLine("Error while processing messages: " + ex.Message);
+                    // Output basic information about each message.
+                    Console.WriteLine("Subject: " + info.Subject);
+                    // Use the correct property for the message date.
+                    Console.WriteLine("Date: " + info.Date);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Failed to create EWS client: " + ex.Message);
+            // Write any errors to the error output.
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
