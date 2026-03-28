@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
@@ -10,58 +9,31 @@ class Program
     {
         try
         {
-            // POP3 server configuration
-            string host = "pop.example.com";
-            int port = 110;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Directory to save retrieved messages
-            string outputDir = "SavedMessages";
-
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputDir))
+            // Initialize POP3 client with host, port, credentials, and security options
+            using (Pop3Client client = new Pop3Client("pop.example.com", 110, "username", "password", SecurityOptions.Auto))
             {
-                Directory.CreateDirectory(outputDir);
-            }
+                // Get mailbox information
+                Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
+                Console.WriteLine($"Message count: {mailboxInfo.MessageCount}, Size: {mailboxInfo.OccupiedSize}");
 
-            // Create and use the POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
-            {
-                try
+                // List messages in the mailbox
+                var messages = client.ListMessages();
+                foreach (var info in messages)
                 {
-                    // Retrieve the list of messages
-                    Pop3MessageInfoCollection messages = client.ListMessages();
+                    Console.WriteLine($"Subject: {info.Subject}");
 
-                    foreach (Pop3MessageInfo info in messages)
+                    // Fetch the full message using its sequence number
+                    using (MailMessage message = client.FetchMessage(info.SequenceNumber))
                     {
-                        // Fetch the full message
-                        using (MailMessage message = client.FetchMessage(info.UniqueId))
-                        {
-                            Console.WriteLine($"Subject: {message.Subject}");
-
-                            // Save the message to a file
-                            string filePath = Path.Combine(outputDir, $"{info.UniqueId}.eml");
-                            try
-                            {
-                                message.Save(filePath, SaveOptions.DefaultEml);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to save message {info.UniqueId}: {ex.Message}");
-                            }
-                        }
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"Body: {message.Body}");
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
