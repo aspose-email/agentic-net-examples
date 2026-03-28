@@ -7,60 +7,92 @@ class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Placeholder values – replace with actual server URI and credentials.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create and dispose the EWS client.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Initialize EWS client
+            IEWSClient client = null;
+            try
             {
-                // Create a simple email message.
-                using (MailMessage message = new MailMessage("sender@example.com", "recipient@example.com", "Conversation Sample", "This is a test message for conversation."))
+                client = EWSClient.GetEWSClient(
+                    "https://example.com/EWS/Exchange.asmx",
+                    new NetworkCredential("username", "password"));
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
+                return;
+            }
+
+            using (client)
+            {
+                // Find conversations in the Inbox folder
+                ExchangeConversation[] conversations = null;
+                try
                 {
-                    // Send the message to the mailbox.
-                    client.Send(message);
+                    conversations = client.FindConversations(client.MailboxInfo.InboxUri);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error finding conversations: {ex.Message}");
+                    return;
                 }
 
-                // Identify the Inbox folder URI.
-                string inboxFolderId = client.MailboxInfo.InboxUri;
-
-                // Find conversations in the Inbox.
-                ExchangeConversation[] conversations = client.FindConversations(inboxFolderId);
-                if (conversations.Length == 0)
+                if (conversations == null || conversations.Length == 0)
                 {
                     Console.WriteLine("No conversations found.");
                     return;
                 }
 
-                // Use the first conversation for demonstration.
-                ExchangeConversation conversation = conversations[0];
-                Console.WriteLine("Conversation ID: " + conversation.ConversationId);
-                Console.WriteLine("Conversation Topic: " + conversation.ConversationTopic);
-
-                // Retrieve all messages belonging to the conversation.
-                MailMessageCollection messages = client.FetchConversationMessages(conversation.ConversationId);
-                foreach (MailMessage msg in messages)
+                foreach (ExchangeConversation conv in conversations)
                 {
-                    Console.WriteLine("Message Subject: " + msg.Subject);
-                    msg.Dispose();
+                    Console.WriteLine($"Conversation ID: {conv.ConversationId}");
+                    Console.WriteLine($"Topic: {conv.ConversationTopic}");
+                    Console.WriteLine($"Message Count: {conv.MessageCount}");
+
+                    // Retrieve messages of the conversation
+                    MailMessageCollection messages = null;
+                    try
+                    {
+                        messages = client.FetchConversationMessages(conv.ConversationId);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to fetch messages for conversation {conv.ConversationId}: {ex.Message}");
+                        continue;
+                    }
+
+                    Console.WriteLine($"Fetched {messages.Count} messages.");
+
+                    // Example update: mark all items in the conversation as read
+                    try
+                    {
+                        client.SetConversationReadState(conv.ConversationId, true);
+                        Console.WriteLine("Marked conversation as read.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to set read state for conversation {conv.ConversationId}: {ex.Message}");
+                    }
+
+                    // Example delete: delete all items of the conversation
+                    // Uncomment the following block to perform deletion
+                    /*
+                    try
+                    {
+                        client.DeleteConversationItems(conv.ConversationId);
+                        Console.WriteLine("Deleted conversation items.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to delete conversation {conv.ConversationId}: {ex.Message}");
+                    }
+                    */
                 }
-
-                // Update: mark the entire conversation as read.
-                client.SetConversationReadState(conversation.ConversationId, inboxFolderId, true);
-                Console.WriteLine("Conversation marked as read.");
-
-                // Delete all items of the conversation from the Inbox.
-                client.DeleteConversationItems(conversation.ConversationId, inboxFolderId);
-                Console.WriteLine("Conversation items deleted.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
