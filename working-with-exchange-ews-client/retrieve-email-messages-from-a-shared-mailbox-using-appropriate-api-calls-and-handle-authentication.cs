@@ -1,50 +1,43 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
 class Program
 {
     static void Main()
     {
-        var credential = new System.Net.NetworkCredential("username", "password", "domain");
-
         try
         {
-            // Define the EWS endpoint and credentials for the shared mailbox
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            // EWS service URL and credentials
+            string serviceUrl = "https://mail.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+            string sharedMailbox = "shared@example.com";
 
-            // Create the EWS client using the factory method (returns an IEWSClient)
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                try
+                // Retrieve mailbox information for the shared mailbox
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo(sharedMailbox);
+                string inboxUri = mailboxInfo.InboxUri;
+
+                // List messages in the shared mailbox's Inbox
+                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    // Retrieve the Inbox folder URI from the mailbox info
-                    string inboxUri = client.MailboxInfo.InboxUri;
-
-                    // List messages in the shared mailbox's Inbox
-                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
-
-                    // Output basic metadata for each message
-                    foreach (ExchangeMessageInfo info in messages)
+                    // Fetch the full message using its unique URI
+                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
                     {
-                        Console.WriteLine("Subject: " + info.Subject);
-                        Console.WriteLine("From: " + info.From);
-                        Console.WriteLine("Received: " + info.Date);
-                        Console.WriteLine(new string('-', 40));
+                        Console.WriteLine($"Subject: {message.Subject}");
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error while accessing messages: " + ex.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Failed to initialize EWS client: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
