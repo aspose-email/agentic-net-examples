@@ -2,15 +2,14 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Mime;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgPath = "message.msg";
+            string msgPath = "sample.msg";
 
             if (!File.Exists(msgPath))
             {
@@ -18,13 +17,23 @@ class Program
                 return;
             }
 
-            using (MapiMessage message = MapiMessage.Load(msgPath))
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                HeaderCollection headers = message.Headers;
+                // Retrieve the raw transport headers as a single string
+                string rawHeaders = msg.TransportMessageHeaders;
 
-                foreach (string key in headers.AllKeys)
+                if (string.IsNullOrEmpty(rawHeaders))
                 {
-                    Console.WriteLine($"{key}: {headers[key]}");
+                    Console.WriteLine("No transport headers found in the MSG file.");
+                    return;
+                }
+
+                Console.WriteLine("Transport Message Headers:");
+                // Split the headers into individual lines for display
+                string[] headerLines = rawHeaders.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string line in headerLines)
+                {
+                    Console.WriteLine(line);
                 }
             }
         }
