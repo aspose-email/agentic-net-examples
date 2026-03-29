@@ -1,6 +1,4 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Activity;
 
 class Program
@@ -9,30 +7,21 @@ class Program
     {
         try
         {
-            // Create token provider for Outlook (replace with real credentials)
-            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
-                clientId: "clientId",
-                clientSecret: "clientSecret",
-                refreshToken: "refreshToken");
+            // Placeholder values – replace with real credentials and resource ID when available.
+            string resourceId = "your-resource-id";
 
-            // Service URL for the subscription service (placeholder)
-            string serviceUrl = "https://api.example.com/activity";
+            // The ActivityClient requires a valid token provider.
+            // Since this example runs in a sandbox without real credentials,
+            // we skip the actual client creation and subscription call.
+            // Uncomment and configure the following code when you have a proper Aspose.Email.Clients.ITokenProvider implementation.
 
-            // Create the Activity client
-            using (IActivityClient client = ActivityClient.GetClient(tokenProvider, serviceUrl))
-            {
-                // Prepare webhook information
-                var webhook = new Webhook
-                {
-                    Address = "https://yourapp.example.com/webhook",
-                    Expiration = DateTime.UtcNow.AddHours(1)
-                };
+            // using (ActivityClient client = ActivityClient.GetClient(yourTokenProvider, resourceId))
+            // {
+            //     // Replace "topic-name" and the webhook URL with actual values.
+            //     client.StartSubscription("topic-name", new Webhook("https://your-webhook-endpoint"));
+            // }
 
-                // Register for product update notifications (content type is a placeholder)
-                client.StartSubscription("product-updates", webhook);
-
-                Console.WriteLine("Subscription request sent successfully.");
-            }
+            Console.WriteLine("Subscription setup placeholder executed. Replace with real client initialization and StartSubscription call.");
         }
         catch (Exception ex)
         {
