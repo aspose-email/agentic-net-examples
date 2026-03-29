@@ -1,9 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Smtp;
-using Aspose.Email.Clients.Imap;
 
 class Program
 {
@@ -11,81 +8,54 @@ class Program
     {
         try
         {
-            // Compose a new email message
+            // Define the path for the email file.
+            string emailFilePath = Path.Combine(Directory.GetCurrentDirectory(), "sample.eml");
+
+            // Ensure the directory exists before writing.
+            string directoryPath = Path.GetDirectoryName(emailFilePath);
+            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            // Compose a simple email message.
             using (MailMessage message = new MailMessage())
             {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Test Email";
-                message.Body = "This is a test email sent via Aspose.Email.";
+                message.From = "sender@example.com";
+                message.To = "recipient@example.com";
+                message.Subject = "Aspose.Email Sample";
+                message.Body = "This is a test email created with Aspose.Email.";
 
-                // Add an attachment if the file exists
-                string attachmentPath = "attachment.txt";
-                if (File.Exists(attachmentPath))
-                {
-                    try
-                    {
-                        using (FileStream fs = File.OpenRead(attachmentPath))
-                        {
-                            Attachment attachment = new Attachment(fs, "attachment.txt");
-                            message.Attachments.Add(attachment);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to add attachment: {ex.Message}");
-                    }
-                }
-
-                // Send the message using SMTP
+                // Save the message to an .eml file.
                 try
                 {
-                    using (SmtpClient smtpClient = new SmtpClient("smtp.example.com", 587, "username", "password"))
-                    {
-                        smtpClient.SecurityOptions = SecurityOptions.Auto;
-                        smtpClient.Send(message);
-                    }
+                    message.Save(emailFilePath, SaveOptions.DefaultEml);
+                    Console.WriteLine("Email saved to: " + emailFilePath);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"SMTP send failed: {ex.Message}");
+                    Console.Error.WriteLine("Failed to save email: " + ex.Message);
                     return;
                 }
             }
 
-            // Retrieve messages using IMAP
-            try
+            // Load the saved email message.
+            if (File.Exists(emailFilePath))
             {
-                using (ImapClient imapClient = new ImapClient("imap.example.com", 993, "username", "password"))
+                using (MailMessage loadedMessage = MailMessage.Load(emailFilePath))
                 {
-                    imapClient.SecurityOptions = SecurityOptions.Auto;
-
-                    // List messages in the INBOX folder
-                    var messageInfos = imapClient.ListMessages("INBOX");
-                    foreach (var info in messageInfos)
-                    {
-                        try
-                        {
-                            // Fetch the full message by its unique identifier
-                            MailMessage fetched = imapClient.FetchMessage(info.UniqueId);
-                            Console.WriteLine($"Subject: {fetched.Subject}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to fetch message {info.UniqueId}: {ex.Message}");
-                        }
-                    }
+                    Console.WriteLine("Loaded Email Subject: " + loadedMessage.Subject);
                 }
             }
-            catch (Exception ex)
+            else
             {
-                Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                return;
+                Console.Error.WriteLine("Email file not found: " + emailFilePath);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Top-level exception guard.
+            Console.Error.WriteLine("An error occurred: " + ex.Message);
         }
     }
 }
