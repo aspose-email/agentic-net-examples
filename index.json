@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 620,
+  "total_examples": 621,
   "total_categories": 14,
-  "last_updated": "2026-03-28",
+  "last_updated": "2026-03-29",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -62,11 +62,11 @@
         },
         {
           "name": "Aspose.Email",
-          "count": 39
+          "count": 38
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 14
+          "count": 15
         },
         {
           "name": "Aspose.Email.Storage.Pst",
@@ -93,7 +93,7 @@
           "count": 1
         },
         {
-          "name": "System.Text.RegularExpressions",
+          "name": "HtmlAgilityPack",
           "count": 1
         },
         {
@@ -150,7 +150,7 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 41,
+      "file_count": 42,
       "files": [
         "access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs",
         "add-a-new-calendar-appointment-to-the-schedule-using-the-library-s-appointment-insertion-api.cs",
@@ -179,6 +179,7 @@
         "parse-mbox-files-to-retrieve-email-messages-and-their-metadata-programmatically-for-further-processing.cs",
         "perform-a-freebusy-query-against-google-calendar-to-retrieve-availability-information-for-specified-users-and-time-range.cs",
         "perform-google-calendar-operations-through-the-gmail-client-api-enabling-creation-retrieval-and-modification-of-events.cs",
+        "perform-oauth-2-0-authentication-using-the-tokenresponse-class-and-configure-the-client-for-subsequent-api-requests.cs",
         "programmatically-convert-thunderbird-email-files-to-standard-formats-using-the-provided-api-for-application-integration.cs",
         "programmatically-retrieve-the-total-count-of-email-messages-stored-in-an-mbox-file-using-the-api.cs",
         "prompt-the-user-to-input-the-otp-received-via-mobile-sms-for-authentication-verification.cs",
@@ -197,7 +198,7 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 41
+          "count": 42
         },
         {
           "name": "Aspose.Email",
@@ -205,11 +206,11 @@
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 22
+          "count": 21
         },
         {
           "name": "Aspose.Email.Clients.Google",
-          "count": 19
+          "count": 20
         },
         {
           "name": "System.IO",
