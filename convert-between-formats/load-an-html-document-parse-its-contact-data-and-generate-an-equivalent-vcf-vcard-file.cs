@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
-using Aspose.Email;
+using HtmlAgilityPack;
 using Aspose.Email.PersonalInfo;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,78 +10,105 @@ class Program
     {
         try
         {
-            // Input HTML file path
             string htmlPath = "contact.html";
+            string vcfPath = "contact.vcf";
 
-            // Verify input file exists
+            // Verify input HTML file exists
             if (!File.Exists(htmlPath))
             {
-                Console.Error.WriteLine($"Input file '{htmlPath}' not found.");
+                Console.Error.WriteLine($"Input file not found: {htmlPath}");
                 return;
             }
 
-            // Read HTML content safely
-            string htmlContent;
+            // Load HTML document
+            HtmlDocument htmlDoc = new HtmlDocument();
             try
             {
-                htmlContent = File.ReadAllText(htmlPath);
+                htmlDoc.Load(htmlPath);
             }
-            catch (Exception readEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to read file: {readEx.Message}");
+                Console.Error.WriteLine($"Failed to load HTML file: {ex.Message}");
                 return;
             }
 
-            // Simple extraction of name, email, and phone using regex
-            string name = ExtractPattern(htmlContent, @"<h1>(.*?)</h1>");
-            string email = ExtractPattern(htmlContent, @"mailto:([^\"">]+)");
-            string phone = ExtractPattern(htmlContent, @"Phone:\s*([+\d\s\-\(\)]+)");
+            // Extract contact fields using XPath
+            string givenName = string.Empty;
+            string surname = string.Empty;
+            string email = string.Empty;
+            string phone = string.Empty;
 
-            // Create a Contact object and populate fields
+            HtmlNode nameNode = htmlDoc.DocumentNode.SelectSingleNode("//span[@class='name']");
+            if (nameNode != null)
+            {
+                string[] nameParts = nameNode.InnerText.Trim().Split(' ');
+                if (nameParts.Length > 0) givenName = nameParts[0];
+                if (nameParts.Length > 1) surname = nameParts[nameParts.Length - 1];
+            }
+
+            HtmlNode emailNode = htmlDoc.DocumentNode.SelectSingleNode("//a[starts-with(@href,'mailto:')]");
+            if (emailNode != null)
+            {
+                string href = emailNode.GetAttributeValue("href", string.Empty);
+                if (href.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+                {
+                    email = href.Substring(7);
+                }
+            }
+
+            HtmlNode phoneNode = htmlDoc.DocumentNode.SelectSingleNode("//span[@class='phone']");
+            if (phoneNode != null)
+            {
+                phone = phoneNode.InnerText.Trim();
+            }
+
+            // Create Aspose.Email contact
             Contact contact = new Contact();
-
-            if (!string.IsNullOrEmpty(name))
-                contact.DisplayName = name;
+            contact.GivenName = givenName;
+            contact.Surname = surname;
 
             if (!string.IsNullOrEmpty(email))
+            {
                 contact.EmailAddresses.Add(new EmailAddress(email));
+            }
 
             if (!string.IsNullOrEmpty(phone))
             {
                 PhoneNumber phoneNumber = new PhoneNumber();
-                phoneNumber.Number = phone.Trim();
+                phoneNumber.Number = phone;
+                phoneNumber.Category = PhoneNumberCategory.Work;
                 contact.PhoneNumbers.Add(phoneNumber);
             }
 
-            // Output VCF file path
-            string outputPath = "contact.vcf";
-
             // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                Directory.CreateDirectory(outputDirectory);
-
-            // Save the contact as a VCF file
             try
             {
-                contact.Save(outputPath);
-                Console.WriteLine($"VCard saved to {outputPath}");
+                string outputDir = Path.GetDirectoryName(vcfPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
             }
-            catch (Exception saveEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to save VCard: {saveEx.Message}");
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                return;
+            }
+
+            // Save contact as VCF
+            try
+            {
+                contact.Save(vcfPath, ContactSaveFormat.VCard);
+                Console.WriteLine($"Contact saved to {vcfPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save VCF file: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
-    }
-
-    // Helper method to extract the first capturing group from a regex pattern
-    static string ExtractPattern(string input, string pattern)
-    {
-        Match match = Regex.Match(input, pattern, RegexOptions.IgnoreCase);
-        return match.Success ? match.Groups[1].Value.Trim() : string.Empty;
     }
 }
