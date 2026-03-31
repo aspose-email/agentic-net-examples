@@ -1,52 +1,49 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using System.Net;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Credentials for the account that has permission to impersonate the shared mailbox
-            NetworkCredential credentials = new NetworkCredential("username", "password", "domain");
-
-            // Initialize the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
+            try
             {
-                try
-                {
-                    // Impersonate the shared mailbox using its primary SMTP address
-                    client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, "sharedmailbox@example.com");
+                // Placeholder connection settings – replace with real values for actual use.
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
+                string sharedMailbox = "shared@example.com";
 
-                    // List messages from the impersonated mailbox's Inbox
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-
-                    // Iterate through the messages and display their subjects
-                    foreach (ExchangeMessageInfo messageInfo in messages)
-                    {
-                        // Fetch the full message using its unique URI
-                        using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
-                        {
-                            Console.WriteLine(message.Subject);
-                        }
-                    }
-                }
-                catch (Exception ex)
+                // Guard against executing real network calls when placeholders are present.
+                if (mailboxUri.Contains("example.com") ||
+                    username.Contains("example.com") ||
+                    password == "password")
                 {
-                    // Handle errors that occur during impersonation or message operations
-                    Console.Error.WriteLine("Error during EWS operations: " + ex.Message);
+                    Console.Error.WriteLine("Placeholder credentials detected – skipping actual Exchange connection.");
                     return;
                 }
+
+                // Create the EWS client using the factory method.
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    // Impersonate the shared mailbox using its primary SMTP address.
+                    client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, sharedMailbox);
+
+                    // Example operation under impersonation – list messages in the Inbox.
+                    string inboxUri = client.MailboxInfo.InboxUri;
+                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+
+                    Console.WriteLine($"Impersonated mailbox '{sharedMailbox}' contains {messages.Count} messages in the Inbox.");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            // Handle errors that occur while creating the client (e.g., authentication failures)
-            Console.Error.WriteLine("Failed to connect to Exchange server: " + ex.Message);
-            return;
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
