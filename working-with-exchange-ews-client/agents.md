@@ -18,32 +18,35 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (132 file(s))
-- `using Aspose.Email;` (122 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (108 file(s))
-- `using System.Net;` (95 file(s))
-- `using Aspose.Email.Clients.Exchange;` (71 file(s))
-- `using System.IO;` (20 file(s))
-- `using Aspose.Email.Tools.Search;` (14 file(s))
-- `using Aspose.Email.Clients;` (12 file(s))
-- `using System.Collections.Generic;` (12 file(s))
+- `using System;` (140 file(s))
+- `using Aspose.Email;` (129 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (115 file(s))
+- `using System.Net;` (103 file(s))
+- `using Aspose.Email.Clients.Exchange;` (74 file(s))
+- `using System.IO;` (21 file(s))
+- `using Aspose.Email.Tools.Search;` (15 file(s))
+- `using System.Collections.Generic;` (13 file(s))
+- `using Aspose.Email.Clients;` (10 file(s))
 - `using Aspose.Email.Clients.Google;` (9 file(s))
 - `using Aspose.Email.Calendar;` (7 file(s))
+- `using Aspose.Email.PersonalInfo;` (4 file(s))
+- `using System.Threading.Tasks;` (4 file(s))
 - `using Aspose.Email.Mapi;` (4 file(s))
-- `using System.Threading.Tasks;` (3 file(s))
-- `using Aspose.Email.PersonalInfo;` (2 file(s))
+- `using System.Threading;` (3 file(s))
+- `using System.Text;` (3 file(s))
 - `using System.Linq;` (2 file(s))
-- `using System.Text;` (2 file(s))
 - `using System.Text.Json;` (2 file(s))
-- `using System.Threading;` (2 file(s))
-- `using Aspose.Email.Clients.Imap;` (2 file(s))
 - `using System.IO.Compression;` (1 file(s))
 - `using Aspose.Email.Clients.Smtp;` (1 file(s))
+- `using System.ComponentModel;` (1 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService.Models;` (1 file(s))
+- `using Aspose.Email.Clients.Imap;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
+| [12967.cs](./12967.cs) | 12967 |
+| [12971.cs](./12971.cs) | 12971 |
 | [add-contacts-to-an-existing-distribution-list-by-specifying-member-identifiers-and-updating-the-list-accordingly.cs](./add-contacts-to-an-existing-distribution-list-by-specifying-member-identifiers-and-updating-the-list-accordingly.cs) | add contacts to an existing distribution list by specifying member identifiers and updating the list accordingly |
 | [add-custom-metadata-properties-to-the-target-object-to-enable-extended-attribute-storage-for-downstream-processing.cs](./add-custom-metadata-properties-to-the-target-object-to-enable-extended-attribute-storage-for-downstream-processing.cs) | add custom metadata properties to the target object to enable extended attribute storage for downstream processing |
 | [add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs](./add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs) | add the required email library package to the project using the nuget package manager |
@@ -68,11 +71,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [configure-the-service-s-authentication-credentials-to-enable-authorized-access-for-subsequent-programmatic-api-operations.cs](./configure-the-service-s-authentication-credentials-to-enable-authorized-access-for-subsequent-programmatic-api-operations.cs) | configure the service s authentication credentials to enable authorized access for subsequent programmatic api operations |
 | [configure-the-shared-mailbox-address-for-email-operations-to-direct-messages-to-the-designated-shared-account.cs](./configure-the-shared-mailbox-address-for-email-operations-to-direct-messages-to-the-designated-shared-account.cs) | configure the shared mailbox address for email operations to direct messages to the designated shared account |
 | [connect-to-the-mail-server-and-retrieve-items-from-a-specific-mailbox-folder-using-the-provided-api.cs](./connect-to-the-mail-server-and-retrieve-items-from-a-specific-mailbox-folder-using-the-provided-api.cs) | connect to the mail server and retrieve items from a specific mailbox folder using the provided api |
+| [construct-a-searchfiltercollection-that-merges-several-individual-filters-by-applying-the-logicaloperator-and-oper.cs](./construct-a-searchfiltercollection-that-merges-several-individual-filters-by-applying-the-logicaloperator-and-oper.cs) | construct a searchfiltercollection that merges several individual filters by applying the logicaloperator and oper |
 | [construct-aqs-queries-to-filter-items-using-supported-operators-and-criteria-within-the-application.cs](./construct-aqs-queries-to-filter-items-using-supported-operators-and-criteria-within-the-application.cs) | construct aqs queries to filter items using supported operators and criteria within the application |
 | [construct-complex-search-queries-by-combining-keywords-using-and-and-or-logical-operators-appropriately.cs](./construct-complex-search-queries-by-combining-keywords-using-and-and-or-logical-operators-appropriately.cs) | construct complex search queries by combining keywords using and and or logical operators appropriately |
 | [create-a-new-appointment-instance-using-its-constructor-then-configure-required-event-properties-appropriately.cs](./create-a-new-appointment-instance-using-its-constructor-then-configure-required-event-properties-appropriately.cs) | create a new appointment instance using its constructor then configure required event properties appropriately |
 | [create-a-new-archive-directory-or-determine-the-existing-one-for-storing-email-assets.cs](./create-a-new-archive-directory-or-determine-the-existing-one-for-storing-email-assets.cs) | create a new archive directory or determine the existing one for storing email assets |
 | [create-a-new-contact-entry-in-the-address-book-with-specified-fields-and-persist-it.cs](./create-a-new-contact-entry-in-the-address-book-with-specified-fields-and-persist-it.cs) | create a new contact entry in the address book with specified fields and persist it |
+| [create-a-new-contact-entry-within-the-address-book-ensuring-all-required-fields-are-correctly-populated.cs](./create-a-new-contact-entry-within-the-address-book-ensuring-all-required-fields-are-correctly-populated.cs) | create a new contact entry within the address book ensuring all required fields are correctly populated |
 | [create-a-new-directory-within-the-file-system-ensuring-proper-path-handling-and-comprehensive-error-checking.cs](./create-a-new-directory-within-the-file-system-ensuring-proper-path-handling-and-comprehensive-error-checking.cs) | create a new directory within the file system ensuring proper path handling and comprehensive error checking |
 | [create-a-new-distribution-list-and-programmatically-add-specified-recipients-for-bulk-email-sending.cs](./create-a-new-distribution-list-and-programmatically-add-specified-recipients-for-bulk-email-sending.cs) | create a new distribution list and programmatically add specified recipients for bulk email sending |
 | [create-a-new-instance-of-the-distributionlist-class-for-managing-email-distribution-groups-within-your-application.cs](./create-a-new-instance-of-the-distributionlist-class-for-managing-email-distribution-groups-within-your-application.cs) | create a new instance of the distributionlist class for managing email distribution groups within your application |
@@ -86,6 +91,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [create-modify-or-delete-distribution-lists-on-an-exchange-server-using-the-provided-api.cs](./create-modify-or-delete-distribution-lists-on-an-exchange-server-using-the-provided-api.cs) | create modify or delete distribution lists on an exchange server using the provided api |
 | [delete-selected-email-messages-from-a-mailbox-ensuring-they-are-permanently-removed-and-synchronization-updates-accordingly.cs](./delete-selected-email-messages-from-a-mailbox-ensuring-they-are-permanently-removed-and-synchronization-updates-accordingly.cs) | delete selected email messages from a mailbox ensuring they are permanently removed and synchronization updates accordingly |
 | [display-the-generated-log-output-in-the-console-or-designated-ui-component-for-diagnostic-review.cs](./display-the-generated-log-output-in-the-console-or-designated-ui-component-for-diagnostic-review.cs) | display the generated log output in the console or designated ui component for diagnostic review |
+| [employ-asynchronous-apis-such-as-finditemsasync-to-fetch-email-messages-efficiently-allowing-non-blocking-operatio.cs](./employ-asynchronous-apis-such-as-finditemsasync-to-fetch-email-messages-efficiently-allowing-non-blocking-operatio.cs) | employ asynchronous apis such as finditemsasync to fetch email messages efficiently allowing non blocking operatio |
 | [enable-autodiscover-to-programmatically-resolve-the-ews-endpoint-url-using-the-user-s-email-address.cs](./enable-autodiscover-to-programmatically-resolve-the-ews-endpoint-url-using-the-user-s-email-address.cs) | enable autodiscover to programmatically resolve the ews endpoint url using the user s email address |
 | [enable-creation-retrieval-updating-and-deletion-of-exchange-server-mailbox-rules-through-the-exchange-web-services-interface.cs](./enable-creation-retrieval-updating-and-deletion-of-exchange-server-mailbox-rules-through-the-exchange-web-services-interface.cs) | enable creation retrieval updating and deletion of exchange server mailbox rules through the exchange web services interface |
 | [enable-diagnostic-tracing-for-the-service-at-runtime-by-assigning-true-to-its-traceenabled-property.cs](./enable-diagnostic-tracing-for-the-service-at-runtime-by-assigning-true-to-its-traceenabled-property.cs) | enable diagnostic tracing for the service at runtime by assigning true to its traceenabled property |
@@ -115,6 +121,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [instantiate-a-distribution-list-object-and-populate-it-with-specified-contacts-using-the-provided-api-methods.cs](./instantiate-a-distribution-list-object-and-populate-it-with-specified-contacts-using-the-provided-api-methods.cs) | instantiate a distribution list object and populate it with specified contacts using the provided api methods |
 | [instantiate-an-exchange-service-object-configured-for-the-target-server-authentication-parameters-and-session-settings.cs](./instantiate-an-exchange-service-object-configured-for-the-target-server-authentication-parameters-and-session-settings.cs) | instantiate an exchange service object configured for the target server authentication parameters and session settings |
 | [instantiate-an-exchangeservice-object-to-interact-with-the-mail-server-programmatically-within-your-application.cs](./instantiate-an-exchangeservice-object-to-interact-with-the-mail-server-programmatically-within-your-application.cs) | instantiate an exchangeservice object to interact with the mail server programmatically within your application |
+| [instantiate-an-extendedproperty-object-using-a-specified-propertydefinition-to-associate-custom-metadata-within-th.cs](./instantiate-an-extendedproperty-object-using-a-specified-propertydefinition-to-associate-custom-metadata-within-th.cs) | instantiate an extendedproperty object using a specified propertydefinition to associate custom metadata within th |
 | [instantiate-an-oauthcredentials-object-by-supplying-the-access-token-enabling-secure-authenticated-api-requests.cs](./instantiate-an-oauthcredentials-object-by-supplying-the-access-token-enabling-secure-authenticated-api-requests.cs) | instantiate an oauthcredentials object by supplying the access token enabling secure authenticated api requests |
 | [instantiate-and-configure-a-new-task-object-to-perform-the-desired-operation-within-the-library.cs](./instantiate-and-configure-a-new-task-object-to-perform-the-desired-operation-within-the-library.cs) | instantiate and configure a new task object to perform the desired operation within the library |
 | [instantiate-the-exchangeservice-class-configure-its-credentials-and-establish-a-connection-to-the-exchange-server.cs](./instantiate-the-exchangeservice-class-configure-its-credentials-and-establish-a-connection-to-the-exchange-server.cs) | instantiate the exchangeservice class configure its credentials and establish a connection to the exchange server |
@@ -140,6 +147,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [optionally-configure-an-inbox-rule-that-automatically-archives-received-messages-based-on-defined-criteria.cs](./optionally-configure-an-inbox-rule-that-automatically-archives-received-messages-based-on-defined-criteria.cs) | optionally configure an inbox rule that automatically archives received messages based on defined criteria |
 | [perform-an-aqs-query-against-the-data-source-to-retrieve-matching-items-using-specified-criteria.cs](./perform-an-aqs-query-against-the-data-source-to-retrieve-matching-items-using-specified-criteria.cs) | perform an aqs query against the data source to retrieve matching items using specified criteria |
 | [perform-asynchronous-email-retrieval-to-fetch-messages-without-blocking-the-calling-thread-supporting-cancellation-tokens-and.cs](./perform-asynchronous-email-retrieval-to-fetch-messages-without-blocking-the-calling-thread-supporting-cancellation-tokens-and.cs) | perform asynchronous email retrieval to fetch messages without blocking the calling thread supporting cancellation tokens and |
+| [perform-contact-management-operations-on-an-exchange-server-via-the-exchange-web-services-protocol.cs](./perform-contact-management-operations-on-an-exchange-server-via-the-exchange-web-services-protocol.cs) | perform contact management operations on an exchange server via the exchange web services protocol |
 | [perform-folder-operations-on-an-exchange-server-including-creation-retrieval-updating-and-deletion-via-api.cs](./perform-folder-operations-on-an-exchange-server-including-creation-retrieval-updating-and-deletion-via-api.cs) | perform folder operations on an exchange server including creation retrieval updating and deletion via api |
 | [programmatically-define-and-configure-inbox-rules-to-automate-email-handling-based-on-specified-criteria.cs](./programmatically-define-and-configure-inbox-rules-to-automate-email-handling-based-on-specified-criteria.cs) | programmatically define and configure inbox rules to automate email handling based on specified criteria |
 | [read-and-access-message-properties-including-sender-recipients-subject-and-custom-fields-using-the-net-library.cs](./read-and-access-message-properties-including-sender-recipients-subject-and-custom-fields-using-the-net-library.cs) | read and access message properties including sender recipients subject and custom fields using the net library |
@@ -173,12 +181,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [specify-the-file-system-location-where-the-library-writes-its-log-files-for-troubleshooting-and-diagnostics.cs](./specify-the-file-system-location-where-the-library-writes-its-log-files-for-troubleshooting-and-diagnostics.cs) | specify the file system location where the library writes its log files for troubleshooting and diagnostics |
 | [transfer-a-directory-and-its-contents-to-a-new-location-updating-all-internal-file-references-accordingly.cs](./transfer-a-directory-and-its-contents-to-a-new-location-updating-all-internal-file-references-accordingly.cs) | transfer a directory and its contents to a new location updating all internal file references accordingly |
 | [update-or-customize-predefined-validation-rules-within-the-library-s-rule-engine-to-meet-specific-requirements.cs](./update-or-customize-predefined-validation-rules-within-the-library-s-rule-engine-to-meet-specific-requirements.cs) | update or customize predefined validation rules within the library s rule engine to meet specific requirements |
+| [use-the-addmember-method-to-insert-new-members-into-the-collection-ensuring-proper-initialization-and-validation.cs](./use-the-addmember-method-to-insert-new-members-into-the-collection-ensuring-proper-initialization-and-validation.cs) | use the addmember method to insert new members into the collection ensuring proper initialization and validation |
 | [use-the-ews-api-to-fetch-email-messages-from-a-shared-mailbox-handling-authentication-and-folder-access.cs](./use-the-ews-api-to-fetch-email-messages-from-a-shared-mailbox-handling-authentication-and-folder-access.cs) | use the ews api to fetch email messages from a shared mailbox handling authentication and folder access |
 | [use-the-service-deletefolder-method-to-remove-the-specified-target-folder-from-the-storage-system.cs](./use-the-service-deletefolder-method-to-remove-the-specified-target-folder-from-the-storage-system.cs) | use the service deletefolder method to remove the specified target folder from the storage system |
 | [utilize-the-service-createitem-method-to-programmatically-instantiate-a-new-list-on-the-server-side-repository.cs](./utilize-the-service-createitem-method-to-programmatically-instantiate-a-new-list-on-the-server-side-repository.cs) | utilize the service createitem method to programmatically instantiate a new list on the server side repository |
 
 ## Category Statistics
-- Total examples: 132
+- Total examples: 140
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -187,5 +196,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_182303` | examples/batch-20260328_182303 |
+| 2026-03-31 | `20260331_043219` | [examples/batch-20260331_043219](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260331_043219) |
 <!-- AUTOGENERATED:END -->
