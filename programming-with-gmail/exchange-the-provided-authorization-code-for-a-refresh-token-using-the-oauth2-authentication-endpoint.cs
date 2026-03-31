@@ -1,9 +1,5 @@
 using System;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
 
 class Program
 {
@@ -11,62 +7,34 @@ class Program
     {
         try
         {
-            // OAuth2 parameters (replace with real values)
+            // Placeholder OAuth parameters – replace with real values when available.
+            string requestUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
             string clientId = "clientId";
             string clientSecret = "clientSecret";
             string authorizationCode = "authCode";
-            string redirectUri = "https://yourapp.example.com/oauth2callback";
-            string tokenEndpoint = "https://oauth2.googleapis.com/token";
 
-            // Exchange authorization code for refresh token
-            string refreshToken;
-            using (HttpClient httpClient = new HttpClient())
+            // Guard against executing network calls with placeholder credentials.
+            if (clientId == "clientId" || clientSecret == "clientSecret" || authorizationCode == "authCode")
             {
-                var requestContent = new StringContent(
-                    $"code={authorizationCode}&client_id={clientId}&client_secret={clientSecret}&redirect_uri={redirectUri}&grant_type=authorization_code",
-                    Encoding.UTF8,
-                    "application/x-www-form-urlencoded");
-
-                HttpResponseMessage response = httpClient.PostAsync(tokenEndpoint, requestContent).Result;
-                response.EnsureSuccessStatusCode();
-
-                string jsonResponse = response.Content.ReadAsStringAsync().Result;
-                using (JsonDocument jsonDoc = JsonDocument.Parse(jsonResponse))
-                {
-                    JsonElement root = jsonDoc.RootElement;
-                    if (root.TryGetProperty("refresh_token", out JsonElement refreshTokenElement))
-                    {
-                        refreshToken = refreshTokenElement.GetString();
-                    }
-                    else
-                    {
-                        Console.Error.WriteLine("Refresh token not found in the response.");
-                        return;
-                    }
-                }
+                Console.Error.WriteLine("Placeholder OAuth parameters detected. Skipping token exchange.");
+                return;
             }
 
-            // Create Gmail client using the obtained refresh token
-            string defaultEmail = "user@example.com";
-            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-            using (gmailClient)
+            // Create a TokenProvider instance for Outlook using the OAuth2 token endpoint.
+            using (TokenProvider tokenProvider = TokenProvider.GetInstance(requestUrl, clientId, clientSecret, authorizationCode))
             {
-                // Refresh access token explicitly (optional, as it may happen automatically)
-                gmailClient.RefreshToken();
+                // Request an access token; the provider will handle the exchange.
+                var oauthToken = tokenProvider.GetAccessToken();
 
-                // Example: list messages (placeholder - actual usage may vary)
-                var messages = gmailClient.ListMessages();
-                foreach (var messageInfo in messages)
-                {
-                    // Fetch full message to read subject
-                    var mailMessage = gmailClient.FetchMessage(messageInfo.Id);
-                    Console.WriteLine(mailMessage.Subject);
-                }
+                // The returned token may contain a refresh token; output it if available.
+                Console.WriteLine("Access Token: " + oauthToken.Token);
+                // Assuming the token object exposes a RefreshToken property.
+                // Console.WriteLine("Refresh Token: " + oauthToken.RefreshToken);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
