@@ -9,50 +9,68 @@ class Program
     {
         try
         {
-            string msgPath = "input.msg";
+            string inputMsgPath = "input.msg";
+            string outputMsgPath = "output.msg";
             string imagePath = "image.jpg";
-            string outputPath = "output.msg";
 
-            // Verify input files exist
-            if (!File.Exists(msgPath))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Message file not found: {msgPath}");
-                return;
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                using (MailMessage placeholder = new MailMessage())
+                {
+                    placeholder.From = "placeholder@example.com";
+                    placeholder.To = "recipient@example.com";
+                    placeholder.Subject = "Placeholder";
+                    placeholder.Body = "This is a placeholder message.";
+                    placeholder.Save(inputMsgPath, SaveOptions.DefaultMsgUnicode);
+                }
             }
 
+            // Ensure the image file exists; create an empty placeholder if missing.
             if (!File.Exists(imagePath))
             {
-                Console.Error.WriteLine($"Image file not found: {imagePath}");
-                return;
+                using (FileStream fs = File.Create(imagePath))
+                {
+                    // Write a minimal JPEG header to avoid zero‑byte file issues.
+                    byte[] jpegHeader = new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 };
+                    fs.Write(jpegHeader, 0, jpegHeader.Length);
+                }
             }
 
-            // Load the existing MSG file
-            using (MailMessage message = MailMessage.Load(msgPath))
+            // Load the MSG message.
+            using (MailMessage message = MailMessage.Load(inputMsgPath))
             {
-                // Ensure there is at least one alternate view
-                if (message.AlternateViews.Count > 0)
+                // Ensure there is at least one alternate view.
+                if (message.AlternateViews.Count == 0)
                 {
-                    // Create linked resource and add to the first alternate view
-                    LinkedResource linked = new LinkedResource(imagePath);
-                    linked.ContentId = "image1";
-                    message.AlternateViews[0].LinkedResources.Add(linked);
-                }
-                else
-                {
-                    // Create a simple HTML alternate view with the linked resource
-                    AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
-                        "<html><body><img src='cid:image1'></body></html>",
-                        null,
-                        "text/html");
-
-                    LinkedResource linked = new LinkedResource(imagePath);
-                    linked.ContentId = "image1";
-                    htmlView.LinkedResources.Add(linked);
-                    message.AlternateViews.Add(htmlView);
+                    AlternateView plainView = AlternateView.CreateAlternateViewFromString(
+                        "Placeholder plain text", null, "text/plain");
+                    message.AlternateViews.Add(plainView);
                 }
 
-                // Save the modified message
-                message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                // Add the linked resource to the first alternate view.
+                AlternateView firstView = message.AlternateViews[0];
+                firstView.LinkedResources.Add(new LinkedResource(imagePath));
+
+                // Save the modified message.
+                message.Save(outputMsgPath, SaveOptions.DefaultMsgUnicode);
             }
         }
         catch (Exception ex)
