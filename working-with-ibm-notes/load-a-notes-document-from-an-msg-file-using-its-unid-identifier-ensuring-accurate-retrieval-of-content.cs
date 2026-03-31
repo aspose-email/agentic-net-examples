@@ -9,29 +9,40 @@ class Program
     {
         try
         {
-            // Path to the MSG file that contains the Notes document.
-            const string msgFilePath = "notes_document.msg";
+            const string msgPath = "sample.msg";
 
-            // Verify that the file exists before attempting to load it.
-            if (!File.Exists(msgFilePath))
+            // Ensure the MSG file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgFilePath}");
-                return;
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "receiver@example.com",
+                        "Sample Subject",
+                        "This is a placeholder message body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Load the MSG file into a MapiMessage instance.
-            using (MapiMessage msg = MapiMessage.Load(msgFilePath))
+            // Load the MSG file.
+            using (MapiMessage message = MapiMessage.Load(msgPath))
             {
-                // Display basic properties to confirm successful loading.
-                Console.WriteLine($"Subject: {msg.Subject}");
-                Console.WriteLine($"Body: {msg.Body}");
+                // Retrieve the UNID property (PR_NOTE_UNID = 0x0E0F). It is stored as binary.
+                const long UnidTag = 0x0E0F;
+                byte[] unidBytes = message.GetPropertyBytes(UnidTag);
+                string unidHex = unidBytes != null ? BitConverter.ToString(unidBytes).Replace("-", "") : "N/A";
 
-                // The UNID (Universal ID) of a Notes document is stored as a MAPI property.
-                // Its tag is 0x0E03 (PidTagMessageId). Retrieve it as a string.
-                // Adjust the tag if a different property is used for UNID in your environment.
-                const long UNID_TAG = 0x0E03;
-                string unid = msg.GetPropertyString(UNID_TAG);
-                Console.WriteLine($"UNID: {unid}");
+                Console.WriteLine($"UNID: {unidHex}");
+                Console.WriteLine($"Subject: {message.Subject}");
+                Console.WriteLine($"Body: {message.Body}");
             }
         }
         catch (Exception ex)
