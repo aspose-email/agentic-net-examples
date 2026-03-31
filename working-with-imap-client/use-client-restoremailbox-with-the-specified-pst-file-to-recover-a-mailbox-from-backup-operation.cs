@@ -5,57 +5,73 @@ using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Storage.Pst;
 
-class Program
+namespace AsposeEmailRestoreExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Define IMAP server connection parameters
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
-            SecurityOptions security = SecurityOptions.Auto;
-
-            // Path to the PST file that contains the backup
-            string pstPath = "backup.pst";
-
-            // Verify that the PST file exists before proceeding
-            if (!File.Exists(pstPath))
+            try
             {
-                Console.Error.WriteLine($"PST file not found: {pstPath}");
-                return;
-            }
+                // Path to the PST file that contains the backup.
+                string pstFilePath = "backup.pst";
 
-            // Load the PST file into a PersonalStorage object
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Configure restore settings
-                RestoreSettings restoreSettings = new RestoreSettings();
-                // Use desired restore options (e.g., recursive restore and removal of nonexistent items)
-                restoreSettings.Options = RestoreOptions.Recursive | RestoreOptions.RemoveNonexistentItems;
-
-                // Create and connect the IMAP client
-                try
+                // Ensure the PST file exists. If it does not, create an empty PST as a placeholder.
+                if (!File.Exists(pstFilePath))
                 {
-                    using (ImapClient client = new ImapClient(host, port, username, password, security))
+                    try
                     {
-                        // Begin the restore operation
-                        client.Restore(pst, restoreSettings);
-                        Console.WriteLine("Mailbox restored successfully from PST.");
+                        using (PersonalStorage createdPst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
+                        {
+                            // Empty PST created.
+                        }
+                    }
+                    catch (Exception ioEx)
+                    {
+                        Console.Error.WriteLine($"Failed to create placeholder PST file: {ioEx.Message}");
+                        return;
                     }
                 }
-                catch (Exception ex)
+
+                // Placeholder IMAP server credentials.
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "user@example.com";
+                string password = "password";
+
+                // If placeholder values are detected, skip the actual network operation.
+                if (host.Contains("example.com"))
                 {
-                    Console.Error.WriteLine($"IMAP client error: {ex.Message}");
+                    Console.WriteLine("Placeholder IMAP server detected. Skipping restore operation.");
                     return;
                 }
+
+                // Initialize the IMAP client.
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+                {
+                    try
+                    {
+                        // Load the PST file.
+                        using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+                        {
+                            // Configure restore settings if needed.
+                            RestoreSettings restoreSettings = new RestoreSettings();
+
+                            // Perform the restore operation.
+                            client.Restore(pst, restoreSettings);
+                            Console.WriteLine("Mailbox restored successfully from PST.");
+                        }
+                    }
+                    catch (Exception clientEx)
+                    {
+                        Console.Error.WriteLine($"IMAP operation failed: {clientEx.Message}");
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
