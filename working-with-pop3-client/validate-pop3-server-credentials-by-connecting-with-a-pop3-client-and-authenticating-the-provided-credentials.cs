@@ -1,4 +1,5 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Clients.Pop3;
 
 class Program
@@ -7,25 +8,37 @@ class Program
     {
         try
         {
-            // POP3 server connection details
-            string host = "pop.example.com";
+            // Placeholder credentials
+            string host = "pop3.example.com";
             int port = 110; // default POP3 port
-            string username = "user@example.com";
+            string username = "username";
             string password = "password";
 
-            // Create and configure the POP3 client
+            // Guard against placeholder credentials to avoid real network calls
+            if (host.Contains("example.com") || username == "username" || password == "password")
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping POP3 validation.");
+                return;
+            }
+
+            // Create POP3 client
             using (Pop3Client client = new Pop3Client(host, port, username, password))
             {
                 try
                 {
-                    // Validate the provided credentials
                     bool isValid = client.ValidateCredentials();
-                    Console.WriteLine(isValid ? "Credentials are valid." : "Invalid credentials.");
+                    if (isValid)
+                    {
+                        Console.WriteLine("POP3 credentials are valid.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("POP3 credentials are invalid.");
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
-                    return;
                 }
             }
         }
