@@ -1,8 +1,8 @@
+using Aspose.Email.Clients.Exchange;
 using System;
-using System.Collections.Generic;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
@@ -10,40 +10,48 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with placeholder credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com"))
+            // Placeholder connection settings
+            string host = "exchange.example.com";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against placeholder credentials
+            if (host.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
+
+            // Create and use the Exchange WebDAV client
+            using (ExchangeClient client = new ExchangeClient(host, new NetworkCredential(username, password)))
             {
                 try
                 {
-                    // Retrieve list of message infos
-                    List<GmailMessageInfo> messageInfos = gmailClient.ListMessages();
+                    // List messages in the Inbox folder
+                    string inboxUri = client.MailboxInfo.InboxUri;
+                    ExchangeMessageInfoCollection messageInfos = client.ListMessages(inboxUri);
 
-                    foreach (GmailMessageInfo info in messageInfos)
+                    foreach (ExchangeMessageInfo messageInfo in messageInfos)
                     {
-                        // Fetch the full message to access its plain‑text body
-                        MailMessage fullMessage = gmailClient.FetchMessage(info.Id);
-                        string subject = fullMessage.Subject ?? string.Empty;
-                        string body = fullMessage.Body ?? string.Empty;
-
-                        Console.WriteLine("Subject: {0}", subject);
-                        Console.WriteLine("Body: {0}", body);
-                        Console.WriteLine(new string('-', 40));
+                        // Fetch each message
+                        using (MailMessage mail = client.FetchMessage(messageInfo.UniqueUri))
+                        {
+                            // Output subject and plain‑text body
+                            Console.WriteLine("Subject: " + mail.Subject);
+                            Console.WriteLine("Body: " + mail.Body);
+                            Console.WriteLine(new string('-', 40));
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Error while listing or fetching messages: " + ex.Message);
-                    return;
+                    Console.Error.WriteLine("Error during message retrieval: " + ex.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
         }
     }
 }
