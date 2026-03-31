@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,42 +8,47 @@ class Program
     {
         try
         {
-            string outputPath = "sample.msg";
+            // Define output path
+            string outputPath = Path.Combine(Directory.GetCurrentDirectory(), "output.msg");
+            string outputDir = Path.GetDirectoryName(outputPath);
 
-            // Ensure the target directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create the MSG message with required fields
-            using (MapiMessage message = new MapiMessage(
+            // Create a MailMessage with standard fields
+            using (MailMessage mail = new MailMessage(
                 "sender@example.com",
                 "recipient@example.com",
-                "Test Subject",
-                "This is a plain text body.",
-                OutlookMessageFormat.Unicode))
+                "Sample Subject",
+                "This is the plain text body of the message."))
             {
                 // Add a custom header
-                message.Headers["X-Custom-Header"] = "CustomValue";
+                mail.Headers.Add("X-Custom-Header", "CustomValue");
 
-                // Save the message to file
+                // Iterate headers using Keys as required
+                foreach (string key in mail.Headers.Keys)
+                {
+                    Console.WriteLine($"{key}: {mail.Headers[key]}");
+                }
+
+                // Save the message as MSG
                 try
                 {
-                    message.Save(outputPath);
-                    Console.WriteLine("Message saved to " + outputPath);
+                    mail.Save(outputPath);
+                    Console.WriteLine($"Message saved to: {outputPath}");
                 }
-                catch (Exception ex)
+                catch (Exception saveEx)
                 {
-                    Console.Error.WriteLine("Failed to save message: " + ex.Message);
-                    return;
+                    Console.Error.WriteLine($"Error saving message: {saveEx.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
