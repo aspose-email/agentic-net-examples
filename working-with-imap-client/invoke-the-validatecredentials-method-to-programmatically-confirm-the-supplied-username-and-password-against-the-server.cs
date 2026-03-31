@@ -3,43 +3,46 @@ using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 
-namespace ValidateCredentialsSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            // Top‑level exception guard
-            try
-            {
-                // Server connection parameters
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
-                string password = "password";
+            // Placeholder server details
+            string host = "imap.example.com";
+            string username = "user@example.com";
+            string password = "password";
 
-                // Create the IMAP client inside a using block for deterministic disposal
-                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            // Guard against executing real network calls with placeholder credentials
+            if (host.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping validation.");
+                return;
+            }
+
+            // Initialize the IMAP client
+            using (ImapClient client = new ImapClient(host, username, password, SecurityOptions.Auto))
+            {
+                try
                 {
-                    // Wrap the validation call to handle any runtime errors gracefully
-                    try
-                    {
-                        bool credentialsValid = client.ValidateCredentials();
-                        Console.WriteLine(credentialsValid
-                            ? "Credentials are valid."
-                            : "Credentials are invalid.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
-                        return;
-                    }
+                    // Validate the supplied credentials
+                    bool isValid = client.ValidateCredentials();
+
+                    Console.WriteLine(isValid
+                        ? "Credentials are valid."
+                        : "Credentials are invalid.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
