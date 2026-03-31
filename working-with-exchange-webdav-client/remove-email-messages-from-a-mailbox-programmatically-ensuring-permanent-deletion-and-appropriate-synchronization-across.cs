@@ -1,42 +1,43 @@
 using Aspose.Email.Clients.Exchange;
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        // Top‑level exception guard
         try
         {
-            // Initialize the Exchange WebDav client (replace placeholders with real values)
-            using (ExchangeClient client = new ExchangeClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
-            {
-                // Retrieve all messages from the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
+            // Placeholder credentials – replace with real values when available.
+            string exchangeUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-                // Iterate through each message and delete it permanently
+            // Initialize the Exchange client.
+            using (ExchangeClient client = new ExchangeClient(exchangeUrl, username, password))
+            {
+                // Get the URI of the Inbox folder.
+                string inboxUri = client.MailboxInfo.InboxUri;
+
+                // Retrieve all messages from the Inbox.
+                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+
+                // Destination folder for deleted items.
+                string deletedItemsUri = client.MailboxInfo.DeletedItemsUri;
+
+                // Iterate through each message and move it to Deleted Items.
                 foreach (ExchangeMessageInfo messageInfo in messages)
                 {
-                    try
-                    {
-                        // Delete the message using its unique URI
-                        client.DeleteMessage(messageInfo.UniqueUri);
-                        Console.WriteLine($"Deleted message: {messageInfo.Subject}");
-                    }
-                    catch (Exception deleteEx)
-                    {
-                        // Log any deletion errors but continue processing other messages
-                        Console.Error.WriteLine($"Failed to delete message '{messageInfo.Subject}': {deleteEx.Message}");
-                    }
+                    // Move the message to the Deleted Items folder.
+                    client.MoveMessage(messageInfo, deletedItemsUri);
                 }
             }
         }
         catch (Exception ex)
         {
-            // Log any errors that occur during client initialization or processing
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            // Log any unexpected errors.
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
