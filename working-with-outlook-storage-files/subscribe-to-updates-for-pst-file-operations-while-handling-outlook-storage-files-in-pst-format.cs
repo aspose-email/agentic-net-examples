@@ -1,78 +1,72 @@
 using System;
 using System.IO;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
 
-namespace AsposeEmailPstSample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string pstPath = "sample.pst";
+            string pstPath = "sample.pst";
 
-                // Ensure the PST file exists; create a minimal one if missing
-                if (!File.Exists(pstPath))
+            // Ensure the directory for the PST file exists
+            string pstDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            {
+                Directory.CreateDirectory(pstDirectory);
+            }
+
+            if (!File.Exists(pstPath))
+            {
+                // Create a new PST file if it does not exist
+                try
                 {
-                    // Create a new Unicode PST file
-                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                     {
-                        // No additional setup required
+                        // Subscribe to PST events
+                        pst.ItemMoved += (sender, e) => Console.WriteLine("Item moved event triggered.");
+                        pst.StorageProcessing += (sender, e) => Console.WriteLine("Storage processing event triggered.");
+                        pst.StorageProcessed += (sender, e) => Console.WriteLine("Storage processed event triggered.");
+
+                        Console.WriteLine("Created new PST file and subscribed to events.");
+                        Console.WriteLine("Press any key to exit.");
+                        Console.ReadKey();
                     }
                 }
-
-                // Open the PST file
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                catch (Exception ex)
                 {
-                    // Subscribe to the ItemMoved event
-                    pst.ItemMoved += (sender, e) =>
-                    {
-                        Console.WriteLine("ItemMoved event triggered.");
-                        Console.WriteLine($"Destination folder: {e.DestinationFolder?.DisplayName}");
-                        Console.WriteLine($"EntryId: {e.EntryId}");
-                        Console.WriteLine($"IsMessage: {e.IsMessage}");
-                        Console.WriteLine($"IsFolder: {e.IsFolder}");
-                    };
-
-                    // Get the root folder of the PST
-                    FolderInfo rootFolder = pst.RootFolder;
-
-                    // Create source and destination subfolders
-                    FolderInfo sourceFolder = rootFolder.AddSubFolder("Source");
-                    FolderInfo destinationFolder = rootFolder.AddSubFolder("Destination");
-
-                    // Create a simple MAPI message
-                    using (MapiMessage message = new MapiMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Test Subject",
-                        "Test body"))
-                    {
-                        // Add the message to the source folder
-                        sourceFolder.AddMessage(message);
-                    }
-
-                    // Retrieve the MessageInfo of the newly added message
-                    MessageInfo movedMessageInfo = null;
-                    foreach (MessageInfo info in sourceFolder.EnumerateMessages())
-                    {
-                        movedMessageInfo = info;
-                        break; // Only need the first message
-                    }
-
-                    // Move the message to the destination folder, triggering the event
-                    if (movedMessageInfo != null)
-                    {
-                        pst.MoveItem(movedMessageInfo, destinationFolder);
-                    }
+                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Open existing PST file
+                try
+                {
+                    using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                    {
+                        // Subscribe to PST events
+                        pst.ItemMoved += (sender, e) => Console.WriteLine("Item moved event triggered.");
+                        pst.StorageProcessing += (sender, e) => Console.WriteLine("Storage processing event triggered.");
+                        pst.StorageProcessed += (sender, e) => Console.WriteLine("Storage processed event triggered.");
+
+                        Console.WriteLine("Opened existing PST file and subscribed to events.");
+                        Console.WriteLine("Press any key to exit.");
+                        Console.ReadKey();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error opening PST file: {ex.Message}");
+                    return;
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
