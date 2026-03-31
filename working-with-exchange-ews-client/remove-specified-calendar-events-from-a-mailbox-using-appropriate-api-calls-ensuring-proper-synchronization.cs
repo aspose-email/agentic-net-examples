@@ -1,7 +1,7 @@
-using System;
-using Aspose.Email;
 using Aspose.Email.Calendar;
-using Aspose.Email.Clients;
+using System;
+using System.Collections.Generic;
+using Aspose.Email;
 using Aspose.Email.Clients.Google;
 
 class Program
@@ -10,59 +10,52 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with placeholder credentials
-            IGmailClient client;
-            try
+            // Placeholder credentials – replace with real values or skip execution in CI.
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
+            string defaultEmail = "user@example.com";
+
+            // Guard against placeholder credentials to avoid external calls during CI.
+            if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-") ||
+                refreshToken.StartsWith("your-") || defaultEmail.StartsWith("user@"))
             {
-                client = GmailClient.GetInstance(
-                    "clientId",          // Client ID
-                    "clientSecret",      // Client Secret
-                    "refreshToken",      // Refresh Token
-                    "user@example.com"); // User Email
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail operations.");
                 return;
             }
 
-            // Ensure the client is disposed properly
-            using (client)
+            // Initialize Gmail client.
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
+            using (gmailClient as IDisposable)
             {
-                // Identifier of the calendar to clean (e.g., "primary")
+                // Specify the calendar from which to delete events.
                 string calendarId = "primary";
 
-                // Retrieve all appointments from the specified calendar
-                Appointment[] appointments;
-                try
+                // List of appointment IDs to be removed.
+                List<string> appointmentIds = new List<string>
                 {
-                    appointments = client.ListAppointments(calendarId);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to list appointments: {ex.Message}");
-                    return;
-                }
+                    "appointment-id-1",
+                    "appointment-id-2"
+                };
 
-                // Delete each appointment
-                foreach (Appointment appt in appointments)
+                // Delete each specified appointment.
+                foreach (string appointmentId in appointmentIds)
                 {
                     try
                     {
-                        // UniqueId holds the appointment identifier required for deletion
-                        client.DeleteAppointment(calendarId, appt.UniqueId);
-                        Console.WriteLine($"Deleted appointment with ID: {appt.UniqueId}");
+                        gmailClient.DeleteAppointment(calendarId, appointmentId);
+                        Console.WriteLine($"Deleted appointment {appointmentId} from calendar {calendarId}.");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to delete appointment {appt.UniqueId}: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to delete appointment {appointmentId}: {ex.Message}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
