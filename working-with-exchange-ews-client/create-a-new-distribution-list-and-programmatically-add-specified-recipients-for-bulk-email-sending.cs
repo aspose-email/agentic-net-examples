@@ -1,8 +1,8 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -10,39 +10,58 @@ class Program
     {
         try
         {
-            // Define connection parameters (replace with real values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            // Placeholder connection details
+            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            string username = "username";
             string password = "password";
 
-            // Create the EWS client
+            // Skip real network call when using placeholder credentials
+            if (mailboxUri.Contains("example.com") || username == "username")
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                return;
+            }
+
+            // Create EWS client
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Create a new distribution list object
-                ExchangeDistributionList distributionList = new ExchangeDistributionList();
-                distributionList.DisplayName = "Sample Distribution List";
+                try
+                {
+                    // Create a new distribution list object
+                    ExchangeDistributionList distributionList = new ExchangeDistributionList
+                    {
+                        DisplayName = "Sample Distribution List"
+                    };
 
-                // Prepare the initial members collection
-                MailAddressCollection members = new MailAddressCollection();
-                members.Add(new MailAddress("alice@example.com"));
-                members.Add(new MailAddress("bob@example.com"));
+                    // Prepare initial members
+                    MailAddressCollection initialMembers = new MailAddressCollection
+                    {
+                        new MailAddress("alice@example.com"),
+                        new MailAddress("bob@example.com")
+                    };
 
-                // Create the distribution list on the server
-                string distributionListId = client.CreateDistributionList(distributionList, members);
-                Console.WriteLine("Distribution List created with Id: " + distributionListId);
+                    // Create the distribution list on the server
+                    string listId = client.CreateDistributionList(distributionList, initialMembers);
+                    Console.WriteLine($"Distribution List created with Id: {listId}");
 
-                // Add additional members to the existing list
-                MailAddressCollection additionalMembers = new MailAddressCollection();
-                additionalMembers.Add(new MailAddress("carol@example.com"));
-                additionalMembers.Add(new MailAddress("dave@example.com"));
-
-                client.AddToDistributionList(distributionList, additionalMembers);
-                Console.WriteLine("Additional members added to the distribution list.");
+                    // Add additional members
+                    MailAddressCollection additionalMembers = new MailAddressCollection
+                    {
+                        new MailAddress("carol@example.com"),
+                        new MailAddress("dave@example.com")
+                    };
+                    client.AddToDistributionList(distributionList, additionalMembers);
+                    Console.WriteLine("Additional members added to the distribution list.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
