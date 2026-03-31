@@ -10,58 +10,52 @@ class Program
     {
         try
         {
-            // Define PST file path
-            string pstPath = "output.pst";
+            string outputPstPath = "output.pst";
 
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPstPath));
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Delete existing PST file if present
+            if (File.Exists(outputPstPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(pstDirectory);
+                    File.Delete(outputPstPath);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create directory '{pstDirectory}'. {ex.Message}");
+                    Console.Error.WriteLine($"Error deleting existing PST: {ex.Message}");
                     return;
                 }
             }
 
-            // Create the PST file (Unicode format)
-            try
+            // Create a new Unicode PST file
+            using (PersonalStorage pst = PersonalStorage.Create(outputPstPath, FileFormatVersion.Unicode))
             {
-                using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                // Create a simple email message
+                using (MailMessage mail = new MailMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is a sample email body."))
                 {
-                    // Create a predefined Inbox folder
-                    pst.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
-                    FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-
-                    // Create a simple MailMessage
-                    MailMessage mail = new MailMessage(
-                        "sender@example.com",
-                        "receiver@example.com",
-                        "Sample Subject",
-                        "This is a sample email body.");
-
                     // Convert MailMessage to MapiMessage
-                    MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail);
-
-                    // Add the message to the Inbox folder
-                    inboxFolder.AddMessage(mapiMessage);
+                    using (MapiMessage mapiMsg = MapiMessage.FromMailMessage(mail))
+                    {
+                        // Add the message to the root folder
+                        string entryId = pst.RootFolder.AddMessage(mapiMsg);
+                        Console.WriteLine($"Message added with EntryId: {entryId}");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: Failed to create or write PST file. {ex.Message}");
-                return;
-            }
 
-            Console.WriteLine("PST file created successfully.");
+                // Display total items count in the PST
+                int totalItems = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Total items in PST: {totalItems}");
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
