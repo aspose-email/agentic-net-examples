@@ -8,61 +8,53 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Ensure the directory exists
-            string directory = Path.GetDirectoryName(Path.GetFullPath(msgPath));
-            if (!Directory.Exists(directory))
+            // Ensure the input file exists
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(directory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create directory: {ex.Message}");
-                    return;
-                }
-            }
-
-            // If the MSG file does not exist, create a minimal placeholder message
-            if (!File.Exists(msgPath))
-            {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage())
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.From = new MailAddress("sender@example.com");
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Body = "This is a placeholder message.";
-                        placeholder.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
             }
 
-            // Load the existing MSG, add a recipient, and save it back
-            try
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                using (MailMessage mailMessage = MailMessage.Load(msgPath))
-                {
-                    mailMessage.To.Add(new MailAddress("recipient@example.com"));
-                    mailMessage.Save(msgPath, SaveOptions.DefaultMsgUnicode);
-                }
+                Directory.CreateDirectory(outputDir);
             }
-            catch (Exception ex)
+
+            // Load the MSG file, modify, and save
+            using (MailMessage mailMessage = MailMessage.Load(inputPath))
             {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
+                // Add a new recipient; MailAddress validates the format
+                mailMessage.To.Add(new MailAddress("recipient@example.com"));
+
+                // Save the modified message
+                mailMessage.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
