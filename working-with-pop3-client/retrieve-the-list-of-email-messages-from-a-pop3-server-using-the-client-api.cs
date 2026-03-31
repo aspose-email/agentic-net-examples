@@ -1,37 +1,56 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-class Program
+namespace Pop3MessageListSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Initialize POP3 client with host, username and password
-            using (Pop3Client client = new Pop3Client("pop3.example.com", "username", "password"))
+            try
             {
-                try
-                {
-                    // Retrieve the list of messages from the server
-                    Pop3MessageInfoCollection messages = client.ListMessages();
+                // Placeholder POP3 server credentials
+                string host = "pop.example.com";
+                int port = 110;
+                string username = "username";
+                string password = "password";
 
-                    // Iterate through the messages and display their unique identifiers
-                    foreach (Pop3MessageInfo info in messages)
+                // Skip real network call when placeholders are detected
+                if (host.Contains("example.com") || username == "username" || password == "password")
+                {
+                    Console.Error.WriteLine("Placeholder POP3 credentials detected. Skipping server connection.");
+                    return;
+                }
+
+                // Initialize POP3 client
+                using (Pop3Client client = new Pop3Client(host, port, username, password))
+                {
+                    try
                     {
-                        Console.WriteLine($"Message UID: {info.UniqueId}");
+                        // Retrieve list of messages
+                        Pop3MessageInfoCollection messages = client.ListMessages();
+
+                        // Iterate through messages and display basic info
+                        foreach (Pop3MessageInfo messageInfo in messages)
+                        {
+                            Console.WriteLine($"Subject: {messageInfo.Subject}");
+                            Console.WriteLine($"From: {messageInfo.From}");
+                            Console.WriteLine($"Date: {messageInfo.Date}");
+                            Console.WriteLine();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error retrieving messages: {ex.Message}");
+                        return;
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error while listing messages: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
