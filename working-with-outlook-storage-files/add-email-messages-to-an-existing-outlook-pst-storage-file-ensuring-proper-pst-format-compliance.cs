@@ -4,68 +4,90 @@ using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailPstExample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string pstPath = "sample.pst";
+            string pstPath = "sample.pst";
 
-                // Ensure the PST file exists; create a minimal one if it does not.
-                if (!File.Exists(pstPath))
+            // Ensure PST file exists; create a minimal placeholder if missing
+            if (!File.Exists(pstPath))
+            {
+                try
+                {
+                    // Create a new Unicode PST file
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Open the PST file for read/write
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                if (!pst.CanWrite)
+                {
+                    Console.Error.WriteLine("PST file is read‑only. Cannot add messages.");
+                    return;
+                }
+
+                // Get or create the Inbox folder
+                FolderInfo inbox;
+                try
+                {
+                    inbox = pst.RootFolder.GetSubFolder("Inbox");
+                }
+                catch
+                {
+                    inbox = null;
+                }
+
+                if (inbox == null)
                 {
                     try
                     {
-                        PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                        Console.WriteLine($"Created new PST file at \"{pstPath}\".");
+                        inbox = pst.RootFolder.AddSubFolder("Inbox");
                     }
-                    catch (Exception createEx)
+                    catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error creating PST file: {createEx.Message}");
+                        Console.Error.WriteLine($"Error creating Inbox folder: {ex.Message}");
                         return;
                     }
                 }
 
+                // Create a simple email message in memory
+                MailMessage mail = new MailMessage(
+                    new MailAddress("sender@example.com", "Sender"),
+                    new MailAddress("receiver@example.com", "Receiver"));
+                mail.Subject = "Test Subject";
+                mail.Body = "This is a test email added to PST.";
+
+                // Convert MailMessage to MapiMessage
+                MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail);
+
+                // Add the message to the Inbox folder
+                string entryId;
                 try
                 {
-                    // Open the existing PST file.
-                    using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-                    {
-                        if (!pst.CanWrite)
-                        {
-                            Console.Error.WriteLine("The PST file is read‑only and cannot be modified.");
-                            return;
-                        }
-
-                        // Get the Inbox predefined folder.
-                        FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-
-                        // Create a simple MAPI message.
-                        using (MapiMessage message = new MapiMessage(
-                            "sender@example.com",
-                            "recipient@example.com",
-                            "Sample Subject",
-                            "This is a sample body of the message."))
-                        {
-                            // Add the message to the Inbox folder.
-                            string entryId = inboxFolder.AddMessage(message);
-                            Console.WriteLine($"Message added successfully. EntryId: {entryId}");
-                        }
-                    }
+                    entryId = inbox.AddMessage(mapiMessage);
                 }
-                catch (Exception pstEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error processing PST file: {pstEx.Message}");
+                    Console.Error.WriteLine($"Error adding message to PST: {ex.Message}");
                     return;
                 }
+
+                Console.WriteLine($"Message added successfully. EntryId: {entryId}");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
