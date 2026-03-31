@@ -5,50 +5,62 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgFilePath = "outlookmessage.msg";
+            // Define paths
+            string inputMsgPath = "sample.msg";
+            string attachmentsFolder = "Attachments";
 
-            if (!File.Exists(msgFilePath))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgFilePath}");
-                return;
+                // Create a simple MapiMessage as a placeholder
+                MapiMessage placeholderMessage = new MapiMessage(
+                    "sender@example.com",
+                    "receiver@example.com",
+                    "Placeholder Subject",
+                    "This is a placeholder message body.");
+
+                // Save the placeholder MSG file
+                placeholderMessage.Save(inputMsgPath);
+                placeholderMessage.Dispose();
             }
 
-            try
+            // Ensure the output directory for attachments exists
+            if (!Directory.Exists(attachmentsFolder))
             {
-                using (MapiMessage message = MapiMessage.Load(msgFilePath))
-                {
-                    Console.WriteLine("Subject: " + message.Subject);
-                    Console.WriteLine("From: " + message.SenderEmailAddress);
-                    Console.WriteLine("Body: " + message.Body);
+                Directory.CreateDirectory(attachmentsFolder);
+            }
 
-                    foreach (MapiAttachment attachment in message.Attachments)
+            // Load the MSG file into a MapiMessage object
+            using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
+            {
+                // Access basic properties
+                Console.WriteLine("Subject: " + msg.Subject);
+                Console.WriteLine("From: " + msg.SenderName);
+                Console.WriteLine("Body: " + msg.Body);
+
+                // Extract and save attachments, if any
+                foreach (MapiAttachment attachment in msg.Attachments)
+                {
+                    string attachmentPath = Path.Combine(attachmentsFolder, attachment.FileName);
+                    try
                     {
-                        Console.WriteLine("Attachment: " + attachment.FileName);
-                        try
-                        {
-                            attachment.Save(attachment.FileName);
-                            Console.WriteLine($"Saved attachment to {attachment.FileName}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save attachment {attachment.FileName}: {ex.Message}");
-                        }
+                        attachment.Save(attachmentPath);
+                        Console.WriteLine("Saved attachment: " + attachmentPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("Failed to save attachment '{0}': {1}", attachment.FileName, ex.Message);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
