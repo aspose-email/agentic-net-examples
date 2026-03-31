@@ -1,8 +1,6 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,36 +8,44 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            // Path to the document (e.g., an MSG file) containing custom metadata.
+            string documentPath = "sample.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
+            // Guard file existence.
+            if (!File.Exists(documentPath))
             {
-                using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder", "Body"))
+                try
                 {
-                    placeholder.Save(msgPath);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(documentPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
                 }
-                Console.Error.WriteLine($"Input file not found. Created placeholder at {msgPath}.");
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"The file '{documentPath}' does not exist.");
                 return;
             }
 
-            // Load the Outlook message file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Load the message from the file.
+            using (MailMessage message = MailMessage.Load(documentPath))
             {
-                // Retrieve custom MAPI properties
-                MapiPropertyCollection customProps = msg.GetCustomProperties();
-
-                if (customProps == null || customProps.Count == 0)
+                // Iterate through all headers and output those that represent custom metadata.
+                // Conventionally, custom metadata headers start with "X-".
+                foreach (string headerName in message.Headers.AllKeys)
                 {
-                    Console.WriteLine("No custom properties found.");
-                }
-                else
-                {
-                    foreach (KeyValuePair<long, MapiProperty> kvp in customProps)
+                    if (headerName.StartsWith("X-", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Access the property value using appropriate getter; here we use GetPropertyString as an example
-                        string value = msg.GetPropertyString(kvp.Key);
-                        Console.WriteLine($"Property Tag: 0x{kvp.Key:X}, Value: {value}");
+                        string headerValue = message.Headers[headerName];
+                        Console.WriteLine($"{headerName}: {headerValue}");
                     }
                 }
             }
