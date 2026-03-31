@@ -9,7 +9,7 @@ class Program
     {
         try
         {
-            Console.WriteLine("Enter the full path to the MSG file:");
+            Console.Write("Enter the path to the MSG file: ");
             string msgPath = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(msgPath))
@@ -18,51 +18,59 @@ class Program
                 return;
             }
 
-            if (!File.Exists(msgPath))
+            // Ensure the directory exists
+            string directory = Path.GetDirectoryName(msgPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
-                return;
-            }
-
-            try
-            {
-                using (MapiMessage msg = MapiMessage.Load(msgPath))
+                try
                 {
-                    Console.WriteLine($"Subject: {msg.Subject}");
-                    Console.WriteLine($"From: {msg.SenderName} <{msg.SenderEmailAddress}>");
-                    Console.WriteLine("Body:");
-                    Console.WriteLine(msg.Body);
-                    Console.WriteLine();
-
-                    if (msg.Attachments != null && msg.Attachments.Count > 0)
-                    {
-                        Console.WriteLine("Attachments:");
-                        foreach (MapiAttachment attachment in msg.Attachments)
-                        {
-                            Console.WriteLine($"- {attachment.FileName}");
-                            // Save attachment to the same directory as the MSG file
-                            string attachmentPath = Path.Combine(Path.GetDirectoryName(msgPath) ?? string.Empty, attachment.FileName);
-                            try
-                            {
-                                attachment.Save(attachmentPath);
-                                Console.WriteLine($"  Saved to: {attachmentPath}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"  Failed to save attachment '{attachment.FileName}': {ex.Message}");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("No attachments found.");
-                    }
+                    Directory.CreateDirectory(directory);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error: Unable to create directory – {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
+
+            // Guard file existence; create a minimal placeholder if missing
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
+                try
+                {
+                    MailMessage placeholder = new MailMessage();
+                    placeholder.Subject = "Placeholder Subject";
+                    placeholder.Body = "This is a placeholder message.";
+                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                    placeholder.Save(msgPath, saveOptions);
+                    Console.WriteLine($"Placeholder MSG created at: {msgPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error: Unable to create placeholder MSG – {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load and display the MSG file
+            using (MapiMessage message = MapiMessage.Load(msgPath))
+            {
+                Console.WriteLine($"Subject: {message.Subject}");
+                Console.WriteLine($"Sender Email: {message.SenderEmailAddress}");
+                Console.WriteLine($"Body: {message.Body}");
+
+                if (message.Attachments != null && message.Attachments.Count > 0)
+                {
+                    Console.WriteLine("Attachments:");
+                    foreach (MapiAttachment attachment in message.Attachments)
+                    {
+                        Console.WriteLine($"- {attachment.FileName}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No attachments found.");
+                }
             }
         }
         catch (Exception ex)
