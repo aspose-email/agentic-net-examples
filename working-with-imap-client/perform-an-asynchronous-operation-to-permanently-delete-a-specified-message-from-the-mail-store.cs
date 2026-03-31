@@ -1,38 +1,58 @@
-using System;
-using System.Threading.Tasks;
-using Aspose.Email.Clients.Imap;
 using Aspose.Email.Clients;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Aspose.Email;
+using Aspose.Email.Clients.Imap;
 
-class Program
+namespace AsposeEmailImapDeleteExample
 {
-    static async Task Main(string[] args)
+    class Program
     {
-        try
+        // Entry point of the console application.
+        static async Task Main(string[] args)
         {
-            // Initialize IMAP client with placeholder credentials
-            using (ImapClient client = new ImapClient("imap.example.com", 993, "user@example.com", "password", SecurityOptions.Auto))
+            // Top‑level exception guard.
+            try
             {
-                try
-                {
-                    // Connect to the IMAP server
+                // Placeholder connection parameters.
+                string host = "imap.example.com";
+                string username = "user@example.com";
+                string password = "password";
+                string messageUid = "12345"; // Unique identifier of the message to delete.
 
-                    // Unique identifier of the message to delete (replace with actual UID)
-                    string messageUid = "12345";
-
-                    // Permanently delete the message and commit the deletion immediately
-                    await client.DeleteMessageAsync(messageUid, true);
-                    Console.WriteLine("Message permanently deleted.");
-                }
-                catch (Exception ex)
+                // Guard against executing real network calls with placeholder credentials.
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping IMAP delete operation.");
                     return;
                 }
+
+                // Create and connect the IMAP client inside a using block to ensure disposal.
+                using (ImapClient client = new ImapClient(host, username, password, SecurityOptions.Auto))
+                {
+                    // Wrap client operations in a try/catch to surface friendly errors.
+                    try
+                    {
+                        // Permanently delete the message identified by its UID.
+                        // The second argument (true) commits the deletion immediately.
+                        await client.DeleteMessageAsync(messageUid, true, CancellationToken.None);
+
+                        Console.WriteLine($"Message with UID '{messageUid}' has been permanently deleted.");
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log any errors that occur during the delete operation.
+                        Console.Error.WriteLine($"Error deleting message: {ex.Message}");
+                        return;
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Log any unexpected errors that escape the inner blocks.
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
