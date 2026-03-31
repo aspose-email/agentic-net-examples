@@ -1,36 +1,48 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Define connection parameters
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Initialize the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            try
             {
-                // Validate the supplied credentials
-                bool credentialsValid = false;
-                if (client is EmailClient emailClient)
+                // Placeholder credentials – replace with real values when needed.
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "username";
+                string password = "password";
+
+                // Detect placeholder values and skip actual network call.
+                if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
                 {
-                    credentialsValid = emailClient.ValidateCredentials();
+                    Console.WriteLine("Placeholder credentials detected. Skipping connection to Exchange server.");
+                    return;
                 }
 
-                Console.WriteLine(credentialsValid ? "Credentials are valid." : "Invalid credentials.");
-                // Further EWS operations can be performed here
+                // Create the EWS client with authentication credentials.
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    try
+                    {
+                        // Retrieve mailbox information to verify authentication.
+                        ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                        Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
+                        Console.WriteLine($"Sent Items URI: {mailboxInfo.SentItemsUri}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error while accessing mailbox: {ex.Message}");
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
