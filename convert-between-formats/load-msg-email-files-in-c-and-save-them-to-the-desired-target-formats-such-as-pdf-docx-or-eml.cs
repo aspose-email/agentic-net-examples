@@ -1,37 +1,86 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
+using Aspose.Words;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        // Top‑level exception guard
         try
         {
-            // Input MSG file path
-            string inputPath = "sample.msg";
+            string inputMsgPath = "sample.msg";
 
-            // Desired output path (EML format in this example)
-            string outputPath = "output.eml";
-
-            // Verify that the input file exists
-            if (!File.Exists(inputPath))
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Error: File not found – {inputMsgPath}");
                 return;
             }
 
-            // Load the MSG file into a MailMessage instance
-            using (MailMessage message = MailMessage.Load(inputPath))
+            // Ensure output directory exists
+            string outputDirectory = Directory.GetCurrentDirectory();
+            if (!Directory.Exists(outputDirectory))
             {
-                // Save the message as EML using the default EML save options
-                message.Save(outputPath, SaveOptions.DefaultEml);
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
+            {
+                // ---------- Save as EML ----------
+                string emlPath = Path.Combine(outputDirectory, "output.eml");
+                using (MailMessage mail = msg.ToMailMessage(new MailConversionOptions()))
+                {
+                    mail.Save(emlPath, SaveOptions.DefaultEml);
+                }
+
+                // ---------- Convert to PDF and DOCX via MHTML ----------
+                string mhtmlPath = Path.Combine(outputDirectory, "temp.mhtml");
+                msg.Save(mhtmlPath, SaveOptions.DefaultMhtml);
+
+                Document doc = new Document(mhtmlPath);
+            {
+                    string pdfPath = Path.Combine(outputDirectory, "output.pdf");
+                    doc.Save(pdfPath, SaveFormat.Pdf);
+
+                    string docxPath = Path.Combine(outputDirectory, "output.docx");
+                    doc.Save(docxPath, SaveFormat.Docx);
+                }
+
+                // Clean up temporary MHTML file
+                try
+                {
+                    if (File.Exists(mhtmlPath))
+                    {
+                        File.Delete(mhtmlPath);
+                    }
+                }
+                catch (Exception cleanupEx)
+                {
+                    Console.Error.WriteLine($"Warning: Could not delete temporary file – {cleanupEx.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            // Friendly error output
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
