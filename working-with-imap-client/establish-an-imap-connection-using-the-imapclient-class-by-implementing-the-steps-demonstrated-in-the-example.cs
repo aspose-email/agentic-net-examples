@@ -2,54 +2,51 @@ using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
-class Program
+public class Program
 {
-    static void Main()
+    public static void Main()
     {
         try
         {
-            // Connection parameters
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
 
-            // Create and connect the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.SSLImplicit))
+            // Skip execution when placeholder credentials are detected
+            if (host.Contains("example.com") || username.Contains("example.com"))
             {
-                // Validate credentials
+                Console.WriteLine("Placeholder IMAP credentials detected. Skipping connection.");
+                return;
+            }
+
+            // Create and connect the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            {
                 try
                 {
-                    client.ValidateCredentials();
+                    // Select the INBOX folder
+                    client.SelectFolder("INBOX");
+
+                    // Retrieve messages from the selected folder
+                    ImapMessageInfoCollection messages = client.ListMessages();
+
+                    foreach (ImapMessageInfo info in messages)
+                    {
+                        Console.WriteLine($"Subject: {info.Subject}");
+                    }
                 }
-                catch (Exception credEx)
+                catch (ImapException imapEx)
                 {
-                    Console.Error.WriteLine($"Authentication failed: {credEx.Message}");
+                    Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
                     return;
-                }
-
-                // Select the INBOX folder
-                client.SelectFolder("INBOX");
-
-                // List messages in the selected folder
-                ImapMessageInfoCollection messageInfos = client.ListMessages();
-                Console.WriteLine($"Total messages: {messageInfos.Count}");
-
-                // Fetch and display the first message, if any
-                if (messageInfos.Count > 0)
-                {
-                    ImapMessageInfo firstInfo = messageInfos[0];
-                    MailMessage firstMessage = client.FetchMessage(firstInfo.UniqueId);
-                    Console.WriteLine($"Subject: {firstMessage.Subject}");
-                    firstMessage.Dispose();
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
