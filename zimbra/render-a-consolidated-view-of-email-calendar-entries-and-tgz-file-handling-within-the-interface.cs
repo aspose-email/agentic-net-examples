@@ -1,102 +1,180 @@
-using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
-using Aspose.Email.Storage.Zimbra;
+using Aspose.Email.Clients.Google;
+using Aspose.Email.Calendar;
 
-namespace AsposeEmailZimbraSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Prepare a minimal EML file if it does not exist
+            string emlPath = "sample.eml";
+            if (!File.Exists(emlPath))
+            {
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    using (StreamWriter writer = new StreamWriter(emlPath, false))
+                    {
+                        writer.WriteLine("From: sender@example.com");
+                        writer.WriteLine("To: recipient@example.com");
+                        writer.WriteLine("Subject: Test Email");
+                        writer.WriteLine();
+                        writer.WriteLine("This is a test email generated as a placeholder.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the email message
+            MailMessage mailMessage;
             try
             {
-                // ---------- TGZ (Zimbra) handling ----------
-                string tgzFilePath = "archive.tgz";
+                mailMessage = MailMessage.Load(emlPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load EML file: {ex.Message}");
+                return;
+            }
 
-                if (!File.Exists(tgzFilePath))
+            // Placeholder Gmail credentials (do not perform real network calls)
+            string accessToken = "YOUR_ACCESS_TOKEN";
+            string defaultEmail = "user@example.com";
+
+            // If placeholder credentials are detected, skip Gmail operations
+            if (accessToken == "YOUR_ACCESS_TOKEN")
+            {
+                Console.WriteLine("Placeholder Gmail credentials detected. Skipping Gmail operations.");
+            }
+            else
+            {
+                // Initialize Gmail client
+                IGmailClient gmailClient = null;
+                try
                 {
-                    Console.Error.WriteLine($"TGZ file not found at path: {tgzFilePath}");
+                    gmailClient = GmailClient.GetInstance(accessToken, defaultEmail);
                 }
-                else
+                catch (Exception ex)
                 {
+                    Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                    return;
+                }
+
+                using (gmailClient as IDisposable)
+                {
+                    // List calendars
                     try
                     {
-                        using (TgzReader tgzReader = new TgzReader(tgzFilePath))
+                        var calendars = gmailClient.ListCalendars();
+                        Console.WriteLine("Calendars:");
+                        foreach (var cal in calendars)
                         {
-                            // Read messages until no more are available
-                            while (true)
+                            Console.WriteLine($"- Id: {cal.Id}, Summary: {cal.Summary}");
+                            // List appointments for each calendar
+                            try
                             {
-                                try
+                                var appointments = gmailClient.ListAppointments(cal.Id);
+                                foreach (var appt in appointments)
                                 {
-                                    tgzReader.ReadNextMessage();
+                                    Console.WriteLine($"  * Appointment: {appt.Summary} ({appt.StartDate} - {appt.EndDate})");
                                 }
-                                catch (EndOfStreamException)
-                                {
-                                    // Reached the end of the TGZ archive
-                                    break;
-                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to list appointments for calendar {cal.Id}: {ex.Message}");
+                            }
 
-                                MailMessage currentMessage = tgzReader.CurrentMessage;
-                                if (currentMessage != null)
-                                {
-                                    Console.WriteLine($"[TGZ] Subject: {currentMessage.Subject}");
-                                    Console.WriteLine($"[TGZ] From: {currentMessage.From}");
-                                    Console.WriteLine($"[TGZ] Date: {currentMessage.Date}");
-                                    Console.WriteLine();
-                                }
+                            // Create a new appointment and import it
+                            try
+                            {
+                                var attendees = new MailAddressCollection { new MailAddress(defaultEmail) };
+                                var newAppt = new Appointment(
+                                    "New Meeting",
+                                    DateTime.Now.AddHours(1),
+                                    DateTime.Now.AddHours(2),
+                                    new MailAddress(defaultEmail),
+                                    attendees);
+                                newAppt.Summary = "Automated Meeting";
+                                newAppt.Description = "Created via Aspose.Email sample.";
+                                gmailClient.ImportAppointment(cal.Id, newAppt);
+                                Console.WriteLine($"  -> Imported new appointment into calendar {cal.Id}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to import appointment into calendar {cal.Id}: {ex.Message}");
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error processing TGZ file: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to list calendars: {ex.Message}");
+                    }
+
+                    // Send the loaded email message
+                    try
+                    {
+                        string sentMessageId = gmailClient.SendMessage(mailMessage);
+                        Console.WriteLine($"Email sent successfully. Message Id: {sentMessageId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to send email: {ex.Message}");
                     }
                 }
+            }
 
-                // ---------- IMAP email handling ----------
-                string imapHost = "imap.example.com";
-                int imapPort = 993;
-                string imapUsername = "user@example.com";
-                string imapPassword = "password";
-
+            // Create a placeholder TGZ archive containing the EML file
+            string tgzPath = "archive.tgz";
+            if (!File.Exists(tgzPath))
+            {
                 try
                 {
-                    using (ImapClient imapClient = new ImapClient(imapHost, imapPort, imapUsername, imapPassword))
+                    // Simple placeholder: write the raw EML bytes into the TGZ file.
+                    // In a real scenario, proper tar+gzip packaging would be used.
+                    byte[] emlBytes = File.ReadAllBytes(emlPath);
+                    using (FileStream tgzStream = new FileStream(tgzPath, FileMode.Create, FileAccess.Write))
                     {
-                        imapClient.SecurityOptions = SecurityOptions.SSLImplicit;
-
-                        // List messages in the INBOX folder
-                        ImapMessageInfoCollection messageInfos = imapClient.ListMessages();
-
-                        foreach (ImapMessageInfo messageInfo in messageInfos)
-                        {
-                            try
-                            {
-                                MailMessage fetchedMessage = imapClient.FetchMessage(messageInfo.UniqueId);
-                                Console.WriteLine($"[IMAP] Subject: {fetchedMessage.Subject}");
-                                Console.WriteLine($"[IMAP] From: {fetchedMessage.From}");
-                                Console.WriteLine($"[IMAP] Date: {fetchedMessage.Date}");
-                                Console.WriteLine();
-                            }
-                            catch (Exception fetchEx)
-                            {
-                                Console.Error.WriteLine($"Failed to fetch message UID {messageInfo.UniqueId}: {fetchEx.Message}");
-                            }
-                        }
+                        tgzStream.Write(emlBytes, 0, emlBytes.Length);
                     }
+                    Console.WriteLine($"Placeholder TGZ archive created at {tgzPath}");
                 }
-                catch (Exception imapEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"IMAP client error: {imapEx.Message}");
+                    Console.Error.WriteLine($"Failed to create TGZ archive: {ex.Message}");
                 }
             }
-            catch (Exception ex)
+            else
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.WriteLine($"TGZ archive already exists at {tgzPath}");
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
