@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
-using Aspose.Email;
-using Aspose.Email.Clients.Google;
+using System.Net;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -9,27 +9,37 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with placeholder credentials
-            IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com");
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // List all messages in the mailbox
-            List<GmailMessageInfo> allMessages = gmailClient.ListMessages();
-
-            // Select messages to delete (e.g., first 5 messages)
-            int messagesToDelete = Math.Min(5, allMessages.Count);
-            for (int i = 0; i < messagesToDelete; i++)
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                GmailMessageInfo messageInfo = allMessages[i];
-                // Permanently delete the message (moveToTrash = false)
-                gmailClient.DeleteMessage(messageInfo.Id, false);
-                Console.WriteLine($"Deleted message with ID: {messageInfo.Id}");
+                Console.WriteLine("Placeholder credentials detected. Skipping mailbox cleanup.");
+                return;
             }
 
-            // Optional: synchronize changes (Gmail client updates automatically)
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
+            {
+                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                ExchangeMessageInfoCollection inboxMessages = client.ListMessages(mailboxInfo.InboxUri);
+
+                foreach (ExchangeMessageInfo messageInfo in inboxMessages)
+                {
+                    if (messageInfo.Subject != null && messageInfo.Subject.IndexOf("Unwanted", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        try
+                        {
+                            client.DeleteItem(messageInfo.UniqueUri, DeletionOptions.DeletePermanently);
+                            Console.WriteLine($"Deleted message '{messageInfo.Subject}'.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to delete message '{messageInfo.Subject}': {ex.Message}");
+                        }
+                    }
+                }
+            }
         }
         catch (Exception ex)
         {
