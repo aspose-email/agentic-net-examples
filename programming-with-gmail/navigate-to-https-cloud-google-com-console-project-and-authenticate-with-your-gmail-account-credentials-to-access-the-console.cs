@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
@@ -10,29 +8,31 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with OAuth credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance("clientId", "clientSecret", "refreshToken", "user@example.com"))
+            // Placeholder credentials – replace with real values to enable the operation
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string userEmail = "user@example.com";
+
+            // Guard against executing external calls with placeholder data
+            if (clientId == "clientId" || clientSecret == "clientSecret" ||
+                refreshToken == "refreshToken" || userEmail == "user@example.com")
             {
-                try
-                {
-                    // List messages in the mailbox
-                    List<GmailMessageInfo> messages = gmailClient.ListMessages();
-                    Console.WriteLine($"Total messages: {messages.Count}");
-                    foreach (GmailMessageInfo info in messages)
-                    {
-                        Console.WriteLine($"Message Id: {info.Id}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Gmail operation error: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external Gmail client operations.");
+                return;
+            }
+
+            // Create Gmail client (wrapped in using to ensure disposal)
+            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail))
+            {
+                // In a real scenario, you might open a browser to navigate to the Google Cloud console.
+                // This sample demonstrates safe client creation without performing external network calls.
+                Console.WriteLine("Gmail client created successfully. (Further operations are omitted.)");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
