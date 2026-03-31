@@ -8,7 +8,6 @@ class Program
     {
         try
         {
-            // Path to the attachment file
             string attachmentPath = "sample.txt";
 
             // Ensure the attachment file exists; create a minimal placeholder if missing
@@ -20,7 +19,7 @@ class Program
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create attachment file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
                     return;
                 }
             }
@@ -29,8 +28,8 @@ class Program
             using (MailMessage message = new MailMessage())
             {
                 message.From = "sender@example.com";
-                message.To.Add("receiver@example.com");
-                message.Subject = "Message with attachment";
+                message.To = "receiver@example.com";
+                message.Subject = "Test message with attachment";
                 message.Body = "Please see the attached file.";
 
                 // Load and add the attachment
@@ -39,16 +38,15 @@ class Program
                     message.Attachments.Add(attachment);
                 }
 
-                // Define output MSG file path
-                string outputPath = "MessageWithAttachment.msg";
+                // Prepare output directory and file path
+                string outputDirectory = "output";
+                string outputPath = Path.Combine(outputDirectory, "MessageWithAttachment.msg");
 
-                // Ensure the output directory exists
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                if (!Directory.Exists(outputDirectory))
                 {
                     try
                     {
-                        Directory.CreateDirectory(outputDir);
+                        Directory.CreateDirectory(outputDirectory);
                     }
                     catch (Exception ex)
                     {
@@ -57,16 +55,18 @@ class Program
                     }
                 }
 
-                // Save the message as MSG using appropriate save options
+                // Save the message as MSG
                 try
                 {
-                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                    message.Save(outputPath, saveOptions);
+                    message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                    return;
                 }
+
+                Console.WriteLine($"Message saved to {outputPath}");
             }
         }
         catch (Exception ex)
