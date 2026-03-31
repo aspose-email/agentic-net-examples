@@ -1,8 +1,8 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -10,32 +10,40 @@ class Program
     {
         try
         {
-            // Initialize the EWS client with server URL and credentials
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Placeholder values – replace with real server and credentials.
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
-            NetworkCredential credentials = new NetworkCredential(username, password);
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            string sharedMailboxAddress = "shared@example.com";
+
+            // Guard against placeholder credentials to avoid real network calls in CI.
+            if (mailboxUri.Contains("example.com"))
             {
-                // Define the shared mailbox address
-                string sharedMailbox = "shared@example.com";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
 
-                // Retrieve mailbox information for the shared mailbox
-                ExchangeMailboxInfo sharedInfo = client.GetMailboxInfo(sharedMailbox);
+            // Create the EWS client.
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Retrieve information about the shared mailbox.
+                ExchangeMailboxInfo sharedMailboxInfo = client.GetMailboxInfo(sharedMailboxAddress);
 
-                // List messages from the shared mailbox's Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(sharedInfo.InboxUri);
-                foreach (ExchangeMessageInfo messageInfo in messages)
-                {
-                    // Fetch the full mail message using its unique URI
-                    MailMessage message = client.FetchMessage(messageInfo.UniqueUri);
-                    Console.WriteLine("Subject: " + message.Subject);
-                }
+                // Prepare a simple email message addressed from the shared mailbox.
+                MailMessage message = new MailMessage();
+                message.From = new MailAddress(sharedMailboxAddress);
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Test email from shared mailbox";
+                message.Body = "This email was sent using a shared mailbox address.";
+
+                // Send the message using the client.
+                client.Send(message);
+                Console.WriteLine("Message sent successfully from shared mailbox.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
