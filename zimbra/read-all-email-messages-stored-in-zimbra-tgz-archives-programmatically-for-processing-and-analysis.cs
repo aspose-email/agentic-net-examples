@@ -9,10 +9,12 @@ class Program
     {
         try
         {
+            // Input TGZ archive path
             string tgzPath = "archive.tgz";
-            string outputDirectory = "ExportedMessages";
+            // Output directory for extracted messages
+            string outputDirectory = "ExtractedMessages";
 
-            // Verify input TGZ file exists
+            // Verify input file exists
             if (!File.Exists(tgzPath))
             {
                 Console.Error.WriteLine($"Input file not found: {tgzPath}");
@@ -33,59 +35,66 @@ class Program
                 }
             }
 
-            // Read messages from the Zimbra TGZ archive
+            // Open the TGZ archive
             using (TgzReader tgzReader = new TgzReader(tgzPath))
             {
-                int totalItems = tgzReader.GetTotalItemsCount();
-                Console.WriteLine($"Total messages in archive: {totalItems}");
-
-                for (int i = 0; i < totalItems; i++)
-                {
-                    try
-                    {
-                        tgzReader.ReadNextMessage();
-                        MailMessage message = tgzReader.CurrentMessage;
-                        if (message == null)
-                        {
-                            continue;
-                        }
-
-                        Console.WriteLine($"--- Message {i + 1} ---");
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"To: {message.To}");
-
-                        // Prepare a safe filename based on the subject
-                        string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? $"Message_{i + 1}" : message.Subject;
-                        foreach (char invalidChar in Path.GetInvalidFileNameChars())
-                        {
-                            safeSubject = safeSubject.Replace(invalidChar, '_');
-                        }
-
-                        string emlPath = Path.Combine(outputDirectory, $"{safeSubject}.eml");
-                        try
-                        {
-                            message.Save(emlPath);
-                        }
-                        catch (Exception saveEx)
-                        {
-                            Console.Error.WriteLine($"Failed to save message to '{emlPath}': {saveEx.Message}");
-                        }
-                    }
-                    catch (Exception readEx)
-                    {
-                        Console.Error.WriteLine($"Error reading message {i + 1}: {readEx.Message}");
-                    }
-                }
-
-                // Optional: export the entire archive structure
+                // Optionally export all messages to the output directory
                 try
                 {
                     tgzReader.ExportTo(outputDirectory);
                 }
                 catch (Exception exportEx)
                 {
-                    Console.Error.WriteLine($"ExportTo failed: {exportEx.Message}");
+                    Console.Error.WriteLine($"Export failed: {exportEx.Message}");
+                    // Continue with manual iteration if export fails
+                }
+
+                // Iterate through each message in the archive
+                while (true)
+                {
+                    try
+                    {
+                        // Read the next message; returns false when no more messages
+                        bool hasMessage = tgzReader.ReadNextMessage();
+                        if (!hasMessage)
+                            break;
+                    }
+                    catch (Exception readEx)
+                    {
+                        Console.Error.WriteLine($"Error reading next message: {readEx.Message}");
+                        break;
+                    }
+
+                    // Retrieve the current message
+                    MailMessage currentMessage = tgzReader.CurrentMessage;
+                    if (currentMessage == null)
+                        continue;
+
+                    // Process the message (e.g., display basic info)
+                    Console.WriteLine($"Subject: {currentMessage.Subject}");
+                    Console.WriteLine($"From: {currentMessage.From}");
+                    Console.WriteLine($"To: {currentMessage.To}");
+
+                    // Save the message as an .eml file
+                    string safeSubject = string.IsNullOrWhiteSpace(currentMessage.Subject) ? "Untitled" : currentMessage.Subject;
+                    // Replace invalid filename characters
+                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                    {
+                        safeSubject = safeSubject.Replace(invalidChar, '_');
+                    }
+                    string emlPath = Path.Combine(outputDirectory, $"{safeSubject}.eml");
+
+                    try
+                    {
+                        using (MailMessage messageToSave = currentMessage)
+                        {
+                            messageToSave.Save(emlPath, SaveOptions.DefaultEml);
+                        }
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Console.Error.WriteLine($"Failed to save message '{safeSubject}': {saveEx.Message}");
+                    }
                 }
             }
         }
