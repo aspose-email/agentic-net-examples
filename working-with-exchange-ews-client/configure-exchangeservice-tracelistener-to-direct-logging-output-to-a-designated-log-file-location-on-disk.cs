@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -10,35 +9,58 @@ class Program
     {
         try
         {
-            // Define log file location
-            string logFilePath = @"C:\Logs\EwsLog.txt";
+            // Define the log file path.
+            string logFilePath = @"C:\Logs\exchange.log";
 
-            // Ensure the directory for the log file exists
-            string logDirectory = Path.GetDirectoryName(logFilePath);
-            if (!Directory.Exists(logDirectory))
+            // Ensure the directory for the log file exists.
+            try
             {
-                Directory.CreateDirectory(logDirectory);
+                string logDirectory = Path.GetDirectoryName(logFilePath);
+                if (!Directory.Exists(logDirectory))
+                {
+                    Directory.CreateDirectory(logDirectory);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare log directory: {ex.Message}");
+                return;
             }
 
-            // Prepare connection parameters
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("user@example.com", "password");
+            // Placeholder connection settings.
+            string ewsUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Create the EWS client inside a using block
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Skip real network calls when placeholders are detected.
+            if (ewsUrl.Contains("example.com"))
             {
-                // Configure logging to the specified file
-                client.LogFileName = logFilePath;
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping client connection.");
+                return;
+            }
 
-                // Example operation to verify the client works (list inbox messages)
-                // This is optional and can be removed if only logging configuration is needed
-                var messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                Console.WriteLine($"Retrieved {messages.Count} messages from Inbox.");
+            // Create the EWS client and configure logging.
+            try
+            {
+                using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password))
+                {
+                    // Direct Aspose.Email logging to the specified file.
+                    client.LogFileName = logFilePath;
+                    client.UseDateInLogFileName = false; // optional: keep a static file name
+
+                    Console.WriteLine($"Logging configured. Log file: {logFilePath}");
+                    // Additional client operations can be performed here.
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create or configure EWS client: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
