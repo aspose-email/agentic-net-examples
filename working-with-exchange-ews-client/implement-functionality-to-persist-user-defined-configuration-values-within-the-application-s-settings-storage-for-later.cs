@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Text.Json;
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,76 +8,40 @@ class Program
     {
         try
         {
-            // Define a folder to store configuration files
-            string configDirectory = Path.Combine(Environment.CurrentDirectory, "Config");
-            if (!Directory.Exists(configDirectory))
+            // Placeholder connection settings
+            string ewsUrl = "https://example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip execution when placeholders are detected
+            if (ewsUrl.Contains("example.com") || username.Contains("example.com"))
             {
-                Directory.CreateDirectory(configDirectory);
-            }
-
-            // Full path to the settings file
-            string configFilePath = Path.Combine(configDirectory, "settings.json");
-
-            // Prepare configuration values to persist
-            Dictionary<string, string> settingsToSave = new Dictionary<string, string>();
-            settingsToSave["ServerUrl"] = "https://example.com/ews";
-            settingsToSave["Username"] = "user@example.com";
-            settingsToSave["Password"] = "P@ssw0rd";
-
-            // Serialize the dictionary to JSON
-            string jsonString = JsonSerializer.Serialize(settingsToSave, new JsonSerializerOptions { WriteIndented = true });
-
-            // Write the JSON to the file (guarded with try/catch)
-            try
-            {
-                using (FileStream fileStream = new FileStream(configFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-                using (StreamWriter writer = new StreamWriter(fileStream, Encoding.UTF8))
-                {
-                    writer.Write(jsonString);
-                }
-            }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine($"Failed to write configuration file: {ioEx.Message}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
                 return;
             }
 
-            // Ensure the file exists before attempting to read
-            if (!File.Exists(configFilePath))
+            // Create the EWS client safely
+            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password))
             {
-                Console.Error.WriteLine("Configuration file not found.");
-                return;
-            }
+                // Build a user configuration name (name + folder identifier)
+                UserConfigurationName configName = new UserConfigurationName("MyConfig", client.MailboxInfo.InboxUri);
 
-            // Load the configuration values back into a dictionary
-            Dictionary<string, string> loadedSettings;
-            try
-            {
-                using (FileStream fileStream = new FileStream(configFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (StreamReader reader = new StreamReader(fileStream, Encoding.UTF8))
-                {
-                    string readJson = reader.ReadToEnd();
-                    loadedSettings = JsonSerializer.Deserialize<Dictionary<string, string>>(readJson);
-                }
-            }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine($"Failed to read configuration file: {ioEx.Message}");
-                return;
-            }
+                // Create a new user configuration and set some data
+                UserConfiguration configToCreate = new UserConfiguration(configName);
+                configToCreate.BinaryData = new byte[] { 0x01, 0x02, 0x03 };
 
-            // Demonstrate usage of the loaded settings
-            if (loadedSettings != null)
-            {
-                foreach (KeyValuePair<string, string> kvp in loadedSettings)
-                {
-                    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
-                }
+                // Persist the configuration on the server
+                client.CreateUserConfiguration(configToCreate);
+                Console.WriteLine("User configuration created successfully.");
+
+                // Retrieve the stored configuration
+                UserConfiguration fetchedConfig = client.GetUserConfiguration(configName);
+                Console.WriteLine("Fetched configuration binary length: " + fetchedConfig.BinaryData.Length);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
