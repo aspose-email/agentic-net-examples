@@ -10,29 +10,45 @@ class Program
     {
         try
         {
-            // Service URL and credentials (replace with actual values)
-            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
-            NetworkCredential credential = new NetworkCredential("user@example.com", "password");
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against executing real network calls with placeholder data
+            if (mailboxUri.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping network call.");
+                return;
+            }
 
             // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Define a rule that moves messages from a specific sender to a target folder
-                MailAddress sender = new MailAddress("spam@example.com");
-                string targetFolder = "Inbox/Spam";
+                try
+                {
+                    // Define a new inbox rule: move messages from a specific sender to a folder
+                    MailAddress fromAddress = new MailAddress("sender@example.com");
+                    string destinationFolderId = client.MailboxInfo.InboxUri; // using Inbox as destination for demo
 
-                InboxRule rule = InboxRule.CreateRuleMoveFrom(sender, targetFolder);
-                rule.DisplayName = "Move spam to Spam folder";
-                rule.IsEnabled = true;
+                    InboxRule rule = InboxRule.CreateRuleMoveFrom(fromAddress, destinationFolderId);
+                    rule.DisplayName = "Move messages from sender@example.com";
+                    rule.IsEnabled = true;
 
-                // Add the rule to the mailbox
-                client.CreateInboxRule(rule);
-                Console.WriteLine("Inbox rule created successfully.");
+                    // Add the rule to the mailbox
+                    client.CreateInboxRule(rule);
+
+                    Console.WriteLine("Inbox rule created successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error while creating inbox rule: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
