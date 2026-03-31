@@ -1,51 +1,70 @@
-using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 using Aspose.Email.Tools.Verifications;
 
-class Program
+namespace EmailServerValidationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Server configuration
-            string host = "smtp.example.com";
-            int port = 587;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Validate the email address (includes mail server validation)
-            EmailValidator validator = new EmailValidator();
-            ValidationResult validationResult;
-            validator.Validate(username, out validationResult);
-
-            Console.WriteLine("Email validation ReturnCode: " + validationResult.ReturnCode);
-            Console.WriteLine("Message: " + validationResult.Message);
-            if (validationResult.LastException != null)
+            try
             {
-                Console.WriteLine("Exception: " + validationResult.LastException.Message);
-            }
+                // Placeholder configuration – skip real network calls if placeholders are detected
+                string host = "smtp.example.com";
+                int port = 587;
+                string username = "user@example.com";
+                string password = "password";
+                string emailToValidate = "user@example.com";
 
-            // Validate server connectivity and credentials
-            using (SmtpClient client = new SmtpClient(host, port, username, password, SecurityOptions.SSLImplicit))
-            {
-                try
+                if (host.Contains("example.com") || emailToValidate.Contains("example.com"))
                 {
-                    bool credentialsValid = client.ValidateCredentials();
-                    Console.WriteLine("Credentials valid: " + credentialsValid);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error validating credentials: " + ex.Message);
+                    Console.WriteLine("Placeholder configuration detected. Skipping external validation.");
                     return;
                 }
+
+                // Validate server credentials
+                using (SmtpClient client = new SmtpClient())
+                {
+                    client.Host = host;
+                    client.Port = port;
+                    client.Username = username;
+                    client.Password = password;
+                    client.SecurityOptions = SecurityOptions.Auto;
+
+                    try
+                    {
+                        bool credentialsValid = client.ValidateCredentials();
+                        Console.WriteLine($"Credentials validation result: {credentialsValid}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error during credentials validation: {ex.Message}");
+                        return;
+                    }
+                }
+
+                // Validate email address (includes mail server validation)
+                EmailValidator emailValidator = new EmailValidator();
+                ValidationResult validationResult;
+                emailValidator.Validate(emailToValidate, out validationResult);
+                Console.WriteLine($"Email validation return code: {validationResult.ReturnCode}");
+
+                if (validationResult.ReturnCode != ValidationResponseCode.ValidationSuccess)
+                {
+                    Console.WriteLine($"Validation message: {validationResult.Message}");
+                    if (validationResult.LastException != null)
+                    {
+                        Console.WriteLine($"Exception: {validationResult.LastException.Message}");
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
