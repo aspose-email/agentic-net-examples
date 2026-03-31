@@ -7,18 +7,18 @@ class Program
     {
         try
         {
-            // Access token placeholder
+            // Supply your OAuth 2.0 access token here
             string accessToken = "your_access_token";
 
-            // Instantiate OAuthNetworkCredential with the access token
+            // Instantiate OAuth credentials using the access token
             OAuthNetworkCredential credentials = new OAuthNetworkCredential(accessToken);
 
-            // Credentials are ready for use with Aspose.Email clients
             Console.WriteLine("OAuth credentials instantiated successfully.");
+            Console.WriteLine($"Access Token: {credentials.AccessToken}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
