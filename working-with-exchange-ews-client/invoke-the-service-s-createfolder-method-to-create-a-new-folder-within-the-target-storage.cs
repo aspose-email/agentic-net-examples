@@ -1,35 +1,49 @@
+using Aspose.Email.Storage.Pst;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailCreateFolderSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize the EWS client (replace with real server URL and credentials)
-            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
+            try
             {
-                try
+                // Placeholder connection details
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
+
+                // Skip execution when placeholder credentials are detected
+                if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
                 {
-                    // Get the URI of the parent folder (Inbox in this example)
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping folder creation.");
+                    return;
+                }
+
+                // Create the EWS client
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    // Determine the parent folder (Inbox in this example)
                     string parentFolderUri = client.MailboxInfo.InboxUri;
 
-                    // Create a new folder under the parent folder
-                    client.CreateFolder(parentFolderUri, "NewFolder");
+                    // Name of the new folder to create
+                    string newFolderName = "MyNewFolder";
 
-                    Console.WriteLine("Folder 'NewFolder' created successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error while creating folder: " + ex.Message);
+                    // Invoke CreateFolder to create the folder under the parent
+                    ExchangeFolderInfo createdFolder = client.CreateFolder(parentFolderUri, newFolderName);
+
+                    // Confirmation message
+                    Console.WriteLine("Folder created successfully.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
