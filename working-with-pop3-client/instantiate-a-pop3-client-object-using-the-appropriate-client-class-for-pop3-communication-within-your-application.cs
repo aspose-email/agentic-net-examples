@@ -1,36 +1,23 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace AsposeEmailPop3Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Instantiate the POP3 client using the appropriate Aspose.Email class.
+            using (Pop3Client client = new Pop3Client())
             {
-                // Initialize POP3 client with host, username, password and security options
-                using (Pop3Client client = new Pop3Client("pop.example.com", "username", "password", SecurityOptions.Auto))
-                {
-                    try
-                    {
-                        // Validate credentials to ensure connection is successful
-                        client.ValidateCredentials();
-                        Console.WriteLine("POP3 client connected and authenticated successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"POP3 connection failed: {ex.Message}");
-                        return;
-                    }
-                }
+                Console.WriteLine("POP3 client instantiated successfully.");
+                // Additional client configuration or usage can be added here.
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            // Output any errors that occur during client instantiation.
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
