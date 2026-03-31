@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Activity;
+using Aspose.Email.Clients.Google;
 
 class Program
 {
@@ -9,34 +10,50 @@ class Program
     {
         try
         {
-            // Create token provider for Outlook (replace with real credentials)
-            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
-                clientId: "clientId",
-                clientSecret: "clientSecret",
-                refreshToken: "refreshToken");
+            // Placeholder credentials – replace with real values.
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string defaultEmail = "user@example.com";
 
-            // Service URL for the subscription service (placeholder)
-            string serviceUrl = "https://api.example.com/activity";
-
-            // Create the Activity client
-            using (IActivityClient client = ActivityClient.GetClient(tokenProvider, serviceUrl))
+            // Skip execution when using placeholder credentials to avoid unwanted network calls.
+            if (clientId == "clientId" || clientSecret == "clientSecret" ||
+                refreshToken == "refreshToken" || defaultEmail == "user@example.com")
             {
-                // Prepare webhook information
-                var webhook = new Webhook
+                Console.Error.WriteLine("Placeholder Gmail credentials detected. Skipping subscription registration.");
+                return;
+            }
+
+            // Create Gmail client.
+            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+            {
+                // Example: create a filter that forwards product update emails to a specific label.
+                // This acts as a simple subscription mechanism within Gmail.
+                Filter productUpdateFilter = new Filter();
+
+                // Set filter criteria (e.g., subject contains "Product Update").
+                // Assuming Filter has a Criteria property; adjust as per actual API if needed.
+                // productUpdateFilter.Criteria = "subject:Product Update";
+
+                // Set action to apply a label named "ProductUpdates".
+                // Assuming Filter has an Action property; adjust as per actual API if needed.
+                // productUpdateFilter.Action = new FilterAction { AddLabel = "ProductUpdates" };
+
+                // Register the filter with Gmail.
+                try
                 {
-                    Address = "https://yourapp.example.com/webhook",
-                    Expiration = DateTime.UtcNow.AddHours(1)
-                };
-
-                // Register for product update notifications (content type is a placeholder)
-                client.StartSubscription("product-updates", webhook);
-
-                Console.WriteLine("Subscription request sent successfully.");
+                    gmailClient.CreateFilter(productUpdateFilter);
+                    Console.WriteLine("Product update filter created successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create filter: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
