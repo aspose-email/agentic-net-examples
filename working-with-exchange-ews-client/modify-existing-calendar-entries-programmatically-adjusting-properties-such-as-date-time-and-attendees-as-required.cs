@@ -1,61 +1,79 @@
-using System;
-using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
 using Aspose.Email.Calendar;
+using System;
+using System.Collections.Generic;
+using Aspose.Email;
+using Aspose.Email.Clients.Google;
 
-namespace AsposeEmailSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Placeholder OAuth credentials – replace with real values.
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string defaultEmail = "user@example.com";
+
+            // Guard against placeholder credentials to avoid real network calls.
+            if (clientId.StartsWith("YOUR_") || clientSecret.StartsWith("YOUR_") || refreshToken.StartsWith("YOUR_"))
             {
-                // Initialize Gmail client with placeholder credentials
-                try
+                Console.Error.WriteLine("Placeholder credentials detected – skipping Gmail operations.");
+                return;
+            }
+
+            // Initialize Gmail client.
+            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+            {
+                // Placeholder identifiers – replace with actual IDs.
+                string calendarId = "primary";
+                string appointmentId = "YOUR_APPOINTMENT_ID";
+
+                // Guard against placeholder appointment ID.
+                if (appointmentId.StartsWith("YOUR_"))
                 {
-                    IGmailClient gmailClient = GmailClient.GetInstance(
-                        "clientId",
-                        "clientSecret",
-                        "refreshToken",
-                        "user@example.com");
-
-                    using (gmailClient)
-                    {
-                        // Identify the calendar and the appointment to modify
-                        string calendarId = "primary"; // typically "primary" for the main calendar
-                        string appointmentId = "appointmentId"; // replace with actual appointment ID
-
-                        // Fetch the existing appointment
-                        Appointment appointment = gmailClient.FetchAppointment(calendarId, appointmentId);
-
-                        // Modify appointment details
-                        appointment.StartDate = new DateTime(2023, 12, 25, 10, 0, 0);
-                        appointment.EndDate = new DateTime(2023, 12, 25, 11, 0, 0);
-                        appointment.Summary = "Updated Meeting Summary";
-                        appointment.Description = "Updated description for the meeting.";
-
-                        // Update attendees
-                        MailAddressCollection newAttendees = new MailAddressCollection();
-                        newAttendees.Add(new MailAddress("newperson@example.com"));
-                        appointment.Attendees = newAttendees;
-
-                        // Send the updated appointment back to the server
-                        Appointment updatedAppointment = gmailClient.UpdateAppointment(calendarId, appointment);
-                        Console.WriteLine("Appointment updated successfully. New Summary: " + updatedAppointment.Summary);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error during Gmail client operation: " + ex.Message);
+                    Console.Error.WriteLine("Placeholder appointment ID – cannot fetch appointment.");
                     return;
                 }
+
+                // Fetch the existing appointment.
+                Appointment appointment = gmailClient.FetchAppointment(calendarId, appointmentId);
+                if (appointment == null)
+                {
+                    Console.Error.WriteLine("Failed to fetch appointment.");
+                    return;
+                }
+
+                // Modify appointment properties.
+                appointment.Summary = "Updated Meeting Subject";
+                appointment.Description = "Updated description for the meeting.";
+                appointment.StartDate = new DateTime(2026, 4, 15, 10, 0, 0);
+                appointment.EndDate = new DateTime(2026, 4, 15, 11, 0, 0);
+
+                // Update attendees.
+                MailAddressCollection attendees = new MailAddressCollection
+                {
+                    new MailAddress("alice@example.com"),
+                    new MailAddress("bob@example.com")
+                };
+                appointment.Attendees = attendees;
+
+                // Update the appointment on the server.
+                Appointment updated = gmailClient.UpdateAppointment(calendarId, appointment);
+                if (updated != null)
+                {
+                    Console.WriteLine("Appointment updated successfully.");
+                }
+                else
+                {
+                    Console.Error.WriteLine("Failed to update appointment.");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
@@ -11,34 +12,45 @@ class Program
     {
         try
         {
-            // Initialize token provider (replace with real credentials)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                "clientId", "clientSecret", "refreshToken");
+            // Ensure the MSG file exists; create a minimal placeholder if missing
+            string msgPath = "sample.msg";
+            if (!File.Exists(msgPath))
+            {
+                using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder", "Body"))
+                {
+                    placeholder.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+                }
+            }
 
-            // Create Graph client
+            // Placeholder credentials for Outlook token provider
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
+
+            // Skip actual network call when using placeholder credentials
+            if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-") || refreshToken.StartsWith("your-"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph client call.");
+                return;
+            }
+
+            // Obtain token provider for Microsoft Graph
+            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+            // Create Graph client and retrieve inbox rules
             using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
             {
-                try
+                List<InboxRule> rules = client.ListRules();
+                Console.WriteLine($"Retrieved {rules.Count} inbox rule(s):");
+                foreach (InboxRule rule in rules)
                 {
-                    // Retrieve inbox rules
-                    List<InboxRule> rules = client.ListRules();
-
-                    Console.WriteLine("Inbox Rules:");
-                    foreach (InboxRule rule in rules)
-                    {
-                        Console.WriteLine($"- {rule.DisplayName}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error retrieving rules: {ex.Message}");
-                    return;
+                    Console.WriteLine($"- {rule.DisplayName}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Initialization error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

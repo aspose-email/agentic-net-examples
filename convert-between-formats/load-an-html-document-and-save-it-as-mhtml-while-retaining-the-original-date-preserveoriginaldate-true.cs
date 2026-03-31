@@ -8,15 +8,15 @@ class Program
     {
         try
         {
-            string inputPath = "input.html";
-            string outputPath = "output.mhtml";
+            string htmlPath = "input.html";
+            string mhtmlPath = "output.mht";
 
-            // Ensure input HTML exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Ensure the HTML input file exists
+            if (!File.Exists(htmlPath))
             {
                 try
                 {
-                    File.WriteAllText(inputPath, "<html><body><p>Placeholder content</p></body></html>");
+                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder content</p></body></html>");
                 }
                 catch (Exception ex)
                 {
@@ -25,26 +25,10 @@ class Program
                 }
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load HTML content
             string htmlContent;
             try
             {
-                htmlContent = File.ReadAllText(inputPath);
+                htmlContent = File.ReadAllText(htmlPath);
             }
             catch (Exception ex)
             {
@@ -52,7 +36,7 @@ class Program
                 return;
             }
 
-            // Create a MailMessage and set its HTML body
+            // Create a mail message with the HTML body
             using (MailMessage mail = new MailMessage())
             {
                 mail.From = new MailAddress("sender@example.com");
@@ -60,16 +44,15 @@ class Program
                 mail.Subject = "Converted HTML to MHTML";
                 mail.HtmlBody = htmlContent;
 
-                // Configure MHTML save options to preserve original date
+                // Configure MHTML save options to preserve the original date
                 MhtSaveOptions saveOptions = new MhtSaveOptions
                 {
                     PreserveOriginalDate = true
                 };
 
-                // Save as MHTML
                 try
                 {
-                    mail.Save(outputPath, saveOptions);
+                    mail.Save(mhtmlPath, saveOptions);
                 }
                 catch (Exception ex)
                 {

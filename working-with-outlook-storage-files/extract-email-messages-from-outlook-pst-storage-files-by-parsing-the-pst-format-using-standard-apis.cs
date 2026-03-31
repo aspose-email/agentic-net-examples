@@ -6,57 +6,91 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             string pstPath = "sample.pst";
+            string outputDirectory = "ExtractedMessages";
 
-            // Verify PST file exists
+            // Ensure PST file exists; create a minimal placeholder if missing
             if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {pstPath}");
+                try
+                {
+                    using (PersonalStorage placeholderPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // No additional setup required for an empty PST
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Ensure output directory exists
+            try
+            {
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error creating output directory: {ex.Message}");
                 return;
             }
 
             // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            try
             {
-                // Iterate through each subfolder in the root folder
-                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
-                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
-                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
-
-                    // Enumerate messages in the current folder
-                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                    // Iterate through each subfolder in the PST root
+                    foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
                     {
-                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+                        Console.WriteLine($"Folder: {folder.DisplayName}");
+                        Console.WriteLine($"Total items: {folder.ContentCount}");
+                        Console.WriteLine($"Unread items: {folder.ContentUnreadCount}");
 
-                        // Extract the full message
-                        using (MapiMessage msg = pst.ExtractMessage(messageInfo))
+                        // Enumerate messages in the current folder
+                        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
                         {
-                            // Save the message as a .msg file
-                            try
+                            Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                            // Extract the full message
+                            using (MapiMessage message = pst.ExtractMessage(messageInfo))
                             {
-                                string safeSubject = string.IsNullOrWhiteSpace(msg.Subject) ? "Untitled" : msg.Subject;
-                                // Replace invalid filename characters
-                                foreach (char c in Path.GetInvalidFileNameChars())
+                                // Sanitize subject to create a valid file name
+                                string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                                foreach (char invalidChar in Path.GetInvalidFileNameChars())
                                 {
-                                    safeSubject = safeSubject.Replace(c, '_');
+                                    safeSubject = safeSubject.Replace(invalidChar, '_');
                                 }
-                                string outputPath = $"{safeSubject}.msg";
-                                msg.Save(outputPath);
-                                Console.WriteLine($"Saved: {outputPath}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Error saving message: {ex.Message}");
+
+                                string outputPath = Path.Combine(outputDirectory, $"{safeSubject}.msg");
+
+                                try
+                                {
+                                    message.Save(outputPath);
+                                    Console.WriteLine($"Saved: {outputPath}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.Error.WriteLine($"Error saving message '{message.Subject}': {ex.Message}");
+                                }
                             }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)

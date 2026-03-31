@@ -4,44 +4,84 @@ using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailIcsToMsg
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPath = "sample.ics";
-            string outputPath = "output.msg";
-
-            // Ensure input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            try
             {
-                string placeholderIcs = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR";
-                File.WriteAllText(inputPath, placeholderIcs);
-            }
+                string inputIcsPath = "input.ics";
+                string outputMsgPath = "output.msg";
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                // Ensure input file exists; create minimal placeholder if missing
+                if (!File.Exists(inputIcsPath))
+                {
+                    try
+                    {
+                        string placeholderIcs = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR";
+                        File.WriteAllText(inputIcsPath, placeholderIcs);
+                        Console.WriteLine($"Placeholder iCalendar file created at '{inputIcsPath}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create placeholder iCalendar file: {ex.Message}");
+                        return;
+                    }
+                }
+
+                // Ensure output directory exists
+                try
+                {
+                    string outputDirectory = Path.GetDirectoryName(outputMsgPath);
+                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                    return;
+                }
+
+                // Load the iCalendar file
+                Appointment appointment;
+                try
+                {
+                    appointment = Appointment.Load(inputIcsPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to load iCalendar file: {ex.Message}");
+                    return;
+                }
+
+                // Modify appointment properties as required
+                appointment.Summary = "Updated Meeting";
+                appointment.Location = "Conference Room";
+
+                // Convert to MAPI message and save as MSG
+                try
+                {
+                    using (MapiMessage mapMessage = appointment.ToMapiMessage())
+                    {
+                        mapMessage.Save(outputMsgPath);
+                    }
+                    Console.WriteLine($"MSG file saved to '{outputMsgPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to convert or save MSG file: {ex.Message}");
+                    return;
+                }
+            }
+            catch (Exception ex)
             {
-                Directory.CreateDirectory(outputDirectory);
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                return;
             }
-
-            // Load the iCalendar file
-            Appointment appointment = Appointment.Load(inputPath);
-
-            // Modify the appointment as required (example: change summary)
-            appointment.Summary = "Updated Summary";
-
-            // Convert to MSG (MAPI) format and save
-            using (MapiMessage mapiMessage = appointment.ToMapiMessage())
-            {
-                mapiMessage.Save(outputPath);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

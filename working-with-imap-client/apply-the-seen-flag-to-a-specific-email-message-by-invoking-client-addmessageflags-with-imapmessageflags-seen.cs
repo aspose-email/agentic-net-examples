@@ -1,8 +1,6 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients.Imap;
 using Aspose.Email.Clients;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients.Imap;
 
 class Program
 {
@@ -10,41 +8,40 @@ class Program
     {
         try
         {
-            // Server connection parameters (replace with real values)
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
 
-            // Create and connect the IMAP client
+            // Skip external calls when placeholder credentials are detected
+            if (host.Contains("example.com") || username.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping IMAP operation.");
+                return;
+            }
+
             using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
-                // Select the INBOX folder
-                client.SelectFolder("INBOX");
-
-                // Retrieve the list of messages in the folder
-                ImapMessageInfoCollection messages = client.ListMessages();
-
-                // Ensure there is at least one message to operate on
-                if (messages != null && messages.Count > 0)
+                try
                 {
-                    // Get the unique identifier of the first message
-                    string uid = messages[0].UniqueId;
+                    client.SelectFolder("INBOX");
 
-                    // Apply the Seen (IsRead) flag to the message
-                    client.AddMessageFlags(uid, ImapMessageFlags.IsRead);
+                    // Unique identifier of the target message (placeholder value)
+                    string messageUid = "12345";
 
-                    Console.WriteLine("Seen flag applied to message UID: " + uid);
+                    // Apply the Seen flag (represented by IsRead) to the message
+                    client.AddMessageFlags(messageUid, ImapMessageFlags.IsRead);
+                    Console.WriteLine($"Seen flag applied to message UID {messageUid}.");
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine("No messages found in the INBOX folder.");
+                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,7 +1,7 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
@@ -11,57 +11,65 @@ class Program
     {
         try
         {
-            // Path to the MSG file containing the calendar event
-            string msgPath = "event.msg";
+            // Placeholder credentials – replace with real values for actual use.
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string calendarEventId = "EVENT_ID";
 
-            // Verify that the file exists before attempting to load it
-            if (!File.Exists(msgPath))
+            // Skip execution when placeholder credentials are detected.
+            if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_"))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph call.");
                 return;
             }
 
-            // Load the MSG file and extract the server item identifier
-            string itemId;
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Create token provider (3‑argument overload is the verified one).
+            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+            // Create Graph client and ensure it is disposed.
+            try
             {
-                itemId = msg.ItemId;
-                if (string.IsNullOrEmpty(itemId))
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, null))
                 {
-                    Console.Error.WriteLine("The MSG file does not contain a valid ItemId.");
-                    return;
+                    // Fetch the calendar event by its Graph identifier.
+                    MapiCalendar calendar = client.FetchCalendarItem(calendarEventId);
+
+                    // Display basic calendar information.
+                    Console.WriteLine("Subject: " + calendar.Subject);
+                    Console.WriteLine("Body: " + calendar.Body);
+                    Console.WriteLine("Start: " + calendar.StartDate);
+                    Console.WriteLine("End: " + calendar.EndDate);
+
+                    // Optional: save the calendar as an MSG file.
+                    string outputPath = "calendar.msg";
+                    string outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+
+                    if (!Directory.Exists(outputDirectory))
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+
+                    try
+                    {
+                        calendar.Save(outputPath, MapiCalendarSaveOptions.DefaultMsg);
+                        Console.WriteLine("Calendar saved to " + outputPath);
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Console.Error.WriteLine("Failed to save calendar: " + saveEx.Message);
+                    }
                 }
             }
-
-            // Create a token provider for Microsoft Graph authentication
-            Aspose.Email.Clients.ITokenProvider tokenProvider =
-                Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    "clientId",          // Replace with your Azure AD client ID
-                    "clientSecret",      // Replace with your Azure AD client secret
-                    "refreshToken");     // Replace with a valid refresh token
-
-            // Initialize the Graph client
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, null))
+            catch (Exception clientEx)
             {
-                // Retrieve the calendar event from the server using the extracted ItemId
-                using (MapiCalendar calendar = client.FetchCalendarItem(itemId))
-                {
-                    if (calendar != null)
-                    {
-                        Console.WriteLine($"Subject: {calendar.Subject}");
-                        Console.WriteLine($"Start: {calendar.StartDate}");
-                        Console.WriteLine($"End: {calendar.EndDate}");
-                    }
-                    else
-                    {
-                        Console.Error.WriteLine("Calendar item not found on the server.");
-                    }
-                }
+                Console.Error.WriteLine("Graph client error: " + clientEx.Message);
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }

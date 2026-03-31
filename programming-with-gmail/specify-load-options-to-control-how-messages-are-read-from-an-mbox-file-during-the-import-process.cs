@@ -6,62 +6,51 @@ using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Path to the MBOX file
-            string mboxFilePath = "sample.mbox";
+            // Define input MBOX file and output HTML file paths.
+            string mboxPath = "input.mbox";
+            string htmlPath = "firstMessage.html";
 
-            // Ensure the MBOX file exists; create a minimal placeholder if missing
-            if (!File.Exists(mboxFilePath))
+            // Guard against missing input file.
+            if (!File.Exists(mboxPath))
             {
-                try
+                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
+                return;
+            }
+
+            // Create load options to control how messages are read.
+            MboxLoadOptions loadOptions = new MboxLoadOptions
+            {
+                // Example: keep the underlying stream open after disposing the reader (optional).
+                LeaveOpen = false,
+                // Example: specify preferred encoding if needed (null uses default detection).
+                PreferredTextEncoding = null
+            };
+
+            // Open the MBOX storage reader using the factory method.
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
+            {
+                // Read the first message sequentially.
+                MailMessage message = reader.ReadNextMessage();
+
+                if (message == null)
                 {
-                    using (FileStream placeholderStream = File.Create(mboxFilePath))
-                    {
-                        // Create an empty MBOX file
-                    }
-                    Console.WriteLine($"Placeholder MBOX file created at '{mboxFilePath}'.");
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ioEx.Message}");
+                    Console.Error.WriteLine("No messages found in the MBOX file.");
                     return;
                 }
-            }
 
-            // Configure load options for the MBOX reader
-            MboxLoadOptions mboxLoadOptions = new MboxLoadOptions();
-
-            // Configure EML load options that control how individual messages are parsed
-            EmlLoadOptions emlLoadOptions = new EmlLoadOptions();
-
-            // Open the MBOX reader with the specified load options
-            try
-            {
-                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, mboxLoadOptions))
-                {
-                    // Enumerate messages using the EML load options
-                    foreach (MailMessage message in mboxReader.EnumerateMessages(emlLoadOptions))
-                    {
-                        // Output basic information about each message
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"To: {message.To}");
-                        Console.WriteLine(new string('-', 40));
-                    }
-                }
-            }
-            catch (Exception readerEx)
-            {
-                Console.Error.WriteLine($"Error reading MBOX file: {readerEx.Message}");
-                return;
+                // Save the message as HTML.
+                HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
+                message.Save(htmlPath, htmlOptions);
+                Console.WriteLine($"First message saved to {htmlPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

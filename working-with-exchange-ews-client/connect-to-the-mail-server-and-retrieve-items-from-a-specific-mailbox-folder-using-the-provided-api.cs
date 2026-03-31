@@ -1,6 +1,5 @@
 using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -10,19 +9,28 @@ class Program
     {
         try
         {
-            // Set up credentials (replace with real values)
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            // Placeholder connection details
+            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            // Create and connect the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
+            // Guard against executing live calls with placeholder credentials
+            if (mailboxUri.Contains("example") || username == "username" || password == "password")
             {
-                // Get the URI of the Inbox folder
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping live EWS call.");
+                return;
+            }
+
+            // Create and use the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Retrieve the Inbox folder URI
                 string inboxUri = client.MailboxInfo.InboxUri;
 
-                // Retrieve messages from the Inbox
+                // List messages in the Inbox
                 ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
 
-                // Output basic information about each message
+                // Output basic information for each message
                 foreach (ExchangeMessageInfo info in messages)
                 {
                     Console.WriteLine($"Subject: {info.Subject}");

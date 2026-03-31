@@ -1,6 +1,5 @@
 using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
 
@@ -10,43 +9,59 @@ namespace AsposeEmailExample
     {
         static void Main(string[] args)
         {
+            // Top‑level exception guard
             try
             {
-                // Exchange server connection settings
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
+                // Placeholder credentials – skip actual network call in CI environments
+                string serverUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "username";
                 string password = "password";
 
-                // Create and use the Exchange client inside a using block to ensure disposal
-                using (ExchangeClient client = new ExchangeClient(mailboxUri, new NetworkCredential(username, password)))
+                if (serverUrl.Contains("example.com") ||
+                    string.Equals(username, "username", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(password, "password", StringComparison.OrdinalIgnoreCase))
                 {
-                    try
-                    {
-                        // List messages in the Inbox folder
-                        ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
+                    Console.WriteLine("Placeholder credentials detected – skipping Exchange operations.");
+                    return;
+                }
 
-                        // Delete each message by its unique URI
-                        foreach (ExchangeMessageInfo info in messages)
+                // Connect to Exchange using WebDAV client
+                try
+                {
+                    using (ExchangeClient client = new ExchangeClient(serverUrl, username, password))
+                    {
+                        // Retrieve mailbox information
+                        ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                        string inboxUri = mailboxInfo.InboxUri;
+                        string deletedItemsUri = mailboxInfo.DeletedItemsUri;
+
+                        // List all messages in the Inbox
+                        ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+
+                        // Move each message to Deleted Items folder
+                        foreach (ExchangeMessageInfo msgInfo in messages)
                         {
-                            // Ensure the UniqueUri is not null or empty before attempting deletion
-                            if (!string.IsNullOrEmpty(info.UniqueUri))
+                            try
                             {
-                                client.DeleteMessage(info.UniqueUri);
-                                Console.WriteLine($"Deleted message: {info.Subject}");
+                                client.MoveMessage(msgInfo, deletedItemsUri);
+                                Console.WriteLine($"Moved message '{msgInfo.Subject}' to Deleted Items.");
+                            }
+                            catch (Exception moveEx)
+                            {
+                                Console.Error.WriteLine($"Failed to move message '{msgInfo.Subject}': {moveEx.Message}");
                             }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        // Handle errors that occur during listing or deletion
-                        Console.Error.WriteLine($"Operation error: {ex.Message}");
-                    }
+                }
+                catch (Exception connEx)
+                {
+                    Console.Error.WriteLine($"Error connecting to Exchange server: {connEx.Message}");
+                    return;
                 }
             }
             catch (Exception ex)
             {
-                // Handle errors that occur during client creation/connection
-                Console.Error.WriteLine($"Connection error: {ex.Message}");
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }

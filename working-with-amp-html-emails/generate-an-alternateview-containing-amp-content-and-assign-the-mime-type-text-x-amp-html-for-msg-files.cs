@@ -13,8 +13,8 @@ class Program
             string outputPath = "amp_message.msg";
 
             // Ensure the output directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
@@ -37,18 +37,18 @@ class Program
 </body>
 </html>";
 
-                // Set the AMP body property
-                ampMessage.AmpHtmlBody = ampHtml;
-
-                // Create an AlternateView with the required MIME type
+                // Create the appropriate content type for AMP
                 ContentType ampContentType = new ContentType("text/x-amp-html");
+
+                // Create an AlternateView with the AMP content
                 using (AlternateView ampView = AlternateView.CreateAlternateViewFromString(ampHtml, ampContentType))
                 {
                     ampMessage.AlternateViews.Add(ampView);
                 }
 
-                // Save the message as MSG
-                ampMessage.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                // Save the message as an Outlook MSG file
+                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
+                ampMessage.Save(outputPath, saveOptions);
             }
         }
         catch (Exception ex)

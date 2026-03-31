@@ -1,54 +1,45 @@
 using System;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Pop3;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Initialize and connect the IMAP client
-            using (ImapClient client = new ImapClient())
+            // Placeholder POP3 server credentials
+            string host = "pop3.example.com";
+            string username = "username";
+            string password = "password";
+
+            // Guard against executing real network calls with placeholder data
+            if (host.Contains("example.com") || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                Console.Error.WriteLine("Placeholder POP3 credentials detected. Skipping network operation.");
+                return;
+            }
+
+            // Initialize POP3 client (connection is established via constructor)
+            using (Pop3Client client = new Pop3Client(host, username, password))
             {
                 try
                 {
-                    client.Host = "imap.example.com";
-                    client.Port = 993;
-                    client.SecurityOptions = SecurityOptions.SSLImplicit;
-                    client.Username = "username";
-                    client.Password = "password";
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to connect IMAP client: {ex.Message}");
-                    return;
-                }
+                    // Validate credentials before proceeding
+                    client.ValidateCredentials();
 
-                try
-                {
-                    // Select the INBOX folder
-                    client.SelectFolder("INBOX");
+                    // Get total number of messages in the mailbox
+                    int messageCount = client.GetMessageCount();
 
-                    // Retrieve message information objects
-                    var messages = client.ListMessages();
-
-                    foreach (var msgInfo in messages)
+                    // Iterate through each message and retrieve its size
+                    for (int i = 1; i <= messageCount; i++)
                     {
-                        // Get the size of the current email message in bytes
-                        long sizeInBytes = msgInfo.Size;
-                        Console.WriteLine($"Message ID: {msgInfo.UniqueId}, Size: {sizeInBytes} bytes");
-
-                        // Conditional handling based on size (example: flag large messages)
-                        if (sizeInBytes > 1_048_576) // larger than 1 MB
-                        {
-                            Console.WriteLine("Large message detected.");
-                        }
+                        long sizeInBytes = client.GetMessageInfo(i).Size;
+                        Console.WriteLine($"Message {i} size: {sizeInBytes} bytes");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error retrieving messages: {ex.Message}");
+                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
                 }
             }
         }

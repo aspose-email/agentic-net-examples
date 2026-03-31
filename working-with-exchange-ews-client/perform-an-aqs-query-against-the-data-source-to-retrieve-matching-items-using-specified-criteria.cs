@@ -11,45 +11,46 @@ class Program
     {
         try
         {
-            // Initialize credentials and service URL
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credential = new NetworkCredential("username", "password");
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            // Create the EWS client inside a using block for proper disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
+            // Guard against executing with placeholder credentials
+            if (mailboxUri.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
+                return;
+            }
+
+            // Create EWS client inside a using block to ensure disposal
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
                 try
                 {
-                    // Build an Advanced Query Syntax (AQS) query to find messages with "Report" in the subject
+                    // Build an AQS query (e.g., find messages with subject containing "Report")
                     ExchangeAdvancedSyntaxQueryBuilder builder = new ExchangeAdvancedSyntaxQueryBuilder();
                     builder.Subject.Contains("Report");
                     MailQuery query = builder.GetQuery();
 
-                    // List messages from the Inbox that match the query (non‑recursive)
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
+                    // Perform the query against the Inbox folder
+                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
 
-                    // Iterate over the results and fetch each full message
+                    // Output the subjects of the matching messages
                     foreach (ExchangeMessageInfo info in messages)
                     {
-                        using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                        {
-                            Console.WriteLine($"Subject: {message.Subject}");
-                            Console.WriteLine($"From: {message.From}");
-                            Console.WriteLine($"Date: {message.Date}");
-                            Console.WriteLine(new string('-', 40));
-                        }
+                        Console.WriteLine("Subject: " + info.Subject);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during EWS operations: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine("Error during query execution: " + ex.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
         }
     }
 }

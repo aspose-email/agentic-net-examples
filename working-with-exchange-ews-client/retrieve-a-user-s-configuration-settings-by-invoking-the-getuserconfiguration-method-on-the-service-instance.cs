@@ -1,36 +1,49 @@
-using System;
-using System.Net;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Placeholder service URL and credentials.
+            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Guard against executing with placeholder values.
+            if (serviceUrl.Contains("example"))
             {
-                // Define the EWS service URL and credentials.
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
+                Console.Error.WriteLine("Placeholder service URL detected. Skipping execution.");
+                return;
+            }
 
-                // Create the EWS client using the factory method.
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Create the EWS client.
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                try
                 {
-                    // Retrieve a user configuration.
-                    // Using the default enum value to avoid referencing undefined members.
-                    UserConfiguration userConfig = client.GetUserConfiguration(default(UserConfigurationName));
+                    // Resolve the enum value at runtime to avoid compile‑time dependency on a specific member.
+                    UserConfigurationName configName = (UserConfigurationName)Enum.Parse(
+                        typeof(UserConfigurationName), "InboxRules");
 
-                    // Output a simple confirmation.
+                    // Retrieve the user configuration.
+                    UserConfiguration config = client.GetUserConfiguration(configName);
+
+                    // Simple confirmation output.
                     Console.WriteLine("User configuration retrieved successfully.");
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error retrieving configuration: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                // Write any errors to the error stream.
-                Console.Error.WriteLine(ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -18,14 +18,16 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (54 file(s))
-- `using System.IO;` (54 file(s))
-- `using Aspose.Email.Storage.Pst;` (54 file(s))
-- `using Aspose.Email;` (37 file(s))
-- `using Aspose.Email.Mapi;` (34 file(s))
-- `using System.Collections.Generic;` (7 file(s))
+- `using System;` (59 file(s))
+- `using System.IO;` (59 file(s))
+- `using Aspose.Email.Storage.Pst;` (59 file(s))
+- `using Aspose.Email;` (51 file(s))
+- `using Aspose.Email.Mapi;` (35 file(s))
+- `using System.Collections.Generic;` (9 file(s))
+- `using Aspose.Email.Tools.Search;` (3 file(s))
 - `using System.Collections;` (1 file(s))
-- `using System.Threading.Tasks;` (1 file(s))
+- `using System.Linq;` (1 file(s))
+- `using System.Text;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
@@ -54,6 +56,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [extract-email-messages-from-outlook-pst-storage-files-by-parsing-the-pst-format-using-standard-apis.cs](./extract-email-messages-from-outlook-pst-storage-files-by-parsing-the-pst-format-using-standard-apis.cs) | extract email messages from outlook pst storage files by parsing the pst format using standard apis |
 | [generate-pst-files-from-outlook-storage-data-ensuring-compliance-with-the-pst-file-format-specifications.cs](./generate-pst-files-from-outlook-storage-data-ensuring-compliance-with-the-pst-file-format-specifications.cs) | generate pst files from outlook storage data ensuring compliance with the pst file format specifications |
 | [implement-case-insensitive-parameter-searches-within-outlook-pst-storage-files-programmatically-using-the-pst-format.cs](./implement-case-insensitive-parameter-searches-within-outlook-pst-storage-files-programmatically-using-the-pst-format.cs) | implement case insensitive parameter searches within outlook pst storage files programmatically using the pst format |
+| [implement-criteria-based-searches-within-outlook-pst-storage-files-to-programmatically-retrieve-matching-items-e.cs](./implement-criteria-based-searches-within-outlook-pst-storage-files-to-programmatically-retrieve-matching-items-e.cs) | implement criteria based searches within outlook pst storage files to programmatically retrieve matching items e |
 | [implement-functionality-to-delete-specific-messages-folders-or-other-items-from-outlook-pst-storage-files-via-the-pst-format.cs](./implement-functionality-to-delete-specific-messages-folders-or-other-items-from-outlook-pst-storage-files-via-the-pst-format.cs) | implement functionality to delete specific messages folders or other items from outlook pst storage files via the pst format |
 | [implement-functionality-to-divide-email-client-pst-storage-files-into-separate-pst-segments-while-maintaining-data-integrity.cs](./implement-functionality-to-divide-email-client-pst-storage-files-into-separate-pst-segments-while-maintaining-data-integrity.cs) | implement functionality to divide email client pst storage files into separate pst segments while maintaining data integrity |
 | [implement-functions-to-retrieve-soft-deleted-items-from-outlook-pst-and-ost-storage-using-pst-format-processing.cs](./implement-functions-to-retrieve-soft-deleted-items-from-outlook-pst-and-ost-storage-using-pst-format-processing.cs) | implement functions to retrieve soft deleted items from outlook pst and ost storage using pst format processing |
@@ -66,6 +69,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [manipulate-outlook-pst-storage-to-create-modify-and-delete-distribution-lists-within-pst-files.cs](./manipulate-outlook-pst-storage-to-create-modify-and-delete-distribution-lists-within-pst-files.cs) | manipulate outlook pst storage to create modify and delete distribution lists within pst files |
 | [manipulate-outlook-storage-files-programmatically-by-accessing-and-editing-messages-within-pst-file-structures.cs](./manipulate-outlook-storage-files-programmatically-by-accessing-and-editing-messages-within-pst-file-structures.cs) | manipulate outlook storage files programmatically by accessing and editing messages within pst file structures |
 | [manipulate-outlook-storage-files-to-retrieve-modify-and-organize-messages-within-pst-format-containers.cs](./manipulate-outlook-storage-files-to-retrieve-modify-and-organize-messages-within-pst-format-containers.cs) | manipulate outlook storage files to retrieve modify and organize messages within pst format containers |
+| [modify-custom-properties-within-outlook-pst-storage-files-by-utilizing-the-pst-file-format.cs](./modify-custom-properties-within-outlook-pst-storage-files-by-utilizing-the-pst-file-format.cs) | modify custom properties within outlook pst storage files by utilizing the pst file format |
 | [modify-distribution-lists-within-pst-storage-files-by-programmatically-updating-outlook-data-structures-efficiently.cs](./modify-distribution-lists-within-pst-storage-files-by-programmatically-updating-outlook-data-structures-efficiently.cs) | modify distribution lists within pst storage files by programmatically updating outlook data structures efficiently |
 | [modify-or-remove-specific-occurrences-of-recurring-calendar-events-within-outlook-pst-storage-files-programmatically.cs](./modify-or-remove-specific-occurrences-of-recurring-calendar-events-within-outlook-pst-storage-files-programmatically.cs) | modify or remove specific occurrences of recurring calendar events within outlook pst storage files programmatically |
 | [modify-the-folder-container-class-of-an-outlook-pst-storage-file-programmatically-using-the-pst-format.cs](./modify-the-folder-container-class-of-an-outlook-pst-storage-file-programmatically-using-the-pst-format.cs) | modify the folder container class of an outlook pst storage file programmatically using the pst format |
@@ -75,6 +79,8 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [remove-specified-folders-from-pst-storage-files-programmatically-using-the-pst-file-format-capabilities.cs](./remove-specified-folders-from-pst-storage-files-programmatically-using-the-pst-file-format-capabilities.cs) | remove specified folders from pst storage files programmatically using the pst file format capabilities |
 | [retrieve-message-metadata-and-contents-from-an-outlook-pst-storage-file-using-the-pst-format.cs](./retrieve-message-metadata-and-contents-from-an-outlook-pst-storage-file-using-the-pst-format.cs) | retrieve message metadata and contents from an outlook pst storage file using the pst format |
 | [retrieve-the-total-number-of-items-contained-within-a-pst-storage-file-using-the-pst-format.cs](./retrieve-the-total-number-of-items-contained-within-a-pst-storage-file-using-the-pst-format.cs) | retrieve the total number of items contained within a pst storage file using the pst format |
+| [save-calendar-entries-from-outlook-storage-files-into-a-pst-file-preserving-each-item-original-timestamp.cs](./save-calendar-entries-from-outlook-storage-files-into-a-pst-file-preserving-each-item-original-timestamp.cs) | save calendar entries from outlook storage files into a pst file preserving each item original timestamp |
+| [save-outlook-pst-messages-directly-and-efficiently-to-a-stream-using-the-pst-storage-format.cs](./save-outlook-pst-messages-directly-and-efficiently-to-a-stream-using-the-pst-storage-format.cs) | save outlook pst messages directly and efficiently to a stream using the pst storage format |
 | [search-and-retrieve-messages-within-outlook-pst-storage-files-using-the-pst-format-programmatically.cs](./search-and-retrieve-messages-within-outlook-pst-storage-files-using-the-pst-format-programmatically.cs) | search and retrieve messages within outlook pst storage files using the pst format programmatically |
 | [search-messages-and-folders-within-pst-storage-files-using-the-pst-format-for-outlook-data.cs](./search-messages-and-folders-within-pst-storage-files-using-the-pst-format-for-outlook-data.cs) | search messages and folders within pst storage files using the pst format for outlook data |
 | [search-outlook-pst-storage-files-for-message-subjects-matching-multiple-keywords-using-the-pst-format.cs](./search-outlook-pst-storage-files-for-message-subjects-matching-multiple-keywords-using-the-pst-format.cs) | search outlook pst storage files for message subjects matching multiple keywords using the pst format |
@@ -82,11 +88,12 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [subscribe-to-calendar-management-updates-by-processing-outlook-pst-storage-files-using-the-pst-format.cs](./subscribe-to-calendar-management-updates-by-processing-outlook-pst-storage-files-using-the-pst-format.cs) | subscribe to calendar management updates by processing outlook pst storage files using the pst format |
 | [subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-files-in-pst-format.cs](./subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-files-in-pst-format.cs) | subscribe to updates for pst file operations while handling outlook storage files in pst format |
 | [transfer-email-items-between-folders-inside-a-pst-storage-file-using-the-pst-format-api.cs](./transfer-email-items-between-folders-inside-a-pst-storage-file-using-the-pst-format-api.cs) | transfer email items between folders inside a pst storage file using the pst format api |
+| [update-message-properties-within-pst-storage-files-by-accessing-outlook-data-using-the-pst-file-format.cs](./update-message-properties-within-pst-storage-files-by-accessing-outlook-data-using-the-pst-file-format.cs) | update message properties within pst storage files by accessing outlook data using the pst file format |
 | [validate-the-folder-container-class-of-an-outlook-pst-storage-file-using-the-pst-file-format.cs](./validate-the-folder-container-class-of-an-outlook-pst-storage-file-using-the-pst-file-format.cs) | validate the folder container class of an outlook pst storage file using the pst file format |
 | [validate-the-password-of-an-outlook-pst-file-programmatically-by-accessing-its-storage-structure.cs](./validate-the-password-of-an-outlook-pst-file-programmatically-by-accessing-its-storage-structure.cs) | validate the password of an outlook pst file programmatically by accessing its storage structure |
 
 ## Category Statistics
-- Total examples: 54
+- Total examples: 59
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -95,5 +102,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_182303` | examples/batch-20260328_182303 |
+| 2026-03-31 | `20260330_231433` | [examples/batch-20260330_231433](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260330_231433) |
 <!-- AUTOGENERATED:END -->

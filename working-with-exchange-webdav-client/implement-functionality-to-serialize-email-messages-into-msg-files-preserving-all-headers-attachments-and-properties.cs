@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mime;
 
 class Program
 {
@@ -9,69 +8,56 @@ class Program
     {
         try
         {
-            // Prepare output directory
-            string outputDirectory = Path.GetFullPath("Output");
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
+            string emlPath = "sample.eml";
+            string msgPath = "output.msg";
 
-            string outputPath = Path.Combine(outputDirectory, "SerializedMessage.msg");
-
-            // Prepare a sample attachment file
-            string attachmentPath = Path.Combine(outputDirectory, "sample.txt");
-            if (!File.Exists(attachmentPath))
+            // Verify input file exists
+            if (!File.Exists(emlPath))
             {
                 try
                 {
-                    File.WriteAllText(attachmentPath, "This is a sample attachment.");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating attachment file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Error: Input file not found – {emlPath}");
+                return;
             }
 
-            // Create and configure the mail message
-            using (MailMessage message = new MailMessage())
+            // Load the email message
+            using (MailMessage mail = MailMessage.Load(emlPath))
             {
-                message.From = new MailAddress("sender@example.com", "Sender Name");
-                message.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
-                message.Subject = "Sample MSG Serialization";
-                message.Body = "This email demonstrates serialization to MSG format with all headers and attachments preserved.";
-
-                // Add a custom header
-                message.Headers.Add("X-Custom-Header", "CustomHeaderValue");
-
-                // Add the attachment
-                using (Attachment attachment = new Attachment(attachmentPath))
+                // Display all headers
+                foreach (string key in mail.Headers.Keys)
                 {
-                    message.Attachments.Add(attachment);
+                    Console.WriteLine($"{key}: {mail.Headers[key]}");
                 }
 
-                // Configure MSG save options
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat)
+                // Prepare MSG save options (Unicode MSG format, preserve original dates)
+                MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
                 {
                     PreserveOriginalDates = true
                 };
 
-                // Save the message as MSG
-                try
-                {
-                    message.Save(outputPath, saveOptions);
-                    Console.WriteLine($"Message successfully saved to: {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
-                    return;
-                }
+                // Save as MSG file
+                mail.Save(msgPath, msgSaveOptions);
+                Console.WriteLine($"Message saved to {msgPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

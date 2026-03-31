@@ -10,44 +10,66 @@ class Program
     {
         try
         {
+            // Define paths
             string ostPath = "sample.ost";
+            string outputDirectory = Path.GetDirectoryName(Path.GetFullPath(ostPath));
+            string htmlContent = "<html><body><h1>Hello from Aspose.Email</h1></body></html>";
 
-            // Verify that the OST file exists before proceeding.
-            if (!File.Exists(ostPath))
+            // Ensure output directory exists
+            if (!Directory.Exists(outputDirectory))
             {
-                Console.Error.WriteLine($"OST file not found at path: {ostPath}");
-                return;
-            }
-
-            try
-            {
-                // Open the existing OST file.
-                using (PersonalStorage personalStorage = PersonalStorage.FromFile(ostPath))
+                try
                 {
-                    // Use the root folder (or specify a subfolder as needed).
-                    FolderInfo rootFolder = personalStorage.RootFolder;
-
-                    // Create a MailMessage with HTML content.
-                    MailMessage mailMessage = new MailMessage();
-                    mailMessage.From = "sender@example.com";
-                    mailMessage.To.Add("recipient@example.com");
-                    mailMessage.Subject = "Sample HTML Message";
-                    mailMessage.HtmlBody = "<html><body><h1>Hello</h1><p>This is a test.</p></body></html>";
-
-                    // Convert the MailMessage to a MapiMessage.
-                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
-                    {
-                        // Add the message to the OST folder.
-                        string entryId = rootFolder.AddMessage(mapiMessage);
-                        Console.WriteLine($"Message added with EntryId: {entryId}");
-                    }
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create directory '{outputDirectory}': {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ioEx)
+
+            // Ensure OST file exists; create a new one if missing
+            if (!File.Exists(ostPath))
             {
-                Console.Error.WriteLine($"File operation failed: {ioEx.Message}");
-                return;
+                try
+                {
+                    // Create a new Unicode OST/PST file
+                    PersonalStorage.Create(ostPath, FileFormatVersion.Unicode);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create OST file '{ostPath}': {ex.Message}");
+                    return;
+                }
             }
+
+            // Open the OST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(ostPath))
+            {
+                // Create a new MAPI message from raw HTML
+                MapiMessage mapiMessage = new MapiMessage();
+                mapiMessage.Subject = "Sample HTML Message";
+                // Set HTML body content
+                mapiMessage.SetBodyContent(htmlContent, BodyContentType.Html);
+                // Optionally set sender information
+                mapiMessage.SenderName = "Aspose Sample";
+                mapiMessage.SenderEmailAddress = "sample@aspose.com";
+
+                // Add the message to the root folder
+                try
+                {
+                    string entryId = pst.RootFolder.AddMessage(mapiMessage);
+                    Console.WriteLine($"Message added with EntryId: {entryId}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to add message to OST: {ex.Message}");
+                    return;
+                }
+            }
+
+            Console.WriteLine("OST file updated successfully.");
         }
         catch (Exception ex)
         {

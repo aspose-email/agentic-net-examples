@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 
 class Program
@@ -9,32 +10,86 @@ class Program
     {
         try
         {
-            string msgPath = "message.msg";
+            // Define paths and placeholder SMTP settings
+            string msgFilePath = "sample.msg";
+            string smtpHost = "smtp.example.com"; // placeholder host
+            int smtpPort = 25;
+            string smtpUser = "user@example.com";
+            string smtpPassword = "password";
 
-            // Ensure the MSG file exists
-            if (!File.Exists(msgPath))
+            // Ensure the MSG file exists; create a minimal placeholder if missing
+            if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgFilePath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    MailMessage placeholder = new MailMessage();
+                    placeholder.Subject = "Placeholder Message";
+                    placeholder.Body = "This is a placeholder MSG file.";
+                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                    placeholder.Save(msgFilePath, saveOptions);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file into a MailMessage object
+            MailMessage message;
+            try
+            {
+                message = MailMessage.Load(msgFilePath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
                 return;
             }
 
-            // Load the MSG file into a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(msgPath))
+            // Use explicit using to ensure disposal of the MailMessage
+            using (message)
             {
-                // Prepare SMTP client (replace with real server details)
-                using (SmtpClient client = new SmtpClient("smtp.example.com", 587, "username", "password"))
+                // Guard against placeholder SMTP settings to avoid real network calls
+                if (smtpHost.Contains("example.com"))
                 {
-                    try
+                    Console.WriteLine("Placeholder SMTP settings detected. Skipping forward operation.");
+                    return;
+                }
+
+                // Create and configure the SMTP client
+                try
+                {
+                    using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPassword))
                     {
                         // Forward the loaded message
-                        client.Forward("sender@example.com", "recipient@example.com", mailMessage);
+                        string senderAddress = smtpUser;
+                        string recipientAddress = "recipient@example.com";
+                        client.Forward(senderAddress, recipientAddress, message);
                         Console.WriteLine("Message forwarded successfully.");
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to forward message: {ex.Message}");
-                        return;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"SMTP operation failed: {ex.Message}");
+                    return;
                 }
             }
         }

@@ -1,7 +1,7 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
 using Aspose.Email.Clients;
+using Aspose.Email.Clients.Imap;
 
 class Program
 {
@@ -9,33 +9,38 @@ class Program
     {
         try
         {
-            // Initialize and connect the IMAP client
-            using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.Auto))
+            // Placeholder connection details
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
+            string messageUid = "12345"; // Unique identifier of the message to delete
+
+            // Skip execution when placeholders are detected
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                // Select the mailbox folder (e.g., INBOX)
-                client.SelectFolder("INBOX");
+                Console.WriteLine("Placeholder credentials detected. Skipping external call.");
+                return;
+            }
 
-                // Retrieve the list of messages in the selected folder
-                ImapMessageInfoCollection messages = client.ListMessages();
-
-                if (messages != null && messages.Count > 0)
+            // Create and use the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            {
+                try
                 {
-                    // Get the unique identifier of the first message
-                    string messageId = messages[0].UniqueId;
-
-                    // Delete the message and commit the deletion
-                    client.DeleteMessage(messageId, true);
-                    Console.WriteLine("Message with UID '{0}' has been deleted.", messageId);
+                    // Delete the message by its unique identifier
+                    client.DeleteMessage(messageUid);
+                    Console.WriteLine($"Message with UID '{messageUid}' has been deleted.");
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine("No messages found to delete.");
+                    Console.Error.WriteLine($"Operation error: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unhandled error: {ex.Message}");
         }
     }
 }

@@ -1,9 +1,9 @@
-using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
-namespace ImapAuthenticationCheck
+namespace ImapAuthCheck
 {
     class Program
     {
@@ -11,52 +11,51 @@ namespace ImapAuthenticationCheck
         {
             try
             {
+                // Placeholder IMAP server credentials
                 string host = "imap.example.com";
-                int port = 993;
                 string username = "user@example.com";
                 string password = "password";
 
-                // Initialize and connect the IMAP client
-                try
+                // Skip real network call when placeholders are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-                    {
-                        // Verify credentials
-                        bool isAuthenticated = false;
-                        try
-                        {
-                            isAuthenticated = client.ValidateCredentials();
-                        }
-                        catch (Exception credEx)
-                        {
-                            Console.Error.WriteLine($"Credential validation error: {credEx.Message}");
-                            return;
-                        }
+                    Console.WriteLine("Skipping IMAP authentication check due to placeholder credentials.");
+                    return;
+                }
 
-                        if (isAuthenticated)
+                // Create and dispose the ImapClient
+                using (ImapClient client = new ImapClient(host, username, password))
+                {
+                    try
+                    {
+                        // Attempt to validate the credentials
+                        bool isValid = client.ValidateCredentials();
+
+                        if (isValid)
                         {
                             Console.WriteLine("IMAP authentication succeeded.");
                         }
                         else
                         {
-                            Console.WriteLine("IMAP authentication failed.");
+                            Console.Error.WriteLine("IMAP authentication failed: Invalid credentials.");
                         }
                     }
-                }
-                catch (ImapException imapEx)
-                {
-                    Console.Error.WriteLine($"IMAP connection error: {imapEx.Message}");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                    return;
+                    catch (ImapException imapEx)
+                    {
+                        // Handle IMAP-specific errors
+                        Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        // Handle other possible errors (e.g., network issues)
+                        Console.Error.WriteLine($"Error during authentication: {ex.Message}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Fatal error: {ex.Message}");
+                // Top-level exception guard
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }

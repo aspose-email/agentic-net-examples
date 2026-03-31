@@ -1,3 +1,4 @@
+using Aspose.Email;
 using System;
 using System.IO;
 using Aspose.Email.Mapi;
@@ -9,74 +10,40 @@ class Program
         try
         {
             string inputPath = "message.msg";
-            string outputPath = "message_no_attachments.msg";
 
+            // Ensure the input file exists; create a minimal placeholder if it does not.
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "Placeholder Subject",
+                        "Placeholder Body",
+                        "sender@example.com",
+                        "recipient@example.com"))
+                    {
+                        placeholder.Save(inputPath);
+                        Console.WriteLine($"Placeholder MSG created at '{inputPath}'.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    return;
+                }
             }
 
-            // Create a temporary copy to operate on, preserving the original file.
-            string tempPath = Path.Combine(Path.GetDirectoryName(outputPath) ?? string.Empty,
-                                           Path.GetFileNameWithoutExtension(outputPath) + "_temp.msg");
-
+            // Remove all attachments from the MSG file.
             try
             {
-                File.Copy(inputPath, tempPath, true);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to copy file: {ex.Message}");
-                return;
-            }
-
-            // Remove all attachments from the temporary MSG file.
-            try
-            {
-                MapiAttachmentCollection removed = MapiMessage.RemoveAttachments(tempPath);
-                // Optionally, you could iterate over 'removed' to log removed attachment names.
-                // foreach (MapiAttachment att in removed)
-                // {
-                //     Console.WriteLine($"Removed attachment: {att.FileName}");
-                // }
+                MapiAttachmentCollection removedAttachments = MapiMessage.RemoveAttachments(inputPath);
+                Console.WriteLine($"Removed {removedAttachments.Count} attachment(s) from '{inputPath}'.");
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Failed to remove attachments: {ex.Message}");
                 return;
             }
-
-            // Load the cleaned message and save it to the desired output path.
-            try
-            {
-                using (MapiMessage cleanedMessage = MapiMessage.Load(tempPath))
-                {
-                    cleanedMessage.Save(outputPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save cleaned message: {ex.Message}");
-                return;
-            }
-            finally
-            {
-                // Clean up the temporary file.
-                try
-                {
-                    if (File.Exists(tempPath))
-                    {
-                        File.Delete(tempPath);
-                    }
-                }
-                catch
-                {
-                    // Suppress any errors during cleanup.
-                }
-            }
-
-            Console.WriteLine($"Attachments stripped successfully. Output saved to: {outputPath}");
         }
         catch (Exception ex)
         {

@@ -9,32 +9,40 @@ class Program
     {
         try
         {
-            // Path to the MSG file containing the calendar entry
-            string msgFilePath = "calendar.msg";
+            string msgPath = "calendar.msg";
 
-            // Verify that the file exists before attempting to load it
-            if (!File.Exists(msgFilePath))
+            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgFilePath}");
-                return;
+                using (MapiMessage placeholder = new MapiMessage(
+                    "organizer@example.com",
+                    "attendee@example.com",
+                    "Meeting",
+                    "This is a meeting."))
+                {
+                    // Mark the message as a calendar item.
+                    placeholder.MessageClass = "IPM.Appointment";
+                    placeholder.Save(msgPath);
+                }
+
+                Console.WriteLine($"Placeholder MSG file created at {msgPath}");
             }
 
-            // Load the MSG file as a MapiMessage
-            using (MapiMessage msg = MapiMessage.Load(msgFilePath))
+            // Load the MSG file.
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                // Ensure the loaded message is a calendar item
                 if (msg.SupportedType == MapiItemType.Calendar)
                 {
-                    // Convert the MAPI message to a MapiCalendar object
-                    using (MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem())
-                    {
-                        // Example processing: display basic calendar information
-                        Console.WriteLine($"Subject: {calendar.Subject}");
-                        Console.WriteLine($"Location: {calendar.Location}");
-                        Console.WriteLine($"Start: {calendar.StartDate}");
-                        Console.WriteLine($"End: {calendar.EndDate}");
-                        // Additional processing can be performed here
-                    }
+                    // Convert the MAPI message to a MapiCalendar object.
+                    MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
+
+                    // Access calendar properties.
+                    Console.WriteLine($"Subject: {calendar.Subject}");
+                    Console.WriteLine($"Location: {calendar.Location}");
+                    Console.WriteLine($"Start: {calendar.StartDate}");
+                    Console.WriteLine($"End: {calendar.EndDate}");
+                    // Use Body for the calendar description.
+                    Console.WriteLine($"Body: {calendar.Body}");
                 }
                 else
                 {

@@ -10,96 +10,75 @@ class Program
     {
         try
         {
-            // Path to the PST file
-            string pstPath = "sample.pst";
+            const string pstPath = "sample.pst";
+            const string outputFolder = "output";
+            const int maxMessages = 5;
 
-            // Verify that the PST file exists
+            // Ensure output directory exists
+            if (!Directory.Exists(outputFolder))
+            {
+                Directory.CreateDirectory(outputFolder);
+            }
+
+            // Guard PST file existence; create a minimal placeholder if missing
             if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: PST file not found – {pstPath}");
-                return;
-            }
-
-            // Directory where extracted messages will be saved
-            string outputDir = "ExtractedMessages";
-
-            // Ensure the output directory exists
-            try
-            {
-                if (!Directory.Exists(outputDir))
+                try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    // Create an empty Unicode PST file
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Error creating output directory: {dirEx.Message}");
-                return;
-            }
-
-            // Define how many messages to extract
-            int maxMessages = 10;
-            int extractedCount = 0;
 
             // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Process the root folder and its subfolders recursively
-                ProcessFolder(pst.RootFolder, outputDir, ref extractedCount, maxMessages);
-            }
+                // Access the root folder
+                FolderInfo rootFolder = pst.RootFolder;
 
-            Console.WriteLine($"Extraction completed. Total messages extracted: {extractedCount}");
+                int extracted = 0;
+                foreach (MessageInfo messageInfo in rootFolder.EnumerateMessages())
+                {
+                    if (extracted >= maxMessages)
+                        break;
+
+                    try
+                    {
+                        using (MapiMessage msg = pst.ExtractMessage(messageInfo))
+                        {
+                            // Build a safe filename
+                            string safeSubject = string.IsNullOrWhiteSpace(msg.Subject) ? "NoSubject" : msg.Subject;
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                                safeSubject = safeSubject.Replace(c, '_');
+
+                            string fileName = Path.Combine(outputFolder, $"{safeSubject}_{extracted + 1}.msg");
+                            msg.Save(fileName);
+                            Console.WriteLine($"Saved message: {fileName}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error extracting message: {ex.Message}");
+                        // Continue with next message
+                    }
+
+                    extracted++;
+                }
+
+                if (extracted == 0)
+                {
+                    Console.WriteLine("No messages found in the PST file.");
+                }
+            }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
-    }
-
-    // Recursively extracts messages from a folder until the desired count is reached
-    private static void ProcessFolder(FolderInfo folder, string outputDir, ref int extractedCount, int maxMessages)
-    {
-        // Enumerate messages in the current folder
-        foreach (MapiMessage message in folder.EnumerateMapiMessages())
-        {
-            if (extractedCount >= maxMessages)
-                return;
-
-            // Build a safe file name based on the message subject
-            string subject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
-            string safeFileName = GetSafeFileName(subject) + ".msg";
-            string filePath = Path.Combine(outputDir, safeFileName);
-
-            // Save the message to a .msg file
-            try
-            {
-                message.Save(filePath);
-                extractedCount++;
-                Console.WriteLine($"Saved: {filePath}");
-            }
-            catch (Exception saveEx)
-            {
-                Console.Error.WriteLine($"Failed to save message '{subject}': {saveEx.Message}");
-            }
-        }
-
-        // Recurse into subfolders
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            if (extractedCount >= maxMessages)
-                return;
-
-            ProcessFolder(subFolder, outputDir, ref extractedCount, maxMessages);
-        }
-    }
-
-    // Replaces invalid filename characters with an underscore
-    private static string GetSafeFileName(string name)
-    {
-        foreach (char invalidChar in Path.GetInvalidFileNameChars())
-        {
-            name = name.Replace(invalidChar, '_');
-        }
-        return name;
     }
 }

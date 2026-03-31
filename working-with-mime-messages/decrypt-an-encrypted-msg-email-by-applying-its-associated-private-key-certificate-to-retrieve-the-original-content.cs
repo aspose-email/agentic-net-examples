@@ -10,38 +10,68 @@ class Program
     {
         try
         {
-            string msgFilePath = "encryptedMessage.msg";
-            string certFilePath = "privateKey.pfx";
-            string certPassword = "password";
+            // Input MSG file path
+            string inputMsgPath = "encrypted.msg";
+            // Output MSG file path
+            string outputMsgPath = "decrypted.msg";
+            // Private key certificate path (PFX) and password
+            string certificatePath = "privateCert.pfx";
+            string certificatePassword = "password";
 
-            // Verify that the MSG file exists
-            if (!File.Exists(msgFilePath))
+            // Verify input files exist
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Message file not found: {msgFilePath}");
-                return;
-            }
-
-            // Verify that the certificate file exists
-            if (!File.Exists(certFilePath))
-            {
-                Console.Error.WriteLine($"Certificate file not found: {certFilePath}");
-                return;
-            }
-
-            // Load the certificate containing the private key
-            using (X509Certificate2 privateCertificate = new X509Certificate2(certFilePath, certPassword))
-            {
-                // Load the encrypted MSG file
-                using (MapiMessage encryptedMessage = MapiMessage.Load(msgFilePath))
+                try
                 {
-                    // Decrypt the message using the provided certificate
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input MSG file not found: {inputMsgPath}");
+                return;
+            }
+            if (!File.Exists(certificatePath))
+            {
+                Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
+                return;
+            }
+
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Load the private key certificate
+            using (X509Certificate2 privateCertificate = new X509Certificate2(certificatePath, certificatePassword))
+            {
+                // Load the encrypted MSG message
+                using (MapiMessage encryptedMessage = MapiMessage.Load(inputMsgPath))
+                {
+                    if (!encryptedMessage.IsEncrypted)
+                    {
+                        Console.WriteLine("The message is not encrypted. No decryption needed.");
+                        return;
+                    }
+
+                    // Decrypt the message using the private certificate
                     MapiMessage decryptedMessage = encryptedMessage.Decrypt(privateCertificate);
 
-                    // Output basic information from the decrypted message
-                    Console.WriteLine($"Subject: {decryptedMessage.Subject}");
-                    Console.WriteLine($"From: {decryptedMessage.SenderName}");
-                    Console.WriteLine("Body:");
-                    Console.WriteLine(decryptedMessage.Body);
+                    // Save the decrypted message
+                    decryptedMessage.Save(outputMsgPath);
+                    Console.WriteLine($"Decrypted message saved to: {outputMsgPath}");
                 }
             }
         }

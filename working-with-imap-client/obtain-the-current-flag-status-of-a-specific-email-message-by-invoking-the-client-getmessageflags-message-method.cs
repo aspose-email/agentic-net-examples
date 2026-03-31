@@ -1,49 +1,66 @@
-using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Initialize and connect the IMAP client
-            try
-            {
-                using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.Auto))
-                {
-                    // Retrieve the list of messages in the selected folder
-                    try
-                    {
-                        ImapMessageInfoCollection messages = client.ListMessages();
-                        if (messages != null && messages.Count > 0)
-                        {
-                            // Get the first message (or any specific one by index)
-                            ImapMessageInfo messageInfo = messages[0];
+            // Placeholder connection settings
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
 
-                            // Obtain the flags of the message
-                            ImapMessageFlags flags = messageInfo.Flags;
-
-                            Console.WriteLine($"Subject: {messageInfo.Subject}");
-                            Console.WriteLine($"Flags: {flags}");
-                        }
-                        else
-                        {
-                            Console.WriteLine("No messages found in the mailbox.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error retrieving messages: {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
+            // Guard against placeholder credentials to avoid real network calls
+            if (host.Contains("example.com"))
             {
-                Console.Error.WriteLine($"Error connecting to IMAP server: {ex.Message}");
+                Console.Error.WriteLine("Placeholder IMAP server detected. Skipping network call.");
                 return;
+            }
+
+            // Create and connect the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            {
+                try
+                {
+                    client.SelectFolder("INBOX");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to select folder: {ex.Message}");
+                    return;
+                }
+
+                // Unique identifier of the message whose flags we want to inspect
+                string messageUid = "1"; // replace with actual UID
+
+                // Retrieve message information
+                ImapMessageInfo messageInfo;
+                try
+                {
+                    messageInfo = client.ListMessage(messageUid);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to retrieve message info: {ex.Message}");
+                    return;
+                }
+
+                // Obtain the flags for the message
+                ImapMessageFlags flags = messageInfo.Flags;
+                Console.WriteLine($"Message UID {messageUid} flags: {flags}");
+
+                // Example checks for specific flags
+                Console.WriteLine($"Is Read: {flags.HasFlag(ImapMessageFlags.IsRead)}");
+                Console.WriteLine($"Is Flagged: {flags.HasFlag(ImapMessageFlags.Flagged)}");
+                Console.WriteLine($"Is Answered: {flags.HasFlag(ImapMessageFlags.Answered)}");
+                Console.WriteLine($"Is Deleted: {flags.HasFlag(ImapMessageFlags.Deleted)}");
+                Console.WriteLine($"Is Draft: {flags.HasFlag(ImapMessageFlags.Draft)}");
+                Console.WriteLine($"Is Recent: {flags.HasFlag(ImapMessageFlags.Recent)}");
             }
         }
         catch (Exception ex)

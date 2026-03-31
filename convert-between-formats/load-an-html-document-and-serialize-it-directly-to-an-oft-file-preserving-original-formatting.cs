@@ -9,37 +9,75 @@ class Program
     {
         try
         {
-            string inputPath = "sample.html";
-            string outputPath = "template.oft";
+            string htmlPath = "input.html";
+            string oftPath = "output.oft";
 
-            // Verify input file exists
-            if (!File.Exists(inputPath))
+            // Ensure input HTML exists; create a minimal placeholder if missing.
+            if (!File.Exists(htmlPath))
             {
-                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
+                try
+                {
+                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder</p></body></html>");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Ensure output directory exists.
+            string outputDir = Path.GetDirectoryName(oftPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                try
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load HTML content.
+            string htmlContent;
+            try
+            {
+                htmlContent = File.ReadAllText(htmlPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Create a MailMessage with the HTML body.
+            using (MailMessage mail = new MailMessage())
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
+                mail.HtmlBody = htmlContent;
+                mail.Subject = "Converted from HTML";
 
-            // Load the HTML document as a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(inputPath, new HtmlLoadOptions()))
-            {
-                // Convert MailMessage to MapiMessage
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                // Convert MailMessage to MapiMessage.
+                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail))
                 {
-                    // Save the MapiMessage as an Outlook File Template (OFT)
-                    mapiMessage.SaveAsTemplate(outputPath);
+                    // Save as Outlook Template (OFT).
+                    try
+                    {
+                        mapiMessage.SaveAsTemplate(oftPath);
+                        Console.WriteLine($"OFT file saved to: {oftPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save OFT file: {ex.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

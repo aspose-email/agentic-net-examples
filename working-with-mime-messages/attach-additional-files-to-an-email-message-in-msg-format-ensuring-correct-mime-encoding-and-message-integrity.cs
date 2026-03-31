@@ -9,41 +9,75 @@ class Program
     {
         try
         {
-            // Output MSG file path
+            // Define file paths
+            string inputMsgPath = "input.msg";
             string outputMsgPath = "output.msg";
+            string attachmentFilePath = "attachment.txt";
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Ensure the attachment file exists; create a placeholder if missing
+            if (!File.Exists(attachmentFilePath))
             {
-                Directory.CreateDirectory(outputDir);
+                try
+                {
+                    File.WriteAllText(attachmentFilePath, "Placeholder attachment content.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder attachment: {ex.Message}");
+                    return;
+                }
             }
 
-            // Create a new MAPI message
-            using (MapiMessage message = new MapiMessage(
-                "sender@example.com",
-                "receiver@example.com",
-                "Test Subject",
-                "This is the body of the message."))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputMsgPath))
             {
-                // Path to the attachment file
-                string attachmentFilePath = "sample.txt";
-
-                // Verify the attachment file exists; create a minimal placeholder if missing
-                if (!File.Exists(attachmentFilePath))
+                try
                 {
-                    try
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        File.WriteAllText(attachmentFilePath, "Placeholder content");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error creating placeholder attachment: {ex.Message}");
-                        return;
+                        placeholder.Save(inputMsgPath);
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
 
-                // Read the attachment data
+                try
+                {
+                    using (MapiMessage placeholderMsg = new MapiMessage("sender@example.com", "receiver@example.com", "Sample Subject", "Sample Body"))
+                    {
+                        placeholderMsg.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the existing MSG file
+            MapiMessage message;
+            try
+            {
+                message = MapiMessage.Load(inputMsgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                return;
+            }
+
+            // Use using to ensure the message is disposed
+            using (message)
+            {
+                // Read attachment bytes
                 byte[] attachmentData;
                 try
                 {
@@ -55,13 +89,30 @@ class Program
                     return;
                 }
 
-                // Add the attachment to the message (name + byte[] overload)
-                message.Attachments.Add(Path.GetFileName(attachmentFilePath), attachmentData);
-
-                // Save the message as MSG
+                // Add the attachment to the message
                 try
                 {
+                    // The Add method handles proper MIME encoding internally
+                    message.Attachments.Add(Path.GetFileName(attachmentFilePath), attachmentData);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error adding attachment: {ex.Message}");
+                    return;
+                }
+
+                // Save the updated message
+                try
+                {
+                    // Ensure the output directory exists
+                    string outputDirectory = Path.GetDirectoryName(outputMsgPath);
+                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+
                     message.Save(outputMsgPath);
+                    Console.WriteLine($"Message saved with attachment to: {outputMsgPath}");
                 }
                 catch (Exception ex)
                 {

@@ -5,50 +5,79 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Path to the MSG file
-            string msgFilePath = "sample.msg";
+            string inputPath = "sample.msg";
+            string outputDir = "Extracted";
 
-            // Verify the MSG file exists
-            if (!File.Exists(msgFilePath))
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Error: File not found – {inputPath}");
                 return;
             }
 
-            // Directory where attachments will be saved
-            string outputDirectory = "ExtractedAttachments";
+            Directory.CreateDirectory(outputDir);
 
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputDirectory))
+            using (MapiMessage msg = MapiMessage.Load(inputPath))
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Load the MSG file
-            using (MapiMessage message = MapiMessage.Load(msgFilePath))
-            {
-                Console.WriteLine($"Subject: {message.Subject}");
-
-                // Iterate through all attachments (including embedded objects)
-                foreach (MapiAttachment attachment in message.Attachments)
+                // Extract regular attachments
+                foreach (MapiAttachment attachment in msg.Attachments)
                 {
-                    // Build a full path for the attachment file
-                    string attachmentPath = Path.Combine(outputDirectory, attachment.FileName);
+                    string fileName = string.IsNullOrEmpty(attachment.FileName) ? "attachment.bin" : attachment.FileName;
+                    string safePath = Path.Combine(outputDir, fileName);
+                    try
+                    {
+                        attachment.Save(safePath);
+                        Console.WriteLine($"Saved attachment: {safePath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save attachment {fileName}: {ex.Message}");
+                    }
+                }
 
-                    // Save the attachment to disk
-                    attachment.Save(attachmentPath);
-
-                    Console.WriteLine($"Saved attachment: {attachment.FileName}");
+                // Extract embedded images identified by MIME tag starting with "image/"
+                foreach (MapiAttachment attachment in msg.Attachments)
+                {
+                    if (!string.IsNullOrEmpty(attachment.MimeTag) && attachment.MimeTag.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string fileName = string.IsNullOrEmpty(attachment.FileName) ? "embedded_image.bin" : attachment.FileName;
+                        string safePath = Path.Combine(outputDir, "Embedded_" + fileName);
+                        try
+                        {
+                            attachment.Save(safePath);
+                            Console.WriteLine($"Saved embedded image: {safePath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save embedded image {fileName}: {ex.Message}");
+                        }
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

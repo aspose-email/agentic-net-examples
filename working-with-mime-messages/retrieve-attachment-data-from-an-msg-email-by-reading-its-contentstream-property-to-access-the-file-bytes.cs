@@ -10,39 +10,64 @@ class Program
         try
         {
             string msgPath = "sample.msg";
+            string outputDir = "Attachments";
 
-            // Guard file existence
+            // Verify input MSG file exists
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
+
+            // Ensure output directory exists
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
 
             // Load the MSG file
             using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                // Ensure there is at least one attachment
-                if (msg.Attachments == null || msg.Attachments.Count == 0)
-                {
-                    Console.WriteLine("No attachments found.");
-                    return;
-                }
-
-                // Iterate through attachments and read their data via a stream
                 foreach (MapiAttachment attachment in msg.Attachments)
                 {
-                    // BinaryData holds the raw bytes of the attachment
+                    // Retrieve attachment bytes via BinaryData
                     byte[] data = attachment.BinaryData;
+                    if (data == null || data.Length == 0)
+                        continue;
 
-                    // Create a memory stream to mimic ContentStream usage
-                    using (MemoryStream contentStream = new MemoryStream(data))
+                    // Determine a safe file name
+                    string fileName = !string.IsNullOrEmpty(attachment.LongFileName)
+                        ? attachment.LongFileName
+                        : attachment.FileName;
+
+                    foreach (char invalid in Path.GetInvalidFileNameChars())
+                        fileName = fileName.Replace(invalid, '_');
+
+                    string outPath = Path.Combine(outputDir, fileName);
+
+                    try
                     {
-                        // Example: read all bytes from the stream
-                        byte[] buffer = new byte[contentStream.Length];
-                        int read = contentStream.Read(buffer, 0, buffer.Length);
-
-                        Console.WriteLine($"Attachment: {attachment.FileName}");
-                        Console.WriteLine($"Bytes read from ContentStream: {read}");
+                        File.WriteAllBytes(outPath, data);
+                        Console.WriteLine($"Saved attachment: {outPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save attachment '{fileName}': {ex.Message}");
                     }
                 }
             }

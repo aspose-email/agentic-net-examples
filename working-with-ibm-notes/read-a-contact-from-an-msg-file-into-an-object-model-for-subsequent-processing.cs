@@ -3,60 +3,66 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Path to the MSG file containing the contact
-                string msgFilePath = "contact.msg";
+            string inputPath = "contact.msg";
 
-                // Verify that the file exists before attempting to load it
-                if (!File.Exists(msgFilePath))
+            // Ensure the input file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"File not found: {msgFilePath}");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "Placeholder Sender",
+                        "sender@example.com",
+                        "receiver@example.com",
+                        "Placeholder Subject"))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
                     return;
                 }
+            }
 
-                // Load the MSG file as a MapiMessage (IDisposable)
-                using (MapiMessage msg = MapiMessage.Load(msgFilePath))
+            // Load the MSG file and extract the contact.
+            try
+            {
+                using (MapiMessage msg = MapiMessage.Load(inputPath))
                 {
-                    // Ensure the loaded message is a contact
                     if (msg.SupportedType == MapiItemType.Contact)
                     {
-                        // Convert the MapiMessage to a MapiContact (IDisposable)
-                        using (MapiContact contact = (MapiContact)msg.ToMapiMessageItem())
+                        MapiContact contact = (MapiContact)msg.ToMapiMessageItem();
+
+                        // Example processing: display some contact fields.
+                        Console.WriteLine($"Display Name: {contact.NameInfo.DisplayName}");
+                        if (contact.ElectronicAddresses != null && contact.ElectronicAddresses.Email1 != null)
                         {
-                            // Example processing: display contact name and primary email address
-                            Console.WriteLine($"Display Name: {contact.NameInfo.DisplayName}");
-
-                            // ElectronicAddresses may contain up to three email entries; use Email1 if available
-                            if (contact.ElectronicAddresses != null && contact.ElectronicAddresses.Email1 != null)
-                            {
-                                Console.WriteLine($"Email: {contact.ElectronicAddresses.Email1.EmailAddress}");
-                            }
-                            else
-                            {
-                                Console.WriteLine("No email address found.");
-                            }
-
-                            // Additional processing of the contact can be performed here
+                            Console.WriteLine($"Email: {contact.ElectronicAddresses.Email1.EmailAddress}");
                         }
                     }
                     else
                     {
-                        Console.Error.WriteLine("The specified MSG file does not contain a contact.");
+                        Console.WriteLine("The loaded MSG file is not a contact item.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                // Global exception handling to prevent unhandled crashes
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

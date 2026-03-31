@@ -1,54 +1,58 @@
 using System;
-using System.Collections.Generic;
-using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using System.Net;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
     static void Main()
     {
-        // Top‑level exception guard
         try
         {
-            // Initialize Gmail client (connection safety)
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",          // OAuth client ID
-                "clientSecret",      // OAuth client secret
-                "refreshToken",      // OAuth refresh token
-                "user@example.com")) // Gmail address
+            // Placeholder connection details – replace with real values when running in production.
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Simple guard to avoid making real network calls with placeholder credentials.
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                try
+                Console.WriteLine("Placeholder credentials detected. Skipping mailbox cleanup.");
+                return;
+            }
+
+            // Create the Exchange client (Dav) and ensure it is disposed properly.
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            {
+                // Retrieve mailbox information (folders URIs).
+                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+
+                // List messages in the Inbox folder.
+                ExchangeMessageInfoCollection inboxMessages = client.ListMessages(mailboxInfo.InboxUri);
+
+                foreach (ExchangeMessageInfo messageInfo in inboxMessages)
                 {
-                    // Retrieve all messages in the mailbox
-                    List<GmailMessageInfo> messages = gmailClient.ListMessages();
-
-                    foreach (GmailMessageInfo info in messages)
+                    // Define your own criteria for unwanted messages.
+                    // Example: messages whose subject contains the word "Unwanted".
+                    if (messageInfo.Subject != null && messageInfo.Subject.IndexOf("Unwanted", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        // Fetch the full message to examine its properties
-                        MailMessage fullMessage = gmailClient.FetchMessage(info.Id);
-
-                        // Example criterion: delete messages whose subject contains "Unwanted"
-                        if (fullMessage?.Subject != null && fullMessage.Subject.Contains("Unwanted"))
+                        try
                         {
-                            // Permanently delete the message
-                            gmailClient.DeleteMessage(info.Id);
-                            Console.WriteLine($"Deleted message Id: {info.Id}");
+                            // Move the unwanted message to the Deleted Items folder.
+                            client.MoveMessage(messageInfo, mailboxInfo.DeletedItemsUri);
+                            Console.WriteLine($"Moved message '{messageInfo.Subject}' to Deleted Items.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to move message '{messageInfo.Subject}': {ex.Message}");
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    // Handle errors that occur during message processing
-                    Console.Error.WriteLine($"Message processing error: {ex.Message}");
-                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            // Handle any unexpected errors (e.g., client initialization failures)
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

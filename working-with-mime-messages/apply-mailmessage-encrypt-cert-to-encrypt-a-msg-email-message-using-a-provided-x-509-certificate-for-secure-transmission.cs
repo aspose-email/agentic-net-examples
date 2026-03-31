@@ -5,47 +5,107 @@ using System.Security.Cryptography.X509Certificates;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string certificatePath = "MartinCertificate.cer";
+            // Path to the X.509 certificate
+            string certificatePath = "publicCert.cer";
             if (!File.Exists(certificatePath))
             {
-                Console.Error.WriteLine("Certificate file not found: " + certificatePath);
+                Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
                 return;
             }
 
-            using (X509Certificate2 publicCertificate = new X509Certificate2(certificatePath))
+            X509Certificate2 publicCertificate;
+            try
             {
-                using (MailMessage message = new MailMessage())
+                publicCertificate = new X509Certificate2(certificatePath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load certificate: {ex.Message}");
+                return;
+            }
+
+            // Path to the input MSG file
+            string inputMsgPath = "input.msg";
+            if (!File.Exists(inputMsgPath))
+            {
+                try
                 {
-                    message.From = "atneostthaecrcount@gmail.com";
-                    message.To = "atneostthaecrcount@gmail.com";
-                    message.Subject = "Test subject";
-                    message.Body = "Test Body";
-
-                    using (MailMessage encryptedMessage = message.Encrypt(publicCertificate))
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        Console.WriteLine(encryptedMessage.IsEncrypted ? "Its encrypted" : "Its NOT encrypted");
+                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
 
-                        string outputPath = "encrypted.msg";
-                        try
-                        {
-                            encryptedMessage.Save(outputPath);
-                            Console.WriteLine("Encrypted message saved to: " + outputPath);
-                        }
-                        catch (Exception ioEx)
-                        {
-                            Console.Error.WriteLine("Failed to save encrypted message: " + ioEx.Message);
-                        }
+                // Create a minimal placeholder MSG if it does not exist
+                using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder", "This is a placeholder message."))
+                {
+                    try
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                        return;
+                    }
+                }
+            }
+
+            MailMessage message;
+            try
+            {
+                message = MailMessage.Load(inputMsgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                return;
+            }
+
+            using (message)
+            {
+                MailMessage encryptedMessage;
+                try
+                {
+                    encryptedMessage = message.Encrypt(publicCertificate);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Encryption failed: {ex.Message}");
+                    return;
+                }
+
+                using (encryptedMessage)
+                {
+                    string outputMsgPath = "encrypted.msg";
+                    try
+                    {
+                        encryptedMessage.Save(outputMsgPath);
+                        Console.WriteLine($"Encrypted message saved to {outputMsgPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save encrypted MSG: {ex.Message}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,66 +1,57 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Storage;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Input MSG file path
-            string inputMsgPath = "sample.msg";
-            // Output HTML file path
-            string outputHtmlPath = "output.html";
-            // Folder to save extracted attachments
-            string attachmentsFolder = "Attachments";
+            string inputPath = "sample.msg";
+            string outputHtmlPath = "sample.html";
+            string attachmentsDir = "Attachments";
 
-            // Verify that the input MSG file exists
-            if (!File.Exists(inputMsgPath))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file '{inputMsgPath}' does not exist.");
-                return;
+                MailMessage placeholder = new MailMessage(
+                    "sender@example.com",
+                    "receiver@example.com",
+                    "Placeholder",
+                    "This is a placeholder message.");
+
+                MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                placeholder.Save(inputPath, msgSaveOptions);
             }
 
-            // Ensure the attachments folder exists
-            try
+            // Ensure the attachments directory exists.
+            if (!Directory.Exists(attachmentsDir))
             {
-                if (!Directory.Exists(attachmentsFolder))
-                {
-                    Directory.CreateDirectory(attachmentsFolder);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create attachments folder: {ex.Message}");
-                return;
+                Directory.CreateDirectory(attachmentsDir);
             }
 
-            // Load the MSG file into a MapiMessage
-            using (MapiMessage mapiMessage = MapiMessage.Load(inputMsgPath))
+            // Load the MSG file.
+            using (MailMessage message = MailMessage.Load(inputPath, new MsgLoadOptions()))
             {
-                // Convert the MapiMessage to a MailMessage preserving formatting
-                MailConversionOptions conversionOptions = new MailConversionOptions();
-                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+                // Save the message as HTML with embedded resources.
+                HtmlSaveOptions htmlOptions = new HtmlSaveOptions
                 {
-                    // Save the MailMessage as HTML with embedded resources
-                    HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
-                    htmlOptions.ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml;
-                    mailMessage.Save(outputHtmlPath, htmlOptions);
-                }
+                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                };
+                message.Save(outputHtmlPath, htmlOptions);
 
-                // Extract and save each attachment
-                foreach (MapiAttachment attachment in mapiMessage.Attachments)
+                // Extract attachments to the designated folder.
+                foreach (Attachment attachment in message.Attachments)
                 {
-                    string attachmentPath = Path.Combine(attachmentsFolder, attachment.FileName);
-                    try
+                    string attachmentName = string.IsNullOrEmpty(attachment.Name) ? "attachment" : attachment.Name;
+                    string safeName = GetSafeFileName(attachmentName);
+                    string attachmentPath = Path.Combine(attachmentsDir, safeName);
+
+                    using (FileStream fs = new FileStream(attachmentPath, FileMode.Create, FileAccess.Write))
                     {
-                        attachment.Save(attachmentPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
+                        attachment.ContentStream.CopyTo(fs);
                     }
                 }
             }
@@ -69,5 +60,15 @@ class Program
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
+    }
+
+    // Helper to sanitize file names.
+    static string GetSafeFileName(string fileName)
+    {
+        foreach (char c in Path.GetInvalidFileNameChars())
+        {
+            fileName = fileName.Replace(c, '_');
+        }
+        return fileName;
     }
 }

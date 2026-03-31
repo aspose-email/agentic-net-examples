@@ -18,25 +18,24 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (36 file(s))
-- `using Aspose.Email;` (35 file(s))
-- `using Aspose.Email.Clients.Exchange.Dav;` (25 file(s))
-- `using Aspose.Email.Clients.Exchange;` (20 file(s))
-- `using System.Net;` (15 file(s))
-- `using System.IO;` (9 file(s))
-- `using Aspose.Email.Tools.Search;` (7 file(s))
-- `using System.Collections.Generic;` (6 file(s))
-- `using Aspose.Email.Clients.Google;` (5 file(s))
-- `using Aspose.Email.Clients;` (4 file(s))
+- `using System;` (40 file(s))
+- `using Aspose.Email;` (38 file(s))
+- `using Aspose.Email.Clients.Exchange.Dav;` (31 file(s))
+- `using Aspose.Email.Clients.Exchange;` (29 file(s))
+- `using System.Net;` (10 file(s))
+- `using System.IO;` (8 file(s))
+- `using Aspose.Email.Tools.Search;` (6 file(s))
 - `using Aspose.Email.Calendar;` (4 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (3 file(s))
+- `using Aspose.Email.Clients.Smtp;` (3 file(s))
 - `using Aspose.Email.Mapi;` (3 file(s))
-- `using Aspose.Email.Clients.Smtp;` (1 file(s))
-- `using Aspose.Email.Mime;` (1 file(s))
+- `using Aspose.Email.Storage.Pst;` (3 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
+- `using Aspose.Email.Calendar.Recurrences;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
+| [13120.cs](./13120.cs) | 13120 |
 | [access-and-retrieve-messages-from-a-different-user-s-mailbox-programmatically-handling-authentication-and-permissions.cs](./access-and-retrieve-messages-from-a-different-user-s-mailbox-programmatically-handling-authentication-and-permissions.cs) | access and retrieve messages from a different user s mailbox programmatically handling authentication and permissions |
 | [apply-a-filter-that-selects-email-items-whose-message-id-header-matches-the-specified-identifier.cs](./apply-a-filter-that-selects-email-items-whose-message-id-header-matches-the-specified-identifier.cs) | apply a filter that selects email items whose message id header matches the specified identifier |
 | [apply-a-filter-that-selects-messages-originating-from-a-designated-sender-s-email-address-during-processing.cs](./apply-a-filter-that-selects-messages-originating-from-a-designated-sender-s-email-address-during-processing.cs) | apply a filter that selects messages originating from a designated sender s email address during processing |
@@ -59,7 +58,10 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [implement-message-filtering-through-webdav-to-retrieve-only-emails-that-satisfy-defined-search-criteria-and-properties.cs](./implement-message-filtering-through-webdav-to-retrieve-only-emails-that-satisfy-defined-search-criteria-and-properties.cs) | implement message filtering through webdav to retrieve only emails that satisfy defined search criteria and properties |
 | [load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-updated-data-to-msg-format.cs](./load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-updated-data-to-msg-format.cs) | load an icalendar ics file modify the outlook items as required and export the updated data to msg format |
 | [move-email-messages-between-folders-or-mailboxes-programmatically-preserving-all-message-properties-and-metadata-integrity.cs](./move-email-messages-between-folders-or-mailboxes-programmatically-preserving-all-message-properties-and-metadata-integrity.cs) | move email messages between folders or mailboxes programmatically preserving all message properties and metadata integrity |
+| [obtain-the-size-of-an-email-message-in-advance-without-downloading-its-full-content.cs](./obtain-the-size-of-an-email-message-in-advance-without-downloading-its-full-content.cs) | obtain the size of an email message in advance without downloading its full content |
 | [perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-webdav-protocol-for-communication.cs](./perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-webdav-protocol-for-communication.cs) | perform crud operations on an exchange mailbox and its messages utilizing the webdav protocol for communication |
+| [programmatically-retrieve-all-email-messages-from-a-specified-exchange-server-mailbox-handling-authentication-a.cs](./programmatically-retrieve-all-email-messages-from-a-specified-exchange-server-mailbox-handling-authentication-a.cs) | programmatically retrieve all email messages from a specified exchange server mailbox handling authentication a |
+| [register-for-release-notifications-to-receive-automatic-updates-about-new-library-features-and-enhancements.cs](./register-for-release-notifications-to-receive-automatic-updates-about-new-library-features-and-enhancements.cs) | register for release notifications to receive automatic updates about new library features and enhancements |
 | [remove-email-messages-from-a-mailbox-programmatically-ensuring-permanent-deletion-and-appropriate-synchronization-across.cs](./remove-email-messages-from-a-mailbox-programmatically-ensuring-permanent-deletion-and-appropriate-synchronization-across.cs) | remove email messages from a mailbox programmatically ensuring permanent deletion and appropriate synchronization across |
 | [remove-email-messages-from-an-exchange-server-using-appropriate-api-calls-while-managing-authentication-and-error-handling.cs](./remove-email-messages-from-an-exchange-server-using-appropriate-api-calls-while-managing-authentication-and-error-handling.cs) | remove email messages from an exchange server using appropriate api calls while managing authentication and error handling |
 | [retrieve-a-collection-of-email-messages-from-the-store-by-supplying-their-unique-identifier-values.cs](./retrieve-a-collection-of-email-messages-from-the-store-by-supplying-their-unique-identifier-values.cs) | retrieve a collection of email messages from the store by supplying their unique identifier values |
@@ -75,7 +77,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-source-and-saving-the-result.cs](./transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-source-and-saving-the-result.cs) | transform an ics calendar file into a msg outlook storage item loading the source and saving the result |
 
 ## Category Statistics
-- Total examples: 36
+- Total examples: 40
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -84,5 +86,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_182303` | examples/batch-20260328_182303 |
+| 2026-03-31 | `20260330_231433` | [examples/batch-20260330_231433](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260330_231433) |
 <!-- AUTOGENERATED:END -->

@@ -5,49 +5,59 @@ using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define the output MBOX file path.
-            string mboxPath = "output.mbox";
+            // Define output MBOX file path
+            string mboxFilePath = "output.mbox";
 
-            // Ensure the directory for the MBOX file exists.
-            string directory = Path.GetDirectoryName(mboxPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Ensure the directory for the MBOX file exists
+            string directoryPath = Path.GetDirectoryName(Path.GetFullPath(mboxFilePath));
+            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             {
-                Directory.CreateDirectory(directory);
-            }
-
-            // Create the MBOX writer with default save options.
-            using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxPath, new MboxSaveOptions()))
-            {
-                // First email message.
-                using (MailMessage message1 = new MailMessage())
+                try
                 {
-                    message1.From = new MailAddress("alice@example.com", "Alice");
-                    message1.To.Add(new MailAddress("bob@example.com", "Bob"));
-                    message1.Subject = "Hello";
-                    message1.Body = "This is a test email.";
-                    writer.WriteMessage(message1);
+                    Directory.CreateDirectory(directoryPath);
                 }
-
-                // Second email message.
-                using (MailMessage message2 = new MailMessage())
+                catch (Exception dirEx)
                 {
-                    message2.From = new MailAddress("carol@example.com", "Carol");
-                    message2.To.Add(new MailAddress("dave@example.com", "Dave"));
-                    message2.Subject = "Meeting";
-                    message2.Body = "Let's schedule a meeting.";
-                    writer.WriteMessage(message2);
+                    Console.Error.WriteLine($"Failed to create directory '{directoryPath}': {dirEx.Message}");
+                    return;
                 }
             }
 
-            Console.WriteLine("MBOX file created successfully.");
+            // Prepare a sample email message
+            MailMessage message = new MailMessage();
+            message.From = new MailAddress("sender@example.com", "Sender Name");
+            message.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
+            message.Subject = "Sample MBOX Message";
+            message.Body = "This is a test message written to an MBOX file using Aspose.Email.";
+
+            // Configure MBOX save options (optional)
+            MboxSaveOptions saveOptions = new MboxSaveOptions();
+            saveOptions.FromShouldBeEscaped = true; // Escape "From " lines in the body if present
+            saveOptions.LeaveOpen = false; // Close the underlying stream after disposing the writer
+
+            // Write the message to the MBOX file
+            try
+            {
+                using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxFilePath, saveOptions))
+                {
+                    writer.WriteMessage(message);
+                }
+
+                Console.WriteLine($"Message successfully written to '{mboxFilePath}'.");
+            }
+            catch (Exception ioEx)
+            {
+                Console.Error.WriteLine($"Failed to write message to MBOX file: {ioEx.Message}");
+                return;
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

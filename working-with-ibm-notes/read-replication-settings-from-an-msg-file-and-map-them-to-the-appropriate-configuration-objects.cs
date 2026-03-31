@@ -9,79 +9,94 @@ class Program
     {
         try
         {
-            // Path to the MSG file containing replication settings
-            string msgPath = "replication_settings.msg";
+            string msgPath = "input.msg";
 
-            // Verify the file exists before attempting to load
+            // Ensure the input MSG file exists; create a minimal placeholder if missing.
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body",
+                        OutlookMessageFormat.Unicode))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                    Console.WriteLine($"Created placeholder MSG file at '{msgPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file.
+            MapiMessage msg;
+            try
+            {
+                msg = MapiMessage.Load(msgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
                 return;
             }
 
-            // Load the MSG file inside a using block to ensure disposal
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            using (msg)
             {
-                // Create a configuration object to hold the replication settings
-                ReplicationConfig config = new ReplicationConfig();
+                // Read replication settings.
+                long replicationMsgSize = 0;
+                int replicationMessagePriority = 0;
+                bool hasSize = false;
+                bool hasPriority = false;
 
-                // Retrieve replication message size (numeric value)
-                object sizeObj = msg.GetProperty(KnownPropertyList.ReplicationMsgSize);
-                if (sizeObj is long size)
+                // ReplicationMsgSize property (long)
+                try
                 {
-                    config.ReplicationMessageSize = size;
+                    hasSize = msg.TryGetPropertyLong(KnownPropertyList.ReplicationMsgSize.Tag, ref replicationMsgSize);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error reading ReplicationMsgSize: {ex.Message}");
                 }
 
-                // Retrieve replication message priority (numeric value)
-                object priorityObj = msg.GetProperty(KnownPropertyList.ReplicationMessagePriority);
-                if (priorityObj is long priority)
+                // ReplicationMessagePriority property (int)
+                try
                 {
-                    config.ReplicationMessagePriority = priority;
+                    hasPriority = msg.TryGetPropertyInt32(KnownPropertyList.ReplicationMessagePriority.Tag, ref replicationMessagePriority);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error reading ReplicationMessagePriority: {ex.Message}");
                 }
 
-                // Retrieve replication style (string value)
-                object styleObj = msg.GetProperty(KnownPropertyList.ReplicationStyle);
-                if (styleObj != null)
+                // Map to a simple configuration object.
+                ReplicationConfig config = new ReplicationConfig
                 {
-                    config.ReplicationStyle = styleObj.ToString();
-                }
+                    MessageSize = hasSize ? replicationMsgSize : (long?)null,
+                    MessagePriority = hasPriority ? replicationMessagePriority : (int?)null
+                };
 
-                // Retrieve replication schedule (string value)
-                object scheduleObj = msg.GetProperty(KnownPropertyList.ReplicationSchedule);
-                if (scheduleObj != null)
-                {
-                    config.ReplicationSchedule = scheduleObj.ToString();
-                }
-
-                // Retrieve receive folder settings (string value)
-                object receiveFolderObj = msg.GetProperty(KnownPropertyList.ReceiveFolderSettings);
-                if (receiveFolderObj != null)
-                {
-                    config.ReceiveFolderSettings = receiveFolderObj.ToString();
-                }
-
-                // Output the extracted configuration
-                Console.WriteLine("Replication Configuration:");
-                Console.WriteLine($"Message Size: {config.ReplicationMessageSize}");
-                Console.WriteLine($"Message Priority: {config.ReplicationMessagePriority}");
-                Console.WriteLine($"Style: {config.ReplicationStyle}");
-                Console.WriteLine($"Schedule: {config.ReplicationSchedule}");
-                Console.WriteLine($"Receive Folder Settings: {config.ReceiveFolderSettings}");
+                // Output the configuration.
+                Console.WriteLine("Replication Settings:");
+                Console.WriteLine($"  Message Size: {(config.MessageSize.HasValue ? config.MessageSize.Value.ToString() : "Not available")}");
+                Console.WriteLine($"  Message Priority: {(config.MessagePriority.HasValue ? config.MessagePriority.Value.ToString() : "Not available")}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
 
-// Simple POCO to hold replication settings
+// Simple configuration holder for replication settings.
 class ReplicationConfig
 {
-    public long ReplicationMessageSize { get; set; }
-    public long ReplicationMessagePriority { get; set; }
-    public string ReplicationStyle { get; set; }
-    public string ReplicationSchedule { get; set; }
-    public string ReceiveFolderSettings { get; set; }
+    public long? MessageSize { get; set; }
+    public int? MessagePriority { get; set; }
 }

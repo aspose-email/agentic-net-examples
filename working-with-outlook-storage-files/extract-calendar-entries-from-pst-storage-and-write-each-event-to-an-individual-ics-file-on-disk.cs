@@ -11,77 +11,72 @@ class Program
         try
         {
             string pstPath = "sample.pst";
-            string outputDirectory = "Calendars";
+            string outputDir = "CalendarEvents";
 
-            // Verify PST file existence
+            // Ensure PST file exists; create a minimal placeholder if missing
             if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: PST file not found – {pstPath}");
-                return;
+                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
             }
 
             // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
+            if (!Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {outputDirectory}. {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Open PST storage
+            // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Get the calendar (Appointments) folder
-                FolderInfo calendarFolder = pst.GetPredefinedFolder(StandardIpmFolder.Appointments);
-
-                // Enumerate all messages in the calendar folder
-                foreach (MessageInfo messageInfo in calendarFolder.EnumerateMessages())
-                {
-                    try
-                    {
-                        // Extract the full MAPI message
-                        using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
-                        {
-                            // Process only calendar items
-                            if (mapiMessage.SupportedType == MapiItemType.Calendar)
-                            {
-                                // Convert to MapiCalendar
-                                using (MapiCalendar mapiCalendar = (MapiCalendar)mapiMessage.ToMapiMessageItem())
-                                {
-                                    // Build a safe file name using subject and entry id
-                                    string subject = string.IsNullOrEmpty(mapiCalendar.Subject) ? "Untitled" : mapiCalendar.Subject;
-                                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
-                                    {
-                                        subject = subject.Replace(invalidChar, '_');
-                                    }
-
-                                    string icsFileName = $"{subject}_{messageInfo.EntryId}.ics";
-                                    string icsFilePath = Path.Combine(outputDirectory, icsFileName);
-
-                                    // Save the calendar as an .ics file
-                                    mapiCalendar.Save(icsFilePath);
-                                    Console.WriteLine($"Saved calendar event to: {icsFilePath}");
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception msgEx)
-                    {
-                        Console.Error.WriteLine($"Error processing message {messageInfo.EntryId}: {msgEx.Message}");
-                        // Continue with next message
-                    }
-                }
+                ProcessFolder(pst, pst.RootFolder, outputDir);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    static void ProcessFolder(PersonalStorage pst, FolderInfo folder, string outputDir)
+    {
+        // Enumerate messages in the current folder
+        foreach (MessageInfo msgInfo in folder.EnumerateMessages())
+        {
+            try
+            {
+                using (MapiMessage msg = pst.ExtractMessage(msgInfo))
+                {
+                    // Check if the message is a calendar item
+                    if (msg.SupportedType == MapiItemType.Calendar)
+                    {
+                        MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
+
+                        // Prepare a safe filename based on the subject
+                        string safeSubject = string.IsNullOrWhiteSpace(calendar.Subject) ? "Untitled" : calendar.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        string icsPath = Path.Combine(outputDir, $"{safeSubject}_{Guid.NewGuid()}.ics");
+
+                        // Save the calendar entry as an .ics file
+                        calendar.Save(icsPath, new MapiCalendarIcsSaveOptions());
+
+                        Console.WriteLine($"Saved calendar event to {icsPath}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to process a message: {ex.Message}");
+            }
+        }
+
+        // Recursively process subfolders
+        foreach (FolderInfo subFolder in folder.GetSubFolders())
+        {
+            ProcessFolder(pst, subFolder, outputDir);
         }
     }
 }

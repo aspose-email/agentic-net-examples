@@ -3,61 +3,101 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace ExtractEmbeddedImages
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string msgFilePath = "sample.msg";
-                string outputDirectory = "ExtractedImages";
+            string msgPath = "sample.msg";
+            string outputDir = "ExtractedImages";
 
-                if (!File.Exists(msgFilePath))
+            if (!File.Exists(msgPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                if (!Directory.Exists(outputDirectory))
+                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                return;
+            }
+
+            if (!Directory.Exists(outputDir))
+            {
+                try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    Directory.CreateDirectory(outputDir);
                 }
-
-                using (MapiMessage message = MapiMessage.Load(msgFilePath))
+                catch (Exception ex)
                 {
-                    foreach (MapiAttachment attachment in message.Attachments)
+                    Console.Error.WriteLine($"Error creating directory {outputDir}: {ex.Message}");
+                    return;
+                }
+            }
+
+            using (MapiMessage message = MapiMessage.Load(msgPath))
+            {
+                int imageIndex = 0;
+                foreach (MapiAttachment attachment in message.Attachments)
+                {
+                    string mimeTag = attachment.MimeTag ?? string.Empty;
+                    string fileName = attachment.FileName ?? $"image_{imageIndex}";
+                    bool isImage = mimeTag.StartsWith("image/", StringComparison.OrdinalIgnoreCase) ||
+                                   fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                                   fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                                   fileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                                   fileName.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
+                                   fileName.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
+                                   fileName.EndsWith(".tif", StringComparison.OrdinalIgnoreCase) ||
+                                   fileName.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase);
+
+                    if (isImage)
                     {
-                        string attachmentFileName = attachment.FileName;
-                        if (string.IsNullOrEmpty(attachmentFileName))
+                        // Access binary data via BinaryData property
+                        byte[] imageData = attachment.BinaryData;
+                        if (imageData != null && imageData.Length > 0)
                         {
-                            continue;
+                            string extension = Path.GetExtension(fileName);
+                            if (string.IsNullOrEmpty(extension))
+                            {
+                                // Fallback to mime type if extension missing
+                                string mimeSubtype = mimeTag.Substring("image/".Length);
+                                extension = "." + mimeSubtype;
+                            }
+
+                            string outputPath = Path.Combine(outputDir, $"image_{imageIndex}{extension}");
+                            try
+                            {
+                                File.WriteAllBytes(outputPath, imageData);
+                                Console.WriteLine($"Extracted: {outputPath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Error writing file {outputPath}: {ex.Message}");
+                            }
+
+                            imageIndex++;
                         }
-
-                        string fileExtension = Path.GetExtension(attachmentFileName).ToLowerInvariant();
-                        bool isImage = fileExtension == ".png" ||
-                                       fileExtension == ".jpg" ||
-                                       fileExtension == ".jpeg" ||
-                                       fileExtension == ".gif" ||
-                                       fileExtension == ".bmp" ||
-                                       fileExtension == ".tiff";
-
-                        if (!isImage)
-                        {
-                            continue;
-                        }
-
-                        string outputPath = Path.Combine(outputDirectory, attachmentFileName);
-                        attachment.Save(outputPath);
-                        Console.WriteLine($"Saved image: {outputPath}");
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
