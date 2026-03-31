@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -8,40 +9,90 @@ class Program
     {
         try
         {
-            string inputMsgPath = "input.msg";
-            string attachmentFilePath = "newAttachment.txt";
-            string outputMsgPath = "output.msg";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Verify input MSG file exists
-            if (!File.Exists(inputMsgPath))
+            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: Input file not found – {inputMsgPath}");
-                return;
-            }
-
-            // Verify attachment file exists
-            if (!File.Exists(attachmentFilePath))
-            {
-                Console.Error.WriteLine($"Error: Attachment file not found – {attachmentFilePath}");
-                return;
-            }
-
-            // Load the existing MSG message
-            using (MailMessage message = MailMessage.Load(inputMsgPath))
-            {
-                // Create attachment and add it to the message
-                using (Attachment attachment = new Attachment(attachmentFilePath))
+                try
                 {
-                    message.AddAttachment(attachment);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "receiver@example.com",
+                        "Placeholder subject",
+                        "Placeholder body"))
+                    {
+                        placeholder.Save(inputPath);
+                        Console.WriteLine($"Created placeholder MSG at {inputPath}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the existing MSG file.
+            MapiMessage message;
+            try
+            {
+                message = MapiMessage.Load(inputPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                return;
+            }
+
+            using (message)
+            {
+                // Prepare attachment data.
+                string attachmentName = "NewAttachment.txt";
+                byte[] attachmentData = System.Text.Encoding.UTF8.GetBytes("This is the content of the new attachment.");
+
+                // Add the attachment to the message.
+                try
+                {
+                    message.Attachments.Add(attachmentName, attachmentData);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error adding attachment: {ex.Message}");
+                    return;
                 }
 
-                // Save the updated message to a new MSG file
-                message.Save(outputMsgPath);
+                // Ensure the output directory exists.
+                try
+                {
+                    string outputDir = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error ensuring output directory: {ex.Message}");
+                    return;
+                }
+
+                // Save the modified message.
+                try
+                {
+                    message.Save(outputPath);
+                    Console.WriteLine($"Message saved with new attachment to {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
