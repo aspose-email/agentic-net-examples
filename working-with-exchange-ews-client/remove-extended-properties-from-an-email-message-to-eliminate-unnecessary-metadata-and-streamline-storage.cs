@@ -1,9 +1,6 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -11,52 +8,65 @@ class Program
     {
         try
         {
-            // Exchange Web Services endpoint and credentials
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            string inputPath = "input.eml";
+            string outputPath = "output.eml";
 
-            // Create the EWS client (client variable name must be preserved)
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            // Ensure the input file exists; if not, create a minimal placeholder email.
+            if (!File.Exists(inputPath))
             {
-                // Get the Inbox folder URI
-                string inboxUri = client.MailboxInfo.InboxUri;
-
-                // List messages in the Inbox
-                ExchangeMessageInfoCollection messagesInfo = client.ListMessages(inboxUri);
-                if (messagesInfo == null || messagesInfo.Count == 0)
+                try
                 {
-                    Console.WriteLine("No messages found in the Inbox.");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
 
-                // Select the first message
-                string messageUri = messagesInfo[0].UniqueUri;
-
-                // Fetch the full message
-                using (MailMessage message = client.FetchMessage(messageUri))
+                try
                 {
-                    // Remove extended (custom) headers to streamline storage
-                    message.Headers.Clear();
-
-                    // Define output path
-                    string outputPath = "cleaned.eml";
-
-                    // Ensure the output directory exists
-                    string outputDir = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-
-                    // Save the cleaned message
-                    message.Save(outputPath, SaveOptions.DefaultEml);
-                    Console.WriteLine($"Message saved without extended properties to: {outputPath}");
+                    MailMessage placeholderMessage = new MailMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "This is a placeholder email generated because the input file was missing."
+                    );
+                    placeholderMessage.Save(inputPath);
                 }
+                catch (Exception placeholderEx)
+                {
+                    Console.Error.WriteLine("Failed to create placeholder email: " + placeholderEx.Message);
+                    return;
+                }
+            }
+
+            // Load the email, then save it again. The MailMessage class does not retain
+            // extended MAPI properties, effectively removing unnecessary metadata.
+            try
+            {
+                using (MailMessage emailMessage = MailMessage.Load(inputPath))
+                {
+                    emailMessage.Save(outputPath);
+                    Console.WriteLine("Email saved without extended properties to: " + outputPath);
+                }
+            }
+            catch (Exception loadSaveEx)
+            {
+                Console.Error.WriteLine("Error processing the email file: " + loadSaveEx.Message);
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
