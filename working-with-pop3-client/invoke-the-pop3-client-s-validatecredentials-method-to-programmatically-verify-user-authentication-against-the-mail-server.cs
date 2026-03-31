@@ -8,19 +8,40 @@ class Program
     {
         try
         {
-            // Initialize POP3 client with host, username, and password
-            using (Pop3Client client = new Pop3Client("pop.example.com", "username", "password"))
+            // Placeholder credentials – replace with real values for actual validation
+            string host = "pop3.example.com";
+            int port = 110;
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip external call when placeholders are detected
+            if (host.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping validation.");
+                return;
+            }
+
+            Pop3Client client = null;
+            try
+            {
+                client = new Pop3Client(host, port, username, password);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create POP3 client: {ex.Message}");
+                return;
+            }
+
+            using (client)
             {
                 try
                 {
-                    // Validate the credentials against the POP3 server
                     bool isValid = client.ValidateCredentials();
                     Console.WriteLine(isValid ? "Credentials are valid." : "Invalid credentials.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Credential validation error: {ex.Message}");
                 }
             }
         }
