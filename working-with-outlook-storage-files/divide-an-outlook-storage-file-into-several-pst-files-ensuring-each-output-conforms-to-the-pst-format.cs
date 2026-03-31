@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using Aspose.Email.Storage.Pst;
 
 class Program
@@ -9,34 +9,35 @@ class Program
     {
         try
         {
-            // Path to the source PST file
-            string pstFilePath = "input.pst";
-
-            // Folder where split PST parts will be saved
+            // Paths for input PST and output folder
+            string inputPstPath = "input.pst";
             string outputFolderPath = "output_parts";
 
-            // Verify source PST file exists
-            if (!File.Exists(pstFilePath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {pstFilePath}");
-                return;
-            }
+            // Desired chunk size (e.g., 10 MB)
+            long chunkSize = 10L * 1024L * 1024L;
 
-            // Ensure the output folder exists
+            // Ensure the output directory exists
             if (!Directory.Exists(outputFolderPath))
             {
                 Directory.CreateDirectory(outputFolderPath);
             }
 
-            // Open the source PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+            // Verify the input PST file; create a minimal placeholder if it does not exist
+            if (!File.Exists(inputPstPath))
             {
-                // Define the approximate size of each split part (e.g., 10 MB)
-                long chunkSizeInBytes = 10L * 1024L * 1024L; // 10 MB
+                Console.Error.WriteLine($"Input PST not found. Creating placeholder at '{inputPstPath}'.");
+                using (PersonalStorage placeholder = PersonalStorage.Create(inputPstPath, FileFormatVersion.Unicode))
+                {
+                    // Create a default Inbox folder to keep the PST valid
+                    placeholder.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
+                }
+            }
 
-                // Split the PST into parts asynchronously and wait for completion
-                Task splitTask = pst.SplitIntoAsync(chunkSizeInBytes, outputFolderPath);
-                splitTask.Wait();
+            // Open the PST file and split it into smaller PST parts
+            using (PersonalStorage pst = PersonalStorage.FromFile(inputPstPath))
+            {
+                pst.SplitInto(chunkSize, outputFolderPath);
+                Console.WriteLine($"PST split completed. Parts are stored in '{outputFolderPath}'.");
             }
         }
         catch (Exception ex)
