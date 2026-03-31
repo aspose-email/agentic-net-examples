@@ -10,24 +10,35 @@ class Program
     {
         try
         {
-            // Initialize EWS client with placeholder credentials
-            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx",
-                                                             new NetworkCredential("username", "password")))
-            {
-                // Create an inbox rule that moves messages containing specific keywords to the Archive folder
-                InboxRule rule = InboxRule.CreateRuleMoveContaining(
-                    new string[] { "confidential", "archive" }, // keywords to match
-                    "Archive"                                   // target folder name
-                );
+            // Placeholder connection details – replace with real values for actual execution
+            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-                // Configure additional rule properties
-                rule.DisplayName = "Auto-Archive Confidential Messages";
+            // Guard against executing with placeholder credentials
+            if (serviceUrl.Contains("example.com") || username == "username")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping rule creation.");
+                return;
+            }
+
+            // Create EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // Define the sender whose messages should be archived
+                MailAddress fromAddress = new MailAddress("sender@example.com");
+
+                // Destination folder identifier (e.g., Archive folder). Replace with actual folder ID if needed.
+                string archiveFolderId = "Archive";
+
+                // Build the inbox rule
+                InboxRule rule = InboxRule.CreateRuleMoveFrom(fromAddress, archiveFolderId);
+                rule.DisplayName = "Archive messages from specific sender";
                 rule.IsEnabled = true;
-                rule.Priority = 1; // Run this rule first
+                rule.Priority = 1;
 
                 // Create the rule on the server
                 client.CreateInboxRule(rule);
-
                 Console.WriteLine("Inbox rule created successfully.");
             }
         }
