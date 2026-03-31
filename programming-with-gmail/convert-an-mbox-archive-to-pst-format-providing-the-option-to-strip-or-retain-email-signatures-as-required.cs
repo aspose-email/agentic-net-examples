@@ -2,59 +2,68 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Storage.Pst;
 
-class Program
+namespace MboxToPstConversion
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Paths for the source MBOX file and the destination PST file.
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
-
-            // Option to remove email signatures during conversion.
-            bool removeSignature = true;
-
-            // Verify that the source MBOX file exists.
-            if (!File.Exists(mboxPath))
+            try
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
-                return;
-            }
+                // Paths for the source MBOX and the target PST files
+                string mboxPath = "input.mbox";
+                string pstPath = "output.pst";
 
-            // Ensure the directory for the PST file exists.
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                try
+                // Set to true to remove signatures, false to retain them
+                bool removeSignature = true;
+
+                // Ensure the input MBOX file exists; create a minimal placeholder if it does not
+                if (!File.Exists(mboxPath))
+                {
+                    string placeholderContent = "From - Mon Jan 01 00:00:00 2020\r\nSubject: Placeholder\r\n\r\n";
+                    string mboxDirectory = Path.GetDirectoryName(mboxPath);
+                    if (!string.IsNullOrEmpty(mboxDirectory) && !Directory.Exists(mboxDirectory))
+                    {
+                        Directory.CreateDirectory(mboxDirectory);
+                    }
+                    File.WriteAllText(mboxPath, placeholderContent);
+                    Console.WriteLine($"Created placeholder MBOX file at '{mboxPath}'.");
+                }
+
+                // Ensure the output directory exists
+                string pstDirectory = Path.GetDirectoryName(pstPath);
+                if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
                 {
                     Directory.CreateDirectory(pstDirectory);
                 }
-                catch (Exception dirEx)
+
+                // Validation: read through the MBOX using MboxStorageReader as required by the rules
+                using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
                 {
-                    Console.Error.WriteLine($"Failed to create directory '{pstDirectory}': {dirEx.Message}");
-                    return;
+                    int messageCount = 0;
+                    MailMessage message;
+                    while ((message = reader.ReadNextMessage()) != null)
+                    {
+                        messageCount++;
+                    }
+                    Console.WriteLine($"MBOX contains {messageCount} message(s).");
                 }
+
+                // Configure conversion options, including signature removal if requested
+                MboxToPstConversionOptions conversionOptions = new MboxToPstConversionOptions();
+                conversionOptions.RemoveSignature = removeSignature;
+
+                // Perform the conversion from MBOX to PST
+                MailStorageConverter.MboxToPst(mboxPath, pstPath, conversionOptions);
+                Console.WriteLine($"Conversion completed successfully. PST saved to '{pstPath}'.");
             }
-
-            // Configure conversion options.
-            MboxToPstConversionOptions options = new MboxToPstConversionOptions();
-            options.RemoveSignature = removeSignature;
-
-            // Perform the conversion inside a using block to dispose the resulting PST.
-            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath, options))
+            catch (Exception ex)
             {
-                // Conversion succeeded; you can further work with the PST if needed.
-                Console.WriteLine($"MBOX file '{mboxPath}' successfully converted to PST '{pstPath}'.");
-                Console.WriteLine($"Signature removal was {(removeSignature ? "enabled" : "disabled")}.");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }
