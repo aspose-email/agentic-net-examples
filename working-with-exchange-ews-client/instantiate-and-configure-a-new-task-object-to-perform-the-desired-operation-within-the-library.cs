@@ -1,25 +1,38 @@
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Initialize the EWS client with placeholder credentials
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://exchange.example.com/EWS/Exchange.asmx",
-                "username",
-                "password"))
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Skip real network call when placeholders are used
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
             {
-                // Create and configure a new Exchange task
-                ExchangeTask task = new ExchangeTask();
-                task.Subject = "Sample Task";
-                task.StartDate = DateTime.Now;
-                task.DueDate = DateTime.Now.AddDays(2);
-                task.Body = "Complete the sample task.";
+                Console.WriteLine("Skipping EWS operation due to placeholder credentials.");
+                return;
+            }
+
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Configure a new task
+                ExchangeTask task = new ExchangeTask
+                {
+                    Subject = "Sample Task",
+                    Body = "This is a sample task created via Aspose.Email EWS client.",
+                    DueDate = DateTime.Now.AddDays(7),
+                    IsBodyHtml = false,
+                    Priority = MailPriority.Normal
+                };
 
                 // Create the task on the server
                 client.CreateTask(task);
