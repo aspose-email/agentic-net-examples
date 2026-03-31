@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -10,51 +11,56 @@ class Program
     {
         try
         {
-            // Desired log file path
+            // Define log file path
             string logFilePath = Path.Combine(Environment.CurrentDirectory, "imap_client.log");
 
             // Ensure the directory for the log file exists
-            string logDir = Path.GetDirectoryName(logFilePath);
-            if (!Directory.Exists(logDir))
+            try
             {
-                try
+                string logDir = Path.GetDirectoryName(logFilePath);
+                if (!Directory.Exists(logDir))
                 {
                     Directory.CreateDirectory(logDir);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create log directory: {ex.Message}");
-                    return;
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare log directory: {ex.Message}");
+                return;
             }
 
-            // IMAP server connection parameters (replace with real values as needed)
+            // Placeholder connection settings
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
 
-            // Initialize the IMAP client inside a using block to ensure disposal
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.SSLImplicit))
+            // Skip real network call when placeholders are used
+            if (host.Contains("example.com"))
             {
-                // Enable logging and set the log file name
-                client.EnableLogger = true;
+                Console.WriteLine("Placeholder credentials detected. Skipping actual IMAP connection.");
+                return;
+            }
+
+            // Initialize the IMAP client with the specified settings
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            {
+                // Configure logging
                 client.LogFileName = logFilePath;
 
+                // Example operation: list folders (wrapped in try/catch for client safety)
                 try
                 {
-                    // Connect to the server (connection is established by the constructor)
-                    // Perform a simple operation to verify the connection
-                    client.SelectFolder("INBOX");
-                    Console.WriteLine("Connected to IMAP server and selected INBOX.");
+                    var folders = client.ListFolders();
+                    foreach (var folder in folders)
+                    {
+                        Console.WriteLine($"Folder: {folder}");
+                    }
                 }
-                catch (Exception connEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"IMAP connection error: {connEx.Message}");
-                    return;
+                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
                 }
-
-                // Additional IMAP operations can be placed here
             }
         }
         catch (Exception ex)
