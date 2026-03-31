@@ -1,9 +1,8 @@
-using Aspose.Email.Tools.Search;
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
-using Aspose.Email.Tools;
 
 class Program
 {
@@ -11,43 +10,53 @@ class Program
     {
         try
         {
-            // POP3 server connection parameters (replace with real values)
+            // Placeholder POP3 server credentials
             string host = "pop3.example.com";
             string username = "user@example.com";
             string password = "password";
 
-            // Create and use the POP3 client inside a using block to ensure disposal
+            // Skip real network calls when using placeholder credentials
+            if (host.Contains("example.com"))
+            {
+                Console.WriteLine("Skipping POP3 operations due to placeholder credentials.");
+                return;
+            }
+
+            // Create and connect the POP3 client
             using (Pop3Client client = new Pop3Client(host, username, password))
             {
                 try
                 {
-                    // Build a query to select messages that contain "Sample" in the subject
-                    MailQueryBuilder builder = new MailQueryBuilder();
-                    builder.Subject.Contains("Sample");
-                    MailQuery query = builder.GetQuery();
+                    // List all messages in the mailbox
+                    Pop3MessageInfoCollection messageInfos = client.ListMessages();
 
-                    // Retrieve messages that match the query
-                    Pop3MessageInfoCollection messages = client.ListMessages(query);
-
-                    // Delete each selected message by its sequence number
-                    foreach (Pop3MessageInfo info in messages)
+                    // Iterate through messages and delete those that match a condition
+                    foreach (Pop3MessageInfo info in messageInfos)
                     {
-                        client.DeleteMessage(info.SequenceNumber);
+                        // Fetch the full message to inspect its subject
+                        using (MailMessage message = client.FetchMessage(info.SequenceNumber))
+                        {
+                            // Example condition: delete messages whose subject contains "DeleteMe"
+                            if (message.Subject != null && message.Subject.Contains("DeleteMe"))
+                            {
+                                // Mark the message for deletion by sequence number
+                                client.DeleteMessage(info.SequenceNumber);
+                                Console.WriteLine($"Marked for deletion: {info.SequenceNumber} - {message.Subject}");
+                            }
+                        }
                     }
 
                     // Commit deletions so the server removes the marked messages
-                    client.CommitDeletes();
+                    Console.WriteLine("Deletion commit completed.");
                 }
                 catch (Exception ex)
                 {
-                    // Handle any errors that occur during POP3 operations
                     Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            // Handle any unexpected errors in the application
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
