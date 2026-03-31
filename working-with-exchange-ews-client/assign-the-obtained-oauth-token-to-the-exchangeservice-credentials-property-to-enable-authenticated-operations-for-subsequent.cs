@@ -9,41 +9,30 @@ class Program
     {
         try
         {
-            // Obtain OAuth token (placeholder value)
-            string oauthToken = "access_token_placeholder";
+            // Placeholder OAuth token obtained from authentication flow
+            string oauthToken = "OAuthToken";
 
-            // Create EWS client and assign OAuth token to Credentials
-            try
+            // Guard against placeholder credentials to avoid external calls during CI
+            if (string.IsNullOrWhiteSpace(oauthToken) || oauthToken == "OAuthToken")
             {
-                using (IEWSClient client = EWSClient.GetEWSClient("https://outlook.office365.com/EWS/Exchange.asmx", new NetworkCredential(string.Empty, string.Empty)))
-                {
-                    // Assign the token as the password in NetworkCredential
-                    client.Credentials = new NetworkCredential(oauthToken, string.Empty);
-
-                    // Example operation: list messages in the Inbox folder
-                    try
-                    {
-                        var messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                        foreach (var info in messages)
-                        {
-                            Console.WriteLine(info.UniqueUri);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error during EWS operation: {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create or configure EWS client: {ex.Message}");
+                Console.Error.WriteLine("OAuth token is not provided. Skipping Exchange operations.");
                 return;
+            }
+
+            // Placeholder mailbox URI for the Exchange server
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+
+            // Create the EWS client and assign the OAuth token as credentials
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(oauthToken, string.Empty)))
+            {
+                // The client is now ready for authenticated operations
+                Console.WriteLine("EWS client initialized with OAuth token.");
+                // Subsequent API calls can be performed here using 'client'
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
