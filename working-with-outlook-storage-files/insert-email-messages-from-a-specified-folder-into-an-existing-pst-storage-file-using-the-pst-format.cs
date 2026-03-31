@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -10,84 +10,75 @@ class Program
     {
         try
         {
-            // Paths – adjust as needed
-            string pstFilePath = "ExistingStorage.pst";
-            string sourceFolderPath = "EmailFiles";
+            // Path to the folder that contains .eml files to be inserted
+            string sourceFolderPath = "Emails";
 
-            // Verify PST file exists
-            if (!File.Exists(pstFilePath))
-            {
-                Console.Error.WriteLine($"Error: PST file not found – {pstFilePath}");
-                return;
-            }
+            // Path to the existing PST file
+            string pstFilePath = "output.pst";
 
-            // Verify source folder exists
+            // Verify the source folder exists
             if (!Directory.Exists(sourceFolderPath))
             {
                 Console.Error.WriteLine($"Error: Source folder not found – {sourceFolderPath}");
                 return;
             }
 
-            // Open the PST file for read/write
+            // Ensure the PST file exists; create a minimal Unicode PST if it does not
+            if (!File.Exists(pstFilePath))
+            {
+                try
+                {
+                    PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Created new PST file at {pstFilePath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
             {
-                // Ensure the PST is writable
                 if (!pst.CanWrite)
                 {
                     Console.Error.WriteLine("Error: PST file is read‑only.");
                     return;
                 }
 
-                // Use the root folder (or change to a specific subfolder if required)
-                FolderInfo targetFolder = pst.RootFolder;
-
-                // Get all .eml files in the source folder
-                string[] emlFiles;
+                // Get the Inbox folder; create it if it does not exist
+                FolderInfo inboxFolder;
                 try
                 {
-                    emlFiles = Directory.GetFiles(sourceFolderPath, "*.eml");
+                    inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Console.Error.WriteLine($"Error accessing files in folder: {ex.Message}");
-                    return;
+                    inboxFolder = pst.RootFolder.AddSubFolder("Inbox");
                 }
 
-                foreach (string emlPath in emlFiles)
+                // Process each .eml file in the source folder
+                string[] emlFiles = Directory.GetFiles(sourceFolderPath, "*.eml");
+                foreach (string emlFilePath in emlFiles)
                 {
-                    // Load the email message
-                    MailMessage mailMessage;
                     try
                     {
-                        mailMessage = MailMessage.Load(emlPath);
+                        // Load the email message from the .eml file
+                        using (MailMessage mailMessage = MailMessage.Load(emlFilePath))
+                        {
+                            // Convert to a MAPI message suitable for PST storage
+                            using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                            {
+                                // Add the message to the Inbox folder
+                                string entryId = inboxFolder.AddMessage(mapiMessage);
+                                Console.WriteLine($"Added message '{mailMessage.Subject}' with EntryId {entryId}");
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to load message '{emlPath}': {ex.Message}");
-                        continue;
-                    }
-
-                    // Convert to MAPI message
-                    MapiMessage mapiMessage;
-                    try
-                    {
-                        mapiMessage = MapiMessage.FromMailMessage(mailMessage);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Conversion to MAPI failed for '{emlPath}': {ex.Message}");
-                        continue;
-                    }
-
-                    // Add the message to the PST folder
-                    try
-                    {
-                        string entryId = targetFolder.AddMessage(mapiMessage);
-                        Console.WriteLine($"Added message '{Path.GetFileName(emlPath)}' – EntryId: {entryId}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to add message '{emlPath}' to PST: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to add '{emlFilePath}': {ex.Message}");
                     }
                 }
             }
