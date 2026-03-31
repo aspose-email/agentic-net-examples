@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using System.Security.Cryptography.X509Certificates;
 
 class Program
 {
@@ -10,48 +10,111 @@ class Program
     {
         try
         {
-            // Paths to the source MSG file, the certificate and the output signed MSG file
-            string msgFilePath = "input.msg";
-            string signedMsgFilePath = "signed.msg";
-            string certificatePath = "certificate.pfx";
-            string certificatePassword = "password";
+            // Define file paths
+            string dataDir = Path.Combine(Environment.CurrentDirectory, "Data");
+            string inputMsgPath = Path.Combine(dataDir, "input.msg");
+            string signedMsgPath = Path.Combine(dataDir, "signed.msg");
+            string certPath = Path.Combine(dataDir, "certificate.pfx");
+            string certPassword = "password";
 
-            // Verify that the source MSG file exists
-            if (!File.Exists(msgFilePath))
+            // Ensure the data directory exists
+            if (!Directory.Exists(dataDir))
             {
-                Console.Error.WriteLine($"Source MSG file not found: {msgFilePath}");
+                Directory.CreateDirectory(dataDir);
+            }
+
+            // Guard certificate file existence
+            if (!File.Exists(certPath))
+            {
+                Console.Error.WriteLine($"Certificate file not found: {certPath}");
                 return;
             }
 
-            // Verify that the certificate file exists
-            if (!File.Exists(certificatePath))
+            // Guard input MSG file existence; create a minimal placeholder if missing
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder Body"))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file
+            MapiMessage msg;
+            try
+            {
+                msg = MapiMessage.Load(inputMsgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
                 return;
             }
 
-            // Load the certificate (private key required for signing)
-            X509Certificate2 signingCertificate = new X509Certificate2(certificatePath, certificatePassword);
-
-            // Load the MSG message
-            using (MapiMessage message = MapiMessage.Load(msgFilePath))
+            // Load the certificate
+            X509Certificate2 certificate;
+            try
             {
-                // Create the manager that handles secure operations
-                SecureEmailManager secureManager = new SecureEmailManager();
+                certificate = new X509Certificate2(certPath, certPassword);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load certificate: {ex.Message}");
+                return;
+            }
 
-                // Attach a digital signature to the message
-                MapiMessage signedMessage = secureManager.AttachSignature(message, signingCertificate);
+            // Sign the message
+            SecureEmailManager manager = new SecureEmailManager();
+            MapiMessage signedMsg;
+            try
+            {
+                signedMsg = manager.AttachSignature(msg, certificate);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to sign the message: {ex.Message}");
+                return;
+            }
 
-                // Save the signed message to a new file
-                signedMessage.Save(signedMsgFilePath);
-                signedMessage.Dispose();
-
-                Console.WriteLine($"Message signed successfully and saved to: {signedMsgFilePath}");
+            // Save the signed MSG
+            try
+            {
+                signedMsg.Save(signedMsgPath);
+                Console.WriteLine($"Signed message saved to: {signedMsgPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save signed MSG: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
