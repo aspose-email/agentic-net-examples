@@ -1,8 +1,8 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Calendar;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
+using Aspose.Email.Calendar;
 
 class Program
 {
@@ -10,46 +10,57 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with dummy OAuth credentials
-            IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com");
+            // Placeholder credentials – replace with real values when running in a real environment.
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string defaultEmail = "user@example.com";
 
-            using (gmailClient)
+            // Guard against placeholder credentials to avoid external calls during CI.
+            if (clientId == "clientId" || clientSecret == "clientSecret" ||
+                refreshToken == "refreshToken" || defaultEmail == "user@example.com")
             {
-                // Define the calendar identifier (primary calendar)
-                string calendarId = "primary";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Google Calendar operation.");
+                return;
+            }
 
-                // Prepare attendees collection
+            // Create Gmail client.
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
+            using (gmailClient as IDisposable)
+            {
+                // Define the calendar identifier where the event will be created.
+                string calendarId = "primary"; // Use "primary" for the default calendar or replace with a specific ID.
+
+                // Prepare attendees.
                 MailAddressCollection attendees = new MailAddressCollection();
-                attendees.Add(new MailAddress("person1@example.com"));
-                attendees.Add(new MailAddress("person2@example.com"));
-                attendees.Add(new MailAddress("person3@example.com"));
+                attendees.Add(new MailAddress("attendee1@example.com"));
+                attendees.Add(new MailAddress("attendee2@example.com"));
 
-                // Organizer address
-                MailAddress organizer = new MailAddress("organizer@example.com");
-
-                // Create an appointment using a constructor that accepts all required details
+                // Create an appointment (event).
                 Appointment appointment = new Appointment(
-                    "Conference Room",               // location
-                    "Team Meeting",                  // summary
-                    "Discuss project milestones",    // description
-                    DateTime.Now.AddHours(1),        // start date/time
-                    DateTime.Now.AddHours(2),        // end date/time
-                    organizer,                       // organizer
-                    attendees);                      // attendees
+                    "Team Sync Meeting",                     // Summary
+                    "Discuss project updates and plans.",    // Description
+                    "Conference Room A",                     // Location
+                    new DateTime(2024, 5, 20, 10, 0, 0),     // Start date and time
+                    new DateTime(2024, 5, 20, 11, 0, 0),     // End date and time
+                    new MailAddress(defaultEmail),           // Organizer
+                    attendees);                             // Attendees
 
-                // Insert the appointment into the specified Google Calendar
-                Appointment created = gmailClient.CreateAppointment(calendarId, appointment);
-
-                Console.WriteLine("Appointment created with ID: " + created.UniqueId);
+                // Insert the appointment into the specified Google Calendar.
+                try
+                {
+                    Appointment createdAppointment = gmailClient.CreateAppointment(calendarId, appointment);
+                    Console.WriteLine("Appointment created with ID: " + createdAppointment.UniqueId);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Failed to create appointment: " + ex.Message);
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
