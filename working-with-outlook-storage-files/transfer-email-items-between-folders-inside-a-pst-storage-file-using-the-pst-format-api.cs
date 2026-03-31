@@ -11,63 +11,36 @@ class Program
         {
             string pstPath = "sample.pst";
 
+            // Ensure the PST file exists; create a minimal placeholder if it does not.
             if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: PST file not found – {pstPath}");
-                return;
+                using (PersonalStorage pstCreate = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                {
+                    // Create default folders (Inbox and Sent Items) for demonstration.
+                    pstCreate.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
+                    pstCreate.CreatePredefinedFolder("Sent Items", StandardIpmFolder.SentItems);
+                }
+                Console.WriteLine($"Created placeholder PST at {pstPath}");
             }
 
+            // Open the existing PST file.
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Locate the source folder (e.g., Inbox)
-                FolderInfo sourceFolder;
-                try
-                {
-                    sourceFolder = pst.RootFolder.GetSubFolder("Inbox");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error: Unable to locate source folder – {ex.Message}");
-                    return;
-                }
+                // Retrieve source and destination folders.
+                FolderInfo sourceFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
+                FolderInfo destinationFolder = pst.GetPredefinedFolder(StandardIpmFolder.SentItems);
 
-                // Locate or create the destination folder (e.g., Archive)
-                FolderInfo destinationFolder;
-                try
-                {
-                    destinationFolder = pst.RootFolder.GetSubFolder("Archive");
-                }
-                catch (Exception)
-                {
-                    try
-                    {
-                        destinationFolder = pst.RootFolder.AddSubFolder("Archive");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error: Unable to create destination folder – {ex.Message}");
-                        return;
-                    }
-                }
-
-                // Move each message from source to destination
+                // Move each message from the source folder to the destination folder.
                 foreach (MessageInfo messageInfo in sourceFolder.EnumerateMessages())
                 {
-                    try
-                    {
-                        pst.MoveItem(messageInfo, destinationFolder);
-                        Console.WriteLine($"Moved message: {messageInfo.Subject}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error moving message '{messageInfo.Subject}': {ex.Message}");
-                    }
+                    pst.MoveItem(messageInfo, destinationFolder);
+                    Console.WriteLine($"Moved message: {messageInfo.Subject}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
