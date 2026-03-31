@@ -5,42 +5,96 @@ using Aspose.Email.Clients.Smtp;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Path to the MSG file containing the email to be sent
-            string msgPath = "sample.msg";
+            // Path to the MSG file that holds SMTP configuration and the email to send
+            string msgFilePath = "email.msg";
 
-            // Verify that the MSG file exists before attempting to load it
-            if (!File.Exists(msgPath))
+            // Ensure the MSG file exists; if not, create a minimal placeholder
+            if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"Message file not found: {msgPath}");
-                return;
-            }
-
-            // Load the message from the MSG file
-            using (MailMessage message = MailMessage.Load(msgPath))
-            {
-                // Placeholder SMTP configuration – replace with actual values or extract from the message if available
-                string host = "smtp.example.com";
-                string username = "user@example.com";
-                string password = "password";
-
-                // Create and use the SMTP client to send the message
                 try
                 {
-                    using (SmtpClient client = new SmtpClient(host, username, password))
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        client.Send(message);
-                        Console.WriteLine("Message sent successfully.");
+                        placeholder.Save(msgFilePath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to send email: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                try
+                {
+                    // Create a simple email message
+                    MailMessage placeholderMessage = new MailMessage(
+                        "sender@example.com",
+                        "receiver@example.com",
+                        "Sample Subject",
+                        "Sample body.");
+
+                    // Add custom headers that will act as SMTP configuration
+                    placeholderMessage.Headers.Add("X-SMTP-Host", "smtp.example.com");
+                    placeholderMessage.Headers.Add("X-SMTP-Username", "user@example.com");
+                    placeholderMessage.Headers.Add("X-SMTP-Password", "password123");
+
+                    // Save the message as MSG
+                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                    placeholderMessage.Save(msgFilePath, saveOptions);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file
+            MailMessage messageToSend;
+            try
+            {
+                messageToSend = MailMessage.Load(msgFilePath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                return;
+            }
+
+            // Extract SMTP configuration from custom headers
+            string smtpHost = messageToSend.Headers["X-SMTP-Host"];
+            string smtpUsername = messageToSend.Headers["X-SMTP-Username"];
+            string smtpPassword = messageToSend.Headers["X-SMTP-Password"];
+
+            if (string.IsNullOrEmpty(smtpHost) ||
+                string.IsNullOrEmpty(smtpUsername) ||
+                string.IsNullOrEmpty(smtpPassword))
+            {
+                Console.Error.WriteLine("SMTP configuration headers are missing in the MSG file.");
+                return;
+            }
+
+            // Create and use the SMTP client
+            try
+            {
+                using (SmtpClient client = new SmtpClient(smtpHost, smtpUsername, smtpPassword))
+                {
+                    client.Send(messageToSend);
+                    Console.WriteLine("Email sent successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"SMTP operation failed: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
