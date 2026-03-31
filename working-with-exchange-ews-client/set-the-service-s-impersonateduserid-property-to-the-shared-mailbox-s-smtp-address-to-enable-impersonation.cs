@@ -1,37 +1,51 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailImpersonationExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Service URL and credentials for the Exchange server
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            try
             {
-                try
+                // Placeholder values – replace with real credentials when running against a real server.
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
+                string sharedMailboxSmtp = "shared@example.com";
+
+                // Guard against executing live network calls with placeholder data.
+                if (serviceUrl.Contains("example.com") || username.Contains("example.com"))
                 {
-                    // Impersonate the shared mailbox using its SMTP address
-                    client.ImpersonateUser(ItemChoice.SmtpAddress, "sharedmailbox@example.com");
-                    Console.WriteLine("Impersonation set successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Impersonation failed: {ex.Message}");
+                    Console.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
                     return;
                 }
+
+                // Create the EWS client.
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    try
+                    {
+                        // Impersonate the shared mailbox using its SMTP address.
+                        client.ImpersonateUser(ItemChoice.SmtpAddress, sharedMailboxSmtp);
+                        Console.WriteLine($"Impersonation set to {sharedMailboxSmtp}.");
+
+                        // Additional EWS operations can be performed here while impersonating.
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error during impersonation: {ex.Message}");
+                        return;
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
