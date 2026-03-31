@@ -1,54 +1,76 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
-namespace Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // Path to the MSG file that will be used as an alternate view
-                string msgFilePath = "sample.msg";
+            // Define paths
+            string msgPath = "sample.msg";
+            string outputPath = "output.eml";
 
-                // Ensure the MSG file exists; create a minimal placeholder if it does not
-                if (!File.Exists(msgFilePath))
+            // Ensure the MSG file exists; create a minimal placeholder if missing
+            if (!File.Exists(msgPath))
+            {
+                try
                 {
-                    using (MailMessage placeholder = new MailMessage())
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body"))
                     {
-                        placeholder.From = "placeholder@example.com";
-                        placeholder.To.Add("placeholder@example.com");
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Body = "Placeholder body";
-                        placeholder.Save(msgFilePath, SaveOptions.DefaultMsgUnicode);
+                        placeholder.Save(msgPath);
                     }
                 }
-
-                // Create the main mail message
-                using (MailMessage message = new MailMessage())
+                catch (Exception ex)
                 {
-                    message.From = "sender@example.com";
-                    message.To.Add("receiver@example.com");
-                    message.Subject = "Message with MSG AlternateView";
-                    message.Body = "This email contains an MSG format alternate view.";
-
-                    // Create an AlternateView from the MSG file (using the appropriate media type)
-                    AlternateView msgAlternateView = new AlternateView(msgFilePath, "application/vnd.ms-outlook");
-
-                    // Add the alternate view to the message
-                    message.AlternateViews.Add(msgAlternateView);
-
-                    // Save the composed message
-                    string outputPath = "output.msg";
-                    message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
+
+            // Create the mail message
+            using (MailMessage mail = new MailMessage())
             {
-                Console.Error.WriteLine(ex.Message);
+                mail.From = "sender@example.com";
+                mail.To = "recipient@example.com";
+                mail.Subject = "Message with MSG Alternate View";
+                mail.Body = "This email contains an MSG format alternate view.";
+
+                // Create AlternateView from the MSG file
+                try
+                {
+                    using (AlternateView altView = new AlternateView(msgPath, "application/vnd.ms-outlook"))
+                    {
+                        mail.AlternateViews.Add(altView);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to add AlternateView: {ex.Message}");
+                    return;
+                }
+
+                // Save the composed message
+                try
+                {
+                    mail.Save(outputPath);
+                    Console.WriteLine($"Message saved to {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save MailMessage: {ex.Message}");
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
