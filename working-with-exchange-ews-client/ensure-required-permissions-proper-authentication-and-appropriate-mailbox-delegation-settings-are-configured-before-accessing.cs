@@ -1,8 +1,8 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -10,56 +10,43 @@ class Program
     {
         try
         {
-            // Exchange Web Services (EWS) endpoint and user credentials
+            // Placeholder connection details
             string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("user@example.com", "password");
+            string username = "user@example.com";
+            string password = "password";
 
-            // Initialize the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            // Skip execution when placeholder credentials are used
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com"))
             {
-                // Shared mailbox to access
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                return;
+            }
+
+            // Create the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // Verify connection by retrieving mailbox info for the primary mailbox
+                ExchangeMailboxInfo primaryInfo = client.GetMailboxInfo();
+                Console.WriteLine($"Primary mailbox Inbox URI: {primaryInfo.InboxUri}");
+
+                // Specify the shared mailbox to access
                 string sharedMailbox = "shared@example.com";
 
-                // Verify that delegation is configured for the shared mailbox
-                try
-                {
-                    var delegateUsers = client.ListDelegates(sharedMailbox);
-                    if (delegateUsers == null || delegateUsers.Count == 0)
-                    {
-                        Console.Error.WriteLine("No delegation configured for the shared mailbox.");
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to retrieve delegation info: {ex.Message}");
-                    return;
-                }
+                // Retrieve mailbox info for the shared mailbox
+                ExchangeMailboxInfo sharedInfo = client.GetMailboxInfo(sharedMailbox);
+                Console.WriteLine($"Shared mailbox Inbox URI: {sharedInfo.InboxUri}");
 
-                // Retrieve mailbox information for the shared mailbox
-                try
+                // List messages from the shared mailbox's Inbox
+                ExchangeMessageInfoCollection messages = client.ListMessages(sharedInfo.InboxUri);
+                foreach (var msgInfo in messages)
                 {
-                    ExchangeMailboxInfo sharedInfo = client.GetMailboxInfo(sharedMailbox);
-                    string inboxUri = sharedInfo.InboxUri;
-
-                    // List messages in the shared mailbox's Inbox
-                    var messageInfos = client.ListMessages(inboxUri);
-                    foreach (var info in messageInfos)
-                    {
-                        // Fetch the full message using its unique URI
-                        MailMessage message = client.FetchMessage(info.UniqueUri);
-                        Console.WriteLine($"Subject: {message.Subject}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error accessing shared mailbox: {ex.Message}");
+                    Console.WriteLine($"Subject: {msgInfo.Subject}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
