@@ -1,54 +1,73 @@
-using Aspose.Email.Tools.Search;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Tools.Search;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main()
         {
-            // Initialize the Exchange WebDAV client
-            using (ExchangeClient client = new ExchangeClient(
-                "https://exchange.example.com/EWS/Exchange.asmx",
-                "username",
-                "password"))
+            try
             {
-                // Build first query: messages from a specific sender
-                ExchangeQueryBuilder builderFrom = new ExchangeQueryBuilder();
-                builderFrom.From.Contains("alice@example.com");
-                MailQuery queryFrom = builderFrom.GetQuery();
+                // Placeholder credentials – replace with real values or skip execution in CI.
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "username";
+                string password = "password";
 
-                // Build second query: messages with a specific subject keyword
-                ExchangeQueryBuilder builderSubject = new ExchangeQueryBuilder();
-                builderSubject.Subject.Contains("Report");
-                MailQuery querySubject = builderSubject.GetQuery();
-
-                // Combine the two queries using logical OR
-                ExchangeQueryBuilder builderCombined = new ExchangeQueryBuilder();
-                MailQuery combinedQuery = builderCombined.Or(queryFrom, querySubject);
-
-                // Retrieve messages from the Inbox that match either condition
-                ExchangeMessageInfoCollection messages = client.ListMessages(
-                    client.MailboxInfo.InboxUri,
-                    combinedQuery,
-                    false); // non‑recursive
-
-                // Display the subject of each matching message
-                foreach (var info in messages)
+                // Guard against placeholder credentials to avoid external network calls.
+                if (mailboxUri.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
                 {
-                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                    Console.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
+                    return;
+                }
+
+                // Create and connect the Exchange WebDAV client.
+                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+                {
+                    try
                     {
-                        Console.WriteLine(message.Subject);
+                        // Build first search criterion: Subject contains "Report".
+                        ExchangeQueryBuilder subjectBuilder = new ExchangeQueryBuilder();
+                        subjectBuilder.Subject.Contains("Report");
+                        MailQuery subjectQuery = subjectBuilder.GetQuery();
+
+                        // Build second search criterion: From contains "sales@example.com".
+                        ExchangeQueryBuilder fromBuilder = new ExchangeQueryBuilder();
+                        fromBuilder.From.Contains("sales@example.com");
+                        MailQuery fromQuery = fromBuilder.GetQuery();
+
+                        // Combine the two criteria with logical OR.
+                        ExchangeQueryBuilder combineBuilder = new ExchangeQueryBuilder();
+                        MailQuery combinedQuery = combineBuilder.Or(subjectQuery, fromQuery);
+
+                        // Retrieve messages from the Inbox that match either condition.
+                        string inboxUri = client.MailboxInfo.InboxUri;
+                        ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri, combinedQuery, true);
+
+                        // Output basic information about each matching message.
+                        foreach (ExchangeMessageInfo messageInfo in messages)
+                        {
+                            Console.WriteLine($"Subject: {messageInfo.Subject}");
+                            Console.WriteLine($"From: {messageInfo.From}");
+                            Console.WriteLine($"Date: {messageInfo.InternalDate}");
+                            Console.WriteLine(new string('-', 40));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error during Exchange operations: {ex.Message}");
+                        return;
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+                return;
+            }
         }
     }
 }
