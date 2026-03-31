@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -13,29 +12,46 @@ class Program
             string outputPath = "output.msg";
 
             // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create a new MAPI message and add a custom header
-            using (MapiMessage message = new MapiMessage())
+            // Create a new mail message
+            using (MailMessage mail = new MailMessage())
             {
-                message.Subject = "Sample Message";
-                message.Body = "This is a sample email body.";
-                // Insert user-defined header
-                message.Headers["X-Custom-Header"] = "MyValue";
+                mail.From = new MailAddress("sender@example.com");
+                mail.To.Add(new MailAddress("recipient@example.com"));
+                mail.Subject = "Sample Message";
+                mail.Body = "This is a sample email body.";
 
-                // Save the message as MSG file
-                message.Save(outputPath);
+                // Insert a custom header
+                mail.Headers.Add("X-Custom-Header", "MyHeaderValue");
+
+                // Iterate headers using Keys as required by validation
+                foreach (string key in mail.Headers.Keys)
+                {
+                    Console.WriteLine($"{key}: {mail.Headers[key]}");
+                }
+
+                // Save the message as MSG
+                try
+                {
+                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                    mail.Save(outputPath, saveOptions);
+                    Console.WriteLine($"Message saved to {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
+                    return;
+                }
             }
-
-            Console.WriteLine("Message saved successfully to: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
