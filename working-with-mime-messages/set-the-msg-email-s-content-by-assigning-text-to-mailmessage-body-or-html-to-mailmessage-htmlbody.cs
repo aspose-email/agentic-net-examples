@@ -4,48 +4,42 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             string outputPath = "output.msg";
 
             // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(directory);
             }
 
             // Create and configure the mail message
             using (MailMessage message = new MailMessage())
             {
                 message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("receiver@example.com"));
-                message.Subject = "Test MSG";
-                message.Body = "This is the plain text body.";
-                // Uncomment to set HTML body instead
-                // message.HtmlBody = "<p>This is the <b>HTML</b> body.</p>";
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Sample Message";
 
-                // Prepare MSG save options
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                // Set plain‑text body
+                message.Body = "This is a plain text body.";
 
-                // Save the message with file I/O guard
-                try
-                {
-                    message.Save(outputPath, saveOptions);
-                    Console.WriteLine($"Message saved to {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
-                    return;
-                }
+                // Uncomment the following lines to use an HTML body instead
+                // message.HtmlBody = "<html><body><h1>Hello, World!</h1></body></html>";
+                // message.IsBodyHtml = true;
+
+                // Save the message as an Outlook MSG file
+                message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
             }
+
+            Console.WriteLine("Message saved to " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
