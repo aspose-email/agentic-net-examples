@@ -6,59 +6,53 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
+            // Paths to the source PST (external) and the destination PST (existing Outlook storage)
             string sourcePstPath = "source.pst";
-            string destinationPstPath = "dest.pst";
+            string destinationPstPath = "destination.pst";
 
-            // Verify source PST exists
+            // Verify that the source PST file exists
             if (!File.Exists(sourcePstPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {sourcePstPath}");
+                Console.Error.WriteLine($"Error: Source PST file not found – {sourcePstPath}");
                 return;
             }
 
-            // Verify destination PST exists; create a minimal one if missing
-            if (!File.Exists(destinationPstPath))
+            // Ensure the destination PST file exists; create a new one if it does not
+            PersonalStorage destinationPst;
+            if (File.Exists(destinationPstPath))
             {
-                try
-                {
-                    using (PersonalStorage createdPst = PersonalStorage.Create(destinationPstPath, FileFormatVersion.Unicode))
-                    {
-                        // Optionally create default folders
-                        createdPst.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating destination PST: {ex.Message}");
-                    return;
-                }
+                // Open existing PST with write access
+                destinationPst = PersonalStorage.FromFile(destinationPstPath, true);
+            }
+            else
+            {
+                // Create a new Unicode PST file
+                destinationPst = PersonalStorage.Create(destinationPstPath, FileFormatVersion.Unicode);
             }
 
-            // Open source PST (read‑only) and destination PST (writable)
-            using (PersonalStorage sourcePst = PersonalStorage.FromFile(sourcePstPath, false))
-            using (PersonalStorage destinationPst = PersonalStorage.FromFile(destinationPstPath, true))
+            // Open the source PST for reading
+            using (PersonalStorage sourcePst = PersonalStorage.FromFile(sourcePstPath))
+            using (destinationPst)
             {
-                // Get (or create) the Inbox folder in the destination PST
-                FolderInfo destinationInbox = destinationPst.GetPredefinedFolder(StandardIpmFolder.Inbox);
+                // Create (or get) a folder in the destination PST where messages will be added
+                FolderInfo importedFolder = destinationPst.RootFolder.AddSubFolder("Imported");
 
-                // Iterate through each subfolder in the source PST
-                foreach (FolderInfo sourceFolder in sourcePst.RootFolder.GetSubFolders())
+                // Iterate over all messages in the root folder of the source PST
+                foreach (MessageInfo sourceMessageInfo in sourcePst.RootFolder.EnumerateMessages())
                 {
-                    // Enumerate all messages in the current source folder
-                    foreach (MessageInfo messageInfo in sourceFolder.EnumerateMessages())
+                    // Extract the full MAPI message from the source PST
+                    using (MapiMessage sourceMessage = sourcePst.ExtractMessage(sourceMessageInfo))
                     {
-                        // Extract the message as a MapiMessage
-                        using (MapiMessage mapiMessage = sourcePst.ExtractMessage(messageInfo))
-                        {
-                            // Add the message to the destination Inbox
-                            destinationInbox.AddMessage(mapiMessage);
-                        }
+                        // Add the extracted message to the destination PST folder
+                        importedFolder.AddMessage(sourceMessage);
                     }
                 }
+
+                Console.WriteLine("Messages have been successfully added to the destination PST.");
             }
         }
         catch (Exception ex)
