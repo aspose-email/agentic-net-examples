@@ -9,32 +9,55 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(msgPath))
+            // Ensure input file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
-                using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "sender@example.com", "receiver@example.com"))
+                try
                 {
-                    placeholder.Save(msgPath);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "sender@example.com", "recipient@example.com"))
+                {
+                    placeholder.Save(inputPath);
+                    Console.Error.WriteLine($"Input file not found. Created placeholder MSG at '{inputPath}'.");
                 }
             }
 
-            // Load the MSG file.
-            using (MapiMessage message = MapiMessage.Load(msgPath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Mark the message as read.
-                message.SetMessageFlags(MapiMessageFlags.MSGFLAG_READ);
-
-                // Save the updated message back to the same file.
-                message.Save(msgPath);
+                Directory.CreateDirectory(outputDir);
             }
 
-            Console.WriteLine("Message marked as read successfully.");
+            // Load the MSG, set the Seen (Read) flag, and save
+            using (MapiMessage message = MapiMessage.Load(inputPath))
+            {
+                // Add the Read flag (MSGFLAG_READ) to mark as seen
+                message.SetMessageFlags(MapiMessageFlags.MSGFLAG_READ);
+                message.Save(outputPath);
+                Console.WriteLine($"Message marked as read and saved to '{outputPath}'.");
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
