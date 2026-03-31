@@ -1,33 +1,32 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // EWS service URL and credentials
-            string serviceUrl = "https://mail.example.com/EWS/Exchange.asmx";
+            // Placeholder credentials and EWS URL for the shared mailbox
+            string ewsUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
-            string sharedMailbox = "shared@example.com";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            // Create the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password))
             {
-                // Retrieve mailbox information for the shared mailbox
-                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo(sharedMailbox);
-                string inboxUri = mailboxInfo.InboxUri;
+                // Get the Inbox URI of the shared mailbox
+                string inboxUri = client.MailboxInfo.InboxUri;
 
-                // List messages in the shared mailbox's Inbox
-                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
-                foreach (ExchangeMessageInfo info in messages)
+                // List messages in the Inbox
+                ExchangeMessageInfoCollection messagesInfo = client.ListMessages(inboxUri);
+
+                // Iterate through each message info and fetch the full message
+                foreach (ExchangeMessageInfo info in messagesInfo)
                 {
-                    // Fetch the full message using its unique URI
                     using (MailMessage message = client.FetchMessage(info.UniqueUri))
                     {
                         Console.WriteLine($"Subject: {message.Subject}");
