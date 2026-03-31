@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using Aspose.Email.Mime;
 
 class Program
 {
@@ -9,51 +10,93 @@ class Program
     {
         try
         {
-            // Input MSG file path
-            string msgFilePath = "sample.msg";
+            // Paths
+            string inputMsgPath = "sample.msg";
+            string outputDir = "output";
+            string modifiedMsgPath = "modified.msg";
 
-            // Verify input file exists
-            if (!File.Exists(msgFilePath))
+            // Ensure input MSG exists; create minimal placeholder if missing
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                try
+                {
+                    MapiMessage placeholder = new MapiMessage("sender@example.com", "receiver@example.com", "Placeholder Subject", "Placeholder body");
+                    placeholder.Save(inputMsgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Ensure output directory exists
+            try
+            {
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error preparing output directory: {ex.Message}");
                 return;
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgFilePath))
+            // Load MSG with TNEF attachment preservation
+            MsgLoadOptions loadOptions = new MsgLoadOptions
             {
-                // Extract all attachments (including TNEF) to the current directory
-                foreach (MapiAttachment attachment in msg.Attachments)
-                {
-                    // Preserve original file name; if empty, generate a unique name
-                    string attachmentFileName = string.IsNullOrEmpty(attachment.FileName)
-                        ? $"attachment_{Guid.NewGuid()}"
-                        : attachment.FileName;
+                PreserveTnefAttachments = true
+            };
 
-                    // Save the attachment content
-                    attachment.Save(attachmentFileName);
-                    Console.WriteLine($"Saved attachment: {attachmentFileName}");
+            using (MailMessage message = MailMessage.Load(inputMsgPath, loadOptions))
+            {
+                // Extract all attachments (including those decoded from winmail.dat)
+                foreach (Attachment attachment in message.Attachments)
+                {
+                    string attachmentName = attachment.Name;
+                    if (string.IsNullOrEmpty(attachmentName))
+                    {
+                        attachmentName = "attachment.bin";
+                    }
+
+                    string outputPath = Path.Combine(outputDir, attachmentName);
+                    try
+                    {
+                        using (FileStream fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                        {
+                            attachment.Save(fs);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error saving attachment '{attachmentName}': {ex.Message}");
+                        // Continue with next attachment
+                    }
                 }
 
-                // Convert the MAPI message to a MailMessage while preserving TNEF data
-                MailConversionOptions conversionOptions = new MailConversionOptions();
-                conversionOptions.ConvertAsTnef = true;
+                // Example: add a new text attachment
+                string newContent = "This is a new attachment added programmatically.";
+                ContentType txtContentType = new ContentType("text/plain");
+                Attachment newAttachment = Attachment.CreateAttachmentFromString(newContent, txtContentType);
+                newAttachment.Name = "newAttachment.txt";
+                message.Attachments.Add(newAttachment);
 
-                using (MailMessage mail = msg.ToMailMessage(conversionOptions))
+                // Save the modified message
+                try
                 {
-                    // Example edit: prepend text to the subject
-                    mail.Subject = "Edited – " + mail.Subject;
-
-                    // Save the edited message back to MSG format
-                    string editedMsgPath = "edited.msg";
-                    mail.Save(editedMsgPath, SaveOptions.DefaultMsg);
-                    Console.WriteLine($"Edited message saved as: {editedMsgPath}");
+                    message.Save(modifiedMsgPath, SaveOptions.DefaultMsg);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving modified MSG: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
