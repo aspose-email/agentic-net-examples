@@ -9,28 +9,45 @@ class Program
     {
         try
         {
-            // Initialize the EWS client with placeholder credentials
+            // Placeholder connection details
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
+            // Guard against executing real network calls with placeholder data
+            if (mailboxUri.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
+                return;
+            }
+
+            // Create and configure the EWS client
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Define the user configuration name (name and folder identifier)
-                UserConfigurationName configName = new UserConfigurationName("MyConfig", "Inbox");
+                try
+                {
+                    // Prepare the user configuration name (requires a folder identifier)
+                    string configName = "MyUserConfig";
+                    string folderId = client.MailboxInfo.InboxUri; // Use Inbox as the target folder
+                    UserConfigurationName configIdentifier = new UserConfigurationName(configName, folderId);
 
-                // Create a new UserConfiguration instance
-                UserConfiguration userConfig = new UserConfiguration(configName);
+                    // Create the user configuration object
+                    UserConfiguration userConfig = new UserConfiguration(configIdentifier);
 
-                // Create the user configuration on the Exchange server
-                client.CreateUserConfiguration(userConfig);
+                    // Invoke the service to create the configuration on the server
+                    client.CreateUserConfiguration(userConfig);
 
-                Console.WriteLine("User configuration created successfully.");
+                    Console.WriteLine("User configuration created successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
