@@ -1,7 +1,5 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -11,33 +9,63 @@ class Program
     {
         try
         {
-            // Define log file location
-            string logFilePath = Path.Combine(Environment.CurrentDirectory, "logs", "ews.log");
-
-            // Ensure the directory for the log file exists
-            string logDirectory = Path.GetDirectoryName(logFilePath);
-            if (!Directory.Exists(logDirectory))
+            // Determine log folder and ensure it exists
+            string logFolder = Path.Combine(Environment.CurrentDirectory, "Logs");
+            try
             {
-                Directory.CreateDirectory(logDirectory);
+                if (!Directory.Exists(logFolder))
+                {
+                    Directory.CreateDirectory(logFolder);
+                }
+            }
+            catch (Exception ioEx)
+            {
+                Console.Error.WriteLine($"Failed to prepare log directory: {ioEx.Message}");
+                return;
             }
 
-            // Set up credentials (replace with real values)
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            string logPath = Path.Combine(logFolder, "ews.log");
 
-            // Initialize the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient("https://example.com/EWS/Exchange.asmx", credentials))
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Guard against executing with placeholder credentials
+            if (mailboxUri.Contains("example.com") || username == "username")
             {
-                // Assign the log file path to the client
-                client.LogFileName = logFilePath;
+                Console.WriteLine("Placeholder credentials detected. Skipping EWS connection.");
+                return;
+            }
 
-                // Example operation: list messages in the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                Console.WriteLine($"Total messages in Inbox: {messages.Count}");
+            // Create EWS client safely
+            try
+            {
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    // Set log file location
+                    client.LogFileName = logPath;
+
+                    // Example operation: retrieve server version
+                    try
+                    {
+                        string versionInfo = client.GetVersionInfo();
+                        Console.WriteLine($"Exchange Server version: {versionInfo}");
+                    }
+                    catch (Exception opEx)
+                    {
+                        Console.Error.WriteLine($"EWS operation failed: {opEx.Message}");
+                    }
+                }
+            }
+            catch (Exception connEx)
+            {
+                Console.Error.WriteLine($"Failed to create or use EWS client: {connEx.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
