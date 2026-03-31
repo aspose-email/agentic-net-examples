@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
@@ -11,45 +9,54 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with placeholder credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com"))
+            // Placeholder credentials – in real scenarios replace with actual values.
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string defaultEmail = "user@example.com";
+
+            // Guard against executing live network calls with placeholder credentials.
+            if (clientId == "clientId" || clientSecret == "clientSecret" ||
+                refreshToken == "refreshToken")
             {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client operations.");
+                return;
+            }
+
+            // Create Gmail client instance.
+            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+            {
+                // Retrieve current configuration settings.
+                string currentAccessToken = gmailClient.AccessToken;
+                string currentDefaultEmail = gmailClient.DefaultEmail;
+                int currentTimeout = gmailClient.Timeout;
+                Console.WriteLine($"Current Access Token: {currentAccessToken}");
+                Console.WriteLine($"Current Default Email: {currentDefaultEmail}");
+                Console.WriteLine($"Current Timeout (ms): {currentTimeout}");
+
+                // Modify configuration settings.
+                gmailClient.Timeout = 200000; // Increase timeout to 200 seconds.
+                // Example: assign a proxy if needed (null here means no proxy).
+                gmailClient.Proxy = null;
+
+                // Refresh the access token programmatically.
                 try
                 {
-                    // Retrieve current client settings
-                    Dictionary<string, string> settings = gmailClient.GetSettings();
-                    Console.WriteLine("Current Settings:");
-                    foreach (KeyValuePair<string, string> entry in settings)
-                    {
-                        Console.WriteLine($"{entry.Key}: {entry.Value}");
-                    }
-
-                    // Modify authentication token
-                    gmailClient.AccessToken = "newAccessToken";
-
-                    // Modify timeout (milliseconds)
-                    gmailClient.Timeout = 200000;
-
-                    // Set a proxy (example)
-                    WebProxy proxy = new WebProxy("http://proxy.example.com:8080");
-                    gmailClient.Proxy = proxy;
-
-                    Console.WriteLine("Client configuration updated successfully.");
+                    gmailClient.RefreshToken();
+                    Console.WriteLine("Access token refreshed successfully.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during client operations: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to refresh token: {ex.Message}");
                 }
+
+                // Verify modified settings.
+                Console.WriteLine($"Updated Timeout (ms): {gmailClient.Timeout}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
