@@ -6,51 +6,78 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
+            // Define file paths
+            string inputMsgPath = "input.msg";
+            string outputMsgPath = "signed_output.msg";
             string certificatePath = "certificate.pfx";
             string certificatePassword = "password";
-            string outputMsgPath = "signedMessage.msg";
 
-            // Verify the certificate file exists
+            // Ensure input MSG exists; create a minimal placeholder if missing
+            if (!File.Exists(inputMsgPath))
+            {
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder body"))
+                {
+                    placeholder.Save(inputMsgPath);
+                }
+            }
+
+            // Ensure certificate file exists
             if (!File.Exists(certificatePath))
             {
                 Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
                 return;
             }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputMsgPath));
+            if (!Directory.Exists(outputDirectory))
             {
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            // Load the X.509 certificate
-            using (X509Certificate2 certificate = new X509Certificate2(certificatePath, certificatePassword))
+            // Load the MSG file
+            using (MapiMessage mapimsg = MapiMessage.Load(inputMsgPath))
             {
-                // Create a simple mail message
-                using (MailMessage mailMessage = new MailMessage(
-                    "sender@example.com",
-                    "receiver@example.com",
-                    "Signed MSG",
-                    "This is a signed message."))
+                // Convert to MailMessage with explicit MailConversionOptions (required for signature tasks)
+                MailMessage mailMessage = mapimsg.ToMailMessage(new MailConversionOptions());
+
+                // Load the signing certificate
+                using (X509Certificate2 certificate = new X509Certificate2(certificatePath, certificatePassword))
                 {
-                    // Sign the message using SecureEmailManager
+                    // Attach digital signature
                     SecureEmailManager secureManager = new SecureEmailManager();
                     MailMessage signedMail = secureManager.AttachSignature(mailMessage, certificate);
 
-                    // Convert the signed MailMessage to MapiMessage for MSG format
-                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(signedMail))
+                    // Convert back to MapiMessage and save
+                    using (MapiMessage signedMapi = MapiMessage.FromMailMessage(signedMail))
                     {
-                        // Save the signed message as MSG
-                        mapiMessage.Save(outputMsgPath);
-                        Console.WriteLine($"Signed MSG saved to: {outputMsgPath}");
+                        signedMapi.Save(outputMsgPath);
                     }
                 }
             }
+
+            Console.WriteLine("Message signed and saved successfully.");
         }
         catch (Exception ex)
         {
