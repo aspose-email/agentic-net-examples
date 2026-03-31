@@ -1,47 +1,45 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Tools.Verifications;
 
-class Program
+namespace EmailVerificationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Mail server connection settings
-            string host = "smtp.example.com";
-            int port = 587;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create and configure the SMTP client
-            using (SmtpClient client = new SmtpClient())
+            try
             {
-                client.Host = host;
-                client.Port = port;
-                client.Username = username;
-                client.Password = password;
-                client.SecurityOptions = SecurityOptions.Auto;
+                Console.Write("Enter email address to validate: ");
+                string emailAddress = Console.ReadLine();
 
-                // Validate the credentials against the mail server
-                bool credentialsValid;
-                try
+                if (string.IsNullOrWhiteSpace(emailAddress))
                 {
-                    credentialsValid = client.ValidateCredentials();
-                }
-                catch (Exception validationEx)
-                {
-                    Console.Error.WriteLine($"Credential validation error: {validationEx.Message}");
+                    Console.Error.WriteLine("Email address is empty.");
                     return;
                 }
 
-                Console.WriteLine(credentialsValid ? "Credentials are valid." : "Credentials are invalid.");
+                // Create the validator
+                EmailValidator validator = new EmailValidator();
+
+                // Perform validation using the MailServer policy (default overload)
+                ValidationResult result;
+                validator.Validate(emailAddress, out result);
+
+                // Check the validation result using the ReturnCode property
+                if (result.ReturnCode == ValidationResponseCode.ValidationSuccess)
+                {
+                    Console.WriteLine("The email address is valid.");
+                }
+                else
+                {
+                    Console.WriteLine($"Validation failed. Reason: {result.Message}");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
