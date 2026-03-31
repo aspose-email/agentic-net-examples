@@ -1,7 +1,5 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange.WebService;
@@ -12,38 +10,66 @@ class Program
     {
         try
         {
-            // Define the directory and file for logging
-            string logDirectory = Path.Combine(Environment.CurrentDirectory, "Logs");
-            string logFilePath = Path.Combine(logDirectory, "ews_log.txt");
+            // Placeholder connection information
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            // Ensure the log directory exists
-            if (!Directory.Exists(logDirectory))
+            // Skip real network calls when placeholders are used
+            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
             {
-                Directory.CreateDirectory(logDirectory);
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                return;
             }
 
-            // Set up credentials for the Exchange server
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Initialize the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient("https://example.com/EWS/Exchange.asmx", credentials))
+            // Create the EWS client inside a using block to ensure disposal
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // Enable and configure logging via the base EmailClient class
-                if (client is EmailClient emailClient)
+                // Access logging properties via the EmailClient base class
+                EmailClient emailClient = client as EmailClient;
+                if (emailClient == null)
                 {
-                    emailClient.EnableLogger = true;               // Turn on logging
-                    emailClient.LogFileName = logFilePath;          // Destination file
-                    emailClient.UseDateInLogFileName = false;      // Disable automatic date suffix
+                    Console.Error.WriteLine("Unable to access logging properties on the client.");
+                    return;
                 }
 
-                // Example operation: list messages in the Inbox folder
-                ExchangeMessageInfoCollection inboxMessages = client.ListMessages(client.MailboxInfo.InboxUri);
-                Console.WriteLine($"Inbox contains {inboxMessages.Count} messages.");
+                // Enable logging
+                emailClient.EnableLogger = true;
+
+                // Prepare log directory and file
+                string logDirectory = Path.Combine(Environment.CurrentDirectory, "Logs");
+                try
+                {
+                    if (!Directory.Exists(logDirectory))
+                    {
+                        Directory.CreateDirectory(logDirectory);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create log directory: {ex.Message}");
+                    return;
+                }
+
+                // Set log file name and include date in the file name
+                emailClient.LogFileName = Path.Combine(logDirectory, "ews_log.txt");
+                emailClient.UseDateInLogFileName = true;
+
+                // Example operation: retrieve mailbox information
+                try
+                {
+                    var mailboxInfo = client.MailboxInfo;
+                    Console.WriteLine($"Mailbox URI: {mailboxInfo.MailboxUri}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Operation failed: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
