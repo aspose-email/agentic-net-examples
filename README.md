@@ -11,7 +11,7 @@ Examples are organized by feature category:
 - `programming-email-verification/` - 12 example(s)
 - `programming-with-gmail/` - 41 example(s)
 - `working-with-amp-html-emails/` - 16 example(s)
-- `working-with-exchange-ews-client/` - 132 example(s)
+- `working-with-exchange-ews-client/` - 133 example(s)
 - `working-with-exchange-webdav-client/` - 36 example(s)
 - `working-with-ibm-notes/` - 28 example(s)
 - `working-with-imap-client/` - 57 example(s)

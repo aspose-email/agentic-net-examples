@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 620,
+  "total_examples": 621,
   "total_categories": 14,
-  "last_updated": "2026-03-28",
+  "last_updated": "2026-03-31",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -361,7 +361,7 @@
     },
     {
       "name": "working-with-exchange-ews-client",
-      "file_count": 132,
+      "file_count": 133,
       "files": [
         "add-contacts-to-an-existing-distribution-list-by-specifying-member-identifiers-and-updating-the-list-accordingly.cs",
         "add-custom-metadata-properties-to-the-target-object-to-enable-extended-attribute-storage-for-downstream-processing.cs",
@@ -387,6 +387,7 @@
         "configure-the-service-s-authentication-credentials-to-enable-authorized-access-for-subsequent-programmatic-api-operations.cs",
         "configure-the-shared-mailbox-address-for-email-operations-to-direct-messages-to-the-designated-shared-account.cs",
         "connect-to-the-mail-server-and-retrieve-items-from-a-specific-mailbox-folder-using-the-provided-api.cs",
+        "construct-a-searchfiltercollection-that-merges-several-individual-filters-by-applying-the-logicaloperator-and-oper.cs",
         "construct-aqs-queries-to-filter-items-using-supported-operators-and-criteria-within-the-application.cs",
         "construct-complex-search-queries-by-combining-keywords-using-and-and-or-logical-operators-appropriately.cs",
         "create-a-new-appointment-instance-using-its-constructor-then-configure-required-event-properties-appropriately.cs",
@@ -499,7 +500,7 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 132
+          "count": 133
         },
         {
           "name": "Aspose.Email",
@@ -507,11 +508,11 @@
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 108
+          "count": 109
         },
         {
           "name": "System.Net",
-          "count": 95
+          "count": 96
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
@@ -523,7 +524,7 @@
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 14
+          "count": 15
         },
         {
           "name": "Aspose.Email.Clients",
