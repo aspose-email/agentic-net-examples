@@ -4,50 +4,54 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string inputPath = "input.html";
-            string outputPath = "output.eml";
+            string inputHtmlPath = "input.html";
+            string outputEmlPath = "output.eml";
 
-            // Verify input file exists
-            if (!File.Exists(inputPath))
+            // Ensure input HTML exists; create minimal placeholder if missing
+            try
             {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                if (!File.Exists(inputHtmlPath))
+                {
+                    string placeholderHtml = "<html><body><p>Placeholder email content.</p></body></html>";
+                    File.WriteAllText(inputHtmlPath, placeholderHtml);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare input file: {ex.Message}");
                 return;
             }
 
             // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
-            }
-
             try
             {
-                // Load HTML file as MailMessage with default options
-                HtmlLoadOptions loadOptions = new HtmlLoadOptions();
-                using (MailMessage mailMessage = MailMessage.Load(inputPath, loadOptions))
+                string outputDir = Path.GetDirectoryName(outputEmlPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
-                    // Save as EML preserving structure
-                    EmlSaveOptions saveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
-                    mailMessage.Save(outputPath, saveOptions);
-                    Console.WriteLine("HTML file successfully serialized to EML.");
+                    Directory.CreateDirectory(outputDir);
                 }
             }
-            catch (Exception processingEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing email: {processingEx.Message}");
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                return;
+            }
+
+            // Load HTML as MailMessage and save as EML
+            try
+            {
+                using (MailMessage mail = MailMessage.Load(inputHtmlPath, new HtmlLoadOptions()))
+                {
+                    mail.Save(outputEmlPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing email: {ex.Message}");
                 return;
             }
         }
