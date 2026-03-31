@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -8,25 +9,41 @@ class Program
     {
         try
         {
-            // Initialize the EWS client with mailbox URI and credentials.
+            // Placeholder connection details
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            string username = "username";
             string password = "password";
 
+            // Guard against executing with placeholder credentials
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            {
+                Console.WriteLine("Skipping execution because placeholder credentials are used.");
+                return;
+            }
+
+            // Target folder URI to delete (example: Inbox subfolder)
+            string folderUri = "https://exchange.example.com/EWS/Exchange.asmx/Inbox/TargetFolder";
+
+            // Create the EWS client using the factory method
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Construct the target folder URI. Adjust the path as needed.
-                string targetFolderUri = client.MailboxInfo.InboxUri + "/TargetFolder";
-
-                // Delete the specified folder.
-                client.DeleteFolder(targetFolderUri);
-
-                Console.WriteLine("Folder deleted successfully.");
+                try
+                {
+                    // Delete the specified folder
+                    client.DeleteFolder(folderUri);
+                    Console.WriteLine($"Folder '{folderUri}' deleted successfully.");
+                }
+                catch (Exception ex)
+                {
+                    // Handle errors related to the DeleteFolder operation
+                    Console.Error.WriteLine($"Error deleting folder: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            // Top‑level exception guard
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
