@@ -3,28 +3,59 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace RetrieveMsgBody
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string msgPath = "sample.msg";
+            string msgPath = "sample.msg";
 
-                if (!File.Exists(msgPath))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+            if (!File.Exists(msgPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"File not found: {msgPath}");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
+                try
+                {
+                    MapiMessage placeholder = new MapiMessage(
+                        "Placeholder Subject",
+                        "sender@example.com",
+                        "receiver@example.com",
+                        "This is a placeholder plain‑text body.");
+                    placeholder.Save(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file and retrieve both plain‑text and HTML bodies.
+            try
+            {
                 using (MapiMessage msg = MapiMessage.Load(msgPath))
                 {
                     string plainBody = msg.Body;
                     string htmlBody = msg.BodyHtml;
 
-                    Console.WriteLine("Plain Text Body:");
+                    Console.WriteLine("Plain‑Text Body:");
                     Console.WriteLine(plainBody);
                     Console.WriteLine();
 
@@ -34,8 +65,13 @@ namespace RetrieveMsgBody
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
