@@ -9,24 +9,86 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            string inputPath = "input.msg";
+            string outputPath = "output.html";
 
-            if (!File.Exists(msgPath))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    string inputDir = Path.GetDirectoryName(inputPath);
+                    if (!string.IsNullOrEmpty(inputDir) && !Directory.Exists(inputDir))
+                    {
+                        Directory.CreateDirectory(inputDir);
+                    }
+
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "Sample Subject",
+                        "Sample Body",
+                        "sender@example.com",
+                        "recipient@example.com"))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+
+                    Console.WriteLine($"Placeholder MSG created at '{inputPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    return;
+                }
             }
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Ensure the output directory exists.
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                string htmlBody = msg.BodyHtml;
-                Console.WriteLine("HTML Body:");
-                Console.WriteLine(htmlBody);
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Load the MSG file as a MailMessage and access its HtmlBody.
+            using (MailMessage mail = MailMessage.Load(inputPath))
+            {
+                string htmlBody = mail.HtmlBody;
+
+                if (string.IsNullOrEmpty(htmlBody))
+                {
+                    Console.WriteLine("The message does not contain an HTML body.");
+                }
+
+                try
+                {
+                    File.WriteAllText(outputPath, htmlBody ?? string.Empty);
+                    Console.WriteLine($"HTML content saved to '{outputPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to write HTML output: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
