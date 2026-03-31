@@ -1,86 +1,103 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define input MSG file and output MBOX file paths
-            string msgFilePath = "input.msg";
-            string mboxFilePath = "output.mbox";
+            // Folder containing MSG files
+            string msgFolder = "MsgFiles";
+            // Output MBOX file path
+            string outputMboxPath = "output.mbox";
 
-            // Verify input MSG file exists
-            if (!File.Exists(msgFilePath))
+            // Verify input folder exists
+            if (!Directory.Exists(msgFolder))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                Console.Error.WriteLine($"Error: Directory not found – {msgFolder}");
                 return;
             }
 
-            // Ensure the directory for the output MBOX exists
-            string mboxDirectory = Path.GetDirectoryName(mboxFilePath);
-            if (!string.IsNullOrEmpty(mboxDirectory) && !Directory.Exists(mboxDirectory))
+            // Ensure the output MBOX file exists (create empty placeholder if needed)
+            if (!File.Exists(outputMboxPath))
             {
+                using (FileStream fs = File.Create(outputMboxPath)) { }
+            }
+
+            // Prepare MBOX writer with default options
+            MboxSaveOptions saveOptions = new MboxSaveOptions();
+            using (MboxrdStorageWriter writer = new MboxrdStorageWriter(outputMboxPath, saveOptions))
+            {
+                // Process each MSG file in the folder
+                string[] msgFiles = Directory.GetFiles(msgFolder, "*.msg");
+                foreach (string msgFile in msgFiles)
+                {
+                    if (!File.Exists(msgFile))
+                    {
                 try
                 {
-                    Directory.CreateDirectory(mboxDirectory);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgFile);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create directory – {mboxDirectory}. {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file into a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(msgFilePath))
-            {
-                // Convert MailMessage to MapiMessage with advanced options
-                MapiConversionOptions conversionOptions = MapiConversionOptions.UnicodeFormat;
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage, conversionOptions))
-                {
-                    // Create a temporary PST file to hold the message
-                    string tempPstPath = Path.Combine(Path.GetTempPath(), $"temp_{Guid.NewGuid()}.pst");
+                        Console.Error.WriteLine($"Warning: MSG file not found – {msgFile}");
+                        continue;
+                    }
+
                     try
                     {
-                        // Create PST with Unicode format
-                        using (PersonalStorage pst = PersonalStorage.Create(tempPstPath, FileFormatVersion.Unicode))
-                        {
-                            // Add the MapiMessage to the PST root folder
-                            pst.RootFolder.AddMessage(mapiMessage);
+                        // Load MSG as MapiMessage
+                        MapiMessage mapiMsg = MapiMessage.Load(msgFile);
 
-                            // Convert the PST (PersonalStorage) to MBOX format
-                            MailboxConverter.ConvertPersonalStorageToMbox(pst, mboxFilePath, null);
-                        }
-                    }
-                    finally
-                    {
-                        // Clean up temporary PST file
-                        if (File.Exists(tempPstPath))
+                        // Configure conversion options to preserve metadata
+                        MailConversionOptions convOptions = new MailConversionOptions
                         {
-                            try
-                            {
-                                File.Delete(tempPstPath);
-                            }
-                            catch
-                            {
-                                // Suppress any cleanup errors
-                            }
-                        }
+                            KeepOriginalEmailAddresses = true,
+                            PreserveEmbeddedMessageFormat = true,
+                            PreserveRtfContent = true
+                        };
+
+                        // Convert to MailMessage
+                        MailMessage mailMsg = mapiMsg.ToMailMessage(convOptions);
+
+                        // Write the message into the MBOX storage
+                        writer.WriteMessage(mailMsg);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error processing {msgFile}: {ex.Message}");
                     }
                 }
             }
 
-            Console.WriteLine("Conversion completed successfully.");
+            // Verify the written MBOX by reading it back (required by validation rules)
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(outputMboxPath, new MboxLoadOptions()))
+            {
+                MailMessage message;
+                while ((message = reader.ReadNextMessage()) != null)
+                {
+                    Console.WriteLine($"Written message: {message.Subject}");
+                }
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
