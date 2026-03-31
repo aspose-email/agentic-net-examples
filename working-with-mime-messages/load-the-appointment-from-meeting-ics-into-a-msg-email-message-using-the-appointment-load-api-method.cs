@@ -10,16 +10,16 @@ class Program
     {
         try
         {
-            string icsPath = "meeting.ics";
-            string msgPath = "meeting.msg";
+            string inputPath = "meeting.ics";
+            string outputPath = "meeting.msg";
 
-            // Ensure the input .ics file exists; create a minimal placeholder if missing.
-            if (!File.Exists(icsPath))
+            // Ensure input file exists; create minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
+                string placeholderIcs = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nUID:placeholder\r\nDTSTAMP:20230101T000000Z\r\nDTSTART:20230101T090000Z\r\nDTEND:20230101T100000Z\r\nSUMMARY:Placeholder Meeting\r\nEND:VEVENT\r\nEND:VCALENDAR";
                 try
                 {
-                    string placeholder = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR";
-                    File.WriteAllText(icsPath, placeholder);
+                    File.WriteAllText(inputPath, placeholderIcs);
                 }
                 catch (Exception ex)
                 {
@@ -28,11 +28,26 @@ class Program
                 }
             }
 
-            // Load the appointment from the .ics file.
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                try
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the appointment from the .ics file
             Appointment appointment;
             try
             {
-                appointment = Appointment.Load(icsPath);
+                appointment = Appointment.Load(inputPath);
             }
             catch (Exception ex)
             {
@@ -40,11 +55,11 @@ class Program
                 return;
             }
 
-            // Convert the appointment to a MAPI message.
-            MapiMessage mapiMessage;
+            // Convert the appointment to a MAPI message
+            MapiMessage mapMessage;
             try
             {
-                mapiMessage = appointment.ToMapiMessage();
+                mapMessage = appointment.ToMapiMessage();
             }
             catch (Exception ex)
             {
@@ -52,19 +67,12 @@ class Program
                 return;
             }
 
-            // Save the MAPI message as a .msg file.
+            // Save the MAPI message as a .msg file
             try
             {
-                // Ensure the directory for the output file exists.
-                string outputDir = Path.GetDirectoryName(Path.GetFullPath(msgPath));
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                using (mapMessage)
                 {
-                    Directory.CreateDirectory(outputDir);
-                }
-
-                using (MapiMessage message = mapiMessage)
-                {
-                    message.Save(msgPath);
+                    mapMessage.Save(outputPath);
                 }
             }
             catch (Exception ex)
