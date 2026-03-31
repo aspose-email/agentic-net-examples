@@ -1,7 +1,7 @@
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -9,24 +9,38 @@ class Program
     {
         try
         {
-            // Define connection parameters
-            string host = "imap.example.com";
-            int port = 993;
+            // Placeholder connection details
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
-            string folderName = "TargetFolder";
 
-            // Create and connect the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            // Skip execution when placeholders are detected
+            if (serviceUrl.Contains("example") || username.Contains("example"))
             {
-                // Delete the specified folder permanently
-                client.DeleteFolder(folderName);
-                Console.WriteLine($"Folder '{folderName}' has been deleted successfully.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping DeleteFolder operation.");
+                return;
+            }
+
+            // Create the Exchange Web Services client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new System.Net.NetworkCredential(username, password)))
+            {
+                string folderUri = "/Inbox/TargetFolder";
+
+                try
+                {
+                    // Delete the folder permanently
+                    client.DeleteFolder(folderUri, true);
+                    Console.WriteLine($"Folder '{folderUri}' deleted permanently.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error deleting folder: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
