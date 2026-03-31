@@ -1,98 +1,62 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Initialize EWS client
-            IEWSClient client = null;
-            try
-            {
-                client = EWSClient.GetEWSClient(
-                    "https://example.com/EWS/Exchange.asmx",
-                    new NetworkCredential("username", "password"));
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
-                return;
-            }
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            using (client)
+            // Create EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Find conversations in the Inbox folder
-                ExchangeConversation[] conversations = null;
-                try
-                {
-                    conversations = client.FindConversations(client.MailboxInfo.InboxUri);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error finding conversations: {ex.Message}");
-                    return;
-                }
+                // Get Inbox folder identifier
+                string inboxFolderId = client.MailboxInfo.InboxUri;
 
+                // Find conversations in the Inbox
+                ExchangeConversation[] conversations = client.FindConversations(inboxFolderId);
                 if (conversations == null || conversations.Length == 0)
                 {
-                    Console.WriteLine("No conversations found.");
+                    Console.WriteLine("No conversations found in the Inbox.");
                     return;
                 }
 
-                foreach (ExchangeConversation conv in conversations)
-                {
-                    Console.WriteLine($"Conversation ID: {conv.ConversationId}");
-                    Console.WriteLine($"Topic: {conv.ConversationTopic}");
-                    Console.WriteLine($"Message Count: {conv.MessageCount}");
+                // Use the first conversation for demonstration
+                string conversationId = conversations[0].ConversationId;
+                Console.WriteLine($"Conversation ID: {conversationId}");
 
-                    // Retrieve messages of the conversation
-                    MailMessageCollection messages = null;
-                    try
-                    {
-                        messages = client.FetchConversationMessages(conv.ConversationId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to fetch messages for conversation {conv.ConversationId}: {ex.Message}");
-                        continue;
-                    }
+                // Retrieve messages belonging to the conversation
+                MailMessageCollection messages = client.FetchConversationMessages(conversationId);
+                Console.WriteLine($"Number of messages in conversation: {messages.Count}");
 
-                    Console.WriteLine($"Fetched {messages.Count} messages.");
+                // Mark the conversation as read
+                client.SetConversationReadState(conversationId, true);
+                Console.WriteLine("Conversation marked as read.");
 
-                    // Example update: mark all items in the conversation as read
-                    try
-                    {
-                        client.SetConversationReadState(conv.ConversationId, true);
-                        Console.WriteLine("Marked conversation as read.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to set read state for conversation {conv.ConversationId}: {ex.Message}");
-                    }
+                // Copy the conversation to the Drafts folder
+                string draftsFolderId = client.MailboxInfo.DraftsUri;
+                client.CopyConversationItems(conversationId, draftsFolderId);
+                Console.WriteLine("Conversation copied to Drafts folder.");
 
-                    // Example delete: delete all items of the conversation
-                    // Uncomment the following block to perform deletion
-                    /*
-                    try
-                    {
-                        client.DeleteConversationItems(conv.ConversationId);
-                        Console.WriteLine("Deleted conversation items.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to delete conversation {conv.ConversationId}: {ex.Message}");
-                    }
-                    */
-                }
+                // Move the conversation to the Deleted Items folder
+                string deletedItemsFolderId = client.MailboxInfo.DeletedItemsUri;
+                client.MoveConversationItems(conversationId, deletedItemsFolderId);
+                Console.WriteLine("Conversation moved to Deleted Items folder.");
+
+                // Delete the conversation items from Deleted Items (cleanup)
+                client.DeleteConversationItems(conversationId, deletedItemsFolderId);
+                Console.WriteLine("Conversation items deleted from Deleted Items folder.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
