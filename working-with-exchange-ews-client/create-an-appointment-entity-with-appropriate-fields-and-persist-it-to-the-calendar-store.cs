@@ -1,7 +1,7 @@
+using Aspose.Email.Calendar;
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Calendar;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -10,38 +10,47 @@ class Program
     {
         try
         {
-            // Initialize credentials and mailbox URI
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            // Placeholder connection details
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            // Create and connect the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Skip real network call when placeholders are used
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
             {
-                // Prepare attendees list
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
+                return;
+            }
+
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Prepare attendees
                 MailAddressCollection attendees = new MailAddressCollection();
-                attendees.Add(new MailAddress("attendee1@example.com"));
-                attendees.Add(new MailAddress("attendee2@example.com"));
+                attendees.Add(new MailAddress("alice@example.com"));
+                attendees.Add(new MailAddress("bob@example.com"));
 
-                // Define appointment details
-                DateTime start = new DateTime(2023, 12, 1, 10, 0, 0);
-                DateTime end = start.AddHours(1);
+                // Create the appointment
                 Appointment appointment = new Appointment(
-                    "Conference Room",
-                    "Team Meeting",
-                    "Discuss project milestones",
-                    start,
-                    end,
-                    new MailAddress("organizer@example.com"),
-                    attendees);
+                    location: "Conference Room 1",
+                    summary: "Project Kickoff",
+                    description: "Discuss project goals and timelines.",
+                    startDate: new DateTime(2026, 4, 15, 10, 0, 0),
+                    endDate: new DateTime(2026, 4, 15, 11, 0, 0),
+                    organizer: new MailAddress("organizer@example.com"),
+                    attendees: attendees
+                );
 
-                // Persist the appointment to the Exchange calendar
-                string uid = client.CreateAppointment(appointment);
-                Console.WriteLine("Created appointment UID: " + uid);
+                // Persist the appointment to the default calendar folder
+                string calendarFolderUri = client.MailboxInfo.CalendarUri;
+                string appointmentUid = client.CreateAppointment(appointment, calendarFolderUri);
+
+                Console.WriteLine($"Appointment created with UID: {appointmentUid}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
