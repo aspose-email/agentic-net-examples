@@ -3,34 +3,35 @@ using System.IO;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             // Specify the directory path to be created
-            string directoryPath = @"C:\MyProject\Resources";
+            string directoryPath = @"C:\Temp\AsposeDemo";
 
-            // Check if the directory already exists
-            if (!Directory.Exists(directoryPath))
+            // Guard the file system operation
+            try
             {
-                // Create the directory and obtain a DirectoryInfo object
-                DirectoryInfo createdDirectory = Directory.CreateDirectory(directoryPath);
-
-                // Verify that the directory was created successfully
-                if (!createdDirectory.Exists)
+                if (!Directory.Exists(directoryPath))
                 {
-                    Console.Error.WriteLine($"Error: Failed to create directory – {directoryPath}");
-                    return;
+                    Directory.CreateDirectory(directoryPath);
+                    Console.WriteLine($"Directory created: {directoryPath}");
+                }
+                else
+                {
+                    Console.WriteLine($"Directory already exists: {directoryPath}");
                 }
             }
-
-            Console.WriteLine($"Directory is ready at: {directoryPath}");
+            catch (Exception ioEx)
+            {
+                Console.Error.WriteLine($"Error creating directory – {ioEx.Message}");
+                return;
+            }
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            // Output any unexpected errors
-            Console.Error.WriteLine($"Error: {exception.Message}");
-            return;
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
