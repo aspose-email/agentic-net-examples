@@ -9,39 +9,88 @@ class Program
     {
         try
         {
-            // Define paths
-            string msgFilePath = "source.msg";
-            string outputMsgPath = "parent_with_notes.msg";
+            string inputMsgPath = "input.msg";
+            string outputMsgPath = "output.msg";
 
-            // Verify source MSG file exists
-            if (!File.Exists(msgFilePath))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Source MSG file not found: {msgFilePath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage())
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file to be attached.
+            MapiMessage attachedMessage;
+            try
+            {
+                attachedMessage = MapiMessage.Load(inputMsgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file '{inputMsgPath}': {ex.Message}");
                 return;
             }
 
-            // Load the MSG file to be used as a notes attachment
-            using (MapiMessage notesMessage = MapiMessage.Load(msgFilePath))
+            // Create a new message that will hold the Notes attachment.
+            using (MapiMessage targetMessage = new MapiMessage())
             {
-                // Create a new parent MAPI message
-                using (MapiMessage parentMessage = new MapiMessage(
-                    "Parent Subject",
-                    "This is the body of the parent message.",
-                    "sender@example.com",
-                    "receiver@example.com"))
+                // Add the loaded MSG as an embedded message attachment.
+                try
                 {
-                    // Add the loaded MSG as an embedded (notes) attachment
-                    parentMessage.Attachments.Add("NotesAttachment.msg", notesMessage);
-
-                    // Save the parent message with the notes attachment
-                    parentMessage.Save(outputMsgPath);
-                    Console.WriteLine($"Parent message saved with notes attachment to: {outputMsgPath}");
+                    targetMessage.Attachments.Add("AttachedMessage.msg", attachedMessage);
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to add attachment: {ex.Message}");
+                    return;
+                }
+
+                // Ensure the output directory exists.
+                try
+                {
+                    string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputMsgPath));
+                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                    return;
+                }
+
+                // Save the message with the attached MSG.
+                try
+                {
+                    targetMessage.Save(outputMsgPath);
+                    Console.WriteLine($"Message saved with Notes attachment to '{outputMsgPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                }
+            }
+
+            // Dispose the attached message if it implements IDisposable.
+            if (attachedMessage is IDisposable disposable)
+            {
+                disposable.Dispose();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
