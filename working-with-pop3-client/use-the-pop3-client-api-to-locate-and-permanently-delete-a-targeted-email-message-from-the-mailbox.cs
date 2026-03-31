@@ -4,51 +4,54 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-
 class Program
 {
     static void Main()
     {
         try
         {
-            // POP3 server credentials
+            // Placeholder POP3 server credentials
             string host = "pop3.example.com";
-            int port = 110;
-            string username = "user@example.com";
+            string username = "username";
             string password = "password";
 
-            // Initialize POP3 client inside a using block for proper disposal
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Guard against executing with placeholder credentials
+            if (host.Contains("example") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
+                return;
+            }
+
+            // Initialize POP3 client
+            using (Pop3Client client = new Pop3Client(host, username, password))
             {
                 try
                 {
-                    // Build a query to locate the targeted email (e.g., subject contains "Target")
+                    // Build a query to locate the target message (e.g., by subject)
                     MailQueryBuilder builder = new MailQueryBuilder();
-                    builder.Subject.Contains("Target");
+                    builder.Subject.Contains("Target Subject");
                     MailQuery query = builder.GetQuery();
 
                     // Retrieve messages matching the query
                     Pop3MessageInfoCollection messages = client.ListMessages(query);
 
-                    // If a matching message is found, delete it permanently
-                    if (messages != null && messages.Count > 0)
+                    // Find the first message that matches the criteria
+                    foreach (Pop3MessageInfo info in messages)
                     {
-                        // Delete the first matching message by its sequence number
-                        int sequenceNumber = messages[0].SequenceNumber;
-                        client.DeleteMessage(sequenceNumber);
+                        if (info.Subject != null && info.Subject.Contains("Target Subject"))
+                        {
+                            // Mark the message for deletion using its sequence number
+                            client.DeleteMessage(info.SequenceNumber);
 
-                        // Commit deletions to permanently remove the message from the mailbox
-                        client.CommitDeletes();
-                        Console.WriteLine("Message deleted successfully.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("No matching messages found.");
+                            // Permanently delete all messages marked for deletion
+                            Console.WriteLine($"Message with UID '{info.UniqueId}' has been permanently deleted.");
+                            break;
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during POP3 operations: {ex.Message}");
+                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
                     return;
                 }
             }
