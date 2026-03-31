@@ -3,13 +3,13 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 620,
+  "total_examples": 700,
   "total_categories": 14,
-  "last_updated": "2026-03-28",
+  "last_updated": "2026-03-31",
   "categories": [
     {
       "name": "convert-between-formats",
-      "file_count": 39,
+      "file_count": 40,
       "files": [
         "configure-an-htmlsaveoptions-object-with-custom-rendering-and-resource-settings-to-convert-an-eml-file-to-html.cs",
         "convert-an-eml-file-to-html-format-while-retaining-the-original-message-date-by-setting-preserveoriginaldate-to-true.cs",
@@ -26,6 +26,7 @@
         "load-an-eml-message-and-save-it-as-html-with-utf-8-output-encoding-correctly.cs",
         "load-an-eml-message-and-serialize-it-directly-into-an-oft-file-format-for-further-processing.cs",
         "load-an-eml-message-append-it-to-a-pst-store-and-then-persist-the-updated-pst-file.cs",
+        "load-an-eml-message-convert-it-to-ost-format-and-save-the-resulting-file-to-the-specified-location.cs",
         "load-an-eml-message-embed-its-linked-resources-and-export-the-content-as-a-standalone-html-file.cs",
         "load-an-eml-message-into-memory-and-serialize-it-directly-to-an-msg-file-while-preserving-all-properties.cs",
         "load-an-eml-message-transform-its-contents-and-export-it-as-an-ics-calendar-file.cs",
@@ -54,22 +55,26 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 39
+          "count": 40
         },
         {
           "name": "System.IO",
-          "count": 39
+          "count": 40
         },
         {
           "name": "Aspose.Email",
-          "count": 39
+          "count": 40
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 14
+          "count": 15
         },
         {
           "name": "Aspose.Email.Storage.Pst",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Storage",
           "count": 4
         },
         {
@@ -77,27 +82,23 @@
           "count": 3
         },
         {
-          "name": "Aspose.Email.Storage",
-          "count": 3
+          "name": "System.Text",
+          "count": 2
         },
         {
           "name": "Aspose.Email.Calendar",
           "count": 2
         },
         {
-          "name": "Aspose.Email.Mime",
-          "count": 1
-        },
-        {
-          "name": "System.Text",
-          "count": 1
-        },
-        {
-          "name": "System.Text.RegularExpressions",
-          "count": 1
+          "name": "Aspose.Words",
+          "count": 2
         },
         {
           "name": "Aspose.Email.PersonalInfo",
+          "count": 1
+        },
+        {
+          "name": "HtmlAgilityPack",
           "count": 1
         }
       ],
@@ -127,7 +128,7 @@
         },
         {
           "name": "Aspose.Email.Tools.Verifications",
-          "count": 10
+          "count": 12
         },
         {
           "name": "Aspose.Email",
@@ -135,14 +136,10 @@
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 3
+          "count": 1
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
-          "count": 2
-        },
-        {
-          "name": "Aspose.Email.Clients.Imap",
           "count": 1
         }
       ],
@@ -150,8 +147,15 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 41,
+      "file_count": 48,
       "files": [
+        "13159.cs",
+        "13160.cs",
+        "13161.cs",
+        "13165.cs",
+        "13170.cs",
+        "13173.cs",
+        "13174.cs",
         "access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs",
         "add-a-new-calendar-appointment-to-the-schedule-using-the-library-s-appointment-insertion-api.cs",
         "capture-the-user-s-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs",
@@ -197,66 +201,62 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 41
+          "count": 48
         },
         {
           "name": "Aspose.Email",
-          "count": 32
+          "count": 44
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 22
+          "count": 28
         },
         {
           "name": "Aspose.Email.Clients.Google",
-          "count": 19
+          "count": 27
         },
         {
           "name": "System.IO",
-          "count": 17
-        },
-        {
-          "name": "System.Collections.Generic",
-          "count": 10
+          "count": 16
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 10
+          "count": 13
         },
         {
           "name": "Aspose.Email.Storage.Mbox",
-          "count": 10
+          "count": 9
         },
         {
           "name": "Aspose.Email.Storage",
-          "count": 8
-        },
-        {
-          "name": "Aspose.Email.Storage.Pst",
           "count": 7
         },
         {
-          "name": "Aspose.Email.Clients.Imap",
-          "count": 3
+          "name": "System.Collections.Generic",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 5
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 3
+          "count": 4
         },
         {
-          "name": "Aspose.Email.Clients.Smtp",
+          "name": "Aspose.Email.Clients.Exchange.WebService",
           "count": 2
         },
         {
-          "name": "System.Text",
-          "count": 2
-        },
-        {
-          "name": "System.Net.Http",
+          "name": "Aspose.Email.Clients.Imap",
           "count": 1
         },
         {
-          "name": "System.Text.Json",
+          "name": "Aspose.Email.Calendar.Recurrences",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
           "count": 1
         },
         {
@@ -264,31 +264,11 @@
           "count": 1
         },
         {
-          "name": "System.Threading.Tasks",
+          "name": "Aspose.Email.Clients.Pop3",
           "count": 1
         },
         {
-          "name": "System.Linq",
-          "count": 1
-        },
-        {
-          "name": "System.Diagnostics",
-          "count": 1
-        },
-        {
-          "name": "System.Reflection",
-          "count": 1
-        },
-        {
-          "name": "GoogleRange = Aspose.Email.Clients.Google.Range",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Clients.Activity",
-          "count": 1
-        },
-        {
-          "name": "System.Net",
+          "name": "System.Text",
           "count": 1
         }
       ],
@@ -296,8 +276,9 @@
     },
     {
       "name": "working-with-amp-html-emails",
-      "file_count": 16,
+      "file_count": 17,
       "files": [
+        "13312.cs",
         "assign-values-to-standard-email-fields-such-as-from-to-subject-and-others-when-generating-an-msg-file.cs",
         "during-msg-file-parsing-examine-each-alternateview-for-mime-type-text-x-amp-html-to-extract-the-amp-content.cs",
         "embed-amp-html-content-into-an-msg-email-message-to-enable-dynamic-interactive-email-rendering.cs",
@@ -318,42 +299,50 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 16
+          "count": 17
         },
         {
           "name": "Aspose.Email",
-          "count": 16
+          "count": 17
         },
         {
           "name": "System.IO",
-          "count": 14
+          "count": 16
         },
         {
           "name": "Aspose.Email.Amp",
-          "count": 9
+          "count": 10
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 3
-        },
-        {
-          "name": "Aspose.Email.Mime",
-          "count": 3
+          "count": 4
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
           "count": 3
         },
         {
-          "name": "Aspose.Email.Clients",
-          "count": 3
+          "name": "System.Text",
+          "count": 1
         },
         {
-          "name": "System.Reflection",
-          "count": 2
+          "name": "System.Net.Mime",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 1
         },
         {
           "name": "System.Linq",
+          "count": 1
+        },
+        {
+          "name": "System.Reflection",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients",
           "count": 1
         }
       ],
@@ -361,8 +350,44 @@
     },
     {
       "name": "working-with-exchange-ews-client",
-      "file_count": 132,
+      "file_count": 170,
       "files": [
+        "12880.cs",
+        "12882.cs",
+        "12890.cs",
+        "12891.cs",
+        "12893.cs",
+        "12894.cs",
+        "12903.cs",
+        "12920.cs",
+        "12926.cs",
+        "12927.cs",
+        "12929.cs",
+        "12930.cs",
+        "12931.cs",
+        "12932.cs",
+        "12933.cs",
+        "12937.cs",
+        "12943.cs",
+        "12946.cs",
+        "12948.cs",
+        "12949.cs",
+        "12967.cs",
+        "12971.cs",
+        "12975.cs",
+        "12981.cs",
+        "12983.cs",
+        "12986.cs",
+        "12987.cs",
+        "12999.cs",
+        "13000.cs",
+        "13013.cs",
+        "13016.cs",
+        "13018.cs",
+        "13019.cs",
+        "13020.cs",
+        "13024.cs",
+        "13033.cs",
         "add-contacts-to-an-existing-distribution-list-by-specifying-member-identifiers-and-updating-the-list-accordingly.cs",
         "add-custom-metadata-properties-to-the-target-object-to-enable-extended-attribute-storage-for-downstream-processing.cs",
         "add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs",
@@ -379,6 +404,7 @@
         "configure-authentication-credentials-for-the-email-service-to-establish-secure-connections-and-authorize-requests.cs",
         "configure-exchangeservice-tracelistener-to-direct-logging-output-to-a-designated-log-file-location-on-disk.cs",
         "configure-retrieve-and-update-user-mail-settings-and-preferences-on-an-exchange-server-programmatically.cs",
+        "configure-the-email-client-to-automatically-locate-service-endpoints-via-the-autodiscover-protocol-during-initialization.cs",
         "configure-the-ews-client-in-c-to-record-activity-logs-for-debugging-and-monitoring-purposes.cs",
         "configure-the-exchange-server-endpoint-by-providing-its-url-correctly-in-the-client-settings.cs",
         "configure-the-exchange-web-services-ews-endpoint-url-manually-or-enable-automatic-discovery-at-runtime.cs",
@@ -482,6 +508,7 @@
         "retrieve-calendar-items-from-a-mailbox-using-the-appropriate-api-to-access-event-details.cs",
         "retrieve-contacts-from-a-data-source-and-populate-a-contact-collection-for-further-processing.cs",
         "retrieve-custom-metadata-fields-from-a-document-and-expose-their-values-programmatically-for-further-processing.cs",
+        "retrieve-email-messages-from-a-mailbox-or-server-using-the-provided-api-methods-while-handling-pagination.cs",
         "retrieve-email-messages-from-a-server-or-store-using-supported-protocols-and-handle-them-programmatically.cs",
         "retrieve-email-messages-from-a-shared-mailbox-using-appropriate-api-calls-and-handle-authentication.cs",
         "retrieve-the-shared-mailbox-s-inbox-folder-reference-to-enable-further-email-processing-and-folder-management-tasks.cs",
@@ -499,79 +526,87 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 132
+          "count": 170
         },
         {
           "name": "Aspose.Email",
-          "count": 122
+          "count": 155
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 108
+          "count": 136
         },
         {
           "name": "System.Net",
-          "count": 95
+          "count": 94
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 71
+          "count": 89
         },
         {
           "name": "System.IO",
-          "count": 20
+          "count": 26
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 14
-        },
-        {
-          "name": "Aspose.Email.Clients",
-          "count": 12
+          "count": 16
         },
         {
           "name": "System.Collections.Generic",
           "count": 12
         },
         {
-          "name": "Aspose.Email.Clients.Google",
-          "count": 9
+          "name": "Aspose.Email.PersonalInfo",
+          "count": 11
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 7
-        },
-        {
-          "name": "Aspose.Email.Mapi",
-          "count": 4
+          "count": 9
         },
         {
           "name": "System.Threading.Tasks",
-          "count": 3
+          "count": 7
         },
         {
-          "name": "Aspose.Email.PersonalInfo",
-          "count": 2
+          "name": "Aspose.Email.Clients.Google",
+          "count": 7
         },
         {
-          "name": "System.Linq",
-          "count": 2
+          "name": "Aspose.Email.Clients",
+          "count": 7
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 6
+        },
+        {
+          "name": "System.Threading",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 6
         },
         {
           "name": "System.Text",
-          "count": 2
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 3
         },
         {
           "name": "System.Text.Json",
           "count": 2
         },
         {
-          "name": "System.Threading",
-          "count": 2
+          "name": "System.ComponentModel",
+          "count": 1
         },
         {
-          "name": "Aspose.Email.Clients.Imap",
-          "count": 2
+          "name": "System.Diagnostics",
+          "count": 1
         },
         {
           "name": "System.IO.Compression",
@@ -582,7 +617,19 @@
           "count": 1
         },
         {
+          "name": "System.Runtime.InteropServices",
+          "count": 1
+        },
+        {
           "name": "Aspose.Email.Clients.Exchange.WebService.Models",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.Dav",
+          "count": 1
+        },
+        {
+          "name": "System.Reflection",
           "count": 1
         }
       ],
@@ -590,8 +637,13 @@
     },
     {
       "name": "working-with-exchange-webdav-client",
-      "file_count": 36,
+      "file_count": 41,
       "files": [
+        "13085.cs",
+        "13095.cs",
+        "13096.cs",
+        "13120.cs",
+        "13126.cs",
         "access-and-retrieve-messages-from-a-different-user-s-mailbox-programmatically-handling-authentication-and-permissions.cs",
         "apply-a-filter-that-selects-email-items-whose-message-id-header-matches-the-specified-identifier.cs",
         "apply-a-filter-that-selects-messages-originating-from-a-designated-sender-s-email-address-during-processing.cs",
@@ -632,50 +684,38 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 36
+          "count": 41
         },
         {
           "name": "Aspose.Email",
-          "count": 35
+          "count": 39
         },
         {
           "name": "Aspose.Email.Clients.Exchange.Dav",
-          "count": 25
+          "count": 32
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 20
+          "count": 30
         },
         {
           "name": "System.Net",
-          "count": 15
-        },
-        {
-          "name": "System.IO",
-          "count": 9
+          "count": 10
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 7
+          "count": 8
         },
         {
-          "name": "System.Collections.Generic",
-          "count": 6
-        },
-        {
-          "name": "Aspose.Email.Clients.Google",
-          "count": 5
-        },
-        {
-          "name": "Aspose.Email.Clients",
-          "count": 4
+          "name": "System.IO",
+          "count": 8
         },
         {
           "name": "Aspose.Email.Calendar",
           "count": 4
         },
         {
-          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "name": "Aspose.Email.Clients.Smtp",
           "count": 3
         },
         {
@@ -683,11 +723,11 @@
           "count": 3
         },
         {
-          "name": "Aspose.Email.Clients.Smtp",
-          "count": 1
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 3
         },
         {
-          "name": "Aspose.Email.Mime",
+          "name": "Aspose.Email.Calendar.Recurrences",
           "count": 1
         }
       ],
@@ -695,12 +735,14 @@
     },
     {
       "name": "working-with-ibm-notes",
-      "file_count": 28,
+      "file_count": 30,
       "files": [
+        "13283.cs",
         "add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs",
         "configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs",
         "construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs",
         "design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs",
+        "extract-a-contact-from-an-msg-file-and-save-it-as-a-vcf-vcard.cs",
         "generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs",
         "generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs",
         "generate-a-new-notes-document-using-an-msg-file-as-input-preserving-the-message-content-and-metadata.cs",
@@ -729,30 +771,42 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 28
+          "count": 30
         },
         {
           "name": "System.IO",
-          "count": 28
+          "count": 30
         },
         {
           "name": "Aspose.Email",
-          "count": 28
+          "count": 30
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 27
+          "count": 30
         },
         {
-          "name": "Aspose.Email.Storage.Nsf",
+          "name": "Aspose.Email.Calendar",
           "count": 2
         },
         {
-          "name": "System.Text",
+          "name": "System.Collections.Generic",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "name": "System.Linq",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Storage.Nsf",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Calendar.Recurrences",
           "count": 1
         }
       ],
@@ -760,8 +814,10 @@
     },
     {
       "name": "working-with-imap-client",
-      "file_count": 57,
+      "file_count": 59,
       "files": [
+        "12835.cs",
+        "12836.cs",
         "activate-client-side-logging-by-setting-the-loggingenabled-boolean-property-to-true-on-the-client-instance.cs",
         "activate-detailed-imap-activity-logging-to-capture-all-client-server-interactions-for-diagnostics-and-auditing.cs",
         "apply-search-query-parameters-to-retrieve-and-filter-messages-based-on-specified-criteria-within-the-system.cs",
@@ -823,54 +879,70 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 57
-        },
-        {
-          "name": "Aspose.Email.Clients",
-          "count": 52
+          "count": 59
         },
         {
           "name": "Aspose.Email",
-          "count": 52
+          "count": 55
         },
         {
           "name": "Aspose.Email.Clients.Imap",
           "count": 52
         },
         {
+          "name": "Aspose.Email.Clients",
+          "count": 51
+        },
+        {
           "name": "Aspose.Email.Tools.Search",
-          "count": 23
+          "count": 21
         },
         {
           "name": "System.IO",
-          "count": 11
+          "count": 13
         },
         {
           "name": "System.Collections.Generic",
-          "count": 8
+          "count": 10
         },
         {
           "name": "System.Threading.Tasks",
-          "count": 5
-        },
-        {
-          "name": "System.Threading",
-          "count": 3
+          "count": 6
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 3
+          "count": 6
         },
         {
-          "name": "Aspose.Email.Clients.Google",
-          "count": 2
+          "name": "System.Threading",
+          "count": 6
         },
         {
           "name": "System.Linq",
+          "count": 3
+        },
+        {
+          "name": "System.Net",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Pop3",
           "count": 1
         },
         {
           "name": "Aspose.Email.Clients.Imap.Models",
+          "count": 1
+        },
+        {
+          "name": "System.Text",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Google",
           "count": 1
         }
       ],
@@ -878,8 +950,13 @@
     },
     {
       "name": "working-with-microsoft-graph-client",
-      "file_count": 27,
+      "file_count": 32,
       "files": [
+        "13045.cs",
+        "13047.cs",
+        "13050.cs",
+        "13065.cs",
+        "13074.cs",
         "authenticate-with-azure-active-directory-via-microsoft-graph-client-using-office-credentials-extracted-from-an-msg-file.cs",
         "copy-an-msg-format-email-message-to-a-destination-mailbox-utilizing-the-microsoft-graph-client-api.cs",
         "create-a-mail-category-in-microsoft-graph-using-data-extracted-from-an-msg-file-format.cs",
@@ -911,38 +988,42 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 27
+          "count": 32
         },
         {
           "name": "Aspose.Email",
-          "count": 27
+          "count": 32
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 27
+          "count": 32
         },
         {
           "name": "Aspose.Email.Clients.Graph",
-          "count": 27
+          "count": 32
         },
         {
           "name": "System.IO",
-          "count": 23
+          "count": 25
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 11
+          "count": 22
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 3
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
           "count": 2
         },
         {
-          "name": "System.Collections.Generic",
-          "count": 2
+          "name": "Aspose.Email.Calendar",
+          "count": 1
         },
         {
-          "name": "Aspose.Email.Calendar",
+          "name": "System.Text.Json",
           "count": 1
         }
       ],
@@ -950,12 +1031,13 @@
     },
     {
       "name": "working-with-mime-messages",
-      "file_count": 118,
+      "file_count": 126,
       "files": [
         "access-the-htmlbody-property-of-an-msg-email-object-to-obtain-its-html-message-content.cs",
         "add-a-file-attachment-to-an-msg-email-by-calling-mailmessage-attachments-add-new-attachment-filepath-during-message-composition.cs",
         "add-a-linked-resource-to-the-first-alternate-view-of-an-msg-email-by-calling-mailmessage-alternateviews-0-linkedresources-add.cs",
         "add-a-recipient-to-an-msg-email-by-calling-mailmessage-to-add-new-mailaddress-recipient-example-com-ensuring-the-address-is.cs",
+        "add-modify-and-remove-recipients-in-an-msg-file.cs",
         "add-modify-or-remove-email-recipients-within-msg-files-programmatically-ensuring-correct-address-handling.cs",
         "add-one-or-more-attachments-to-the-email-via-the-attachments-collection-and-save-the-message-as-an-msg-file.cs",
         "analyze-the-tnef-data-embedded-within-msg-files-to-interpret-its-structure-and-contents.cs",
@@ -993,6 +1075,7 @@
         "embed-images-into-an-email-s-html-body-via-linkedresource-objects-attach-them-to-an-alternateview-and-save-as-msg.cs",
         "encrypt-an-email-message-with-an-x509-certificate-and-persist-the-encrypted-output-as-a-msg-file.cs",
         "encrypt-decrypt-and-digitally-sign-msg-email-messages-ensuring-secure-transmission-authentication-and-compliance.cs",
+        "encrypt-decrypt-sign-and-verify-an-email-message-using-s-mime-and-a-certificate.cs",
         "enumerate-the-file-formats-that-can-be-used-when-persisting-email-messages-in-msg-format.cs",
         "export-a-calendar-appointment-to-an-icalendar-file-encapsulated-within-an-msg-message-format.cs",
         "extract-all-attachments-from-an-msg-file-and-provide-them-in-their-original-formats.cs",
@@ -1000,6 +1083,7 @@
         "extract-an-embedded-image-from-an-email-via-linkedresource-contentstream-and-write-it-to-a-msg-file.cs",
         "extract-both-plain-text-and-html-message-bodies-from-msg-files-using-the-provided-api.cs",
         "extract-tnef-attachments-from-an-msg-email-and-convert-them-into-widely-supported-standard-file-formats.cs",
+        "extract-tnef-attachments-from-an-msg-message-and-save-them-to-disk.cs",
         "extract-tnef-encoded-attachments-from-messages-and-save-them-as-msg-files-while-preserving-original-metadata.cs",
         "generate-a-basic-msg-email-message-including-standard-headers-subject-line-and-plain-text-body-content.cs",
         "generate-alternate-views-for-an-msg-email-by-invoking-alternateview-createalternateviewfromstring-html-null-text-html-to-embed.cs",
@@ -1009,6 +1093,7 @@
         "handle-email-attachments-and-embedded-objects-within-msg-files-ensuring-proper-extraction-and-preservation-of-content.cs",
         "handle-tnef-encoded-attachments-within-msg-files-enabling-extraction-conversion-editing-and-proper-metadata-preservation.cs",
         "identify-all-file-formats-that-can-be-loaded-as-email-messages-through-the-msg-import-capability.cs",
+        "implement-comprehensive-operations-for-handling-email-messages-in-the-msg-file-format-including-creation-modification-and-extra.cs",
         "import-an-existing-ics-file-into-an-appointment-object-modify-its-location-then-export-as-an-outlook-msg-file.cs",
         "import-an-icalendar-appointment-stored-in-an-msg-file-and-convert-it-into-a-usable-calendar-object.cs",
         "insert-a-custom-header-into-an-msg-email-by-invoking-headers-add-with-the-desired-name-and-value.cs",
@@ -1039,10 +1124,13 @@
         "persist-the-email-object-as-an-html-document-by-invoking-message-save-output-html-saveoptions-defaulthtml-with-default-html.cs",
         "persist-the-linkedresource-contentstream-from-an-msg-email-to-a-local-file-by-calling-copyto-file-create-outputpath.cs",
         "populate-the-to-cc-and-bcc-collections-of-a-mailmessage-to-include-recipients-in-an-msg-file.cs",
+        "programmatically-generate-and-modify-calendar-appointments-stored-in-msg-files-handling-all-relevant-properties-and-formats.cs",
         "provide-programmatic-access-to-retrieve-replace-or-analyze-embedded-images-in-msg-email-messages.cs",
+        "read-and-update-the-priority-of-an-msg-message-using-knownpropertylist-priority.cs",
         "read-email-messages-from-msg-files-and-write-them-back-in-msg-format-while-preserving-all-properties.cs",
         "read-msg-formatted-email-messages-directly-from-input-streams-and-populate-corresponding-message-objects-in-memory.cs",
         "read-the-attachment-s-data-from-an-msg-message-by-accessing-its-contentstream-as-a-net-stream.cs",
+        "read-write-and-manage-custom-properties-in-msg-format-messages-using-the-library-property-handling-methods.cs",
         "read-write-and-manage-custom-properties-in-msg-format-messages-using-the-library-s-property-handling-methods.cs",
         "retrieve-all-embedded-image-assets-from-an-msg-email-file-while-maintaining-original-image-format.cs",
         "retrieve-an-msg-message-s-html-content-by-assigning-mailmessage-htmlbody-to-your-string-variable-in-code.cs",
@@ -1068,29 +1156,30 @@
         "update-appointment-attributes-within-an-msg-file-to-reflect-new-scheduling-details-such-as-subject-location-start-time-and.cs",
         "use-tnefreader-to-open-an-msg-file-parse-its-tnef-attachments-and-write-each-attachment-to-the-specified-folder.cs",
         "validate-the-digital-signature-of-an-msg-email-message-to-ensure-its-authenticity-and-integrity.cs",
+        "verify-the-digital-signature-of-an-msg-email-using-an-x509-certificate.cs",
         "write-code-to-persist-email-attachments-onto-the-filesystem-using-the-msg-file-format.cs",
         "write-the-extracted-email-components-to-msg-file-format-ensuring-proper-mime-structure-and-metadata-preservation.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 118
-        },
-        {
-          "name": "System.IO",
-          "count": 116
+          "count": 126
         },
         {
           "name": "Aspose.Email",
-          "count": 115
+          "count": 126
+        },
+        {
+          "name": "System.IO",
+          "count": 123
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 63
+          "count": 72
         },
         {
           "name": "System.Security.Cryptography.X509Certificates",
-          "count": 13
+          "count": 15
         },
         {
           "name": "Aspose.Email.Calendar",
@@ -1098,34 +1187,34 @@
         },
         {
           "name": "Aspose.Email.Mime",
-          "count": 9
-        },
-        {
-          "name": "System.Net.Mime",
-          "count": 3
+          "count": 7
         },
         {
           "name": "System.Collections.Generic",
+          "count": 3
+        },
+        {
+          "name": "System.Net.Mime",
           "count": 2
         },
         {
-          "name": "System.Text",
-          "count": 2
-        },
-        {
-          "name": "Aspose.Email.Tools.Verifications",
-          "count": 2
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 1
         },
         {
           "name": "Aspose.Email.Mapi.Msg",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Storage",
+          "name": "Aspose.Email.Calendar.Recurrences",
           "count": 1
         },
         {
           "name": "Aspose.Email.Storage.Mbox",
+          "count": 1
+        },
+        {
+          "name": "System.Text",
           "count": 1
         },
         {
@@ -1137,8 +1226,15 @@
     },
     {
       "name": "working-with-outlook-storage-files",
-      "file_count": 54,
+      "file_count": 61,
       "files": [
+        "12694.cs",
+        "12698.cs",
+        "12703.cs",
+        "12704.cs",
+        "12714.cs",
+        "12720.cs",
+        "12725.cs",
         "add-email-messages-to-an-existing-outlook-pst-storage-file-ensuring-proper-pst-format-compliance.cs",
         "add-files-into-an-outlook-pst-storage-file-programmatically-using-the-pst-file-format.cs",
         "add-messages-from-an-external-pst-file-into-an-existing-outlook-storage-file-using-the-pst-format.cs",
@@ -1197,34 +1293,46 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 54
+          "count": 61
         },
         {
           "name": "System.IO",
-          "count": 54
+          "count": 61
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 54
+          "count": 61
         },
         {
           "name": "Aspose.Email",
-          "count": 37
+          "count": 53
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 34
+          "count": 37
         },
         {
           "name": "System.Collections.Generic",
-          "count": 7
+          "count": 9
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 3
+        },
+        {
+          "name": "System.Text",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
+          "count": 1
         },
         {
           "name": "System.Collections",
           "count": 1
         },
         {
-          "name": "System.Threading.Tasks",
+          "name": "System.Linq",
           "count": 1
         }
       ],
@@ -1232,8 +1340,10 @@
     },
     {
       "name": "working-with-pop3-client",
-      "file_count": 38,
+      "file_count": 40,
       "files": [
+        "12753.cs",
+        "12796.cs",
         "configure-logging-for-the-pop3-client-to-capture-connection-and-authentication-details-during-email-retrieval.cs",
         "configure-the-pop3-client-to-record-all-pop3-operations-and-generate-detailed-activity-logs-for-troubleshooting.cs",
         "configure-the-pop3-client-with-the-appropriate-username-and-password-to-authenticate-the-email-session.cs",
@@ -1276,27 +1386,27 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 38
+          "count": 40
         },
         {
           "name": "Aspose.Email.Clients.Pop3",
-          "count": 38
-        },
-        {
-          "name": "Aspose.Email.Clients",
-          "count": 34
+          "count": 40
         },
         {
           "name": "Aspose.Email",
-          "count": 27
+          "count": 29
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 24
         },
         {
           "name": "System.IO",
-          "count": 12
+          "count": 13
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 7
+          "count": 8
         },
         {
           "name": "System.Threading.Tasks",
@@ -1304,27 +1414,15 @@
         },
         {
           "name": "System.Threading",
-          "count": 2
-        },
-        {
-          "name": "Aspose.Email.Clients.Pop3.Models",
-          "count": 2
-        },
-        {
-          "name": "Aspose.Email.Tools",
-          "count": 1
+          "count": 3
         },
         {
           "name": "System.Net",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Mime",
-          "count": 1
+          "count": 3
         },
         {
           "name": "System.Collections.Generic",
-          "count": 1
+          "count": 2
         }
       ],
       "key_apis": []
@@ -1368,15 +1466,21 @@
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 7
+          "count": 8
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 3
         }
       ],
       "key_apis": []
     },
     {
       "name": "zimbra",
-      "file_count": 7,
+      "file_count": 9,
       "files": [
+        "13261.cs",
+        "13264.cs",
         "calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs",
         "configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs",
         "convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs",
@@ -1388,7 +1492,7 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 7
+          "count": 9
         },
         {
           "name": "Aspose.Email",
@@ -1396,30 +1500,50 @@
         },
         {
           "name": "System.IO",
-          "count": 6
-        },
-        {
-          "name": "Aspose.Email.Storage.Zimbra",
-          "count": 3
+          "count": 7
         },
         {
           "name": "Aspose.Email.Mapi",
           "count": 3
         },
         {
+          "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Storage.Zimbra",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange",
+          "count": 1
+        },
+        {
           "name": "Aspose.Email.Clients.Exchange.WebService",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Calendar",
+          "name": "Aspose.Email.PersonalInfo",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients",
+          "name": "Aspose.Email.Storage.Pst",
           "count": 1
         },
         {
           "name": "Aspose.Email.Clients.Imap",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Activity",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Google",
           "count": 1
         }
       ],
