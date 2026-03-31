@@ -1,8 +1,8 @@
-using System;
-using System.Net;
-using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Calendar;
+using System;
+using Aspose.Email;
+using Aspose.Email.Clients.Google;
+using Aspose.Email.PersonalInfo;
 
 class Program
 {
@@ -10,33 +10,52 @@ class Program
     {
         try
         {
-            // Initialize EWS client with mailbox URI and credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Placeholder credentials – replace with real values for actual execution
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string defaultEmail = "user@example.com";
 
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+            // Skip external call when placeholders are used
+            if (clientId == "clientId" || clientSecret == "clientSecret" ||
+                refreshToken == "refreshToken" || defaultEmail == "user@example.com")
             {
-                // Retrieve the default calendar folder URI
-                string calendarFolderUri = client.MailboxInfo.CalendarUri;
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client call.");
+                return;
+            }
 
-                // List appointments from the default calendar
-                Appointment[] appointments = client.ListAppointments(calendarFolderUri);
-
-                // Output basic details of each appointment
-                foreach (Appointment appointment in appointments)
+            // Create Gmail client
+            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+            {
+                try
                 {
-                    Console.WriteLine("Subject: " + appointment.Summary);
-                    Console.WriteLine("Start: " + appointment.StartDate);
-                    Console.WriteLine("End: " + appointment.EndDate);
-                    Console.WriteLine("Location: " + appointment.Location);
-                    Console.WriteLine(new string('-', 40));
+                    // Retrieve list of calendars
+                    Calendar[] calendars = gmailClient.ListCalendars();
+
+                    foreach (Calendar calendar in calendars)
+                    {
+                        Console.WriteLine($"Calendar ID: {calendar.Id}, Summary: {calendar.Summary}");
+
+                        // Retrieve appointments for each calendar
+                        Appointment[] appointments = gmailClient.ListAppointments(calendar.Id);
+
+                        foreach (Appointment appointment in appointments)
+                        {
+                            Console.WriteLine($"  Appointment: {appointment.Summary}");
+                            Console.WriteLine($"    Start: {appointment.StartDate}");
+                            Console.WriteLine($"    End:   {appointment.EndDate}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error retrieving calendar items: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
