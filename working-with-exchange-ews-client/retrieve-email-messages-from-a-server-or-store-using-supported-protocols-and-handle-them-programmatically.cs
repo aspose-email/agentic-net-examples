@@ -1,56 +1,66 @@
-using Aspose.Email.Clients;
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailImapExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Guard against placeholder credentials to avoid real network calls
+            if (mailboxUri.Contains("example.com") || username == "username")
             {
-                // IMAP server connection parameters (replace with real values or keep placeholders)
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
-                string password = "password";
-                SecurityOptions security = SecurityOptions.SSLExplicit;
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
+                return;
+            }
 
-                // Create and connect the IMAP client inside a using block to ensure disposal
-                using (ImapClient client = new ImapClient(host, port, username, password, security))
+            // Create EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // List messages in the Inbox folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                Console.WriteLine($"Found {messages.Count} messages in Inbox.");
+
+                if (messages.Count > 0)
                 {
-                    try
+                    // Fetch the first message
+                    ExchangeMessageInfo firstInfo = messages[0];
+                    using (MailMessage message = client.FetchMessage(firstInfo.UniqueUri))
                     {
-                        // List messages in the INBOX folder
-                        ImapMessageInfoCollection messagesInfo = client.ListMessages("INBOX");
+                        Console.WriteLine($"Subject: {message.Subject}");
 
-                        Console.WriteLine($"Total messages in INBOX: {messagesInfo.Count}");
-
-                        // Iterate through each message info, fetch the full message and display its subject
-                        foreach (ImapMessageInfo info in messagesInfo)
+                        // Prepare output path
+                        string outputPath = "message.eml";
+                        string directory = Path.GetDirectoryName(outputPath);
+                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                         {
-                            // Fetch the full MailMessage using the unique identifier (UID)
-                            MailMessage message = client.FetchMessage(info.UniqueId);
-                            string subject = message.Subject ?? string.Empty;
-                            Console.WriteLine($"Subject: {subject}");
+                            Directory.CreateDirectory(directory);
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        // Handle any errors that occur during mailbox operations
-                        Console.Error.WriteLine($"Error accessing mailbox: {ex.Message}");
-                        return;
+
+                        // Save the message to a file with guarded I/O
+                        try
+                        {
+                            message.Save(outputPath, SaveOptions.DefaultEml);
+                            Console.WriteLine($"Message saved to {outputPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                        }
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                // Top-level exception guard
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
