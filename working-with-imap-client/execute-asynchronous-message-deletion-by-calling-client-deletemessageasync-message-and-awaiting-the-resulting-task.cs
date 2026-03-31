@@ -3,9 +3,8 @@ using System;
 using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
-namespace Sample
+namespace AsposeEmailAsyncDelete
 {
     class Program
     {
@@ -13,34 +12,59 @@ namespace Sample
         {
             try
             {
-                // Initialize the IMAP client with server details.
-                using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.SSLImplicit))
+                // Placeholder connection settings
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "user@example.com";
+                string password = "password";
+
+                // Guard: skip real network calls when placeholders are used
+                if (host.Contains("example.com"))
                 {
-                    // Select the INBOX folder.
-                    await client.SelectFolderAsync("INBOX");
+                    Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
+                    return;
+                }
 
-                    // Retrieve the list of messages in the selected folder.
-                    ImapMessageInfoCollection messageInfos = await client.ListMessagesAsync();
-
-                    if (messageInfos.Count > 0)
+                // Create and use the IMAP client inside a using block to ensure disposal
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+                {
+                    try
                     {
-                        // Get the unique identifier of the first message.
-                        string uid = messageInfos[0].UniqueId;
+                        // Validate credentials (synchronous version for simplicity)
+                        client.ValidateCredentials();
 
-                        // Asynchronously delete the message and commit the deletion.
-                        await client.DeleteMessageAsync(uid, true);
+                        // Retrieve the list of messages in the default folder
+                        ImapMessageInfoCollection messages = await client.ListMessagesAsync();
 
-                        Console.WriteLine($"Message with UID {uid} has been deleted.");
+                        if (messages == null || messages.Count == 0)
+                        {
+                            Console.WriteLine("No messages found in the mailbox.");
+                            return;
+                        }
+
+                        // Select the first message to delete
+                        ImapMessageInfo messageInfo = messages[0];
+                        string uniqueId = messageInfo.UniqueId.ToString();
+
+                        // Asynchronously delete the selected message
+                        await client.DeleteMessageAsync(uniqueId);
+
+                        // Commit the deletion (required for servers that support UIDPLUS)
+                        await client.CommitDeletesAsync();
+
+                        Console.WriteLine($"Message with UID {uniqueId} has been deleted.");
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Console.WriteLine("No messages found to delete.");
+                        // Friendly error handling for client operations
+                        Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Top‑level exception guard
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }
