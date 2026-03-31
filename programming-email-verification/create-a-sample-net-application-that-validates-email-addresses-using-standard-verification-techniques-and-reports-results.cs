@@ -1,46 +1,34 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Tools.Verifications;
 
-namespace EmailValidationSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            Console.WriteLine("Enter email address to validate:");
+            string emailAddress = Console.ReadLine();
+
+            // Create an EmailValidator instance
+            EmailValidator validator = new EmailValidator();
+
+            // Validate the email address using the default MailServer policy
+            ValidationResult result;
+            validator.Validate(emailAddress, out result);
+
+            // Report the validation outcome
+            Console.WriteLine("Validation Return Code: " + result.ReturnCode);
+            Console.WriteLine("Message: " + result.Message);
+            if (result.LastException != null)
             {
-                // Sample email addresses to validate
-                string[] emails = new string[]
-                {
-                    "valid.email@example.com",
-                    "invalid-email",
-                    "user@nonexistentdomain.tld"
-                };
-
-                // Create an EmailValidator instance
-                EmailValidator validator = new EmailValidator();
-
-                foreach (string email in emails)
-                {
-                    // Validate the email address
-                    ValidationResult result;
-                    validator.Validate(email, out result);
-
-                    // Report the validation outcome
-                    Console.WriteLine($"Email: {email}");
-                    Console.WriteLine($"Return Code: {result.ReturnCode}");
-                    Console.WriteLine($"Message: {result.Message}");
-                    if (result.LastException != null)
-                    {
-                        Console.WriteLine($"Exception: {result.LastException.Message}");
-                    }
-                    Console.WriteLine(new string('-', 40));
-                }
+                Console.WriteLine("Exception: " + result.LastException.Message);
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
