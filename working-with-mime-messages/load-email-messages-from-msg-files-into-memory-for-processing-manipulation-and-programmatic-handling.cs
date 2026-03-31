@@ -11,36 +11,71 @@ class Program
         {
             string msgPath = "sample.msg";
 
-            // Verify that the MSG file exists before attempting to load it.
             if (!File.Exists(msgPath))
             {
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
                 Console.Error.WriteLine($"Error: File not found – {msgPath}");
                 return;
             }
 
-            // Load the MSG file into a MapiMessage instance.
+            // Load the MSG file into a MapiMessage instance
             using (MapiMessage message = MapiMessage.Load(msgPath))
             {
-                // Display basic properties.
+                // Display basic properties
                 Console.WriteLine($"Subject: {message.Subject}");
                 Console.WriteLine($"From: {message.SenderName} <{message.SenderEmailAddress}>");
                 Console.WriteLine($"Body: {message.Body}");
 
-                // Process attachments, if any.
+                // Iterate attachments if any
                 foreach (MapiAttachment attachment in message.Attachments)
                 {
-                    // Save each attachment to the current directory.
-                    string attachmentPath = Path.Combine(Directory.GetCurrentDirectory(), attachment.FileName);
-
+                    Console.WriteLine($"Attachment: {attachment.FileName} ({attachment.BinaryData?.Length ?? 0} bytes)");
+                    // Save attachment to disk
+                    string attachmentPath = Path.Combine("Attachments", attachment.FileName);
                     try
                     {
-                        attachment.Save(attachmentPath);
-                        Console.WriteLine($"Saved attachment: {attachment.FileName}");
+                        string attachmentDir = Path.GetDirectoryName(attachmentPath);
+                        if (!Directory.Exists(attachmentDir))
+                        {
+                            Directory.CreateDirectory(attachmentDir);
+                        }
+                        File.WriteAllBytes(attachmentPath, attachment.BinaryData);
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
+                        Console.Error.WriteLine($"Error saving attachment '{attachment.FileName}': {ex.Message}");
                     }
+                }
+
+                // Example manipulation: change subject
+                message.Subject = "Updated Subject";
+
+                // Save modified message to a new file
+                string outputPath = "modified.msg";
+                try
+                {
+                    message.Save(outputPath);
+                    Console.WriteLine($"Modified message saved to {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving modified message: {ex.Message}");
                 }
             }
         }
