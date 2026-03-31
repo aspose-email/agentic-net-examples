@@ -1,33 +1,64 @@
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Initialize EWS client with placeholder credentials
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://exchange.example.com/EWS/Exchange.asmx",
-                new NetworkCredential("username", "password")))
+            // Placeholder connection parameters
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Skip real network calls when placeholders are used
+            if (mailboxUri.Contains("example.com"))
             {
-                // Retrieve mailbox information
-                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                Console.WriteLine("Placeholder credentials detected. Skipping actual Exchange connection.");
+                return;
+            }
 
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Retrieve basic mailbox information
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                Console.WriteLine($"Mailbox URI: {mailboxInfo.MailboxUri}");
 
-                foreach (ExchangeMessageInfo info in messages)
+                // Get total mailbox size
+                long mailboxSize = client.GetMailboxSize();
+                Console.WriteLine($"Mailbox size: {mailboxSize} bytes");
+
+                // Attempt to retrieve the Archive folder information
+                try
                 {
-                    // Fetch full message using its unique URI
-                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                    // The Archive folder is typically a top‑level folder named "Archive"
+                    ExchangeFolderInfo archiveFolder = client.GetFolderInfo("Archive");
+                    Console.WriteLine($"Archive folder found: {archiveFolder.DisplayName}");
+                    Console.WriteLine($"Archive folder URI: {archiveFolder.Uri}");
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Archive folder not found or cannot be accessed.");
+                }
+
+                // List sub‑folders under the Archive folder (if it exists)
+                try
+                {
+                    ExchangeFolderInfoCollection subFolders = client.ListSubFolders("Archive");
+                    Console.WriteLine("Sub‑folders within Archive:");
+                    foreach (ExchangeFolderInfo subFolder in subFolders)
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"- {subFolder.DisplayName}");
                     }
+                }
+                catch (Exception)
+                {
+                    // If the Archive folder does not exist, this block will be reached
                 }
             }
         }
