@@ -9,18 +9,16 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing.
-            if (!File.Exists(msgPath))
+            // Ensure input MSG file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "sender@example.com", "recipient@example.com"))
-                    {
-                        placeholder.Save(msgPath);
-                        Console.WriteLine($"Created placeholder MSG file at '{msgPath}'.");
-                    }
+                    MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder body");
+                    placeholder.Save(inputPath);
                 }
                 catch (Exception ex)
                 {
@@ -29,11 +27,11 @@ class Program
                 }
             }
 
-            // Load the MSG file.
-            MapiMessage msg;
+            // Load the MSG file and modify its rich text (RTF) content
+            MapiMessage message;
             try
             {
-                msg = MapiMessage.Load(msgPath);
+                message = MapiMessage.Load(inputPath);
             }
             catch (Exception ex)
             {
@@ -41,33 +39,28 @@ class Program
                 return;
             }
 
-            using (msg)
+            // Modify the RTF body if present; otherwise set a new RTF body
+            string originalRtf = message.BodyRtf ?? string.Empty;
+            string appendedRtf = originalRtf + @"\par Modified by Aspose.Email";
+            try
             {
-                // Access the RTF body.
-                string rtfContent = msg.BodyRtf ?? string.Empty;
+                message.SetBodyRtf(appendedRtf, true);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error modifying RTF body: {ex.Message}");
+                return;
+            }
 
-                if (string.IsNullOrEmpty(rtfContent))
-                {
-                    Console.WriteLine("The message does not contain RTF content.");
-                    return;
-                }
-
-                // Example modification: replace the word "old" with "new" in the RTF.
-                string modifiedRtf = rtfContent.Replace("old", "new");
-
-                // Update the message's RTF body.
-                msg.BodyRtf = modifiedRtf;
-
-                // Save the modified message back to the same file.
-                try
-                {
-                    msg.Save(msgPath);
-                    Console.WriteLine("Rich text content has been modified and saved successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
-                }
+            // Save the modified message
+            try
+            {
+                message.Save(outputPath);
+                Console.WriteLine($"Modified MSG saved to: {outputPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error saving modified MSG file: {ex.Message}");
             }
         }
         catch (Exception ex)
