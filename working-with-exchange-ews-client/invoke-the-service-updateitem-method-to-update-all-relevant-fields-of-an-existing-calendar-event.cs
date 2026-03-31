@@ -1,57 +1,81 @@
 using System;
-using System.Net;
-using System.Threading.Tasks;
+using System.IO;
 using Aspose.Email;
+using Aspose.Email.Calendar;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange.WebService.Models;
-using Aspose.Email.Mapi;
 
 class Program
 {
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
         try
         {
-            // Exchange server connection details (replace with real values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Path to the iCalendar file
+            string icsPath = "appointment.ics";
+
+            // Ensure the file exists; create a minimal placeholder if missing
+            if (!File.Exists(icsPath))
+            {
+                try
+                {
+                    File.WriteAllText(icsPath, "BEGIN:VCALENDAR\r\nEND:VCALENDAR");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder iCalendar file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the existing appointment
+            Appointment appointment;
+            try
+            {
+                appointment = Appointment.Load(icsPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load appointment from '{icsPath}': {ex.Message}");
+                return;
+            }
+
+            // Update relevant fields
+            appointment.Summary = "Updated Meeting";
+            appointment.Location = "Conference Room A";
+            appointment.StartDate = appointment.StartDate.AddDays(1);
+            appointment.EndDate = appointment.EndDate.AddDays(1);
+            appointment.Description = "Updated description.";
+
+            // Placeholder service credentials
+            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create and configure the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Guard against executing real network calls with placeholder data
+            if (serviceUrl.Contains("example"))
             {
-                // Ensure the client supports async operations
-                IAsyncEwsClient asyncClient = client as IAsyncEwsClient;
-                if (asyncClient == null)
+                Console.WriteLine("Placeholder service URL detected. Skipping actual update operation.");
+                return;
+            }
+
+            // Create the EWS client and perform the update
+            try
+            {
+                using (IEWSClient service = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
-                    Console.Error.WriteLine("The EWS client does not support async operations.");
-                    return;
+                    service.UpdateAppointment(appointment);
+                    Console.WriteLine("Appointment updated successfully.");
                 }
-
-                // Build a MapiCalendar object with the updated fields
-                MapiCalendar calendar = new MapiCalendar(
-                    location: "Conference Room A",
-                    summary: "Project Sync",
-                    description: "Updated meeting details",
-                    startDate: DateTime.Now.AddHours(1),
-                    endDate: DateTime.Now.AddHours(2));
-
-                // Update specific properties as needed
-                calendar.Subject = "Updated Project Sync";
-                calendar.Location = "Conference Room B";
-
-                // Prepare the update request
-                EwsUpdateItem updateItem = EwsUpdateItem.Create(calendar);
-
-                // Invoke the UpdateItem operation
-                await asyncClient.UpdateItemAsync(updateItem);
-
-                Console.WriteLine("Calendar event updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error while updating appointment: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
