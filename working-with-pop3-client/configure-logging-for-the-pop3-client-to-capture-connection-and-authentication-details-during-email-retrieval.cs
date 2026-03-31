@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
 class Program
@@ -10,44 +9,62 @@ class Program
     {
         try
         {
-            // POP3 server configuration
-            string host = "pop.example.com";
+            // Placeholder POP3 server credentials
+            string host = "pop3.example.com";
             int port = 110;
             string username = "user@example.com";
             string password = "password";
 
-            // Log file configuration
-            string logFilePath = "pop3log.txt";
-            string logDirectory = Path.GetDirectoryName(logFilePath);
-            if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
+            // Guard against executing real network calls with placeholder data
+            if (host.Contains("example.com") || username.Contains("example.com"))
             {
-                Directory.CreateDirectory(logDirectory);
+                Console.WriteLine("Placeholder credentials detected. Skipping POP3 connection.");
+                return;
             }
 
-            // Initialize POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+            // Prepare log file path and ensure its directory exists
+            string logDirectory = Path.Combine(Environment.CurrentDirectory, "Logs");
+            string logPath = Path.Combine(logDirectory, "pop3log.txt");
+            try
             {
-                // Enable logging
-                client.EnableLogger = true;
-                client.LogFileName = logFilePath;
-                client.UseDateInLogFileName = false;
-
-                // Optional: capture connection event
-                client.OnConnect += (sender, e) =>
+                if (!Directory.Exists(logDirectory))
                 {
-                    Console.WriteLine("Connected to POP3 server.");
-                };
+                    Directory.CreateDirectory(logDirectory);
+                }
+            }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Failed to create log directory: {dirEx.Message}");
+                return;
+            }
 
-                // Perform a simple operation to trigger connection and authentication
+            // Initialize POP3 client with logging enabled
+            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            {
+                client.EnableLogger = true;
+                client.LogFileName = logPath;
+                client.UseDateInLogFileName = true;
+
+                // Attempt to validate credentials (wrapped in try/catch for safety)
+                try
+                {
+                    client.ValidateCredentials();
+                }
+                catch (Exception credEx)
+                {
+                    Console.Error.WriteLine($"Authentication failed: {credEx.Message}");
+                    return;
+                }
+
+                // Retrieve and display message count
                 try
                 {
                     int messageCount = client.GetMessageCount();
-                    Console.WriteLine($"Total messages: {messageCount}");
+                    Console.WriteLine($"Total messages in mailbox: {messageCount}");
                 }
-                catch (Exception ex)
+                catch (Exception fetchEx)
                 {
-                    Console.Error.WriteLine($"Error during POP3 operations: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to retrieve messages: {fetchEx.Message}");
                 }
             }
         }
