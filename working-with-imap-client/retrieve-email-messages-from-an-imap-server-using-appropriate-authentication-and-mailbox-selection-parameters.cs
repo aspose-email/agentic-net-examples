@@ -10,27 +10,21 @@ class Program
     {
         try
         {
-            // IMAP server connection parameters
+            // Placeholder IMAP server credentials
             string host = "imap.example.com";
             int port = 993;
-            string username = "user@example.com";
+            string username = "username";
             string password = "password";
-            SecurityOptions security = SecurityOptions.Auto;
 
-            // Create the IMAP client
-            ImapClient client = null;
-            try
+            // Skip real connection when placeholders are detected
+            if (host.Contains("example.com") || username == "username" || password == "password")
             {
-                client = new ImapClient(host, port, username, password, security);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create IMAP client: {ex.Message}");
+                Console.WriteLine("Placeholder IMAP credentials detected. Skipping connection.");
                 return;
             }
 
-            // Ensure the client is disposed properly
-            using (client)
+            // Create and use the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
                 try
                 {
@@ -38,30 +32,30 @@ class Program
                     client.SelectFolder("INBOX");
 
                     // Retrieve the list of messages in the selected folder
-                    ImapMessageInfoCollection messageInfos = client.ListMessages();
+                    ImapMessageInfoCollection messagesInfo = client.ListMessages();
 
-                    // Iterate through each message info and fetch the full message
-                    foreach (ImapMessageInfo info in messageInfos)
+                    foreach (ImapMessageInfo info in messagesInfo)
                     {
+                        // Fetch each full message using its unique identifier
                         MailMessage message = client.FetchMessage(info.UniqueId);
-                        Console.WriteLine($"Subject: {message.Subject}");
+                        using (message)
+                        {
+                            Console.WriteLine($"Subject: {message.Subject}");
+                            Console.WriteLine($"From: {message.From}");
+                            Console.WriteLine($"Date: {message.Date}");
+                            Console.WriteLine(new string('-', 40));
+                        }
                     }
-                }
-                catch (ImapException imapEx)
-                {
-                    Console.Error.WriteLine($"IMAP operation error: {imapEx.Message}");
-                    return;
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during IMAP processing: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
