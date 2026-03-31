@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,48 +9,36 @@ class Program
         try
         {
             // Define output MSG file path
-            string outputPath = Path.Combine(Environment.CurrentDirectory, "sample.msg");
-            string outputDirectory = Path.GetDirectoryName(outputPath);
+            string outputPath = "output.msg";
 
             // Ensure the output directory exists
-            if (!Directory.Exists(outputDirectory))
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create directory '{outputDirectory}': {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create a new MapiMessage with standard fields
-            MapiMessage message = new MapiMessage(
-                "alice@example.com",                     // From
-                "bob@example.com;carol@example.com",    // To (multiple recipients separated by semicolon)
-                "Sample Subject",                       // Subject
-                "This is the body of the message.");    // Body
+            // Create and populate the email message
+            using (MailMessage message = new MailMessage())
+            {
+                // Standard fields
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.CC.Add(new MailAddress("cc@example.com"));
+                message.Bcc.Add(new MailAddress("bcc@example.com"));
+                message.Subject = "Test Subject";
+                message.Body = "This is the email body.";
 
-            // Save the message as an MSG file
-            try
-            {
-                using (MapiMessage disposableMessage = message)
-                {
-                    disposableMessage.Save(outputPath);
-                }
-                Console.WriteLine($"MSG file saved successfully to '{outputPath}'.");
+                // Save as MSG file with Unicode format
+                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
+                message.Save(outputPath, saveOptions);
             }
-            catch (Exception saveEx)
-            {
-                Console.Error.WriteLine($"Failed to save MSG file: {saveEx.Message}");
-                return;
-            }
+
+            Console.WriteLine("MSG file created successfully at: " + Path.GetFullPath(outputPath));
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
