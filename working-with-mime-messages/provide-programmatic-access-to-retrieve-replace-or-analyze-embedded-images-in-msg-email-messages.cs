@@ -9,54 +9,104 @@ class Program
     {
         try
         {
-            string inputPath = "sample.msg";
-            string outputPath = "modified.msg";
+            // Define file paths
+            string inputMsgPath = "input.msg";
+            string replacementImagePath = "newImage.png";
+            string outputMsgPath = "output.msg";
 
-            // Verify input file exists
-            if (!File.Exists(inputPath))
+            // Guard input MSG file existence
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input MSG file not found: {inputMsgPath}");
                 return;
             }
 
-            // Load the MSG file
-            using (MapiMessage message = MapiMessage.Load(inputPath))
+            // Guard replacement image existence
+            if (!File.Exists(replacementImagePath))
             {
-                // Iterate over attachments to find inline images
-                for (int i = 0; i < message.Attachments.Count; i++)
-                {
-                    MapiAttachment attachment = message.Attachments[i];
+                Console.Error.WriteLine($"Replacement image file not found: {replacementImagePath}");
+                return;
+            }
 
-                    // Check if attachment is inline and has an image extension
-                    if (attachment.IsInline)
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                try
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
+            {
+                // Iterate over attachments to find embedded images
+                foreach (MapiAttachment attachment in msg.Attachments)
+                {
+                    // Identify image attachments by file extension (common image types)
+                    string fileName = attachment.FileName ?? string.Empty;
+                    string extension = Path.GetExtension(fileName).ToLowerInvariant();
+
+                    bool isImage = extension == ".png" ||
+                                   extension == ".jpg" ||
+                                   extension == ".jpeg" ||
+                                   extension == ".gif" ||
+                                   extension == ".bmp";
+
+                    // Additional check using MimeTag if available
+                    if (!isImage && !string.IsNullOrEmpty(attachment.MimeTag))
                     {
-                        string extension = Path.GetExtension(attachment.FileName).ToLowerInvariant();
-                        if (extension == ".png" || extension == ".jpg" || extension == ".jpeg")
+                        isImage = attachment.MimeTag.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    if (isImage)
+                    {
+                        try
                         {
-                            // Replace image data with a minimal placeholder (e.g., PNG header)
-                            byte[] placeholderData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
-                            attachment.BinaryData = placeholderData;
-                            Console.WriteLine($"Replaced image attachment: {attachment.FileName}");
+                            // Replace image content with the new image bytes
+                            byte[] newImageData = File.ReadAllBytes(replacementImagePath);
+                            attachment.BinaryData = newImageData;
+                            Console.WriteLine($"Replaced image attachment: {fileName}");
+                        }
+                        catch (Exception imgEx)
+                        {
+                            Console.Error.WriteLine($"Failed to replace image '{fileName}': {imgEx.Message}");
                         }
                     }
                 }
 
-                // Ensure output directory exists
+                // Save the modified MSG
                 try
                 {
-                    string outputDirectory = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-
-                    // Save the modified MSG
-                    message.Save(outputPath);
-                    Console.WriteLine($"Modified message saved to: {outputPath}");
+                    msg.Save(outputMsgPath);
+                    Console.WriteLine($"Modified MSG saved to: {outputMsgPath}");
                 }
-                catch (Exception ex)
+                catch (Exception saveEx)
                 {
-                    Console.Error.WriteLine($"Error saving modified message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save modified MSG: {saveEx.Message}");
                 }
             }
         }
