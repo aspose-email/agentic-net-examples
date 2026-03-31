@@ -1,7 +1,8 @@
 using System;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 using Aspose.Email;
+using Aspose.Email.Amp;
 
 class Program
 {
@@ -9,25 +10,25 @@ class Program
     {
         try
         {
-            // Get the assembly that contains the AmpMessage type
-            Assembly ampAssembly = typeof(Aspose.Email.Amp.AmpMessage).Assembly;
+            // Get the assembly that contains the AMP types
+            Assembly ampAssembly = typeof(AmpMessage).Assembly;
 
-            // Find all types in the Aspose.Email.Amp namespace
-            var ampTypes = ampAssembly.GetTypes()
-                .Where(t => t.Namespace != null && t.Namespace.Equals("Aspose.Email.Amp"))
-                .OrderBy(t => t.Name)
+            // Retrieve all classes defined in the Aspose.Email.Amp namespace
+            var ampComponentNames = ampAssembly.GetTypes()
+                .Where(t => t.IsClass && t.Namespace == "Aspose.Email.Amp")
+                .Select(t => t.Name)
+                .OrderBy(name => name)
                 .ToList();
 
             Console.WriteLine("AMP components supported for processing MSG format:");
-            foreach (Type type in ampTypes)
+            foreach (string componentName in ampComponentNames)
             {
-                Console.WriteLine("- " + type.FullName);
+                Console.WriteLine("- " + componentName);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
-            return;
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
