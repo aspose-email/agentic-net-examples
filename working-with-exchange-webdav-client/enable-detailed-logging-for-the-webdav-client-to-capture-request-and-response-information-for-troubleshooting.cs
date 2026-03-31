@@ -1,48 +1,39 @@
 using System;
-using System.IO;
-using System.Net;
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.Dav;
 
-class Program
+namespace AsposeEmailExamples
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Prepare log file path and ensure its directory exists
-            string logFilePath = "exchange_client.log";
             try
             {
-                string logDir = Path.GetDirectoryName(logFilePath);
-                if (!string.IsNullOrEmpty(logDir) && !Directory.Exists(logDir))
+                // Placeholder connection details
+                string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
+                string username = "username";
+                string password = "password";
+
+                // Skip real network call when placeholders are used
+                if (mailboxUri.Contains("example.com") || username == "username")
                 {
-                    Directory.CreateDirectory(logDir);
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping live connection.");
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare log directory: {ex.Message}");
-                return;
-            }
 
-            // Connection parameters (replace with real values)
-            string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Initialize the WebDAV client with detailed logging enabled
-            try
-            {
+                // Initialize the WebDAV client
                 using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
                 {
-                    client.LogFileName = logFilePath;
-                    client.UseDateInLogFileName = true; // optional: include date in log file name
+                    // Enable detailed logging by specifying a log file
+                    client.LogFileName = "exchange_client.log";
+                    client.UseDateInLogFileName = true; // optional, adds date to log file name
 
-                    // Perform a simple operation to generate request/response logs
+                    // Example operation to generate log entries
                     try
                     {
-                        // List messages in the Inbox folder
-                        var messages = client.ListMessages("Inbox");
+                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
                         Console.WriteLine($"Retrieved {messages.Count} messages from Inbox.");
                     }
                     catch (Exception ex)
@@ -53,13 +44,8 @@ class Program
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to create or connect client: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
