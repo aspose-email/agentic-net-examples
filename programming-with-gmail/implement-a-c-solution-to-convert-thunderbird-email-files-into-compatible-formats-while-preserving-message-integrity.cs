@@ -5,61 +5,62 @@ using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace ThunderbirdConversionSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define input MBOX file and output PST file paths
-            string mboxFilePath = "thunderbird.mbox";
-            string pstFilePath = "converted.pst";
-
-            // Verify that the input MBOX file exists
-            if (!File.Exists(mboxFilePath))
+            try
             {
-                Console.Error.WriteLine($"Error: Input MBOX file not found – {mboxFilePath}");
-                return;
-            }
+                // Define input Thunderbird mbox file and output PST file paths
+                string mboxFilePath = "thunderbird.mbox";
+                string pstFilePath = "converted.pst";
 
-            // Ensure the output directory exists
-            string pstDirectory = Path.GetDirectoryName(pstFilePath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
+                // Verify input mbox file exists
+                if (!File.Exists(mboxFilePath))
+                {
+                    Console.Error.WriteLine($"Error: Input mbox file not found – {mboxFilePath}");
+                    return;
+                }
+
+                // Ensure output directory exists
                 try
                 {
-                    Directory.CreateDirectory(pstDirectory);
+                    string outputDirectory = Path.GetDirectoryName(pstFilePath);
+                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
                 }
                 catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {pstDirectory}");
-                    Console.Error.WriteLine(dirEx.Message);
+                    Console.Error.WriteLine($"Error creating output directory: {dirEx.Message}");
+                    return;
+                }
+
+                // Perform conversion from mbox to PST
+                try
+                {
+                    // The conversion method returns a PersonalStorage instance representing the PST
+                    using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath))
+                    {
+                        // Optionally, you can work with the PST storage here (e.g., list folders)
+                        // For this sample we simply confirm the conversion succeeded.
+                        Console.WriteLine($"Conversion succeeded. PST saved to: {pstFilePath}");
+                    }
+                }
+                catch (Exception convEx)
+                {
+                    Console.Error.WriteLine($"Conversion failed: {convEx.Message}");
                     return;
                 }
             }
-
-            // Perform the conversion inside a try/catch to handle I/O errors
-            try
+            catch (Exception ex)
             {
-                // Convert MBOX to PST; the method returns a PersonalStorage instance which must be disposed
-                using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath))
-                {
-                    // Conversion succeeded; optionally you can work with pstStorage here
-                }
-
-                Console.WriteLine("Conversion completed successfully.");
-            }
-            catch (Exception conversionEx)
-            {
-                Console.Error.WriteLine("Error during conversion:");
-                Console.Error.WriteLine(conversionEx.Message);
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
                 return;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Unexpected error:");
-            Console.Error.WriteLine(ex.Message);
         }
     }
 }
