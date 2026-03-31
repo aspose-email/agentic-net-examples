@@ -4,53 +4,55 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string htmlFilePath = "input.html";
-            string mhtmlFilePath = "output.mhtml";
+            string inputPath = "input.html";
+            string outputPath = "output.mht";
 
-            // Ensure the HTML input file exists
-            if (!File.Exists(htmlFilePath))
+            // Ensure the input HTML file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    // Create a minimal placeholder HTML file
-                    string placeholderHtml = "<html><body><p>Placeholder content</p></body></html>";
-                    File.WriteAllText(htmlFilePath, placeholderHtml);
+                    File.WriteAllText(inputPath, "<html><body><p>Placeholder</p></body></html>");
+                    Console.WriteLine($"Created placeholder HTML file at '{inputPath}'.");
                 }
-                catch (Exception ioEx)
+                catch (Exception createEx)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ioEx.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {createEx.Message}");
                     return;
                 }
             }
 
-            // Load the HTML file into a MailMessage object
-            try
+            // Ensure the output directory exists.
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                using (MailMessage mailMessage = MailMessage.Load(htmlFilePath, new HtmlLoadOptions()))
+                try
                 {
-                    // Configure MHTML save options to preserve resources
-                    MhtSaveOptions mhtOptions = new MhtSaveOptions
-                    {
-                        ExtractHTMLBodyResourcesAsAttachments = true
-                    };
-
-                    // Save the message as MHTML
-                    mailMessage.Save(mhtmlFilePath, mhtOptions);
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
                 }
             }
-            catch (Exception loadSaveEx)
+
+            // Load the HTML file into a MailMessage.
+            using (MailMessage mailMessage = MailMessage.Load(inputPath, new HtmlLoadOptions()))
             {
-                Console.Error.WriteLine($"Error during load or save operation: {loadSaveEx.Message}");
-                return;
+                // Save the message as MHTML, preserving all resources.
+                mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
             }
+
+            Console.WriteLine($"HTML successfully converted to MHTML at '{outputPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
