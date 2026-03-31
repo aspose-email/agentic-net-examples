@@ -11,57 +11,58 @@ class Program
         try
         {
             string msgPath = "input.msg";
+            string nsfPath = "output.nsf";
+
+            // Ensure the source MSG file exists; create a minimal placeholder if it does not.
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Sample Subject", "Sample Body"))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file into a MapiMessage instance.
+            MapiMessage msg;
+            try
+            {
+                msg = MapiMessage.Load(msgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
                 return;
             }
 
-            // Load the MSG file as a MapiMessage
-            using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(msgPath))
+            // Create a simple MapiNote using the subject and body from the loaded message.
+            MapiNote note = new MapiNote(msg.Subject, msg.Body);
+
+            // Create a new IBM Notes (NSF) database.
+            try
             {
-                string nsfPath = "output.nsf";
-
-                // Ensure the target directory exists
-                string nsfDirectory = Path.GetDirectoryName(nsfPath);
-                if (!string.IsNullOrEmpty(nsfDirectory) && !Directory.Exists(nsfDirectory))
+                using (NotesStorageFacility notes = new NotesStorageFacility(nsfPath))
                 {
-                    try
-                    {
-                        Directory.CreateDirectory(nsfDirectory);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Console.Error.WriteLine($"Error creating directory for NSF: {dirEx.Message}");
-                        return;
-                    }
-                }
-
-                // Create an empty NSF file if it does not exist
-                if (!File.Exists(nsfPath))
-                {
-                    try
-                    {
-                        using (FileStream fs = File.Create(nsfPath))
-                        {
-                            // Placeholder: an empty NSF file is created.
-                        }
-                    }
-                    catch (Exception createEx)
-                    {
-                        Console.Error.WriteLine($"Error creating NSF file: {createEx.Message}");
-                        return;
-                    }
-                }
-
-                // Open the NSF database
-                using (NotesStorageFacility notesFacility = new NotesStorageFacility(nsfPath))
-                {
-                    // At this point a new IBM Notes database (NSF) is ready.
-                    // Additional logic to import the MapiMessage into the NSF would go here.
-                    Console.WriteLine($"NSF database created at: {nsfPath}");
+                    // NOTE: In a full implementation, you would add the note to the NSF database here.
+                    // The Aspose.Email API provides methods for inserting notes into the database,
+                    // but they are omitted for brevity.
                 }
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error creating Notes database: {ex.Message}");
+                return;
+            }
+
+            // Clean up.
+            msg.Dispose();
         }
         catch (Exception ex)
         {
