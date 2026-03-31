@@ -1,57 +1,67 @@
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             string pstPath = "sample.pst";
+
+            // Ensure the PST file exists; create a minimal placeholder if it does not.
             if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: PST file not found – {pstPath}");
+                try
+                {
+                    using (PersonalStorage placeholderPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // Placeholder PST created with default root folder.
+                    }
+                    Console.WriteLine($"Placeholder PST created at '{pstPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
+                }
                 return;
             }
 
-            string[] foldersToDelete = new string[] { "FolderA", "FolderB" };
-
-            try
+            // Open the existing PST file.
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                // List of folder names to be removed.
+                string[] foldersToDelete = { "FolderA", "FolderB" };
+
+                foreach (string folderName in foldersToDelete)
                 {
-                    foreach (string folderName in foldersToDelete)
+                    try
                     {
-                        try
+                        // Attempt to retrieve the subfolder.
+                        FolderInfo folder = pst.RootFolder.GetSubFolder(folderName);
+                        if (folder != null)
                         {
-                            FolderInfo folder = pst.RootFolder.GetSubFolder(folderName);
-                            if (folder != null)
-                            {
-                                pst.DeleteItem(folder.EntryIdString);
-                                Console.WriteLine($"Deleted folder: {folderName}");
-                            }
-                            else
-                            {
-                                Console.WriteLine($"Folder not found: {folderName}");
-                            }
+                            // Delete the folder using its entry identifier.
+                            pst.DeleteItem(folder.EntryIdString);
+                            Console.WriteLine($"Deleted folder: {folderName}");
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Console.Error.WriteLine($"Error deleting folder '{folderName}': {ex.Message}");
+                            Console.WriteLine($"Folder not found: {folderName}");
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error processing folder '{folderName}': {ex.Message}");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error accessing PST file: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
