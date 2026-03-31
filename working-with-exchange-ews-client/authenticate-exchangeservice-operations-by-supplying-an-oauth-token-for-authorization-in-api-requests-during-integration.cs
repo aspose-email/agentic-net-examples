@@ -1,42 +1,62 @@
 using System;
-using System.Net;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailOAuthExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Exchange Web Services endpoint
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+            // OAuth 2.0 access token (replace with a real token)
+            string accessToken = "your_oauth_token";
+
+            // Guard against placeholder token to avoid real network calls during CI
+            if (accessToken == "your_oauth_token")
+            {
+                Console.Error.WriteLine("OAuth token not provided. Skipping Exchange operation.");
+                return;
+            }
+
+            // Prepare Authorization header
+            Dictionary<string, string> headers = new Dictionary<string, string>
+            {
+                { "Authorization", "Bearer " + accessToken }
+            };
+
+            IEWSClient client = null;
             try
             {
-                // Placeholder OAuth access token
-                string accessToken = "YOUR_OAUTH_ACCESS_TOKEN";
+                // Create EWS client with OAuth token in headers
+                client = EWSClient.GetEWSClient(mailboxUri, null, null, headers);
 
-                // EWS endpoint URL
-                string ewsUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
-
-                // Create the EWS client using basic credentials (required by the factory)
-                // The actual authentication will be performed via the OAuth token added as a header.
-                using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, new NetworkCredential("user@example.com", "password")))
+                // List messages in the Inbox folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    // Add the OAuth Authorization header
-                    client.AddHeader("Authorization", "Bearer " + accessToken);
-
-                    // Retrieve mailbox information
-                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
-
-                    // Output some mailbox URIs
-                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
-                    Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                    Console.WriteLine($"Subject: {info.Subject}");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Error: " + ex.Message);
+                Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
+                return;
             }
+            finally
+            {
+                if (client != null)
+                {
+                    client.Dispose();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
