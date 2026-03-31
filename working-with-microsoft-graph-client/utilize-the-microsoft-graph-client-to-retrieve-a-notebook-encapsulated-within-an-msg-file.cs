@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.Json;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
@@ -10,38 +11,54 @@ class Program
     {
         try
         {
-            // Path to the MSG file that supposedly contains a notebook reference
-            string msgPath = "sample.msg";
+            // Placeholder credentials – replace with real values or skip execution.
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
+            string tenantId = "your-tenant-id";
+            string notebookId = "your-notebook-id";
+            string outputPath = "Notebook.json";
 
-            // Verify the MSG file exists before attempting to load it
-            if (!File.Exists(msgPath))
+            // Guard against placeholder values to avoid real network calls during CI.
+            if (clientId.StartsWith("your-") ||
+                clientSecret.StartsWith("your-") ||
+                refreshToken.StartsWith("your-") ||
+                tenantId.StartsWith("your-") ||
+                notebookId.StartsWith("your-"))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                Console.Error.WriteLine("Placeholder credentials or IDs detected – skipping Graph call.");
                 return;
             }
 
-            // Load the MSG file
-            using (MailMessage message = MailMessage.Load(msgPath))
+            // Create token provider (3‑argument overload).
+            Aspose.Email.Clients.TokenProvider tokenProvider =
+                Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+            // Initialize Graph client.
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
             {
-                // Placeholder: extract notebook identifier from the message if needed
-                // For this sample we use a hard‑coded notebook Id
-                string notebookId = "YOUR_NOTEBOOK_ID";
+                // Retrieve the notebook.
+                Aspose.Email.Clients.Graph.Notebook notebook = client.FetchNotebook(notebookId);
 
-                // Create a token provider for Outlook (3‑argument overload)
-                TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken");
+                // Serialize notebook to JSON.
+                string json = JsonSerializer.Serialize(notebook, new JsonSerializerOptions { WriteIndented = true });
 
-                // Initialize the Graph client
-                using (IGraphClient client = GraphClient.GetClient(tokenProvider, "tenantId"))
+                // Ensure output directory exists.
+                string directory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    // Retrieve the notebook
-                    Notebook notebook = client.FetchNotebook(notebookId);
+                    Directory.CreateDirectory(directory);
+                }
 
-                    // Output basic notebook information
-                    Console.WriteLine($"Notebook Id: {notebook.Id}");
-                    Console.WriteLine($"Notebook Name: {notebook.DisplayName}");
+                // Write JSON to file with error handling.
+                try
+                {
+                    File.WriteAllText(outputPath, json);
+                    Console.WriteLine($"Notebook saved to {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to write notebook file: {ex.Message}");
                 }
             }
         }
