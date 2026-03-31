@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Clients.Graph;
 using Aspose.Email.Clients;
+using Aspose.Email.Clients.Graph;
 
 class Program
 {
@@ -11,46 +11,82 @@ class Program
     {
         try
         {
-            // Path to the MSG file
-            string msgPath = "task.msg";
+            // Input parameters (placeholders)
+            string msgFilePath = "task.msg";
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
+            string tenantId = "your-tenant-id";
+            string taskFolderId = "tasks";
 
-            // Verify that the MSG file exists
-            if (!File.Exists(msgPath))
+            // Guard against placeholder credentials to avoid real network calls
+            if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-") || refreshToken.StartsWith("your-") || tenantId.StartsWith("your-"))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph operation.");
                 return;
             }
 
-            // Prepare token provider (dummy credentials for illustration)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken");
-
-            // Initialize Graph client for the user (dummy user email)
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "user@example.com"))
+            // Ensure the MSG file exists before attempting to load it
+            if (!File.Exists(msgFilePath))
             {
                 try
                 {
-                    // Load the MSG file into a MailMessage
-                    using (MailMessage mailMessage = MailMessage.Load(msgPath))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        // Map basic properties to a MapiTask
-                        MapiTask task = new MapiTask
-                        {
-                            Subject = mailMessage.Subject,
-                            Body = mailMessage.Body
-                        };
-
-                        // Create the task in the default "Tasks" folder
-                        client.CreateTask(task, "Tasks");
-                        Console.WriteLine("Task created successfully in Microsoft Graph.");
+                        placeholder.Save(msgFilePath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during Graph operation: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                return;
+            }
+
+            // Load the MSG file into a MapiMessage
+            MapiMessage msg;
+            try
+            {
+                msg = MapiMessage.Load(msgFilePath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                return;
+            }
+
+            // Create a simple MapiTask from the loaded message (using subject and body)
+            MapiTask task = new MapiTask
+            {
+                Subject = msg.Subject,
+                Body = msg.Body,
+                // Set minimal required properties; dates can be set to now
+                StartDate = DateTime.Now,
+                DueDate = DateTime.Now.AddDays(7)
+            };
+
+            // Initialize the token provider for Outlook
+            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+            // Create the Graph client
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
+            {
+                try
+                {
+                    // Create the task in the specified folder
+                    MapiTask createdTask = client.CreateTask(task, taskFolderId);
+                    Console.WriteLine($"Task created with Subject: {createdTask.Subject}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Graph operation failed: {ex.Message}");
                 }
             }
         }
