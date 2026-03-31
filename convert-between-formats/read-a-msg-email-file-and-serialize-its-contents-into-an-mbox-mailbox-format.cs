@@ -10,35 +10,52 @@ class Program
     {
         try
         {
-            string msgPath = "input.msg";
-            string mboxPath = "output.mbox";
+            string inputMsgPath = "input.msg";
+            string outputMboxPath = "output.mbox";
 
             // Verify input file exists
-            if (!File.Exists(msgPath))
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
                 return;
             }
 
             // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(mboxPath);
+            string outputDir = Path.GetDirectoryName(outputMboxPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Load MSG file into a MapiMessage and convert to MailMessage
-            using (MapiMessage mapiMsg = MapiMessage.Load(msgPath))
+            // Load the MSG file as a MapiMessage
+            using (MapiMessage mapiMessage = MapiMessage.Load(inputMsgPath))
             {
-                MailConversionOptions convOptions = new MailConversionOptions();
-                using (MailMessage mailMsg = mapiMsg.ToMailMessage(convOptions))
+                // Convert to MailMessage
+                MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions());
+
+                // Prepare MBOX writer
+                MboxSaveOptions saveOptions = new MboxSaveOptions();
+                using (MboxrdStorageWriter writer = new MboxrdStorageWriter(outputMboxPath, saveOptions))
                 {
-                    // Write the MailMessage to an MBOX file using MboxrdStorageWriter
-                    MboxSaveOptions saveOptions = new MboxSaveOptions();
-                    using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxPath, saveOptions))
-                    {
-                        writer.WriteMessage(mailMsg);
-                    }
+                    // Write the MailMessage to the MBOX file
+                    writer.WriteMessage(mailMessage);
                 }
             }
 
