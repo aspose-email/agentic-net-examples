@@ -5,20 +5,21 @@ using Aspose.Email.Mime;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             string imagePath = "1.jpg";
             string outputPath = "EmbeddedImage_out.msg";
 
-            // Ensure the image file exists; create an empty placeholder if it does not.
+            // Verify the image file exists
             if (!File.Exists(imagePath))
             {
-                File.WriteAllBytes(imagePath, new byte[0]);
+                Console.Error.WriteLine($"Image file '{imagePath}' not found.");
+                return;
             }
 
-            // Ensure the output directory exists.
+            // Ensure the output directory exists
             string outputDir = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
@@ -31,23 +32,27 @@ class Program
                 eml.To = "SusanMarc@to.com";
                 eml.Subject = "This is an email";
 
-                using (AlternateView plainView = AlternateView.CreateAlternateViewFromString(
-                    "This is my plain text content", null, "text/plain"))
+                // Plain text view
+                AlternateView plainView = AlternateView.CreateAlternateViewFromString(
+                    "This is my plain text content", null, "text/plain");
+
+                // HTML view with CID reference
+                string htmlContent = "Here is an embedded image. <img src=cid:barcode>";
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                    htmlContent, null, "text/html");
+
+                // Linked resource for the image
+                LinkedResource barcode = new LinkedResource(imagePath, Aspose.Email.Mime.MediaTypeNames.Image.Jpeg)
                 {
-                    using (AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
-                        "Here is an embedded image. <img src=cid:barcode>", null, "text/html"))
-                    {
-                        using (LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg))
-                        {
-                            barcode.ContentId = "barcode";
-                            htmlView.LinkedResources.Add(barcode);
-                        }
+                    ContentId = "barcode"
+                };
 
-                        eml.AlternateViews.Add(plainView);
-                        eml.AlternateViews.Add(htmlView);
-                    }
-                }
+                // Attach resources and views
+                eml.LinkedResources.Add(barcode);
+                eml.AlternateViews.Add(plainView);
+                eml.AlternateViews.Add(htmlView);
 
+                // Save as MSG
                 eml.Save(outputPath, SaveOptions.DefaultMsgUnicode);
             }
         }
