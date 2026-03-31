@@ -10,51 +10,48 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with placeholder credentials
-            IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com");
+            // Placeholder credentials – replace with real values to execute the call
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string userEmail = "user@example.com";
 
-            try
+            // Skip external call when placeholders are used
+            if (clientId == "clientId")
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping Gmail client call.");
+                return;
+            }
+
+            // Create Gmail client
+            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail))
             {
                 // Prepare attendees
                 MailAddressCollection attendees = new MailAddressCollection();
                 attendees.Add(new MailAddress("person1@domain.com"));
                 attendees.Add(new MailAddress("person2@domain.com"));
 
-                // Create an appointment
+                // Create appointment instance
                 Appointment appointment = new Appointment(
                     "Conference Room",
-                    "Project Kickoff",
-                    "Discuss project goals and timeline",
-                    new DateTime(2024, 5, 20, 10, 0, 0),
-                    new DateTime(2024, 5, 20, 11, 0, 0),
-                    new MailAddress("organizer@example.com"),
+                    "Team Meeting",
+                    "Discuss project status",
+                    new DateTime(2023, 10, 15, 10, 0, 0),
+                    new DateTime(2023, 10, 15, 11, 0, 0),
+                    new MailAddress(userEmail),
                     attendees);
 
-                // Insert the appointment into the primary calendar
-                Appointment created = gmailClient.CreateAppointment("primary", appointment);
+                // Calendar identifier (use "primary" for the main calendar)
+                string calendarId = "primary";
+
+                // Insert the appointment into the calendar
+                Appointment created = gmailClient.CreateAppointment(calendarId, appointment);
                 Console.WriteLine("Appointment created with ID: " + created.UniqueId);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error while creating appointment: " + ex.Message);
-                return;
-            }
-            finally
-            {
-                // Dispose the client if it implements IDisposable
-                if (gmailClient is IDisposable disposableClient)
-                {
-                    disposableClient.Dispose();
-                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Failed to initialize Gmail client: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
