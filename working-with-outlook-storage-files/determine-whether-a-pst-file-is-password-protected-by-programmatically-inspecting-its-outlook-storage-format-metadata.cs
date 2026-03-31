@@ -5,40 +5,40 @@ using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Path to the PST file to inspect
             string pstPath = "sample.pst";
 
-            // Ensure the PST file exists; create a minimal placeholder if missing.
+            // Ensure the PST file exists; create a minimal placeholder if missing
             if (!File.Exists(pstPath))
             {
-                try
+                // Create an empty Unicode PST file as a placeholder
+                using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                 {
-                    // Create an empty Unicode PST file.
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine($"Placeholder PST created at: {pstPath}");
+                    // No additional setup required for the placeholder
                 }
-                catch (Exception createEx)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {createEx.Message}");
-                    return;
-                }
+
+                Console.WriteLine($"Created placeholder PST at \"{pstPath}\".");
             }
 
-            // Open the PST file.
+            // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Access the message store to check password protection.
+                // Access the message store metadata
                 MessageStore store = pst.Store;
-                bool isProtected = store.IsPasswordProtected;
 
-                Console.WriteLine($"PST file \"{pstPath}\" password protected: {isProtected}");
+                // Determine whether the PST is password protected
+                bool isPasswordProtected = store.IsPasswordProtected;
+
+                Console.WriteLine($"PST password protected: {isPasswordProtected}");
             }
         }
         catch (Exception ex)
         {
+            // Friendly error output
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
