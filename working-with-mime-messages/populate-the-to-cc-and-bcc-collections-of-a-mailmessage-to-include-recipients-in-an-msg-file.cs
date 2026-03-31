@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,17 +11,32 @@ class Program
         {
             string msgPath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if it does not.
+            // Ensure the MSG file exists; create a minimal placeholder if missing.
             if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage())
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.From = new MailAddress("sender@example.com");
-                        placeholder.To.Add(new MailAddress("initial@example.com"));
-                        placeholder.Subject = "Placeholder Subject";
-                        placeholder.Body = "This is a placeholder message.";
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage())
+                    {
+                        placeholder.Subject = "Placeholder";
+                        placeholder.Body = "This is a placeholder MSG file.";
                         placeholder.Save(msgPath);
                     }
                 }
@@ -31,31 +47,38 @@ class Program
                 }
             }
 
-            // Load the existing MSG file, modify recipients, and save it back.
+            // Load the existing MSG file.
+            MapiMessage msg;
             try
             {
-                using (MailMessage message = MailMessage.Load(msgPath))
-                {
-                    // Add To recipients
-                    message.To.Add(new MailAddress("to1@example.com"));
-                    message.To.Add(new MailAddress("to2@example.com"));
-
-                    // Add Cc recipients
-                    message.CC.Add(new MailAddress("cc1@example.com"));
-                    message.CC.Add(new MailAddress("cc2@example.com"));
-
-                    // Add Bcc recipients
-                    message.Bcc.Add(new MailAddress("bcc1@example.com"));
-                    message.Bcc.Add(new MailAddress("bcc2@example.com"));
-
-                    // Save the updated message back to the same file.
-                    message.Save(msgPath);
-                }
+                msg = MapiMessage.Load(msgPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
                 return;
+            }
+
+            using (msg)
+            {
+                // Add To recipient.
+                msg.Recipients.Add("to@example.com", "To Recipient", MapiRecipientType.MAPI_TO);
+
+                // Add Cc recipient.
+                msg.Recipients.Add("cc@example.com", "Cc Recipient", MapiRecipientType.MAPI_CC);
+
+                // Add Bcc recipient.
+                msg.Recipients.Add("bcc@example.com", "Bcc Recipient", MapiRecipientType.MAPI_BCC);
+
+                // Save the updated MSG file.
+                try
+                {
+                    msg.Save(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
