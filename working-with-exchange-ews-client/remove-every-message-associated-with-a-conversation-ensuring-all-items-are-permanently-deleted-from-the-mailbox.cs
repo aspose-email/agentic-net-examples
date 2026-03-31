@@ -5,38 +5,45 @@ using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
+        // Top‑level exception guard
         try
         {
-            // Initialize the EWS client (replace placeholders with actual values)
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://exchange.example.com/EWS/Exchange.asmx",
-                new NetworkCredential("username", "password")))
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Create the EWS client using the correct factory method
+            try
             {
-                try
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
                 {
-                    // Find all conversations in the Inbox folder
-                    string inboxFolderId = client.MailboxInfo.InboxUri;
-                    ExchangeConversation[] conversations = client.FindConversations(inboxFolderId);
+                    // Placeholder conversation identifier
+                    string conversationId = "conversation-id";
 
-                    // Delete all items belonging to each conversation
-                    foreach (ExchangeConversation conversation in conversations)
+                    // Attempt to delete all items belonging to the conversation permanently
+                    try
                     {
-                        client.DeleteConversationItems(conversation.ConversationId);
+                        client.DeleteConversationItems(conversationId);
+                        Console.WriteLine("All messages in the conversation have been permanently deleted.");
                     }
-
-                    Console.WriteLine("All conversation items have been permanently deleted.");
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to delete conversation items: {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing conversations: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to connect to Exchange server: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Failed to initialize client or execute operation: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
