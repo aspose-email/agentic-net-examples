@@ -1,38 +1,37 @@
 using System;
+using Aspose.Email;
 using Aspose.Email.Tools.Verifications;
 
-namespace EmailValidationSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            Console.Write("Enter email address to validate: ");
+            string emailAddress = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(emailAddress))
             {
-                // Determine the email address to validate
-                string emailAddress = args.Length > 0 ? args[0] : "user@example.com";
-
-                // Create an EmailValidator instance
-                EmailValidator validator = new EmailValidator();
-
-                // Perform validation using the default MailServer policy
-                ValidationResult result;
-                validator.Validate(emailAddress, out result);
-
-                // Output validation outcome
-                Console.WriteLine("Email Address: " + emailAddress);
-                Console.WriteLine("Return Code: " + result.ReturnCode);
-                Console.WriteLine("Message: " + result.Message);
-                if (result.LastException != null)
-                {
-                    Console.WriteLine("Exception: " + result.LastException.Message);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
+                Console.Error.WriteLine("No email address provided.");
                 return;
             }
+
+            EmailValidator validator = new EmailValidator();
+
+            ValidationResult validationResult;
+            validator.Validate(emailAddress, out validationResult);
+
+            Console.WriteLine("Validation Return Code: " + validationResult.ReturnCode);
+            Console.WriteLine("Message: " + validationResult.Message);
+            if (validationResult.LastException != null)
+            {
+                Console.WriteLine("Exception: " + validationResult.LastException.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
