@@ -1,10 +1,9 @@
+using Aspose.Email.Tools.Search;
 using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
-using Aspose.Email.Tools.Search;
-using Aspose.Email.Mime;
 
 class Program
 {
@@ -12,57 +11,88 @@ class Program
     {
         try
         {
-            // POP3 server configuration
-            string host = "pop.example.com";
-            int port = 110;
+            // Placeholder POP3 server credentials
+            string host = "pop3.example.com";
             string username = "user@example.com";
             string password = "password";
 
-            // Ensure the directory for saving attachments exists
-            string outputDirectory = "DownloadedAttachments";
-            if (!Directory.Exists(outputDirectory))
+            // Skip actual network call when placeholders are used
+            if (host.Contains("example.com"))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping POP3 connection.");
+                return;
             }
 
-            // Initialize and use the POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Create and connect POP3 client
+            using (Pop3Client client = new Pop3Client(host, username, password))
             {
                 try
                 {
-                    // Validate credentials (establishes connection)
                     client.ValidateCredentials();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to validate credentials: {ex.Message}");
+                    return;
+                }
 
-                    // Build a query to filter messages (e.g., subject contains "Invoice")
-                    MailQuery query = new MailQuery("Subject Contains 'Invoice'");
+                // Build a query to filter messages (e.g., subject contains "Invoice")
+                MailQueryBuilder builder = new MailQueryBuilder();
+                builder.Subject.Contains("Invoice");
+                MailQuery query = builder.GetQuery();
 
-                    // Retrieve messages that match the query
-                    Pop3MessageInfoCollection messageInfos = client.ListMessages(query);
+                // Retrieve filtered message infos
+                Pop3MessageInfoCollection infos;
+                try
+                {
+                    infos = client.ListMessages(query);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error listing messages: {ex.Message}");
+                    return;
+                }
 
-                    foreach (Pop3MessageInfo info in messageInfos)
+                // Ensure output directory exists
+                string outputDir = "output";
+                try
+                {
+                    if (!Directory.Exists(outputDir))
                     {
-                        // Fetch the full message using its sequence number
-                        using (MailMessage message = client.FetchMessage(info.SequenceNumber))
-                        {
-                            Console.WriteLine($"Subject: {message.Subject}");
-
-                            // Process and save each attachment
-                            foreach (Attachment attachment in message.Attachments)
-                            {
-                                string attachmentPath = Path.Combine(outputDirectory, attachment.Name);
-                                using (FileStream fileStream = new FileStream(attachmentPath, FileMode.Create, FileAccess.Write))
-                                {
-                                    attachment.ContentStream.CopyTo(fileStream);
-                                }
-                                Console.WriteLine($"Saved attachment: {attachment.Name}");
-                            }
-                        }
+                        Directory.CreateDirectory(outputDir);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                     return;
+                }
+
+                // Process each message
+                foreach (Pop3MessageInfo info in infos)
+                {
+                    try
+                    {
+                        using (MailMessage message = client.FetchMessage(info.SequenceNumber))
+                        {
+                            Console.WriteLine($"Processing message #{info.SequenceNumber}: {message.Subject}");
+
+                            // Save the message to a file
+                            string filePath = Path.Combine(outputDir, $"msg_{info.SequenceNumber}.eml");
+                            try
+                            {
+                                message.Save(filePath);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to save message #{info.SequenceNumber}: {ex.Message}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to fetch message #{info.SequenceNumber}: {ex.Message}");
+                    }
                 }
             }
         }
