@@ -10,24 +10,48 @@ class Program
     {
         try
         {
-            // Path to the MSG file to be sent
-            string msgPath = "sample.msg";
+            // Placeholder SMTP configuration
+            string smtpHost = "smtp.example.com";
+            int smtpPort = 587;
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip real network call when placeholders are used
+            if (smtpHost.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder SMTP host detected. Skipping send operation.");
+                return;
+            }
+
+            // Path to the MSG file
+            string msgPath = "email.msg";
 
             // Ensure the MSG file exists; create a minimal placeholder if missing
             if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage("sender@example.com", "recipient@example.com", "Test Subject", "Test Body"))
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                using (MailMessage placeholder = new MailMessage("from@example.com", "to@example.com", "Placeholder", "This is a placeholder message."))
+                {
+                    placeholder.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+                }
+                Console.Error.WriteLine($"Input MSG file not found. Created placeholder at {msgPath}.");
+                return;
             }
 
             // Load the MSG file
@@ -42,65 +66,31 @@ class Program
                 return;
             }
 
-            // -----------------------------------------------------------------
-            // 1. Basic authentication (username & password)
-            // -----------------------------------------------------------------
-            try
+            // Send using Basic authentication
+            using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, username, password))
             {
-                using (SmtpClient client = new SmtpClient("smtp.example.com", "username", "password", SecurityOptions.Auto))
+                try
                 {
                     client.Send(message);
-                    Console.WriteLine("Message sent using Basic authentication.");
+                    Console.WriteLine("Message sent successfully using Basic authentication.");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Basic auth failed: {ex.Message}");
-            }
-
-            // -----------------------------------------------------------------
-            // 2. NTLM authentication (use default Windows credentials)
-            // -----------------------------------------------------------------
-            try
-            {
-                using (SmtpClient client = new SmtpClient("smtp.example.com"))
+                catch (Exception ex)
                 {
-                    client.UseDefaultCredentials = true;          // Enable NTLM
-                    client.UseAuthentication = true;
-                    client.SecurityOptions = SecurityOptions.Auto;
-                    client.Send(message);
-                    Console.WriteLine("Message sent using NTLM authentication.");
+                    Console.Error.WriteLine($"Failed to send message: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"NTLM auth failed: {ex.Message}");
-            }
 
-            // -----------------------------------------------------------------
-            // 3. OAuth2 authentication (token provider)
-            // -----------------------------------------------------------------
-            try
+            // Example for OAuth2 authentication (commented out)
+            /*
+            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Google.GetInstance("clientId", "clientSecret", "refreshToken");
+            using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, username, tokenProvider, SecurityOptions.Auto))
             {
-                // Obtain a token provider (placeholder values)
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.GetInstance(
-                    "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken");
-
-                using (SmtpClient client = new SmtpClient("smtp.example.com", "username", tokenProvider, SecurityOptions.Auto))
-                {
-                    client.Send(message);
-                    Console.WriteLine("Message sent using OAuth2 authentication.");
-                }
+                client.Send(message);
+                Console.WriteLine("Message sent successfully using OAuth2 authentication.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"OAuth2 auth failed: {ex.Message}");
-            }
+            */
 
-            // Dispose the loaded message
+            // Clean up
             message.Dispose();
         }
         catch (Exception ex)
