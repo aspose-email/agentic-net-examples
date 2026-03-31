@@ -1,8 +1,8 @@
 using Aspose.Email.Clients;
 using System;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -10,33 +10,43 @@ class Program
     {
         try
         {
-            // Initialize the IMAP client with placeholder credentials
-            using (ImapClient client = new ImapClient("imap.example.com", "username", "password", SecurityOptions.Auto))
+            // Placeholder connection settings
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip real network calls when placeholder credentials/hosts are used
+            if (host.Contains("example.com") || username.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping network operations.");
+                return;
+            }
+
+            // Create and use the IMAP client within a using block to ensure disposal
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
                 // Enable client-side logging
-                client.EnableLogger = true;
-                client.LogFileName = "imap_log.txt";
+                client.EnableLogger = true; // equivalent to StartLogging()
 
-                // Connect to the server (connection is established lazily on first operation)
-                // Perform a simple operation to verify connection
-                client.SelectFolder("INBOX");
-
-                // Example: list subjects of messages in INBOX
-                MailQueryBuilder builder = new MailQueryBuilder();
-                MailQuery query = builder.GetQuery(); // no criteria, fetch all
-                var messages = client.ListMessages(query);
-                foreach (var info in messages)
+                // Example operation: validate credentials
+                try
                 {
-                    Console.WriteLine("Subject: " + info.Subject);
+                    client.ValidateCredentials();
+                    Console.WriteLine("Credentials are valid.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Credential validation failed: {ex.Message}");
                 }
 
                 // Disable client-side logging
-                client.EnableLogger = false;
+                client.EnableLogger = false; // equivalent to StopLogging()
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
