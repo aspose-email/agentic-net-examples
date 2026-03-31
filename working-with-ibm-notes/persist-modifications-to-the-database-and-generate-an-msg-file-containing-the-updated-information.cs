@@ -1,7 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Calendar;
+using Aspose.Email.Calendar.Recurrences;
 using Aspose.Email.Mapi;
 
 class Program
@@ -10,67 +11,88 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string msgFilePath = "Invitation.msg";
+            // Define file paths
+            string dbPath = "appointments.txt";
+            string msgPath = "appointment.msg";
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(msgFilePath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure the database file exists (create minimal placeholder if missing)
+            if (!File.Exists(dbPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    File.WriteAllText(dbPath, string.Empty);
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create directory – {outputDirectory}. {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to create database file: {ex.Message}");
                     return;
                 }
             }
 
-            // Recipient email address for the sharing invitation
-            string recipientEmail = "user@example.com";
+            // Ensure the directory for the MSG file exists
+            string msgDirectory = Path.GetDirectoryName(msgPath);
+            if (!string.IsNullOrEmpty(msgDirectory) && !Directory.Exists(msgDirectory))
+            {
+                try
+                {
+                    Directory.CreateDirectory(msgDirectory);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create directory for MSG file: {ex.Message}");
+                    return;
+                }
+            }
 
-            // Create and connect the EWS client
-            IEWSClient ewsClient = null;
+            // Create attendees collection
+            MailAddressCollection attendees = new MailAddressCollection();
+            attendees.Add(new MailAddress("person1@domain.com"));
+            attendees.Add(new MailAddress("person2@domain.com"));
+            attendees.Add(new MailAddress("person3@domain.com"));
+
+            // Create an appointment
+            Appointment appointment = new Appointment(
+                "Conference Room 1",
+                new DateTime(2024, 5, 20, 10, 0, 0),
+                new DateTime(2024, 5, 20, 11, 0, 0),
+                new MailAddress("organizer@domain.com"),
+                attendees);
+
+            appointment.Summary = "Project Kickoff";
+            appointment.Description = "Discuss project goals and timelines.";
+
+            // Optionally set a daily recurrence pattern
+            DailyRecurrencePattern recurrence = new DailyRecurrencePattern(5, 1);
+            recurrence.Interval = 1;
+            appointment.Recurrence = recurrence;
+
+            // Persist appointment details to the "database" (text file)
+            string dbEntry = $"{appointment.StartDate:u}|{appointment.EndDate:u}|{appointment.Summary}|{appointment.Description}";
             try
             {
-                ewsClient = EWSClient.GetEWSClient(
-                    "https://exchange.example.com/EWS/Exchange.asmx",
-                    "username",
-                    "password");
+                File.AppendAllText(dbPath, dbEntry + Environment.NewLine);
             }
-            catch (Exception clientEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: Unable to connect to Exchange – {clientEx.Message}");
+                Console.Error.WriteLine($"Failed to write to database file: {ex.Message}");
                 return;
             }
 
-            // Use the client within a using block to ensure disposal
-            using (ewsClient)
+            // Convert the appointment to a MAPI message and save as MSG
+            try
             {
-                // Create the calendar sharing invitation message
-                MapiMessage invitationMessage = null;
-                try
+                using (MapiMessage mapiMessage = appointment.ToMapiMessage())
                 {
-                    invitationMessage = ewsClient.CreateCalendarSharingInvitationMessage(recipientEmail);
-                }
-                catch (Exception invEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create invitation – {invEx.Message}");
-                    return;
-                }
-
-                // Save the invitation as an MSG file
-                try
-                {
-                    invitationMessage.Save(msgFilePath);
-                }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to save MSG file – {saveEx.Message}");
+                    mapiMessage.Save(msgPath);
                 }
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create MSG file: {ex.Message}");
+                return;
+            }
+
+            Console.WriteLine("Appointment saved to database and MSG file successfully.");
         }
         catch (Exception ex)
         {
