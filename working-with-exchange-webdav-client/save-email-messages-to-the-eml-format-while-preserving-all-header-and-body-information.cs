@@ -1,86 +1,98 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
 
-class Program
+namespace SaveEmailToEml
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define connection parameters (replace with real values as needed)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Initialize the Exchange WebDAV client inside a using block for proper disposal
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            try
             {
-                // Attempt to list messages from the Inbox folder
-                ExchangeMessageInfoCollection messages;
+                string sourcePath = "source.eml";
+                string destinationPath = "saved.eml";
+
+                // Ensure source file exists, create placeholder if missing
+                if (!File.Exists(sourcePath))
+                {
                 try
                 {
-                    messages = client.ListMessages("Inbox");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(sourcePath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
 
-                // Ensure the output directory exists
-                string outputDir = Path.Combine(Environment.CurrentDirectory, "SavedEmails");
-                if (!Directory.Exists(outputDir))
-                {
                     try
                     {
-                        Directory.CreateDirectory(outputDir);
+                        string placeholder = "From: placeholder@example.com\r\nTo: recipient@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
+                        File.WriteAllText(sourcePath, placeholder);
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to create placeholder source file: {ex.Message}");
                         return;
                     }
                 }
 
-                // Iterate through each message and save it as an EML file
-                foreach (ExchangeMessageInfo info in messages)
+                // Load the email message
+                MailMessage mailMessage;
+                try
                 {
-                    // Use the UniqueUri property to identify the message
-                    string messageUri = info.UniqueUri;
-                    if (string.IsNullOrEmpty(messageUri))
+                    mailMessage = MailMessage.Load(sourcePath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to load email message: {ex.Message}");
+                    return;
+                }
+
+                using (mailMessage)
+                {
+                    // Prepare save options for EML format
+                    EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
+
+                    // Ensure destination directory exists
+                    string destDirectory = Path.GetDirectoryName(destinationPath);
+                    if (!string.IsNullOrEmpty(destDirectory) && !Directory.Exists(destDirectory))
                     {
-                        Console.Error.WriteLine("Message URI is null or empty, skipping.");
-                        continue;
+                        try
+                        {
+                            Directory.CreateDirectory(destDirectory);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to create destination directory: {ex.Message}");
+                            return;
+                        }
                     }
 
-                    // Build a safe file name using the message subject (fallback to GUID)
-                    string safeSubject = string.IsNullOrWhiteSpace(info.Subject) ? Guid.NewGuid().ToString() : info.Subject;
-                    foreach (char c in Path.GetInvalidFileNameChars())
-                    {
-                        safeSubject = safeSubject.Replace(c, '_');
-                    }
-                    string emlPath = Path.Combine(outputDir, $"{safeSubject}.eml");
-
-                    // Save the message to the file system
+                    // Save the message preserving all headers and body
                     try
                     {
-                        client.SaveMessage(messageUri, emlPath);
-                        Console.WriteLine($"Saved message to: {emlPath}");
+                        mailMessage.Save(destinationPath, emlSaveOptions);
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to save message '{info.Subject}': {ex.Message}");
+                        Console.Error.WriteLine($"Failed to save email message: {ex.Message}");
+                        return;
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
