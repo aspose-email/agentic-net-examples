@@ -7,25 +7,26 @@ class Program
     {
         try
         {
-            // Specify the directory to remove
-            string folderPath = @"C:\Path\To\Delete";
+            // Specify the directory to delete
+            string directoryPath = @"C:\Temp\MyFolder";
 
-            // Verify that the directory exists before attempting deletion
-            if (!Directory.Exists(folderPath))
+            // Guard: ensure the directory exists before attempting deletion
+            if (!Directory.Exists(directoryPath))
             {
-                Console.Error.WriteLine($"Directory does not exist: {folderPath}");
+                Console.Error.WriteLine($"Directory does not exist: {directoryPath}");
                 return;
             }
 
             try
             {
                 // Delete the directory and all its contents
-                Directory.Delete(folderPath, true);
-                Console.WriteLine($"Deleted directory: {folderPath}");
+                Directory.Delete(directoryPath, true);
+                Console.WriteLine($"Successfully deleted directory: {directoryPath}");
             }
             catch (Exception deleteEx)
             {
-                Console.Error.WriteLine($"Failed to delete directory: {deleteEx.Message}");
+                Console.Error.WriteLine($"Error deleting directory: {deleteEx.Message}");
+                return;
             }
         }
         catch (Exception ex)
