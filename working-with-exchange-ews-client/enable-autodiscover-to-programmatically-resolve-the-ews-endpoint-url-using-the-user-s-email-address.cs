@@ -10,45 +10,70 @@ class Program
     {
         try
         {
-            // User credentials and email address
+            // Placeholder user email and credentials.
             string userEmail = "user@example.com";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            string username = "username";
+            string password = "password";
 
-            // Discover the EWS endpoint URL for the given email address
+            // If placeholders are detected, skip the network call.
+            if (userEmail.Contains("example.com") || username == "username")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping AutoDiscover call.");
+                return;
+            }
+
+            // Initialize the Autodiscover service (does not implement IDisposable).
             AutodiscoverService autodiscover = new AutodiscoverService();
-            autodiscover.Credentials = credentials;
 
+            // Set credentials for the Autodiscover request.
+            autodiscover.Credentials = new NetworkCredential(username, password);
+
+            // Retrieve the internal EWS URL for the specified user.
             GetUserSettingsResponse settingsResponse = autodiscover.GetUserSettings(
                 userEmail,
                 UserSettingName.InternalEwsUrl);
 
-            // Extract the discovered URL
+            // Extract the URL from the response.
             string ewsUrl = settingsResponse.Settings[UserSettingName.InternalEwsUrl] as string;
-
             if (string.IsNullOrEmpty(ewsUrl))
             {
-                Console.Error.WriteLine("Failed to discover the EWS URL for the user.");
+                Console.Error.WriteLine("Failed to obtain EWS URL via AutoDiscover.");
                 return;
             }
 
-            // Create the EWS client using the discovered URL
+            // Create the EWS client using the discovered URL.
+            IEWSClient client = null;
             try
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, credentials))
-                {
-                    // Example operation: display the Inbox URI
-                    Console.WriteLine("Connected to EWS. Inbox URI: " + client.MailboxInfo.InboxUri);
-                }
+                client = EWSClient.GetEWSClient(ewsUrl, new NetworkCredential(username, password));
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Error creating or using EWS client: " + ex.Message);
+                Console.Error.WriteLine($"Error creating EWS client: {ex.Message}");
                 return;
+            }
+
+            // Use the client (example: display the Inbox URI).
+            try
+            {
+                Console.WriteLine($"Inbox URI: {client.MailboxInfo.InboxUri}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error using EWS client: {ex.Message}");
+            }
+            finally
+            {
+                // Ensure the client is disposed.
+                if (client != null)
+                {
+                    client.Dispose();
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
