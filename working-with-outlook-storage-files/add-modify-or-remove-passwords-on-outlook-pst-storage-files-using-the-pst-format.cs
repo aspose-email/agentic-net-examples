@@ -1,3 +1,4 @@
+using Aspose.Email;
 using System;
 using System.IO;
 using Aspose.Email.Storage.Pst;
@@ -10,103 +11,88 @@ class Program
         {
             string pstPath = "sample.pst";
 
-            // Ensure the PST file exists; create a minimal one if missing.
-            if (!File.Exists(pstPath))
+            // Ensure the directory for the PST file exists
+            string pstDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
                 try
                 {
-                    // Create a new Unicode PST file.
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine($"Created placeholder PST file at '{pstPath}'.");
+                    Directory.CreateDirectory(pstDirectory);
                 }
-                catch (Exception createEx)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Error creating PST file: {createEx.Message}");
+                    Console.Error.WriteLine($"Error: Unable to create directory '{pstDirectory}'. {dirEx.Message}");
                     return;
                 }
             }
 
-            // Open the PST file with write access.
-            try
+            // If the PST file does not exist, create a minimal placeholder PST
+            if (!File.Exists(pstPath))
             {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
+                try
                 {
-                    MessageStore store = pst.Store;
-
-                    Console.WriteLine($"PST Display Name: {store.DisplayName}");
-                    Console.WriteLine($"Is Password Protected: {store.IsPasswordProtected}");
-
-                    // Set a new password if none exists.
-                    if (!store.IsPasswordProtected)
+                    using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                     {
-                        try
-                        {
-                            store.ChangePassword("mySecret");
-                            Console.WriteLine("Password set to 'mySecret'.");
-                        }
-                        catch (Exception pwdEx)
-                        {
-                            Console.Error.WriteLine($"Error setting password: {pwdEx.Message}");
-                            return;
-                        }
+                        // Placeholder PST created; no further action needed
                     }
+                    Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
+                }
+                catch (Exception createEx)
+                {
+                    Console.Error.WriteLine($"Error: Unable to create PST file '{pstPath}'. {createEx.Message}");
+                    return;
+                }
+            }
 
-                    // Validate the current password.
+            // Open the PST file with write access
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
+            {
+                MessageStore store = pst.Store;
+
+                // Add a password if the PST is not already protected
+                if (!store.IsPasswordProtected)
+                {
                     try
                     {
-                        bool isValid = store.IsPasswordValid("mySecret");
-                        Console.WriteLine($"Is 'mySecret' valid? {isValid}");
+                        store.ChangePassword("myPassword");
+                        Console.WriteLine("Password added to PST.");
                     }
-                    catch (Exception valEx)
+                    catch (Exception pwdEx)
                     {
-                        Console.Error.WriteLine($"Error validating password: {valEx.Message}");
+                        Console.Error.WriteLine($"Error adding password: {pwdEx.Message}");
                         return;
                     }
+                }
 
-                    // Change the password to a new value.
+                // Modify the existing password
+                if (store.IsPasswordProtected && store.IsPasswordValid("myPassword"))
+                {
                     try
                     {
-                        store.ChangePassword("newSecret");
-                        Console.WriteLine("Password changed to 'newSecret'.");
+                        store.ChangePassword("newPassword");
+                        Console.WriteLine("Password changed to a new value.");
                     }
-                    catch (Exception changeEx)
+                    catch (Exception modEx)
                     {
-                        Console.Error.WriteLine($"Error changing password: {changeEx.Message}");
+                        Console.Error.WriteLine($"Error changing password: {modEx.Message}");
                         return;
                     }
+                }
 
-                    // Validate the new password.
-                    try
-                    {
-                        bool isNewValid = store.IsPasswordValid("newSecret");
-                        Console.WriteLine($"Is 'newSecret' valid? {isNewValid}");
-                    }
-                    catch (Exception valNewEx)
-                    {
-                        Console.Error.WriteLine($"Error validating new password: {valNewEx.Message}");
-                        return;
-                    }
-
-                    // Remove the password by setting an empty string.
+                // Remove the password (set to empty string)
+                if (store.IsPasswordProtected && store.IsPasswordValid("newPassword"))
+                {
                     try
                     {
                         store.ChangePassword(string.Empty);
-                        Console.WriteLine("Password removed.");
+                        Console.WriteLine("Password removed from PST.");
                     }
-                    catch (Exception removeEx)
+                    catch (Exception remEx)
                     {
-                        Console.Error.WriteLine($"Error removing password: {removeEx.Message}");
+                        Console.Error.WriteLine($"Error removing password: {remEx.Message}");
                         return;
                     }
-
-                    // Final check: should not be password protected.
-                    Console.WriteLine($"Is Password Protected after removal: {store.IsPasswordProtected}");
                 }
-            }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine($"Error accessing PST file: {ioEx.Message}");
-                return;
             }
         }
         catch (Exception ex)
