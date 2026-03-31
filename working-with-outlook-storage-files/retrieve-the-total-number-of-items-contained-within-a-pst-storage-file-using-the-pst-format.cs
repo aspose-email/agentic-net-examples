@@ -3,39 +3,34 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
-namespace AsposeEmailPstItemCount
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            string pstPath = "sample.pst";
+
+            // Ensure the PST file exists; create a minimal placeholder if missing
+            if (!File.Exists(pstPath))
             {
-                // Path to the PST file
-                string pstPath = "storage.pst";
-
-                // Verify that the PST file exists before attempting to open it
-                if (!File.Exists(pstPath))
+                using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                 {
-                    Console.Error.WriteLine($"Error: File not found – {pstPath}");
-                    return;
+                    // Placeholder PST created; no additional content needed
                 }
-
-                // Open the PST file using a using block to ensure proper disposal
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-                {
-                    // Retrieve the total number of items in the PST storage
-                    int totalItemsCount = pst.Store.GetTotalItemsCount();
-
-                    // Output the count to the console
-                    Console.WriteLine($"Total items count: {totalItemsCount}");
-                }
+                Console.WriteLine($"Placeholder PST created at {pstPath}");
             }
-            catch (Exception ex)
+
+            // Open the PST file and retrieve the total items count
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Write any unexpected errors to the error console
-                Console.Error.WriteLine(ex.Message);
+                int totalItemsCount = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Total items count: {totalItemsCount}");
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
