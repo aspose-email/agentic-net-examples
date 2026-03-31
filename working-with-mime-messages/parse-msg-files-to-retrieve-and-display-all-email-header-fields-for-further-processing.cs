@@ -5,7 +5,7 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
@@ -13,27 +13,34 @@ class Program
 
             if (!File.Exists(msgPath))
             {
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
                 Console.Error.WriteLine($"Error: File not found – {msgPath}");
                 return;
             }
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            using (MapiMessage message = MapiMessage.Load(msgPath))
             {
-                // Retrieve the raw transport headers as a single string
-                string rawHeaders = msg.TransportMessageHeaders;
-
-                if (string.IsNullOrEmpty(rawHeaders))
+                // Iterate through all header fields and display them
+                foreach (string headerKey in message.Headers.Keys)
                 {
-                    Console.WriteLine("No transport headers found in the MSG file.");
-                    return;
-                }
-
-                Console.WriteLine("Transport Message Headers:");
-                // Split the headers into individual lines for display
-                string[] headerLines = rawHeaders.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string line in headerLines)
-                {
-                    Console.WriteLine(line);
+                    string headerValue = message.Headers[headerKey];
+                    Console.WriteLine($"{headerKey}: {headerValue}");
                 }
             }
         }
