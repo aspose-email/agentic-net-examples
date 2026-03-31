@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Pop3;
 using Aspose.Email.Clients;
+using Aspose.Email.Clients.Pop3;
 
 class Program
 {
@@ -10,21 +10,24 @@ class Program
     {
         try
         {
-            // POP3 server connection settings
+            // Placeholder POP3 server credentials
             string host = "pop.example.com";
-            int port = 110;
             string username = "user@example.com";
             string password = "password";
 
-            // Initialize the POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Skip real network calls when placeholders are used
+            if (host.Contains("example.com") || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                Console.Error.WriteLine("Placeholder POP3 credentials detected. Skipping POP3 operations.");
+                return;
+            }
+
+            // Initialize POP3 client
+            using (Pop3Client client = new Pop3Client(host, username, password, SecurityOptions.Auto))
             {
                 try
                 {
-                    // Connect to the server (ValidateCredentials also attempts connection)
-                    client.ValidateCredentials();
-
-                    // Retrieve the list of messages
+                    // Retrieve list of messages
                     Pop3MessageInfoCollection messages = client.ListMessages();
 
                     if (messages == null || messages.Count == 0)
@@ -33,45 +36,42 @@ class Program
                         return;
                     }
 
-                    // Select the first message (you can change the selection logic as needed)
-                    int messageIndex = messages[0].SequenceNumber;
+                    // Select the first message (could be replaced with user selection)
+                    Pop3MessageInfo firstInfo = messages[0];
+                    int sequenceNumber = firstInfo.SequenceNumber;
 
-                    // Prepare output directory and file path
-                    string outputDirectory = "DownloadedEmails";
-                    if (!Directory.Exists(outputDirectory))
+                    // Fetch the full message
+                    using (MailMessage message = client.FetchMessage(sequenceNumber))
                     {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
+                        // Define output file path
+                        string outputPath = "downloaded_message.eml";
 
-                    string outputFilePath = Path.Combine(outputDirectory, $"Email_{messageIndex}.eml");
+                        // Ensure directory exists
+                        string directory = Path.GetDirectoryName(outputPath);
+                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
 
-                    // Save the selected message to a local file
-                    try
-                    {
-                        client.SaveMessage(messageIndex, outputFilePath);
-                        Console.WriteLine($"Message {messageIndex} saved to '{outputFilePath}'.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save message {messageIndex}: {ex.Message}");
-                        return;
+                        // Save the message to a file (guarded with try/catch)
+                        try
+                        {
+                            client.SaveMessage(sequenceNumber, outputPath);
+                            Console.WriteLine($"Message saved to: {outputPath}");
+                        }
+                        catch (Exception ioEx)
+                        {
+                            Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
+                        }
                     }
 
                     // Delete the message from the server
-                    try
-                    {
-                        client.DeleteMessage(messageIndex);
-                        client.CommitDeletes();
-                        Console.WriteLine($"Message {messageIndex} deleted from the server.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to delete message {messageIndex}: {ex.Message}");
-                    }
+                    client.DeleteMessage(sequenceNumber);
+                    Console.WriteLine("Message deleted from the server.");
                 }
-                catch (Exception ex)
+                catch (Exception clientEx)
                 {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    Console.Error.WriteLine($"POP3 operation failed: {clientEx.Message}");
                 }
             }
         }
