@@ -5,49 +5,76 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             string inputPath = "input.msg";
-            string outputPath = "output.eml";
+            string outputPath = "output.msg";
 
-            // Verify input file exists
+            // Ensure input MSG file exists; create a minimal placeholder if missing
             if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder Body");
+                    placeholder.Save(inputPath);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the MSG file into a MapiMessage and convert to MailMessage preserving all properties
-            using (MapiMessage mapiMessage = MapiMessage.Load(inputPath))
+            // Load the original MSG file
+            MapiMessage originalMessage;
+            try
             {
-                MailConversionOptions conversionOptions = new MailConversionOptions();
-                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+                originalMessage = MapiMessage.Load(inputPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                return;
+            }
+
+            using (originalMessage)
+            {
+                // Convert to MailMessage while preserving all properties
+                MailMessage mailMessage;
+                try
                 {
-                    // Save the new email object
-                    mailMessage.Save(outputPath);
+                    mailMessage = originalMessage.ToMailMessage(new MailConversionOptions());
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error converting to MailMessage: {ex.Message}");
+                    return;
+                }
+
+                using (mailMessage)
+                {
+                    // Save the new MailMessage to a new MSG file
+                    try
+                    {
+                        MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                        mailMessage.Save(outputPath, saveOptions);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error saving MailMessage: {ex.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
