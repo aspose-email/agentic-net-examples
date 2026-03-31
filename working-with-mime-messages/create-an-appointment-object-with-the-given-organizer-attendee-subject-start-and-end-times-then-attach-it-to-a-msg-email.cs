@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
-using Aspose.Email.Mime;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,50 +10,48 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string outputPath = Path.Combine(Directory.GetCurrentDirectory(), "AppointmentEmail.msg");
+            // Output MSG file path
+            string outputMsgPath = "appointment.msg";
 
-            // Ensure the directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!Directory.Exists(outputDir))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Create attendees collection
+            // Prepare attendees
             MailAddressCollection attendees = new MailAddressCollection();
             attendees.Add(new MailAddress("attendee@example.com"));
 
             // Create the appointment
             Appointment appointment = new Appointment(
-                location: "Conference Room",
-                startDate: new DateTime(2024, 5, 20, 10, 0, 0),
-                endDate: new DateTime(2024, 5, 20, 11, 0, 0),
-                organizer: new MailAddress("organizer@example.com"),
-                attendees: attendees);
+                "Conference Room",
+                new DateTime(2023, 10, 1, 9, 0, 0),
+                new DateTime(2023, 10, 1, 10, 0, 0),
+                new MailAddress("organizer@example.com"),
+                attendees);
+            appointment.Summary = "Project Meeting";
+            appointment.Description = "Discuss project milestones.";
 
-            appointment.Summary = "Project Kickoff";
-            appointment.Description = "Discuss project goals and timelines.";
-
-            // Create a mail message and attach the appointment as an alternate view
-            using (MailMessage msg = new MailMessage())
+            // Convert appointment to a MAPI message and save as MSG
+            using (MapiMessage mapiMessage = appointment.ToMapiMessage())
             {
-                msg.From = new MailAddress("organizer@example.com");
-                msg.To.Add("attendee@example.com");
-                msg.Subject = "Meeting Invitation";
-
-                // Attach the appointment
-                msg.AddAlternateView(appointment.RequestApointment());
-
-                // Save the message as MSG
-                msg.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                try
+                {
+                    mapiMessage.Save(outputMsgPath);
+                    Console.WriteLine($"MSG file saved to {outputMsgPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save MSG: {ex.Message}");
+                    return;
+                }
             }
-
-            Console.WriteLine("MSG file created at: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
