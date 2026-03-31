@@ -8,65 +8,97 @@ class Program
     {
         try
         {
-            // Input MSG file path
-            string inputMsgPath = "message.msg";
+            string inputMsgPath = "input.msg";
+            string outputDirectory = "LinkedResources";
 
-            // Verify the input file exists
+            // Ensure input file exists; create minimal placeholder if missing
             if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage())
+                    {
+                        placeholder.Subject = "Placeholder Message";
+                        placeholder.Save(inputMsgPath, SaveOptions.DefaultMsg);
+                        Console.WriteLine($"Created placeholder MSG at '{inputMsgPath}'.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Ensure output directory exists
+            try
+            {
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create output directory '{outputDirectory}': {ex.Message}");
                 return;
             }
 
-            // Output directory for linked resources
-            string outputDir = "LinkedResources";
-            if (!Directory.Exists(outputDir))
+            // Load the MSG file
+            try
             {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Load the MSG file into a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(inputMsgPath))
-            {
-                // Iterate through each linked resource
-                int index = 0;
-                foreach (LinkedResource lr in mailMessage.LinkedResources)
+                using (MailMessage mailMessage = MailMessage.Load(inputMsgPath))
                 {
-                    // Build a file name for the resource
-                    string fileName = $"resource_{index}";
-                    // Try to use ContentId if available
-                    if (!string.IsNullOrEmpty(lr.ContentId))
+                    int index = 0;
+                    foreach (LinkedResource linkedResource in mailMessage.LinkedResources)
                     {
-                        fileName = lr.ContentId;
-                    }
-                    // Append appropriate extension if known (fallback to .bin)
-                    string extension = ".bin";
-                    if (!string.IsNullOrEmpty(lr.ContentType?.MediaType))
-                    {
-                        // Simple mapping for common types
-                        if (lr.ContentType.MediaType.Equals("image/jpeg", StringComparison.OrdinalIgnoreCase))
-                            extension = ".jpg";
-                        else if (lr.ContentType.MediaType.Equals("image/png", StringComparison.OrdinalIgnoreCase))
-                            extension = ".png";
-                        else if (lr.ContentType.MediaType.Equals("image/gif", StringComparison.OrdinalIgnoreCase))
-                            extension = ".gif";
-                    }
-                    string outputPath = Path.Combine(outputDir, fileName + extension);
+                        string fileName = linkedResource.ContentId;
+                        if (string.IsNullOrEmpty(fileName))
+                        {
+                            fileName = $"resource_{index}.bin";
+                        }
 
-                    // Save the linked resource to disk
-                    using (LinkedResource resource = lr)
-                    {
-                        resource.Save(outputPath);
-                    }
+                        string outputPath = Path.Combine(outputDirectory, fileName);
+                        try
+                        {
+                            linkedResource.Save(outputPath);
+                            Console.WriteLine($"Saved linked resource to '{outputPath}'.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save linked resource '{fileName}': {ex.Message}");
+                        }
 
-                    Console.WriteLine($"Saved linked resource to: {outputPath}");
-                    index++;
+                        index++;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file '{inputMsgPath}': {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
