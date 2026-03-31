@@ -1,7 +1,9 @@
-using System;
-using Aspose.Email;
 using Aspose.Email.Clients;
+using System;
+using System.Collections.Generic;
+using Aspose.Email;
 using Aspose.Email.Clients.Imap;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -9,26 +11,27 @@ class Program
     {
         try
         {
-            // IMAP server connection settings
+            // Placeholder IMAP server settings
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
-            SecurityOptions security = SecurityOptions.Auto;
-
-            // Source and destination folder names
             string sourceFolder = "INBOX";
             string destinationFolder = "Processed";
 
-            // Create and use the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, security))
+            // Skip real network calls when placeholders are detected
+            if (host.Contains("example.com") || username.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder IMAP credentials detected. Skipping execution.");
+                return;
+            }
+
+            // Create and connect the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
                 try
                 {
-                    // Validate credentials
-                    client.ValidateCredentials();
-
-                    // Ensure the destination folder exists
+                    // Ensure the destination folder exists; create if it does not
                     if (!client.ExistFolder(destinationFolder))
                     {
                         client.CreateFolder(destinationFolder);
@@ -37,21 +40,30 @@ class Program
                     // Select the source folder
                     client.SelectFolder(sourceFolder);
 
-                    // Retrieve messages from the source folder
-                    ImapMessageInfoCollection messages = client.ListMessages();
+                    // Retrieve list of messages in the source folder
+                    IList<ImapMessageInfo> messages = client.ListMessages();
 
-                    // Move each message to the destination folder
-                    foreach (ImapMessageInfo messageInfo in messages)
+                    if (messages == null || messages.Count == 0)
                     {
-                        client.MoveMessage(messageInfo.UniqueId, destinationFolder);
+                        Console.WriteLine("No messages to transfer.");
+                        return;
                     }
 
-                    Console.WriteLine($"Moved {messages.Count} messages from '{sourceFolder}' to '{destinationFolder}'.");
+                    // Collect unique identifiers of messages to move
+                    List<string> messageIds = new List<string>();
+                    foreach (ImapMessageInfo info in messages)
+                    {
+                        messageIds.Add(info.UniqueId);
+                    }
+
+                    // Move messages to the destination folder
+                    client.MoveMessages(messageIds, destinationFolder);
+
+                    Console.WriteLine($"Transferred {messageIds.Count} messages from '{sourceFolder}' to '{destinationFolder}'.");
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                    return;
                 }
             }
         }
