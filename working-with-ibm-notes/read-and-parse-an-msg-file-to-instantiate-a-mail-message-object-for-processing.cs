@@ -9,48 +9,55 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            string msgFilePath = "sample.msg";
 
-            if (!File.Exists(msgPath))
+            // Ensure the MSG file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage())
+                    {
+                        placeholder.Subject = "Placeholder Subject";
+                        placeholder.Body = "This is a placeholder message.";
+                        placeholder.Save(msgFilePath);
+                    }
+                    Console.WriteLine($"Placeholder MSG file created at '{msgFilePath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
             }
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Read and parse the MSG file.
+            try
             {
-                Console.WriteLine("Subject: " + msg.Subject);
-                Console.WriteLine("From: " + msg.SenderName);
-                Console.WriteLine("Body: " + msg.Body);
-
-                // Process attachments
-                string attachmentFolder = "Attachments";
-                if (!Directory.Exists(attachmentFolder))
+                using (MapiMessageReader reader = new MapiMessageReader(msgFilePath))
                 {
-                    Directory.CreateDirectory(attachmentFolder);
-                }
-
-                foreach (MapiAttachment att in msg.Attachments)
-                {
-                    Console.WriteLine("Attachment: " + att.FileName);
-                    string attPath = Path.Combine(attachmentFolder, att.FileName);
-                    using (FileStream fs = new FileStream(attPath, FileMode.Create, FileAccess.Write))
+                    using (MapiMessage message = reader.ReadMessage())
                     {
-                        att.Save(fs);
+                        Console.WriteLine("Subject: " + message.Subject);
+                        Console.WriteLine("From: " + message.SenderName);
+                        Console.WriteLine("Body: " + message.Body);
+
+                        foreach (MapiAttachment attachment in message.Attachments)
+                        {
+                            Console.WriteLine("Attachment: " + attachment.FileName);
+                        }
                     }
                 }
-
-                // Convert to MailMessage for further processing if needed
-                using (MailMessage mail = msg.ToMailMessage(new MailConversionOptions()))
-                {
-                    Console.WriteLine("MailMessage Subject: " + mail.Subject);
-                    // Additional processing of MailMessage can be done here
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error reading MSG file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
