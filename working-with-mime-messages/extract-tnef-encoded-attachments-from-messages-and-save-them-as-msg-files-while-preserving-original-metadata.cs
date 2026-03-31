@@ -9,52 +9,63 @@ class Program
     {
         try
         {
-            string inputMsgPath = "input.msg";
-            string outputFolder = "ExtractedAttachments";
+            // Path to the source email file (EML, MSG, etc.)
+            string inputPath = "input.msg";
 
-            if (!File.Exists(inputMsgPath))
+            // Verify that the source file exists
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputMsgPath}");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Error: File not found – {inputPath}");
                 return;
             }
 
-            if (!Directory.Exists(outputFolder))
+            // Load the email message
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                Directory.CreateDirectory(outputFolder);
-            }
-
-            // Read the Outlook message and its attachments.
-            using (MapiMessageReader reader = new MapiMessageReader(inputMsgPath))
-            {
-                using (MapiMessage message = reader.ReadMessage())
+                // Prepare output directory
+                string outputDir = "ExtractedTnefAttachments";
+                if (!Directory.Exists(outputDir))
                 {
-                    // Attachments extracted from the message (including those decoded from TNEF).
-                    MapiAttachmentCollection attachments = reader.ReadAttachments();
+                    Directory.CreateDirectory(outputDir);
+                }
 
-                    foreach (MapiAttachment attachment in attachments)
+                // Iterate through all attachments
+                foreach (Attachment attachment in message.Attachments)
+                {
+                    // Process only TNEF (winmail.dat) attachments
+                    if (attachment.IsTnef)
                     {
-                        // Process only TNEF attachments (commonly winmail.dat).
-                        if (string.Equals(Path.GetExtension(attachment.FileName), ".dat", StringComparison.OrdinalIgnoreCase))
+                        // Load the TNEF attachment as a MapiMessage
+                        using (MapiMessage tnefMessage = MapiMessage.LoadFromTnef(attachment.ContentStream))
                         {
-                            string tempTnefPath = Path.Combine(outputFolder, attachment.FileName);
-
-                            // Save the TNEF attachment to a temporary file.
-                            using (FileStream tnefWrite = new FileStream(tempTnefPath, FileMode.Create, FileAccess.Write))
+                            // Build output MSG file name
+                            string baseName = Path.GetFileNameWithoutExtension(attachment.Name);
+                            if (string.IsNullOrEmpty(baseName))
                             {
-                                attachment.SaveToTnef(tnefWrite);
+                                baseName = "attachment";
                             }
+                            string outputPath = Path.Combine(outputDir, baseName + ".msg");
 
-                            // Load the TNEF content as a MapiMessage.
-                            using (FileStream tnefRead = new FileStream(tempTnefPath, FileMode.Open, FileAccess.Read))
-                            {
-                                using (MapiMessage extractedMessage = MapiMessage.LoadFromTnef(tnefRead))
-                                {
-                                    // Save the extracted message as an MSG file, preserving metadata.
-                                    string msgFileName = Path.GetFileNameWithoutExtension(attachment.FileName) + ".msg";
-                                    string msgPath = Path.Combine(outputFolder, msgFileName);
-                                    extractedMessage.Save(msgPath);
-                                }
-                            }
+                            // Save the extracted attachment as MSG
+                            tnefMessage.Save(outputPath);
+                            Console.WriteLine($"Saved TNEF attachment as MSG: {outputPath}");
                         }
                     }
                 }
@@ -62,7 +73,7 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
