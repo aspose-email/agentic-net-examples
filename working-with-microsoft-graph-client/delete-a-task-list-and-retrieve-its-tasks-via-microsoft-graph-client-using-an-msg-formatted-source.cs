@@ -1,114 +1,66 @@
 using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
+using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailGraphSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Prepare MSG file path
-            string msgPath = "sample.msg";
-
-            // Ensure the MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
+            try
             {
-                try
+                // Placeholder credentials and identifiers
+                string clientId = "your-client-id";
+                string clientSecret = "your-client-secret";
+                string refreshToken = "your-refresh-token";
+                string tenantId = "your-tenant-id";
+                string taskListId = "your-tasklist-id";
+
+                // Skip execution if placeholders are not replaced
+                if (clientId.StartsWith("your-") ||
+                    clientSecret.StartsWith("your-") ||
+                    refreshToken.StartsWith("your-") ||
+                    tenantId.StartsWith("your-") ||
+                    taskListId.StartsWith("your-"))
                 {
-                    using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder", "This is a placeholder message."))
-                    {
-                        placeholder.Save(msgPath, SaveOptions.DefaultMsg);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine("Please replace placeholder credentials and identifiers with real values.");
                     return;
                 }
-            }
 
-            // Load the MSG file
-            MailMessage message;
-            try
-            {
-                message = MailMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
-            }
+                // Create token provider (3‑argument overload)
+                TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
 
-            // Use the loaded message as needed (e.g., extract subject)
-            Console.WriteLine($"Loaded message subject: {message.Subject}");
-
-            // Prepare token provider (Outlook) with dummy credentials
-            TokenProvider tokenProvider;
-            try
-            {
-                tokenProvider = TokenProvider.Outlook.GetInstance("clientId", "clientSecret", "refreshToken");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
-                return;
-            }
-
-            // Initialize Graph client (requires token provider and tenant ID)
-            IGraphClient client;
-            try
-            {
-                client = GraphClient.GetClient(tokenProvider, "tenantId");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create Graph client: {ex.Message}");
-                return;
-            }
-
-            // Use the client within a using block to ensure disposal
-            using (client)
-            {
-                // Define the Task List ID to delete and later retrieve tasks from
-                string taskListId = "tasklist-id";
-
-                // Delete the specified Task List
-                try
+                // Initialize Graph client (Aspose.Email.Clients.ITokenProvider overload)
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
                 {
-                    client.DeleteTaskList(taskListId);
-                    Console.WriteLine($"Deleted Task List with ID: {taskListId}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to delete Task List: {ex.Message}");
-                    // Continue to attempt retrieval (may be empty)
-                }
-
-                // Retrieve tasks from the (now deleted) Task List
-                try
-                {
-                    var tasks = client.ListTasks(taskListId);
-                    Console.WriteLine($"Tasks in Task List '{taskListId}':");
-                    foreach (var task in tasks)
+                    try
                     {
-                        Console.WriteLine($"- {task.Subject}");
+                        // Delete the specified task list
+                        client.DeleteTaskList(taskListId);
+                        Console.WriteLine($"Task list '{taskListId}' deleted successfully.");
+
+                        // Retrieve tasks from the (now deleted) task list – this will typically return empty collection
+                        MapiTaskCollection tasks = client.ListTasks(taskListId);
+                        Console.WriteLine($"Tasks in task list '{taskListId}':");
+
+                        foreach (MapiTask task in tasks)
+                        {
+                            Console.WriteLine($"- Subject: {task.Subject}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Graph operation failed: {ex.Message}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to list tasks: {ex.Message}");
-                }
             }
-
-            // Dispose the loaded message
-            message.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
