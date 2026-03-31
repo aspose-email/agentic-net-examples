@@ -1,75 +1,125 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
-class Program
+namespace EmailToMsgConverter
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define source and destination paths
-            string sourcePath = "input.eml";   // can be .eml, .msg, etc.
-            string destinationPath = "output.msg";
-
-            // Verify source file exists
-            if (!File.Exists(sourcePath))
+            try
             {
-                Console.Error.WriteLine($"Error: Source file not found – {sourcePath}");
-                return;
-            }
+                // Define input files (can be extended as needed)
+                List<string> inputFiles = new List<string>
+                {
+                    "sample.eml",
+                    "sample.msg"
+                };
 
-            // Ensure destination directory exists
-            string destDir = Path.GetDirectoryName(destinationPath);
-            if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
-            {
+                // Define output directory
+                string outputDir = "ConvertedMsg";
+
+                // Ensure output directory exists
+                if (!Directory.Exists(outputDir))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+                    catch (Exception dirEx)
+                    {
+                        Console.Error.WriteLine($"Error: Unable to create output directory – {outputDir}. {dirEx.Message}");
+                        return;
+                    }
+                }
+
+                foreach (string inputPath in inputFiles)
+                {
+                    if (!File.Exists(inputPath))
+                    {
                 try
                 {
-                    Directory.CreateDirectory(destDir);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create directory – {destDir}. {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
-            }
 
-            // Determine source file type by extension
-            string ext = Path.GetExtension(sourcePath).ToLowerInvariant();
-
-            // Convert to MapiMessage and save as MSG
-            if (ext == ".eml")
-            {
-                // Load EML as MailMessage
-                using (MailMessage mail = MailMessage.Load(sourcePath))
+                try
                 {
-                    // Convert to MapiMessage
-                    MapiMessage mapi = MapiMessage.FromMailMessage(mail);
-                    // Save as MSG (Unicode format is default)
-                    mapi.Save(destinationPath);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                        Console.Error.WriteLine($"Error: Input file not found – {inputPath}");
+                        continue;
+                    }
+
+                    string extension = Path.GetExtension(inputPath).ToLowerInvariant();
+                    string outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(inputPath) + ".msg");
+
+                    try
+                    {
+                        if (extension == ".eml")
+                        {
+                            // Load EML as MailMessage
+                            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+                            {
+                                // Save as MSG with Unicode format preserving original dates
+                                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                                {
+                                    PreserveOriginalDates = true
+                                };
+                                mailMessage.Save(outputPath, saveOptions);
+                            }
+                        }
+                        else if (extension == ".msg")
+                        {
+                            // Load MSG as MapiMessage and re‑save (preserves content)
+                            using (MapiMessage mapiMessage = MapiMessage.Load(inputPath))
+                            {
+                                mapiMessage.Save(outputPath);
+                            }
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine($"Warning: Unsupported file format – {inputPath}");
+                        }
+                    }
+                    catch (Exception fileEx)
+                    {
+                        Console.Error.WriteLine($"Error processing file {inputPath}: {fileEx.Message}");
+                    }
                 }
             }
-            else if (ext == ".msg")
+            catch (Exception ex)
             {
-                // Load existing MSG directly
-                using (MapiMessage mapi = MapiMessage.Load(sourcePath))
-                {
-                    // Save (could be a copy or re‑save to ensure format)
-                    mapi.Save(destinationPath);
-                }
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-            else
-            {
-                Console.Error.WriteLine($"Error: Unsupported source format – {ext}");
-                return;
-            }
-
-            Console.WriteLine($"Message successfully saved to {destinationPath}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
