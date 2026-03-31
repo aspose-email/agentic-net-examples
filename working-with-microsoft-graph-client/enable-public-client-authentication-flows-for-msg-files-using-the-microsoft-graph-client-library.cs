@@ -1,3 +1,4 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
@@ -10,61 +11,66 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
-            if (!File.Exists(msgPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
-                return;
-            }
-
-            // Load MSG file into a MailMessage object
-            MailMessage mailMessage;
-            try
-            {
-                mailMessage = MailMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
-                return;
-            }
-
-            // Prepare token provider for public client authentication flow
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                "clientId", "clientSecret", "refreshToken");
-
-            // Tenant identifier (e.g., tenant GUID or domain)
+            // Placeholder credentials – replace with real values.
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
             string tenantId = "your-tenant-id";
 
-            // Initialize Graph client
-            IGraphClient client;
-            try
+            // Skip execution when placeholders are detected.
+            if (clientId.Contains("your-") || clientSecret.Contains("your-") ||
+                refreshToken.Contains("your-") || tenantId.Contains("your-"))
             {
-                client = GraphClient.GetClient(tokenProvider, tenantId);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error creating Graph client: {ex.Message}");
+                Console.WriteLine("Placeholder credentials detected – aborting example.");
                 return;
             }
 
-            using (client)
+            // Create token provider for Outlook (Microsoft Graph) authentication.
+            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+            // Initialize Graph client.
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
             {
-                // Upload the message to the Drafts folder
+                // Path to the MSG file to be uploaded.
+                string msgPath = "sample.msg";
+
+                // Verify the MSG file exists.
+                if (!File.Exists(msgPath))
+                {
                 try
                 {
-                    client.CreateMessage("Drafts", mailMessage);
-                    Console.WriteLine("Message uploaded to Drafts successfully.");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating message: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                    Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                    return;
+                }
+
+                // Load the MSG file into a MapiMessage.
+                using (MapiMessage msg = MapiMessage.Load(msgPath))
+                {
+                    // Upload the message to the Inbox folder (use folder ID or well‑known name).
+                    // Here we use the well‑known folder name "Inbox".
+                    client.CreateMessage("Inbox", msg);
+                    Console.WriteLine("Message uploaded successfully.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
