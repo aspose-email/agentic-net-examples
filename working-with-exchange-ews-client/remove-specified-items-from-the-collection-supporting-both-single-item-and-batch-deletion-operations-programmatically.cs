@@ -1,76 +1,67 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // Server connection settings (replace with real values)
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
-                string password = "password";
+            // Placeholder connection details – replace with real values.
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-                // Initialize and connect the IMAP client
+            // Skip execution when placeholder credentials are detected.
+            if (mailboxUri.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
+
+            // Create the EWS client inside a using block to ensure disposal.
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
                 try
                 {
-                    using (ImapClient client = new ImapClient(host, port, username, password))
+                    // Prepare deletion options – move items to Deleted Items folder.
+                    DeletionOptions deleteOptions = new DeletionOptions(DeletionType.MoveToDeletedItems);
+
+                    // ---------- Single item deletion ----------
+                    // URI of the message to delete.
+                    string singleMessageUri = "https://exchange.example.com/EWS/Exchange.asmx/Message/AAAkAD...";
+
+                    // Delete a single message.
+                    client.DeleteItem(singleMessageUri, deleteOptions);
+                    Console.WriteLine("Single message deleted successfully.");
+
+                    // ---------- Batch deletion ----------
+                    // URIs of the messages to delete.
+                    List<string> messageUris = new List<string>
                     {
-                        client.SecurityOptions = SecurityOptions.SSLImplicit;
+                        "https://exchange.example.com/EWS/Exchange.asmx/Message/AAAkAD...1",
+                        "https://exchange.example.com/EWS/Exchange.asmx/Message/AAAkAD...2",
+                        "https://exchange.example.com/EWS/Exchange.asmx/Message/AAAkAD...3"
+                    };
 
-                        // Select the INBOX folder
-                        client.SelectFolder("INBOX");
-
-                        // Retrieve all messages in the folder
-                        ImapMessageInfoCollection messages = client.ListMessages();
-                        Console.WriteLine($"Total messages in INBOX: {messages.Count}");
-
-                        // ----- Single-item deletion -----
-                        if (messages.Count > 0)
-                        {
-                            // Delete the first message by its unique identifier
-                            ImapMessageInfo firstMessage = messages[0];
-                            client.DeleteMessage(firstMessage.UniqueId);
-                            client.CommitDeletes();
-                            Console.WriteLine($"Deleted single message UID: {firstMessage.UniqueId}");
-                        }
-
-                        // ----- Batch deletion -----
-                        if (messages.Count > 2)
-                        {
-                            // Prepare a list of messages to delete (e.g., second and third messages)
-                            List<ImapMessageInfo> batchToDelete = new List<ImapMessageInfo>
-                            {
-                                messages[1],
-                                messages[2]
-                            };
-
-                            // Delete the batch and commit immediately
-                            client.DeleteMessages(batchToDelete, true);
-                            Console.WriteLine("Deleted batch of messages (UIDs: {0}, {1})",
-                                batchToDelete[0].UniqueId, batchToDelete[1].UniqueId);
-                        }
-                    }
+                    // Delete multiple messages in one call.
+                    client.DeleteItems(messageUris, deleteOptions);
+                    Console.WriteLine("Batch messages deleted successfully.");
                 }
                 catch (Exception ex)
                 {
-                    // Handle connection or operation errors
-                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                    return;
+                    // Handle errors that occur during client operations.
+                    Console.Error.WriteLine($"Error during deletion: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                // Top-level exception guard
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            // Top‑level exception guard.
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
