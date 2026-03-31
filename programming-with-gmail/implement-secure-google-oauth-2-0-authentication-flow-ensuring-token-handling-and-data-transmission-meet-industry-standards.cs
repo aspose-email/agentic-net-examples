@@ -1,64 +1,53 @@
 using System;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-namespace GmailOAuthSample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Replace these placeholder values with real credentials.
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string defaultEmail = "user@example.com";
+            // Placeholder credentials – replace with real values for actual use
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string defaultEmail = "user@example.com";
 
-                // Create the Gmail client using OAuth 2.0 credentials.
-                IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
+            // Guard against executing network calls with placeholder credentials
+            if (clientId == "clientId" || clientSecret == "clientSecret" ||
+                refreshToken == "refreshToken")
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping authentication flow.");
+                return;
+            }
+
+            // Obtain a token provider for Google and retrieve an access token
+            using (TokenProvider tokenProvider = TokenProvider.Google.GetInstance(clientId, clientSecret, refreshToken))
+            {
                 try
                 {
-                    // List messages in the mailbox.
-                    List<GmailMessageInfo> messages = gmailClient.ListMessages();
+                    OAuthToken oauthToken = tokenProvider.GetAccessToken();
+                    string accessToken = oauthToken.Token;
 
-                    Console.WriteLine($"Total messages: {messages.Count}");
-
-                    foreach (GmailMessageInfo info in messages)
+                    // Create the Gmail client using the obtained access token
+                    using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
                     {
-                        // Fetch the full message to access detailed properties.
-                        using (MailMessage fullMessage = gmailClient.FetchMessage(info.Id))
-                        {
-                            string subject = fullMessage.Subject ?? string.Empty;
-                            string from = fullMessage.From?.Address ?? string.Empty;
-                            Console.WriteLine($"Subject: {subject}");
-                            Console.WriteLine($"From: {from}");
-                            Console.WriteLine(new string('-', 40));
-                        }
+                        Console.WriteLine("Gmail client instantiated successfully.");
+                        // Additional Gmail operations can be performed here using gmailClient
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Gmail operation failed: {ex.Message}");
+                    Console.Error.WriteLine($"Authentication error: {ex.Message}");
                     return;
                 }
-                finally
-                {
-                    // Ensure the client is properly disposed.
-                    if (gmailClient != null)
-                    {
-                        gmailClient.Dispose();
-                    }
-                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
