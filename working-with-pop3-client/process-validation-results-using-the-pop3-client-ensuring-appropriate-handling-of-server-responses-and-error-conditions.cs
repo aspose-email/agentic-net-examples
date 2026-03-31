@@ -2,7 +2,6 @@ using System;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
-using Aspose.Email.Clients.Pop3.Models;
 
 class Program
 {
@@ -10,58 +9,65 @@ class Program
     {
         try
         {
-            // POP3 server connection parameters (replace with real values)
-            const string host = "pop3.example.com";
-            const int port = 995;
-            const string username = "user@example.com";
-            const string password = "password";
-            const SecurityOptions security = SecurityOptions.Auto;
+            // POP3 server connection settings (placeholders)
+            string host = "pop3.example.com";
+            int port = 110;
+            string username = "user@example.com";
+            string password = "password";
+            SecurityOptions security = SecurityOptions.None;
 
-            // Create and connect the POP3 client
+            // Guard against executing with placeholder credentials
+            if (host.Contains("example.com") || username.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder POP3 server settings detected. Skipping network call.");
+                return;
+            }
+
+            // Create and use the POP3 client
             using (Pop3Client client = new Pop3Client(host, port, username, password, security))
             {
                 try
                 {
-                    // Retrieve mailbox status information
-                    Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
-                    Console.WriteLine($"Message Count: {mailboxInfo.MessageCount}");
-                    Console.WriteLine($"Occupied Size: {mailboxInfo.OccupiedSize} bytes");
+                    // Validate credentials; throws Pop3Exception on failure
+                    client.ValidateCredentials();
 
-                    // List messages (basic info only)
+                    // Retrieve list of messages
                     Pop3MessageInfoCollection messageInfos = client.ListMessages();
-                    foreach (Pop3MessageInfo info in messageInfos)
-                    {
-                        Console.WriteLine($"Seq: {info.SequenceNumber}, Subject: {info.Subject}, Size: {info.Size} bytes");
-                    }
 
-                    // Example: fetch the first message if any
+                    Console.WriteLine($"Total messages on server: {messageInfos.Count}");
+
                     if (messageInfos.Count > 0)
                     {
-                        int firstSeq = messageInfos[0].SequenceNumber;
-                        using (MailMessage message = client.FetchMessage(firstSeq))
+                        // Fetch the first message
+                        int sequenceNumber = messageInfos[0].SequenceNumber;
+                        using (MailMessage message = client.FetchMessage(sequenceNumber))
                         {
-                            Console.WriteLine("\n--- Fetched Message ---");
-                            Console.WriteLine($"From: {message.From}");
                             Console.WriteLine($"Subject: {message.Subject}");
-                            Console.WriteLine($"Body:\n{message.Body}");
+                            Console.WriteLine($"From: {message.From}");
+                            Console.WriteLine($"Date: {message.Date}");
                         }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No messages found on the server.");
                     }
                 }
                 catch (Pop3Exception popEx)
                 {
-                    Console.Error.WriteLine($"POP3 operation failed: {popEx.Message}");
-                    return;
+                    // Handle POP3-specific errors
+                    Console.Error.WriteLine($"POP3 error: {popEx.Message}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                    return;
+                    // Handle other errors related to client operations
+                    Console.Error.WriteLine($"Error: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Failed to initialize POP3 client: {ex.Message}");
+            // Top-level exception guard
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
