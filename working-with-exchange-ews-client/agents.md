@@ -18,32 +18,73 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (132 file(s))
-- `using Aspose.Email;` (122 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (108 file(s))
-- `using System.Net;` (95 file(s))
-- `using Aspose.Email.Clients.Exchange;` (71 file(s))
-- `using System.IO;` (20 file(s))
-- `using Aspose.Email.Tools.Search;` (14 file(s))
-- `using Aspose.Email.Clients;` (12 file(s))
+- `using System;` (170 file(s))
+- `using Aspose.Email;` (155 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (136 file(s))
+- `using System.Net;` (94 file(s))
+- `using Aspose.Email.Clients.Exchange;` (89 file(s))
+- `using System.IO;` (26 file(s))
+- `using Aspose.Email.Tools.Search;` (16 file(s))
 - `using System.Collections.Generic;` (12 file(s))
-- `using Aspose.Email.Clients.Google;` (9 file(s))
-- `using Aspose.Email.Calendar;` (7 file(s))
-- `using Aspose.Email.Mapi;` (4 file(s))
-- `using System.Threading.Tasks;` (3 file(s))
-- `using Aspose.Email.PersonalInfo;` (2 file(s))
-- `using System.Linq;` (2 file(s))
-- `using System.Text;` (2 file(s))
+- `using Aspose.Email.PersonalInfo;` (11 file(s))
+- `using Aspose.Email.Calendar;` (9 file(s))
+- `using System.Threading.Tasks;` (7 file(s))
+- `using Aspose.Email.Clients.Google;` (7 file(s))
+- `using Aspose.Email.Clients;` (7 file(s))
+- `using Aspose.Email.Storage.Pst;` (6 file(s))
+- `using System.Threading;` (6 file(s))
+- `using Aspose.Email.Mapi;` (6 file(s))
+- `using System.Text;` (5 file(s))
+- `using Aspose.Email.Clients.Imap;` (3 file(s))
 - `using System.Text.Json;` (2 file(s))
-- `using System.Threading;` (2 file(s))
-- `using Aspose.Email.Clients.Imap;` (2 file(s))
+- `using System.ComponentModel;` (1 file(s))
+- `using System.Diagnostics;` (1 file(s))
 - `using System.IO.Compression;` (1 file(s))
 - `using Aspose.Email.Clients.Smtp;` (1 file(s))
+- `using System.Runtime.InteropServices;` (1 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService.Models;` (1 file(s))
+- `using Aspose.Email.Clients.Exchange.Dav;` (1 file(s))
+- `using System.Reflection;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
+| [12880.cs](./12880.cs) | 12880 |
+| [12882.cs](./12882.cs) | 12882 |
+| [12890.cs](./12890.cs) | 12890 |
+| [12891.cs](./12891.cs) | 12891 |
+| [12893.cs](./12893.cs) | 12893 |
+| [12894.cs](./12894.cs) | 12894 |
+| [12903.cs](./12903.cs) | 12903 |
+| [12920.cs](./12920.cs) | 12920 |
+| [12926.cs](./12926.cs) | 12926 |
+| [12927.cs](./12927.cs) | 12927 |
+| [12929.cs](./12929.cs) | 12929 |
+| [12930.cs](./12930.cs) | 12930 |
+| [12931.cs](./12931.cs) | 12931 |
+| [12932.cs](./12932.cs) | 12932 |
+| [12933.cs](./12933.cs) | 12933 |
+| [12937.cs](./12937.cs) | 12937 |
+| [12943.cs](./12943.cs) | 12943 |
+| [12946.cs](./12946.cs) | 12946 |
+| [12948.cs](./12948.cs) | 12948 |
+| [12949.cs](./12949.cs) | 12949 |
+| [12967.cs](./12967.cs) | 12967 |
+| [12971.cs](./12971.cs) | 12971 |
+| [12975.cs](./12975.cs) | 12975 |
+| [12981.cs](./12981.cs) | 12981 |
+| [12983.cs](./12983.cs) | 12983 |
+| [12986.cs](./12986.cs) | 12986 |
+| [12987.cs](./12987.cs) | 12987 |
+| [12999.cs](./12999.cs) | 12999 |
+| [13000.cs](./13000.cs) | 13000 |
+| [13013.cs](./13013.cs) | 13013 |
+| [13016.cs](./13016.cs) | 13016 |
+| [13018.cs](./13018.cs) | 13018 |
+| [13019.cs](./13019.cs) | 13019 |
+| [13020.cs](./13020.cs) | 13020 |
+| [13024.cs](./13024.cs) | 13024 |
+| [13033.cs](./13033.cs) | 13033 |
 | [add-contacts-to-an-existing-distribution-list-by-specifying-member-identifiers-and-updating-the-list-accordingly.cs](./add-contacts-to-an-existing-distribution-list-by-specifying-member-identifiers-and-updating-the-list-accordingly.cs) | add contacts to an existing distribution list by specifying member identifiers and updating the list accordingly |
 | [add-custom-metadata-properties-to-the-target-object-to-enable-extended-attribute-storage-for-downstream-processing.cs](./add-custom-metadata-properties-to-the-target-object-to-enable-extended-attribute-storage-for-downstream-processing.cs) | add custom metadata properties to the target object to enable extended attribute storage for downstream processing |
 | [add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs](./add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs) | add the required email library package to the project using the nuget package manager |
@@ -60,6 +101,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [configure-authentication-credentials-for-the-email-service-to-establish-secure-connections-and-authorize-requests.cs](./configure-authentication-credentials-for-the-email-service-to-establish-secure-connections-and-authorize-requests.cs) | configure authentication credentials for the email service to establish secure connections and authorize requests |
 | [configure-exchangeservice-tracelistener-to-direct-logging-output-to-a-designated-log-file-location-on-disk.cs](./configure-exchangeservice-tracelistener-to-direct-logging-output-to-a-designated-log-file-location-on-disk.cs) | configure exchangeservice tracelistener to direct logging output to a designated log file location on disk |
 | [configure-retrieve-and-update-user-mail-settings-and-preferences-on-an-exchange-server-programmatically.cs](./configure-retrieve-and-update-user-mail-settings-and-preferences-on-an-exchange-server-programmatically.cs) | configure retrieve and update user mail settings and preferences on an exchange server programmatically |
+| [configure-the-email-client-to-automatically-locate-service-endpoints-via-the-autodiscover-protocol-during-initialization.cs](./configure-the-email-client-to-automatically-locate-service-endpoints-via-the-autodiscover-protocol-during-initialization.cs) | configure the email client to automatically locate service endpoints via the autodiscover protocol during initialization |
 | [configure-the-ews-client-in-c-to-record-activity-logs-for-debugging-and-monitoring-purposes.cs](./configure-the-ews-client-in-c-to-record-activity-logs-for-debugging-and-monitoring-purposes.cs) | configure the ews client in c to record activity logs for debugging and monitoring purposes |
 | [configure-the-exchange-server-endpoint-by-providing-its-url-correctly-in-the-client-settings.cs](./configure-the-exchange-server-endpoint-by-providing-its-url-correctly-in-the-client-settings.cs) | configure the exchange server endpoint by providing its url correctly in the client settings |
 | [configure-the-exchange-web-services-ews-endpoint-url-manually-or-enable-automatic-discovery-at-runtime.cs](./configure-the-exchange-web-services-ews-endpoint-url-manually-or-enable-automatic-discovery-at-runtime.cs) | configure the exchange web services ews endpoint url manually or enable automatic discovery at runtime |
@@ -163,6 +205,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [retrieve-calendar-items-from-a-mailbox-using-the-appropriate-api-to-access-event-details.cs](./retrieve-calendar-items-from-a-mailbox-using-the-appropriate-api-to-access-event-details.cs) | retrieve calendar items from a mailbox using the appropriate api to access event details |
 | [retrieve-contacts-from-a-data-source-and-populate-a-contact-collection-for-further-processing.cs](./retrieve-contacts-from-a-data-source-and-populate-a-contact-collection-for-further-processing.cs) | retrieve contacts from a data source and populate a contact collection for further processing |
 | [retrieve-custom-metadata-fields-from-a-document-and-expose-their-values-programmatically-for-further-processing.cs](./retrieve-custom-metadata-fields-from-a-document-and-expose-their-values-programmatically-for-further-processing.cs) | retrieve custom metadata fields from a document and expose their values programmatically for further processing |
+| [retrieve-email-messages-from-a-mailbox-or-server-using-the-provided-api-methods-while-handling-pagination.cs](./retrieve-email-messages-from-a-mailbox-or-server-using-the-provided-api-methods-while-handling-pagination.cs) | retrieve email messages from a mailbox or server using the provided api methods while handling pagination |
 | [retrieve-email-messages-from-a-server-or-store-using-supported-protocols-and-handle-them-programmatically.cs](./retrieve-email-messages-from-a-server-or-store-using-supported-protocols-and-handle-them-programmatically.cs) | retrieve email messages from a server or store using supported protocols and handle them programmatically |
 | [retrieve-email-messages-from-a-shared-mailbox-using-appropriate-api-calls-and-handle-authentication.cs](./retrieve-email-messages-from-a-shared-mailbox-using-appropriate-api-calls-and-handle-authentication.cs) | retrieve email messages from a shared mailbox using appropriate api calls and handle authentication |
 | [retrieve-the-shared-mailbox-s-inbox-folder-reference-to-enable-further-email-processing-and-folder-management-tasks.cs](./retrieve-the-shared-mailbox-s-inbox-folder-reference-to-enable-further-email-processing-and-folder-management-tasks.cs) | retrieve the shared mailbox s inbox folder reference to enable further email processing and folder management tasks |
@@ -178,7 +221,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [utilize-the-service-createitem-method-to-programmatically-instantiate-a-new-list-on-the-server-side-repository.cs](./utilize-the-service-createitem-method-to-programmatically-instantiate-a-new-list-on-the-server-side-repository.cs) | utilize the service createitem method to programmatically instantiate a new list on the server side repository |
 
 ## Category Statistics
-- Total examples: 132
+- Total examples: 170
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -187,5 +230,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_182303` | examples/batch-20260328_182303 |
+| 2026-03-31 | `20260331_180134` | [examples/batch-20260331_180134](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260331_180134) |
 <!-- AUTOGENERATED:END -->
