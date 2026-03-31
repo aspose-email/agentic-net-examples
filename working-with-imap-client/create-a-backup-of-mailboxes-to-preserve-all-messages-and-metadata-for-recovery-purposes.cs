@@ -1,72 +1,68 @@
+using Aspose.Email.Storage.Pst;
 using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
-namespace ImapBackupSample
+namespace ImapBackupExample
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             try
             {
-                // IMAP server connection settings (replace with real values)
+                // Placeholder connection details
                 string host = "imap.example.com";
                 int port = 993;
-                string username = "user@example.com";
+                string username = "username";
                 string password = "password";
-                SecurityOptions security = SecurityOptions.Auto;
-
-                // Path for the backup file
                 string backupFilePath = "imap_backup.pst";
 
-                // Ensure the directory for the backup file exists
-                try
+                // Guard: skip execution when placeholder credentials are used
+                if (host.Contains("example") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
                 {
-                    string? directory = Path.GetDirectoryName(backupFilePath);
-                    if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    Console.WriteLine("Placeholder credentials detected. Skipping backup operation.");
+                    return;
+                }
+
+                // Ensure the output directory exists
+                string backupDirectory = Path.GetDirectoryName(backupFilePath);
+                if (!string.IsNullOrEmpty(backupDirectory) && !Directory.Exists(backupDirectory))
+                {
+                    Directory.CreateDirectory(backupDirectory);
+                }
+
+                // Create and configure the IMAP client
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+                {
+                    try
                     {
-                        Directory.CreateDirectory(directory);
+                        // Validate connection and credentials
+                        client.ValidateCredentials();
                     }
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"File system error: {ioEx.Message}");
-                    return;
-                }
-
-                // Connect to the IMAP server and perform backup
-                try
-                {
-                    using (ImapClient client = new ImapClient(host, port, username, password, security))
+                    catch (ImapException imapEx)
                     {
-                        // Retrieve all folders from the mailbox
-                        ImapFolderInfoCollection folders = client.ListFolders();
-
-                        // Backup the selected folders to the specified PST file
-                        BackupSettings backupSettings = new BackupSettings();
-                        client.Backup(folders, backupFilePath, backupSettings);
-
-                        Console.WriteLine($"Backup completed successfully. File saved to: {backupFilePath}");
+                        Console.Error.WriteLine($"IMAP connection failed: {imapEx.Message}");
+                        return;
                     }
-                }
-                catch (ImapException imapEx)
-                {
-                    Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                    return;
+
+                    // Retrieve all folders to be backed up
+                    ImapFolderInfoCollection folders = client.ListFolders();
+
+                    // Backup settings (default configuration)
+                    BackupSettings backupSettings = new BackupSettings();
+
+                    // Perform the backup to the specified file
+                    client.Backup(folders, backupFilePath, backupSettings);
+                    Console.WriteLine($"Backup completed successfully. File saved at: {backupFilePath}");
                 }
             }
-            catch (Exception topEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Fatal error: {topEx.Message}");
+                // Top‑level exception guard
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
             }
         }
     }
