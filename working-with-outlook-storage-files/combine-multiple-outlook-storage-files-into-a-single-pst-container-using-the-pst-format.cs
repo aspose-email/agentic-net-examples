@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
@@ -10,79 +9,62 @@ class Program
     {
         try
         {
-            // Paths for the target PST and source PST files
-            string targetPstPath = "combined.pst";
-            List<string> sourcePstPathList = new List<string>
+            // Define source PST files to merge
+            string[] sourceFiles = new string[]
             {
                 "source1.pst",
                 "source2.pst"
             };
 
-            // Verify that each source PST file exists
-            foreach (string sourcePath in sourcePstPathList)
+            // Define the output combined PST file
+            string outputFile = "combined.pst";
+
+            // Verify that each source file exists
+            foreach (string sourcePath in sourceFiles)
             {
                 if (!File.Exists(sourcePath))
                 {
-                    Console.Error.WriteLine($"Error: Source PST file not found – {sourcePath}");
+                    Console.Error.WriteLine($"Error: Source file not found – {sourcePath}");
                     return;
                 }
             }
 
-            // Ensure the directory for the target PST exists
-            string targetDirectory = Path.GetDirectoryName(targetPstPath);
-            if (!string.IsNullOrEmpty(targetDirectory) && !Directory.Exists(targetDirectory))
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputFile);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(targetDirectory);
+                    Directory.CreateDirectory(outputDirectory);
                 }
                 catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create directory – {targetDirectory}. {dirEx.Message}");
+                    Console.Error.WriteLine($"Error creating output directory: {dirEx.Message}");
                     return;
                 }
             }
 
-            // Open existing target PST or create a new one if it does not exist
-            PersonalStorage targetPst;
-            if (File.Exists(targetPstPath))
+            // Create the combined PST file and merge sources
+            try
             {
-                try
+                using (PersonalStorage combinedPst = PersonalStorage.Create(outputFile, FileFormatVersion.Unicode))
                 {
-                    targetPst = PersonalStorage.FromFile(targetPstPath, true);
-                }
-                catch (Exception openEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to open target PST – {targetPstPath}. {openEx.Message}");
-                    return;
+                    try
+                    {
+                        combinedPst.MergeWith(sourceFiles);
+                        Console.WriteLine("PST files merged successfully into " + outputFile);
+                    }
+                    catch (Exception mergeEx)
+                    {
+                        Console.Error.WriteLine($"Error during merge operation: {mergeEx.Message}");
+                        return;
+                    }
                 }
             }
-            else
+            catch (Exception createEx)
             {
-                try
-                {
-                    targetPst = PersonalStorage.Create(targetPstPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception createEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create target PST – {targetPstPath}. {createEx.Message}");
-                    return;
-                }
-            }
-
-            // Use the PST within a using block to ensure proper disposal
-            using (targetPst)
-            {
-                try
-                {
-                    // Merge the source PST files into the target PST
-                    targetPst.MergeWith(sourcePstPathList.ToArray());
-                    Console.WriteLine("PST files merged successfully.");
-                }
-                catch (Exception mergeEx)
-                {
-                    Console.Error.WriteLine($"Error during merge operation: {mergeEx.Message}");
-                }
+                Console.Error.WriteLine($"Error creating combined PST file: {createEx.Message}");
+                return;
             }
         }
         catch (Exception ex)
