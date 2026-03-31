@@ -10,67 +10,95 @@ class Program
         try
         {
             // Input MSG file path
-            string msgPath = "sample.msg";
+            string msgFilePath = "sample.msg";
             // Output HTML file path
-            string htmlPath = "sample.html";
+            string htmlOutputPath = "sample.html";
+            // Directory to save extracted attachments
+            string attachmentsDirectory = "attachments";
 
-            // Verify input file exists
-            if (!File.Exists(msgPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(htmlPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Guard input file existence
+            if (!File.Exists(msgFilePath))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgFilePath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create directory – {outputDir}. {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                return;
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Ensure attachments directory exists
+            try
             {
-                // Convert to MailMessage preserving embedded message format
-                MailConversionOptions conversionOptions = new MailConversionOptions
+                Directory.CreateDirectory(attachmentsDirectory);
+            }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Error: Unable to create attachments directory – {dirEx.Message}");
+                return;
+            }
+
+            // Load the MSG file and convert to MailMessage
+            using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+            {
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
                 {
-                    PreserveEmbeddedMessageFormat = true
-                };
-                using (MailMessage mail = msg.ToMailMessage(conversionOptions))
-                {
-                    // Save the message as HTML
-                    HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
-                    mail.Save(htmlPath, htmlOptions);
+                    // Save as HTML with embedded resources
+                    HtmlSaveOptions htmlOptions = new HtmlSaveOptions
+                    {
+                        ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                    };
+
+                    try
+                    {
+                        mailMessage.Save(htmlOutputPath, htmlOptions);
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Console.Error.WriteLine($"Error: Unable to save HTML – {saveEx.Message}");
+                        return;
+                    }
                 }
 
-                // Extract and save attachments to the same directory as the HTML file
-                foreach (MapiAttachment attachment in msg.Attachments)
+                // Extract and save attachments
+                foreach (MapiAttachment attachment in mapiMessage.Attachments)
                 {
-                    string attachmentPath = Path.Combine(outputDir ?? string.Empty, attachment.FileName);
+                    string attachmentFileName = attachment.FileName;
+                    if (string.IsNullOrEmpty(attachmentFileName))
+                    {
+                        attachmentFileName = "attachment.bin";
+                    }
+
+                    string attachmentPath = Path.Combine(attachmentsDirectory, attachmentFileName);
                     try
                     {
                         attachment.Save(attachmentPath);
                     }
-                    catch (Exception ex)
+                    catch (Exception attEx)
                     {
-                        Console.Error.WriteLine($"Warning: Failed to save attachment {attachment.FileName}. {ex.Message}");
+                        Console.Error.WriteLine($"Warning: Failed to save attachment '{attachmentFileName}' – {attEx.Message}");
+                        // Continue with other attachments
                     }
                 }
             }
-
-            Console.WriteLine("Conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
