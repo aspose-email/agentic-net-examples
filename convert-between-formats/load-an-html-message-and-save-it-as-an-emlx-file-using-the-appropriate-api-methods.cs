@@ -1,39 +1,62 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Storage;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string sourcePath = "message.html";
-            string targetPath = "message.emlx";
+            string inputPath = "input.html";
+            string outputPath = "output.emlx";
 
-            if (!File.Exists(sourcePath))
+            // Ensure the input HTML file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Source file not found: {sourcePath}");
-                return;
-            }
-
-            try
-            {
-                using (MailMessage message = MailMessage.Load(sourcePath))
+                try
                 {
-                    // Save as EMLX using the default EML save options; the .emlx extension will produce the correct format.
-                    message.Save(targetPath, SaveOptions.DefaultEml);
+                    File.WriteAllText(inputPath, "<html><body><p>Placeholder</p></body></html>");
+                    Console.WriteLine($"Created placeholder input file: {inputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder input file: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
+
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Console.Error.WriteLine($"Error processing email: {ex.Message}");
-                return;
+                try
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
             }
+
+            // Load the HTML message
+            HtmlLoadOptions htmlLoadOptions = new HtmlLoadOptions();
+            using (MailMessage mailMessage = MailMessage.Load(inputPath, htmlLoadOptions))
+            {
+                // Prepare save options for EMLX format
+                EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlxFormat);
+                // Save the message as EMLX
+                mailMessage.Save(outputPath, emlSaveOptions);
+            }
+
+            Console.WriteLine($"Message saved as EMLX to {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
