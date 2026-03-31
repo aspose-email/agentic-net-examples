@@ -1,10 +1,11 @@
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
@@ -15,51 +16,51 @@ class Program
             {
                 try
                 {
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                    using (PersonalStorage pstCreate = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // Create a default folder to work with.
+                        pstCreate.RootFolder.AddSubFolder("TargetFolder");
+                    }
                 }
-                catch (Exception createEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating PST file: {createEx.Message}");
+                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
                     return;
                 }
             }
 
-            // Open the PST file.
+            // Open the existing PST file.
             try
             {
                 using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    // Access the root folder.
-                    FolderInfo rootFolder = pst.RootFolder;
-
-                    // Locate or create a subfolder named "TargetFolder".
+                    // Locate the folder named "TargetFolder".
                     FolderInfo targetFolder = null;
-                    foreach (FolderInfo subFolder in rootFolder.GetSubFolders())
+                    foreach (FolderInfo subFolder in pst.RootFolder.GetSubFolders())
                     {
-                        if (subFolder.DisplayName == "TargetFolder")
+                        if (string.Equals(subFolder.DisplayName, "TargetFolder", StringComparison.OrdinalIgnoreCase))
                         {
                             targetFolder = subFolder;
                             break;
                         }
                     }
 
+                    // If the folder does not exist, create it.
                     if (targetFolder == null)
                     {
-                        // Create the subfolder.
-                        rootFolder.AddSubFolder("TargetFolder");
-                        // Retrieve the newly created folder.
-                        targetFolder = rootFolder.GetSubFolder("TargetFolder");
+                        targetFolder = pst.RootFolder.AddSubFolder("TargetFolder");
                     }
 
-                    // Modify the container class of the target folder.
+                    // Change the container class of the folder.
+                    // Example container class: "IPF.Note" (standard mail item).
                     targetFolder.ChangeContainerClass("IPF.Note");
 
-                    Console.WriteLine("Container class of 'TargetFolder' has been updated.");
+                    Console.WriteLine($"Container class of folder '{targetFolder.DisplayName}' has been changed.");
                 }
             }
-            catch (Exception pstEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing PST file: {pstEx.Message}");
+                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
                 return;
             }
         }
