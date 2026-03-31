@@ -10,10 +10,10 @@ class Program
     {
         try
         {
-            // Path to the PST file
+            // Paths for PST file
             string pstPath = "sample.pst";
 
-            // Ensure the directory for the PST file exists
+            // Ensure the directory for the PST exists
             string pstDirectory = Path.GetDirectoryName(pstPath);
             if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
@@ -23,51 +23,86 @@ class Program
             // Create a new PST file if it does not exist
             if (!File.Exists(pstPath))
             {
-                using (PersonalStorage pstCreate = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                try
                 {
-                    // PST created – no additional actions required here
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    return;
                 }
             }
 
-            // Open the PST file for read/write operations
+            // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Get the root folder of the PST
-                FolderInfo rootFolder = pst.RootFolder;
+                // Ensure we can write to the PST
+                if (!pst.CanWrite)
+                {
+                    Console.Error.WriteLine("PST file is read‑only.");
+                    return;
+                }
 
-                // -------------------- Create Distribution List --------------------
-                MapiDistributionList distributionList = new MapiDistributionList();
-                distributionList.DisplayName = "Sample Distribution List";
+                // Get (or create) a folder to store distribution lists
+                FolderInfo dlFolder;
+                try
+                {
+                    dlFolder = pst.RootFolder.GetSubFolder("DistributionLists");
+                }
+                catch
+                {
+                    dlFolder = pst.RootFolder.AddSubFolder("DistributionLists");
+                }
 
-                // Add initial members
-                distributionList.Members.Add(new MapiDistributionListMember("John Doe", "john@example.com"));
-                distributionList.Members.Add(new MapiDistributionListMember("Alice Smith", "alice@example.com"));
+                // -------------------------
+                // Create a new distribution list
+                // -------------------------
+                MapiDistributionList newDl = new MapiDistributionList();
+                newDl.DisplayName = "Sample Distribution List";
 
-                // Add the distribution list to the PST and obtain its EntryId
-                string entryId = rootFolder.AddMapiMessageItem(distributionList);
-                Console.WriteLine($"Created distribution list. EntryId: {entryId}");
+                // Add members to the distribution list
+                MapiDistributionListMember member1 = new MapiDistributionListMember("John Doe", "john.doe@example.com");
+                MapiDistributionListMember member2 = new MapiDistributionListMember("Jane Smith", "jane.smith@example.com");
+                newDl.Members.Add(member1);
+                newDl.Members.Add(member2);
 
-                // -------------------- Delete Distribution List --------------------
+                // Convert the distribution list to a MapiMessage and add it to the folder
+                MapiMessage dlMessage = newDl.GetUnderlyingMessage();
+                string entryId = dlFolder.AddMessage(dlMessage);
+                Console.WriteLine($"Created distribution list with EntryId: {entryId}");
+
+                // -------------------------
+                // Modify the distribution list (add another member)
+                // -------------------------
+                // Extract the message we just added
+                MapiMessage extractedMessage = pst.ExtractMessage(entryId);
+                // Cast to distribution list
+                MapiDistributionList extractedDl = (MapiDistributionList)extractedMessage.ToMapiMessageItem();
+
+                // Add a new member
+                MapiDistributionListMember member3 = new MapiDistributionListMember("Bob Lee", "bob.lee@example.com");
+                extractedDl.Members.Add(member3);
+                extractedDl.DisplayName = "Sample Distribution List (Updated)";
+
+                // Save the modified distribution list back to the PST (replace the old one)
+                // Delete the old entry first
                 pst.DeleteItem(entryId);
-                Console.WriteLine($"Deleted distribution list. EntryId: {entryId}");
+                // Add the updated message
+                MapiMessage updatedMessage = extractedDl.GetUnderlyingMessage();
+                string updatedEntryId = dlFolder.AddMessage(updatedMessage);
+                Console.WriteLine($"Modified distribution list, new EntryId: {updatedEntryId}");
 
-                // -------------------- Modify (Re‑create) Distribution List --------------------
-                MapiDistributionList modifiedList = new MapiDistributionList();
-                modifiedList.DisplayName = "Sample Distribution List (Modified)";
-
-                // Add members, including a new one
-                modifiedList.Members.Add(new MapiDistributionListMember("John Doe", "john@example.com"));
-                modifiedList.Members.Add(new MapiDistributionListMember("Alice Smith", "alice@example.com"));
-                modifiedList.Members.Add(new MapiDistributionListMember("Bob Johnson", "bob@example.com"));
-
-                // Add the modified distribution list to the PST
-                string modifiedEntryId = rootFolder.AddMapiMessageItem(modifiedList);
-                Console.WriteLine($"Created modified distribution list. EntryId: {modifiedEntryId}");
+                // -------------------------
+                // Delete the distribution list
+                // -------------------------
+                pst.DeleteItem(updatedEntryId);
+                Console.WriteLine("Deleted the distribution list.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
