@@ -2,36 +2,43 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace Example
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string emlPath = "output.eml";
-
-            // Ensure the target directory exists
-            string directory = Path.GetDirectoryName(emlPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            try
             {
-                Directory.CreateDirectory(directory);
-            }
+                // Target file path for the EML file
+                string outputPath = "output.eml";
 
-            // Create a simple mail message
-            using (MailMessage message = new MailMessage())
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Create a simple mail message
+                using (MailMessage mailMessage = new MailMessage())
+                {
+                    mailMessage.From = new MailAddress("sender@example.com");
+                    mailMessage.To.Add(new MailAddress("recipient@example.com"));
+                    mailMessage.Subject = "Test Email";
+                    mailMessage.Body = "This is a test email saved as EML.";
+
+                    // Save the message using default EML options
+                    mailMessage.Save(outputPath, SaveOptions.DefaultEml);
+                }
+
+                Console.WriteLine($"MailMessage saved to '{outputPath}'.");
+            }
+            catch (Exception ex)
             {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Test Email";
-                message.Body = "Hello, this is a test email.";
-
-                // Save the message as EML using default options
-                message.Save(emlPath, SaveOptions.DefaultEml);
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
         }
     }
 }
