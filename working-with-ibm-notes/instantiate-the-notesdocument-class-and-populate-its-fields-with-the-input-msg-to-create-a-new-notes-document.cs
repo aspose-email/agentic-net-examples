@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Storage.Nsf;
 
 class Program
 {
@@ -10,80 +9,68 @@ class Program
     {
         try
         {
-            // Input MSG file path
             string inputMsgPath = "input.msg";
-            // Output NSF (Notes) file path
-            string outputNsfPath = "output.nsf";
+            string outputNotePath = "output_note.msg";
 
-            // Verify input file exists
+            // Ensure input MSG exists; create a minimal placeholder if missing
             if (!File.Exists(inputMsgPath))
-            {
-                Console.Error.WriteLine($"Error: Input file not found – {inputMsgPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputNsfPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    using (MapiMessage placeholderMessage = new MapiMessage("placeholder@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder body"))
+                    {
+                        placeholderMessage.Save(inputMsgPath);
+                    }
+                    Console.WriteLine($"Placeholder MSG created at: {inputMsgPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the MSG file as a MapiMessage
-            MapiMessage msg;
+            // Load the MSG file
+            MapiMessage loadedMessage;
             try
             {
-                msg = MapiMessage.Load(inputMsgPath);
+                loadedMessage = MapiMessage.Load(inputMsgPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: Failed to load MSG file – {ex.Message}");
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
                 return;
             }
 
-            // Create a MapiNote and populate its fields from the loaded message
-            MapiNote note = new MapiNote
+            using (loadedMessage)
             {
-                Subject = msg.Subject,
-                Body = msg.Body,
-                // Additional fields can be set as needed, e.g., Color, CreationDate, etc.
-            };
-
-            // Save the note as a MSG file (Notes document representation)
-            string noteMsgPath = "note_output.msg";
-            try
-            {
-                note.Save(noteMsgPath, NoteSaveFormat.Msg);
-                Console.WriteLine($"Note saved to {noteMsgPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: Failed to save note – {ex.Message}");
-                return;
-            }
-
-            // Optionally, store the note in an NSF (Notes) database
-            try
-            {
-                using (NotesStorageFacility notesFacility = new NotesStorageFacility(outputNsfPath))
+                // Create a MapiNote and populate fields from the loaded message
+                MapiNote note = new MapiNote();
+                try
                 {
-                    // The NotesStorageFacility does not provide a direct method to add a note,
-                    // but this placeholder demonstrates resource handling.
-                    // Real implementation would involve creating a document within the NSF.
+                    note.Subject = loadedMessage.Subject;
+                    note.Body = loadedMessage.Body;
+                    note.Color = 0; // Default color
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: Failed to work with Notes storage – {ex.Message}");
-                return;
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error populating note fields: {ex.Message}");
+                    return;
+                }
+
+                using (note)
+                {
+                    // Save the note as a MSG file using the correct overload
+                    try
+                    {
+                        note.Save(outputNotePath, NoteSaveFormat.Msg);
+                        Console.WriteLine($"Notes document saved to: {outputNotePath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error saving note: {ex.Message}");
+                    }
+                }
             }
         }
         catch (Exception ex)
