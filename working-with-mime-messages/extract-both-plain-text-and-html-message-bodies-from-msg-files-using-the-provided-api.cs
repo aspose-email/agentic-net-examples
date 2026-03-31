@@ -3,39 +3,59 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace ExtractMsgBodies
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string msgPath = "sample.msg";
+            // Path to the MSG file
+            string msgPath = "sample.msg";
 
-                if (!File.Exists(msgPath))
+            // Verify that the file exists before attempting to load it
+            if (!File.Exists(msgPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                using (MapiMessage message = MapiMessage.Load(msgPath))
-                {
-                    string plainBody = message.Body;
-                    string htmlBody = message.BodyHtml;
-
-                    Console.WriteLine("Plain Text Body:");
-                    Console.WriteLine(plainBody);
-                    Console.WriteLine();
-
-                    Console.WriteLine("HTML Body:");
-                    Console.WriteLine(htmlBody);
-                }
+                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                return;
             }
-            catch (Exception ex)
+
+            // Load the MSG file inside a using block to ensure proper disposal
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Extract plain‑text body
+                string plainBody = msg.Body;
+
+                // Extract HTML body (may be empty if not present)
+                string htmlBody = msg.BodyHtml;
+
+                Console.WriteLine("Plain Text Body:");
+                Console.WriteLine(string.IsNullOrEmpty(plainBody) ? "(none)" : plainBody);
+
+                Console.WriteLine("\nHTML Body:");
+                Console.WriteLine(string.IsNullOrEmpty(htmlBody) ? "(none)" : htmlBody);
             }
+        }
+        catch (Exception ex)
+        {
+            // Gracefully report any unexpected errors
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
