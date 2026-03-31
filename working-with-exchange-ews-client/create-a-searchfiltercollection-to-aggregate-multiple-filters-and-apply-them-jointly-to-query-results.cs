@@ -1,38 +1,47 @@
 using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Initialize the EWS client (replace placeholders with real values)
-            IEWSClient client = EWSClient.GetEWSClient(
-                "https://example.com/EWS/Exchange.asmx",
-                new NetworkCredential("username", "password"));
-            using (client)
+            // Placeholder connection details
+            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against executing real network calls with placeholder data
+            if (mailboxUri.Contains("example.com"))
             {
-                // Build a composite query (AND of multiple conditions)
-                MailQueryBuilder builder = new MailQueryBuilder();
+                Console.WriteLine("Placeholder credentials detected. Skipping live EWS call.");
+                return;
+            }
+
+            // Create the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Build a composite query (equivalent to a SearchFilterCollection)
+                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
                 builder.Subject.Contains("Report");
                 builder.From.Contains("test@example.com");
                 MailQuery query = builder.GetQuery();
 
-                // Retrieve messages from the Inbox that match the query
-                ExchangeMessageInfoCollection messages = client.ListMessages(
-                    client.MailboxInfo.InboxUri,
-                    query,
-                    false);
+                // Apply the query to list messages from the Inbox folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
 
-                // Output the unique URI of each matching message
+                // Output basic information about the retrieved messages
                 foreach (ExchangeMessageInfo info in messages)
                 {
-                    Console.WriteLine(info.UniqueUri);
+                    Console.WriteLine($"Subject: {info.Subject}");
+                    Console.WriteLine($"From: {info.From}");
+                    Console.WriteLine($"Received: {info.InternalDate}");
+                    Console.WriteLine(new string('-', 40));
                 }
             }
         }
