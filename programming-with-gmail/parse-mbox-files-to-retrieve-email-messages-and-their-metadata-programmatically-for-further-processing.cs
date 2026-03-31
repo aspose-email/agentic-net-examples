@@ -9,44 +9,55 @@ class Program
     {
         try
         {
-            string mboxPath = "storage.mbox";
+            string mboxPath = "sample.mbox";
+            string outputHtmlPath = "output.html";
 
+            // Verify input MBOX file exists
             if (!File.Exists(mboxPath))
             {
                 Console.Error.WriteLine($"Error: File not found – {mboxPath}");
                 return;
             }
 
-            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputHtmlPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                foreach (Aspose.Email.Storage.Mbox.MboxMessageInfo messageInfo in mbox.EnumerateMessageInfo())
+                try
                 {
-                    Console.WriteLine($"Subject: {messageInfo.Subject}");
-                    Console.WriteLine($"From: {messageInfo.From}");
-                    Console.WriteLine($"To: {messageInfo.To}");
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating output directory: {ex.Message}");
+                    return;
+                }
+            }
 
-                    using (MailMessage eml = mbox.ExtractMessage(messageInfo.EntryId, new EmlLoadOptions()))
+            // Create MBOX reader using the factory method
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            {
+                // Read the next (first) message sequentially
+                MailMessage message = mboxReader.ReadNextMessage();
+                if (message == null)
+                {
+                    Console.Error.WriteLine("No messages found in the MBOX file.");
+                    return;
+                }
+
+                using (message)
+                {
+                    // Save the message as HTML
+                    HtmlSaveOptions saveOptions = new HtmlSaveOptions();
+                    try
                     {
-                        string subject = string.IsNullOrEmpty(eml.Subject) ? "message" : eml.Subject;
-                        foreach (char c in Path.GetInvalidFileNameChars())
-                        {
-                            subject = subject.Replace(c, '_');
-                        }
-
-                        string outputPath = $"{subject}.eml";
-
-                        try
-                        {
-                            eml.Save(outputPath);
-                            Console.WriteLine($"Saved: {outputPath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save message: {ex.Message}");
-                        }
+                        message.Save(outputHtmlPath, saveOptions);
+                        Console.WriteLine($"Message saved to {outputHtmlPath}");
                     }
-
-                    Console.WriteLine(new string('-', 40));
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error saving HTML: {ex.Message}");
+                    }
                 }
             }
         }
