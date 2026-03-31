@@ -10,81 +10,73 @@ class Program
     {
         try
         {
-            // Paths for the HTML source and the PST file
-            string htmlPath = "message.html";
-            string pstPath = "sample.pst";
+            // Define input HTML file path
+            string htmlFilePath = "input.html";
 
             // Ensure the HTML file exists; create a minimal placeholder if missing
-            if (!File.Exists(htmlPath))
+            if (!File.Exists(htmlFilePath))
             {
                 try
                 {
-                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder</p></body></html>");
+                    File.WriteAllText(htmlFilePath, "<html><body><p>Placeholder HTML content.</p></body></html>");
                 }
-                catch (Exception ex)
+                catch (Exception ioEx)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ioEx.Message}");
                     return;
                 }
             }
 
-            // Read the HTML content
+            // Read HTML content
             string htmlContent;
             try
             {
-                htmlContent = File.ReadAllText(htmlPath);
+                htmlContent = File.ReadAllText(htmlFilePath);
             }
-            catch (Exception ex)
+            catch (Exception ioEx)
             {
-                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to read HTML file: {ioEx.Message}");
                 return;
             }
 
-            // Open existing PST or create a new one if it does not exist
-            PersonalStorage pst;
-            if (File.Exists(pstPath))
+            // Define PST file path
+            string pstFilePath = "output.pst";
+            string pstDirectory = Path.GetDirectoryName(pstFilePath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
                 try
                 {
-                    pst = PersonalStorage.FromFile(pstPath);
+                    Directory.CreateDirectory(pstDirectory);
                 }
-                catch (Exception ex)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Failed to open PST file: {ex.Message}");
-                    return;
-                }
-            }
-            else
-            {
-                try
-                {
-                    pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create PST directory: {dirEx.Message}");
                     return;
                 }
             }
 
-            // Ensure the PST object is disposed properly
-            using (pst)
+            // Create a mail message with HTML body
+            using (MailMessage mailMessage = new MailMessage())
             {
-                // Create a new MAPI message and set its HTML body
-                using (MapiMessage message = new MapiMessage())
-                {
-                    message.Subject = "HTML Message";
-                    message.SetBodyContent(htmlContent, BodyContentType.Html);
+                mailMessage.From = "sender@example.com";
+                mailMessage.To = "recipient@example.com";
+                mailMessage.Subject = "HTML Message";
+                mailMessage.HtmlBody = htmlContent;
 
-                    // Add the message to the root folder of the PST
-                    string entryId = pst.RootFolder.AddMessage(message);
-                    Console.WriteLine($"Message added with EntryId: {entryId}");
+                // Convert MailMessage to MapiMessage
+                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                {
+                    // Create a new PST file (Unicode format) and add the message
+                    using (PersonalStorage pst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
+                    {
+                        pst.RootFolder.AddMessage(mapiMessage);
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
