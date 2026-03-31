@@ -11,50 +11,73 @@ class Program
     {
         try
         {
-            string outputPath = "amp_message.msg";
+            // Define output MSG file path
+            string outputMsgPath = "AmpEmail.msg";
 
-            // Ensure the output directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Ensure the directory for the output file exists
+            string outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputMsgPath));
+            if (!Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Create an AMP email message
+            // Create an AMP formatted email
             using (AmpMessage ampMessage = new AmpMessage())
             {
-                ampMessage.From = new MailAddress("sender@example.com");
-                ampMessage.To.Add(new MailAddress("recipient@example.com"));
+                ampMessage.From = new MailAddress("sender@example.com", "Sender");
+                ampMessage.To.Add(new MailAddress("recipient@example.com", "Recipient"));
                 ampMessage.Subject = "AMP Email Example";
-
-                // Plain HTML body
-                ampMessage.HtmlBody = "<html><body><h1>Hello</h1></body></html>";
-
-                // AMP HTML body
-                ampMessage.AmpHtmlBody = @"<!doctype html>
-<html amp4email>
-<head>
-<meta charset=""utf-8"">
-<script async src=""https://cdn.ampproject.org/v0.js""></script>
-</head>
-<body>
-<h1>AMP Content</h1>
-</body>
-</html>";
+                ampMessage.Body = "This is the plain text fallback.";
+                ampMessage.IsBodyHtml = true;
+                ampMessage.HtmlBody = "<p>This is the HTML fallback.</p>";
+                ampMessage.AmpHtmlBody = "<amp-email><h1>AMP Content</h1></amp-email>";
 
                 // Save the message as a MSG file
-                ampMessage.Save(outputPath, SaveOptions.DefaultMsgUnicode);
-
-                // Send the message via SMTP with authentication
-                using (SmtpClient client = new SmtpClient("smtp.example.com", 587, "username", "password", SecurityOptions.Auto))
+                try
                 {
-                    client.Send(ampMessage);
+                    ampMessage.Save(outputMsgPath, SaveOptions.DefaultMsgUnicode);
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to save MSG file: {ioEx.Message}");
+                    return;
+                }
+
+                // SMTP client configuration (placeholder values)
+                string smtpHost = "smtp.example.com";
+                int smtpPort = 587;
+                string smtpUsername = "username";
+                string smtpPassword = "password";
+
+                // Guard against placeholder credentials
+                bool isPlaceholder = smtpHost.Contains("example") ||
+                                      smtpUsername.Equals("username", StringComparison.OrdinalIgnoreCase) ||
+                                      smtpPassword.Equals("password", StringComparison.OrdinalIgnoreCase);
+
+                if (isPlaceholder)
+                {
+                    Console.WriteLine("Placeholder SMTP credentials detected. Skipping send operation.");
+                    return;
+                }
+
+                // Send the AMP message via SMTP
+                using (SmtpClient smtpClient = new SmtpClient(smtpHost, smtpPort, smtpUsername, smtpPassword, SecurityOptions.Auto))
+                {
+                    try
+                    {
+                        smtpClient.Send(ampMessage);
+                        Console.WriteLine("AMP email sent successfully.");
+                    }
+                    catch (Exception sendEx)
+                    {
+                        Console.Error.WriteLine($"Failed to send email: {sendEx.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
