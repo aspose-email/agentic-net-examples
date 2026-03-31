@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Smtp;
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
 using Aspose.Email.Calendar;
+using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Clients.Smtp;
 
 class Program
 {
@@ -12,65 +12,148 @@ class Program
     {
         try
         {
-            // File paths
+            // Define file paths
             string icsPath = "sample.ics";
-            string msgPath = "sample.msg";
+            string msgPath = "output.msg";
             string pstPath = "sample.pst";
 
-            // Ensure the .ics file exists; create a minimal placeholder if missing
+            // Ensure .ics file exists; create minimal placeholder if missing
             if (!File.Exists(icsPath))
             {
-                string minimalIcs = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR";
-                File.WriteAllText(icsPath, minimalIcs);
+                try
+                {
+                    File.WriteAllText(icsPath, "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder .ics file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Load the .ics file as an Appointment
-            Appointment appointment = Appointment.Load(icsPath);
-
-            // Convert the Appointment to a MailMessage (iCalendar -> MIME)
-            using (MailMessage icsMail = appointment.ToMailMessage())
+            // Load appointment from .ics
+            Appointment appointment;
+            try
             {
-                // Attach the original .ics file to the email
-                using (Attachment icsAttachment = new Attachment(icsPath))
-                {
-                    icsMail.Attachments.Add(icsAttachment);
+                appointment = Appointment.Load(icsPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading .ics file: {ex.Message}");
+                return;
+            }
 
-                    // Convert the MailMessage to a MAPI message and save as .msg
-                    using (MapiMessage mapiMsg = MapiMessage.FromMailMessage(icsMail))
+            // Convert appointment to MAPI message
+            MapiMessage mapiMessage;
+            try
+            {
+                mapiMessage = appointment.ToMapiMessage();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error converting appointment to MAPI message: {ex.Message}");
+                return;
+            }
+
+            // Save MAPI message as .msg
+            try
+            {
+                using (mapiMessage)
+                {
+                    mapiMessage.Save(msgPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error saving .msg file: {ex.Message}");
+                return;
+            }
+
+            // Ensure PST file exists; create minimal placeholder if missing
+            if (!File.Exists(pstPath))
+            {
+                try
+                {
+                    using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                     {
-                        mapiMsg.Save(msgPath);
+                        // Create an Inbox folder
+                        pst.RootFolder.AddSubFolder("Inbox");
                     }
                 }
-
-                // Ensure the PST file exists; create an empty PST with an Inbox folder if missing
-                if (!File.Exists(pstPath))
+                catch (Exception ex)
                 {
-                    using (PersonalStorage pstCreate = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        pstCreate.RootFolder.AddSubFolder("Inbox");
-                    }
+                    Console.Error.WriteLine($"Error creating placeholder PST file: {ex.Message}");
+                    return;
                 }
+            }
 
-                // Open the PST and add the .msg as a message in the Inbox folder
+            // Add the MAPI message to the PST Inbox folder
+            try
+            {
                 using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    FolderInfo inbox = pst.RootFolder.GetSubFolder("Inbox");
-                    using (MapiMessage msg = MapiMessage.Load(msgPath))
+                    FolderInfo inbox;
+                    // Try to get existing Inbox; create if it does not exist
+                    try
                     {
-                        inbox.AddMessage(msg);
+                        inbox = pst.RootFolder.GetSubFolder("Inbox");
                     }
-                }
+                    catch
+                    {
+                        inbox = pst.RootFolder.AddSubFolder("Inbox");
+                    }
 
-                // Send the email via SMTP
-                using (SmtpClient smtp = new SmtpClient("smtp.example.com", 25, "username", "password"))
-                {
-                    smtp.Send(icsMail);
+                    // Add the message
+                    inbox.AddMessage(mapiMessage);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error adding message to PST: {ex.Message}");
+                return;
+            }
+
+            // Convert MAPI message back to MailMessage for SMTP sending
+            MailMessage mailMessage;
+            try
+            {
+                mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions());
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error converting MAPI to MailMessage: {ex.Message}");
+                return;
+            }
+
+            // SMTP send (placeholder credentials – skip actual send)
+            string smtpHost = "smtp.example.com";
+            int smtpPort = 25;
+            string smtpUser = "username";
+            string smtpPass = "password";
+
+            // Detect placeholder values and skip sending
+            if (smtpHost.Contains("example.com") || smtpUser == "username")
+            {
+                Console.WriteLine("Skipping SMTP send due to placeholder credentials/host.");
+                return;
+            }
+
+            try
+            {
+                using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass))
+                {
+                    client.Send(mailMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"SMTP send failed: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
