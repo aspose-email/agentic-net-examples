@@ -5,44 +5,51 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define input and output file paths
-            string inputPath = "sample.eml";
-            string outputPath = "sample.html";
+            string inputPath = "input.eml";
+            string outputPath = "output.html";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
+            // Ensure input file exists; create minimal placeholder if missing
             if (!File.Exists(inputPath))
             {
-                string placeholder = "From: sender@example.com\r\nTo: receiver@example.com\r\nSubject: Test\r\n\r\nThis is a test email.";
-                File.WriteAllText(inputPath, placeholder, Encoding.UTF8);
+                File.WriteAllText(inputPath, "Subject: Placeholder\r\n\r\nThis is a placeholder email.");
+                Console.Error.WriteLine($"Input file not found. Created placeholder at '{inputPath}'.");
             }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the EML message with UTF‑8 preferred encoding
+            // Load the EML with UTF‑8 preferred encoding
             EmlLoadOptions loadOptions = new EmlLoadOptions
             {
                 PreferredTextEncoding = Encoding.UTF8
             };
 
-            using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
+            using (MailMessage mail = MailMessage.Load(inputPath, loadOptions))
             {
-                // Save the message as HTML; DefaultHtml uses UTF‑8 encoding internally
-                message.Save(outputPath, SaveOptions.DefaultHtml);
+                // Ensure the message body uses UTF‑8 when saved
+                mail.BodyEncoding = Encoding.UTF8;
+
+                HtmlSaveOptions saveOptions = new HtmlSaveOptions
+                {
+                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                };
+
+                mail.Save(outputPath, saveOptions);
             }
+
+            Console.WriteLine($"Message saved as HTML to '{outputPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
-            return;
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
