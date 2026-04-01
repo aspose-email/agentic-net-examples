@@ -1,9 +1,8 @@
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Zimbra;
 
-namespace ZimbraTgzItemCount
+namespace ZimbraTgzItemCounter
 {
     class Program
     {
@@ -17,26 +16,25 @@ namespace ZimbraTgzItemCount
                     return;
                 }
 
-                foreach (string arg in args)
+                foreach (string archivePath in args)
                 {
-                    string filePath = arg;
-                    if (!File.Exists(filePath))
+                    if (!File.Exists(archivePath))
                     {
-                        Console.Error.WriteLine($"Error: File not found – {filePath}");
+                        Console.Error.WriteLine($"Error: File not found – {archivePath}");
                         continue;
                     }
 
                     try
                     {
-                        using (TgzReader reader = new TgzReader(filePath))
+                        using (TgzReader tgzReader = new TgzReader(archivePath))
                         {
-                            int totalItemsCount = reader.GetTotalItemsCount();
-                            Console.WriteLine($"Archive: {Path.GetFileName(filePath)} – Total items: {totalItemsCount}");
+                            int totalItems = tgzReader.GetTotalItemsCount();
+                            Console.WriteLine($"Archive: {Path.GetFileName(archivePath)} – Total items: {totalItems}");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error processing '{filePath}': {ex.Message}");
+                        Console.Error.WriteLine($"Error processing '{archivePath}': {ex.Message}");
                     }
                 }
             }
