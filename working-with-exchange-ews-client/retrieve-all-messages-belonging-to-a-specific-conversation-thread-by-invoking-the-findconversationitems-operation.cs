@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -9,39 +8,65 @@ class Program
     {
         try
         {
-            // Initialize the EWS client
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credential = new NetworkCredential("username", "password");
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
+            // Placeholder connection details
+            string serviceUrl = "https://ews.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against executing real network calls with placeholder data
+            if (serviceUrl.Contains("example.com"))
             {
-                // Identify the folder to search (Inbox)
-                string folderId = client.MailboxInfo.InboxUri;
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                return;
+            }
 
-                // Find conversations in the specified folder
-                ExchangeConversation[] conversations = client.FindConversations(folderId);
-                if (conversations == null || conversations.Length == 0)
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                try
                 {
-                    Console.WriteLine("No conversations found in the folder.");
-                    return;
-                }
+                    // Identify the folder to search (Inbox)
+                    string inboxFolderId = client.MailboxInfo.InboxUri;
 
-                // Select a conversation (e.g., the first one)
-                string conversationId = conversations[0].ConversationId;
+                    // Find all conversations in the Inbox
+                    ExchangeConversation[] conversations = client.FindConversations(inboxFolderId);
 
-                // Retrieve all messages belonging to the selected conversation
-                MailMessageCollection messages = client.FetchConversationMessages(conversationId);
-                foreach (MailMessage message in messages)
-                {
-                    using (message)
+                    if (conversations == null || conversations.Length == 0)
+                    {
+                        Console.WriteLine("No conversations found in the Inbox.");
+                        return;
+                    }
+
+                    // Placeholder conversation identifier (use the first conversation's ID if not set)
+                    string targetConversationId = conversations[0].ConversationId;
+
+                    // Fetch all messages belonging to the specified conversation
+                    MailMessageCollection messages = client.FetchConversationMessages(targetConversationId);
+
+                    if (messages == null || messages.Count == 0)
+                    {
+                        Console.WriteLine("No messages found for the conversation.");
+                        return;
+                    }
+
+                    // Output basic information about each message
+                    foreach (MailMessage message in messages)
                     {
                         Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"Date: {message.Date}");
+                        Console.WriteLine(new string('-', 40));
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
