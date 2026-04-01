@@ -1,7 +1,8 @@
 using System;
-using System.Net;
+using System.IO;
+using System.Text;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,53 +10,43 @@ class Program
     {
         try
         {
-            // Initialize the EWS client
-            IEWSClient client;
-            try
+            // Define output file path
+            string outputPath = "output.msg";
+
+            // Ensure the directory exists
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                client = EWSClient.GetEWSClient(
-                    "https://exchange.example.com/EWS/Exchange.asmx",
-                    new NetworkCredential("username", "password"));
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
-                return;
+                Directory.CreateDirectory(directory);
             }
 
-            // Create a new mail message with custom metadata
-            using (MailMessage message = new MailMessage())
+            // Create a simple MAPI message
+            using (MapiMessage msg = new MapiMessage(
+                "sender@example.com",
+                "recipient@example.com",
+                "Sample Subject",
+                "This is the body of the message."))
             {
-                message.From = "sender@example.com";
-                message.To.Add("recipient@example.com");
-                message.Subject = "Test with custom metadata";
-                message.Body = "This email contains custom metadata properties.";
+                // Add a custom metadata property (Unicode string)
+                byte[] customValue = Encoding.UTF8.GetBytes("CustomValue");
+                msg.AddCustomProperty(MapiPropertyType.PT_UNICODE, customValue, "X-Custom-Property");
 
-                // Add custom metadata as headers
-                message.Headers.Add("X-Custom-Property1", "Value1");
-                message.Headers.Add("X-Custom-Property2", "Value2");
-
-                // Send the message
+                // Save the message to file
                 try
                 {
-                    client.Send(message);
-                    Console.WriteLine("Message sent successfully.");
+                    msg.Save(outputPath);
+                    Console.WriteLine($"Message saved to {outputPath}");
                 }
-                catch (Exception ex)
+                catch (Exception saveEx)
                 {
-                    Console.Error.WriteLine($"Failed to send message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save message: {saveEx.Message}");
+                    return;
                 }
-            }
-
-            // Dispose the client if it implements IDisposable
-            if (client is IDisposable disposableClient)
-            {
-                disposableClient.Dispose();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
