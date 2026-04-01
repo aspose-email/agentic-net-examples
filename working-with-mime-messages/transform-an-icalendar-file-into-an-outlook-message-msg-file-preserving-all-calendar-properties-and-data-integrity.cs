@@ -4,42 +4,88 @@ using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Mapi;
 
-namespace IcsToMsgConverter
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Define input iCalendar file and output MSG file paths
-                string inputIcsPath = "calendar.ics";
-                string outputMsgPath = "calendar.msg";
+            string icsPath = "input.ics";
+            string msgPath = "output.msg";
 
-                // Verify that the input file exists before proceeding
-                if (!File.Exists(inputIcsPath))
+            // Ensure input file exists; create minimal placeholder if missing
+            if (!File.Exists(icsPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"Input file not found: {inputIcsPath}");
+                    string placeholder = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR";
+                    File.WriteAllText(icsPath, placeholder);
+                    Console.WriteLine($"Placeholder iCalendar file created at '{icsPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder iCalendar file: {ex.Message}");
                     return;
                 }
+            }
 
-                // Load the iCalendar file into an Appointment object
-                Appointment appointment = Appointment.Load(inputIcsPath);
-
-                // Convert the Appointment to a MAPI message
-                using (MapiMessage mapiMessage = appointment.ToMapiMessage())
+            // Ensure output directory exists
+            try
+            {
+                string outputDir = Path.GetDirectoryName(msgPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
-                    // Save the MAPI message as an Outlook MSG file
-                    mapiMessage.Save(outputMsgPath);
+                    Directory.CreateDirectory(outputDir);
                 }
-
-                Console.WriteLine($"Successfully converted '{inputIcsPath}' to '{outputMsgPath}'.");
             }
             catch (Exception ex)
             {
-                // Output any unexpected errors without crashing the application
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                return;
             }
+
+            // Load the iCalendar file into an Appointment object
+            Appointment appointment;
+            try
+            {
+                appointment = Appointment.Load(icsPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load iCalendar file: {ex.Message}");
+                return;
+            }
+
+            // Convert the Appointment to a MAPI message
+            MapiMessage mapiMessage;
+            try
+            {
+                mapiMessage = appointment.ToMapiMessage();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to convert Appointment to MAPI message: {ex.Message}");
+                return;
+            }
+
+            // Save the MAPI message as an Outlook MSG file
+            try
+            {
+                using (MapiMessage disposableMessage = mapiMessage)
+                {
+                    disposableMessage.Save(msgPath);
+                }
+                Console.WriteLine($"MSG file saved successfully to '{msgPath}'.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
