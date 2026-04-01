@@ -1,64 +1,59 @@
-name: dotnet-pr-check
+- name: Test each example (temp project)
+  if: steps.files.outputs.found == 'true'
+  run: |
+    set -euo pipefail
 
-on:
-  pull_request:
-    branches: [ main ]
+    PKG_VERSION=26.1.0
+    WORDS_PKG_VERSION=26.1.0
 
-jobs:
-  build-and-run-examples:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # needed so we can diff against base
+    for f in ${{ steps.files.outputs.files }}; do
+      echo ""
+      echo "=== Testing $f ==="
+      echo "### Testing \`$f\`" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
+      workdir=$(mktemp -d)
+      dotnet new console --framework net8.0 --no-restore --output "$workdir" >/dev/null
+      rm "$workdir/Program.cs"
 
-      - name: Find changed example files
-        id: files
-        run: |
-          BASE=${{ github.base_ref }}
-          HEAD=${{ github.sha }}
-          # Exclude deleted files from the test list to avoid cp failures
-          MAP=$(git diff --name-only --diff-filter=ACMRT origin/"$BASE"...$HEAD -- '*.cs' | tr '\n' ' ')
-          if [ -z "$MAP" ]; then
-            echo "found=false" >> $GITHUB_OUTPUT
-            echo "No changed .cs examples found." >> $GITHUB_STEP_SUMMARY
-            exit 0
-          fi
-          echo "found=true" >> $GITHUB_OUTPUT
-          echo "files=$MAP" >> $GITHUB_OUTPUT
-          echo "Changed examples to test:" >> $GITHUB_STEP_SUMMARY
-          printf "%s\n" $MAP >> $GITHUB_STEP_SUMMARY
+      if [ ! -f "$f" ]; then
+        echo "Skipping deleted file: $f"
+        echo "- Skipped: file not found" >> "$GITHUB_STEP_SUMMARY"
+        rm -rf "$workdir"
+        continue
+      fi
 
-      - name: Test each example (temp project)
-        if: steps.files.outputs.found == 'true'
-        run: |
-          set -euo pipefail
-          PKG_VERSION=26.1.0
-          for f in ${{ steps.files.outputs.files }}; do
-            echo "\n=== Testing $f ==="
-            workdir=$(mktemp -d)
-            dotnet new console --framework net8.0 --no-restore --output "$workdir" >/dev/null
-            rm "$workdir/Program.cs"
-            if [ ! -f "$f" ]; then
-              echo "Skipping deleted file: $f"
-              rm -rf "$workdir"
-              continue
-            fi
-            cp "$f" "$workdir/Program.cs"
-            pushd "$workdir" >/dev/null
-            dotnet add package Aspose.Email --version "$PKG_VERSION" >/dev/null
-            dotnet restore >/dev/null
-            dotnet build -c Release >/dev/null
-            dotnet run -c Release --no-build >/dev/null
-            popd >/dev/null
-            rm -rf "$workdir"
-          done
+      cp "$f" "$workdir/Program.cs"
+      pushd "$workdir" >/dev/null
+
+      echo "Adding packages..."
+      dotnet add package Aspose.Email --version "$PKG_VERSION"
+      dotnet add package Aspose.Words --version "$WORDS_PKG_VERSION"
+      dotnet add package System.Security.Cryptography.Pkcs
+      dotnet add package HtmlAgilityPack
+
+      echo "Restoring..."
+      if ! dotnet restore; then
+        echo "::error file=$f::dotnet restore failed"
+        echo "- Restore failed" >> "$GITHUB_STEP_SUMMARY"
+        exit 1
+      fi
+
+      echo "Building..."
+      if ! dotnet build -c Release; then
+        echo "::error file=$f::dotnet build failed"
+        echo "- Build failed" >> "$GITHUB_STEP_SUMMARY"
+        exit 1
+      fi
+
+      echo "Running..."
+      if ! dotnet run -c Release --no-build; then
+        echo "::error file=$f::dotnet run failed"
+        echo "- Run failed" >> "$GITHUB_STEP_SUMMARY"
+        exit 1
+      fi
+
+      popd >/dev/null
+      rm -rf "$workdir"
+
+      echo "- Passed" >> "$GITHUB_STEP_SUMMARY"
+    done
