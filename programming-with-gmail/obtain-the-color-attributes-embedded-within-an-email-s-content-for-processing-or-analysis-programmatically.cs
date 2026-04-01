@@ -1,9 +1,9 @@
 using System;
-using System.Reflection;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-namespace AsposeEmailGmailColorsExample
+namespace EmailColorExample
 {
     class Program
     {
@@ -11,45 +11,33 @@ namespace AsposeEmailGmailColorsExample
         {
             try
             {
-                // Initialize Gmail client with dummy credentials.
-                // Replace with real values when running in a real environment.
-                using (IGmailClient gmailClient = GmailClient.GetInstance(
-                    "accessToken",
-                    "user@example.com"))
+                // Placeholder credentials – replace with real values when available
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string defaultEmail = "user@example.com";
+
+                // Skip external call when placeholder credentials are used
+                if (clientId == "clientId" && clientSecret == "clientSecret" && refreshToken == "refreshToken")
                 {
-                    // Retrieve color information.
-                    // GetColors returns a ColorsInfo object containing Gmail UI color settings.
-                    // The exact members of ColorsInfo are not documented here,
-                    // so we enumerate its public properties via reflection.
-                    object colorsInfo = gmailClient.GetColors();
+                    Console.WriteLine("Placeholder credentials detected. Skipping Gmail client call.");
+                    return;
+                }
 
-                    if (colorsInfo == null)
-                    {
-                        Console.Error.WriteLine("Failed to retrieve color information.");
-                        return;
-                    }
+                // Create Gmail client
+                using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+                {
+                    // Retrieve color information from the Gmail account
+                    ColorsInfo colorsInfo = gmailClient.GetColors();
 
-                    Type colorsType = colorsInfo.GetType();
-                    PropertyInfo[] properties = colorsType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-                    Console.WriteLine("Gmail Color Attributes:");
-                    foreach (PropertyInfo prop in properties)
-                    {
-                        try
-                        {
-                            object value = prop.GetValue(colorsInfo);
-                            Console.WriteLine($"{prop.Name}: {value}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Unable to read property '{prop.Name}': {ex.Message}");
-                        }
-                    }
+                    // Output retrieved color attributes (example)
+                    Console.WriteLine("Colors information retrieved:");
+                    Console.WriteLine(colorsInfo);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine(ex.Message);
             }
         }
     }
