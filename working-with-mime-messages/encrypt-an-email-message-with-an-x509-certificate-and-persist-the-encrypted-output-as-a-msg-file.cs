@@ -9,8 +9,9 @@ class Program
     {
         try
         {
-            // Path to the public certificate used for encryption
+            // Paths for the certificate and the output MSG file
             string certificatePath = "publicCert.cer";
+            string outputMsgPath = "encrypted.msg";
 
             // Verify that the certificate file exists
             if (!File.Exists(certificatePath))
@@ -20,36 +21,28 @@ class Program
             }
 
             // Load the X509 certificate
-            X509Certificate2 publicCertificate = new X509Certificate2(certificatePath);
+            X509Certificate2 certificate = new X509Certificate2(certificatePath);
 
-            // Create the email message
-            using (MailMessage message = new MailMessage())
+            // Create a simple email message
+            using (MailMessage message = new MailMessage(
+                "sender@example.com",
+                "receiver@example.com",
+                "Encrypted Message",
+                "This is a secret."))
             {
-                message.From = "sender@example.com";
-                message.To = "receiver@example.com";
-                message.Subject = "Encrypted message";
-                message.Body = "This is a secret.";
-
                 // Encrypt the message with the certificate
-                using (MailMessage encryptedMessage = message.Encrypt(publicCertificate))
+                MailMessage encryptedMessage = message.Encrypt(certificate);
+
+                // Ensure the output directory exists
+                string outputDirectory = Path.GetDirectoryName(outputMsgPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
                 {
-                    // Destination path for the encrypted MSG file
-                    string outputPath = "encryptedMessage.msg";
-
-                    // Ensure the output directory exists
-                    string outputDirectory = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-
-                    // Save the encrypted message as MSG
-                    encryptedMessage.Save(outputPath);
-
-                    Console.WriteLine(encryptedMessage.IsEncrypted
-                        ? "Message encrypted and saved successfully."
-                        : "Encryption failed.");
+                    Directory.CreateDirectory(outputDirectory);
                 }
+
+                // Save the encrypted message as MSG
+                encryptedMessage.Save(outputMsgPath);
+                Console.WriteLine($"Encrypted message saved to: {outputMsgPath}");
             }
         }
         catch (Exception ex)
