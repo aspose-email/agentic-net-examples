@@ -1,81 +1,78 @@
 using System;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
         try
         {
-            string mboxPath = "storage.mbox";
-            string outputDirectory = "SplitParts";
-            long partSizeInBytes = 10 * 1024 * 1024; // 10 MB per part
+            // Input MBOX file path
+            string mboxPath = "input.mbox";
+            // Output directory for split messages
+            string outputDir = "output";
 
-            // Verify input file exists
+            // Guard input file existence
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
+                Console.Error.WriteLine($"Input file not found: {mboxPath}");
                 return;
             }
 
             // Ensure output directory exists
-            try
+            if (!Directory.Exists(outputDir))
             {
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                return;
+                Directory.CreateDirectory(outputDir);
             }
 
-            using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
-            {
-                // Listen for a key press to abort the operation
-                Task.Run(() =>
-                {
-                    Console.WriteLine("Press 'c' to cancel the splitting process...");
-                    while (true)
-                    {
-                        if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.C)
-                        {
-                            cancellationSource.Cancel();
-                            break;
-                        }
-                        Thread.Sleep(100);
-                    }
-                });
+            // Cancellation token source to allow aborting
+            CancellationTokenSource cts = new CancellationTokenSource();
 
-                // Create the MBOX reader
-                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            // Create the MBOX reader using the required factory method
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            {
+                int messageIndex = 0;
+
+                while (true)
                 {
-                    try
+                    // Check for cancellation request
+                    if (cts.Token.IsCancellationRequested)
                     {
-                        // Perform the split operation asynchronously with cancellation support
-                        await mboxReader.SplitIntoAsync(partSizeInBytes, outputDirectory, cancellationSource.Token);
-                        Console.WriteLine("MBOX splitting completed successfully.");
+                        Console.WriteLine("Splitting operation aborted by user.");
+                        break;
                     }
-                    catch (OperationCanceledException)
+
+                    // Read the next message from the MBOX storage
+                    MailMessage message = reader.ReadNextMessage();
+                    if (message == null)
                     {
-                        Console.WriteLine("MBOX splitting was cancelled by the user.");
+                        // No more messages
+                        break;
                     }
-                    catch (Exception splitEx)
+
+                    using (message)
                     {
-                        Console.Error.WriteLine($"Error during splitting: {splitEx.Message}");
+                        messageIndex++;
+                        string outputPath = Path.Combine(outputDir, $"Message_{messageIndex}.eml");
+                        message.Save(outputPath);
+                        Console.WriteLine($"Saved: {outputPath}");
+                    }
+
+                    // Simple abort trigger: press any key to stop
+                    if (Console.KeyAvailable)
+                    {
+                        Console.ReadKey(true); // consume the key
+                        cts.Cancel();
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
