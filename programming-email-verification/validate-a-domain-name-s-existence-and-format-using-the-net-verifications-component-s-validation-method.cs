@@ -1,5 +1,4 @@
 using System;
-using Aspose.Email;
 using Aspose.Email.Tools.Verifications;
 
 class Program
@@ -8,26 +7,16 @@ class Program
     {
         try
         {
-            // Email address to validate
-            string email = "example@example.com";
+            Console.Write("Enter email address to validate: ");
+            string email = Console.ReadLine();
 
-            // Create an EmailValidator instance
             EmailValidator validator = new EmailValidator();
 
-            // Validate the email address using syntax and domain checking
             ValidationResult result;
             validator.Validate(email, ValidationPolicy.SyntaxAndDomain, out result);
 
-            // Display validation outcome
-            Console.WriteLine("Return Code: " + result.ReturnCode);
-            if (!string.IsNullOrEmpty(result.Message))
-            {
-                Console.WriteLine("Message: " + result.Message);
-            }
-            if (result.LastException != null)
-            {
-                Console.WriteLine("Exception: " + result.LastException.Message);
-            }
+            Console.WriteLine("Validation Return Code: " + result.ReturnCode);
+            Console.WriteLine("Message: " + result.Message);
         }
         catch (Exception ex)
         {
