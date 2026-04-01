@@ -10,8 +10,8 @@ class Program
     {
         try
         {
-            // Path to the PST file
-            string pstPath = "sample.pst";
+            // Define PST file path
+            string pstPath = "SampleCalendar.pst";
 
             // Ensure the directory for the PST file exists
             string pstDirectory = Path.GetDirectoryName(pstPath);
@@ -20,30 +20,40 @@ class Program
                 Directory.CreateDirectory(pstDirectory);
             }
 
-            // Open existing PST or create a new one (Unicode format)
-            PersonalStorage pst;
-            if (File.Exists(pstPath))
+            // Open existing PST or create a new one if it does not exist
+            using (PersonalStorage pst = File.Exists(pstPath)
+                ? PersonalStorage.FromFile(pstPath)
+                : PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
             {
-                pst = PersonalStorage.FromFile(pstPath);
-            }
-            else
-            {
-                pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-            }
+                // Get the root folder of the PST
+                FolderInfo rootFolder = pst.RootFolder;
 
-            using (pst)
-            {
-                // Create a simple MAPI calendar item
-                MapiCalendar calendar = new MapiCalendar(
+                // Name of the calendar subfolder
+                const string calendarFolderName = "My Calendar";
+
+                // Try to get the calendar subfolder; create it if it does not exist
+                FolderInfo calendarFolder;
+                try
+                {
+                    calendarFolder = rootFolder.GetSubFolder(calendarFolderName);
+                }
+                catch
+                {
+                    calendarFolder = rootFolder.AddSubFolder(calendarFolderName);
+                }
+
+                // Create a MAPI calendar item
+                MapiCalendar mapiCalendar = new MapiCalendar(
                     location: "Conference Room",
-                    summary: "Project Meeting",
-                    description: "Discuss project milestones",
-                    startDate: new DateTime(2023, 10, 1, 10, 0, 0),
-                    endDate: new DateTime(2023, 10, 1, 11, 0, 0));
+                    summary: "Team Meeting",
+                    description: "Discuss project status and next steps.",
+                    startDate: DateTime.Now.AddHours(1),
+                    endDate: DateTime.Now.AddHours(2));
 
-                // Add the calendar item to the root folder of the PST
-                string entryId = pst.RootFolder.AddMapiMessageItem(calendar);
-                Console.WriteLine($"Calendar item added. EntryId: {entryId}");
+                // Add the calendar item to the folder
+                calendarFolder.AddMapiMessageItem(mapiCalendar);
+
+                Console.WriteLine("Calendar item added to PST successfully.");
             }
         }
         catch (Exception ex)
