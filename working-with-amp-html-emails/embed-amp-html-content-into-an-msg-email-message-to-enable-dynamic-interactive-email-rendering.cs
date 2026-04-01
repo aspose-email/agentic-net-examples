@@ -9,12 +9,12 @@ class Program
     {
         try
         {
-            // Define the output MSG file path
-            string outputPath = "output/amp_email.msg";
+            // Define output MSG file path
+            string outputPath = "amp_email.msg";
 
             // Ensure the output directory exists
             string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!Directory.Exists(outputDirectory))
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
                 Directory.CreateDirectory(outputDirectory);
             }
@@ -22,16 +22,10 @@ class Program
             // Create an AMP email message
             using (AmpMessage ampMessage = new AmpMessage())
             {
-                // Set basic message properties
-                ampMessage.From = new MailAddress("sender@example.com", "Sender Name");
-                ampMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
+                // Set basic properties
+                ampMessage.From = new MailAddress("sender@example.com");
+                ampMessage.To.Add(new MailAddress("recipient@example.com"));
                 ampMessage.Subject = "AMP Email Example";
-
-                // Plain‑text fallback body
-                ampMessage.Body = "This is the plain text fallback for email clients that do not support AMP.";
-
-                // HTML body for non‑AMP capable clients
-                ampMessage.HtmlBody = "<h1>Hello, HTML Email!</h1>";
 
                 // AMP HTML content
                 string ampHtml = @"<!doctype html>
@@ -42,20 +36,24 @@ class Program
     <style amp4email-boilerplate>body{visibility:hidden}</style>
 </head>
 <body>
-    <h1>Hello, AMP Email!</h1>
+    <h1>Hello AMP Email!</h1>
+    <amp-img src=""https://example.com/image.jpg"" width=""600"" height=""400"" layout=""responsive""></amp-img>
 </body>
 </html>";
-                ampMessage.AmpHtmlBody = ampHtml;
 
-                // Save the message as an MSG file
+                // Assign AMP body and a fallback HTML body
+                ampMessage.AmpHtmlBody = ampHtml;
+                ampMessage.HtmlBody = "<p>This is a fallback HTML version for non‑AMP clients.</p>";
+
+                // Save the message as an Outlook MSG file
                 ampMessage.Save(outputPath);
             }
 
-            Console.WriteLine("AMP email saved to: " + outputPath);
+            Console.WriteLine($"AMP message saved to {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
