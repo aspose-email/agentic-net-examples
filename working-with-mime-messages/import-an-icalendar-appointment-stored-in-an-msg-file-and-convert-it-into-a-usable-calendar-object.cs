@@ -1,10 +1,8 @@
 using System;
 using System.IO;
-using System.Text;
 using Aspose.Email;
-using Aspose.Email.Mime;
-using Aspose.Email.Mapi;
 using Aspose.Email.Calendar;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -12,50 +10,77 @@ class Program
     {
         try
         {
-            string msgFilePath = "appointment.msg";
+            string inputMsgPath = "appointment.msg";
+            string outputIcsPath = "output.ics";
 
-            // Guard file existence
-            if (!File.Exists(msgFilePath))
+            // Verify input file exists
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                try
+                {
+                    MapiCalendar placeholderCalendar = new MapiCalendar(
+                        "Placeholder Location",
+                        "Placeholder Summary",
+                        "Placeholder Description",
+                        DateTime.Now,
+                        DateTime.Now.AddHours(1));
+                    placeholderCalendar.Save(inputMsgPath, new MapiCalendarMsgSaveOptions());
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file '{inputMsgPath}' not found.");
                 return;
             }
 
-            // Load the MSG file as a MapiMessage
-            using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputIcsPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Prepare conversion options (default)
-                MailConversionOptions conversionOptions = new MailConversionOptions();
+                Directory.CreateDirectory(outputDir);
+            }
 
-                // Convert to MailMessage
-                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
+            {
+                // Check if the MSG contains a calendar item
+                if (msg.SupportedType != MapiItemType.Calendar)
                 {
-                    // Assume the body contains the iCalendar data
-                    string icsContent = mailMessage.Body;
-
-                    if (string.IsNullOrWhiteSpace(icsContent))
-                    {
-                        Console.Error.WriteLine("The MSG file does not contain iCalendar data in the body.");
-                        return;
-                    }
-
-                    // Load the appointment from the iCalendar content
-                    using (MemoryStream icsStream = new MemoryStream(Encoding.UTF8.GetBytes(icsContent)))
-                    {
-                        Appointment appointment = Appointment.Load(icsStream);
-
-                        // Use the appointment (example: display some properties)
-                        Console.WriteLine($"Summary: {appointment.Summary}");
-                        Console.WriteLine($"Location: {appointment.Location}");
-                        Console.WriteLine($"Start: {appointment.StartDate}");
-                        Console.WriteLine($"End: {appointment.EndDate}");
-                    }
+                    Console.Error.WriteLine("The MSG file does not contain a calendar item.");
+                    // Create a minimal placeholder iCalendar file
+                    string placeholder = "BEGIN:VCALENDAR\r\nEND:VCALENDAR";
+                    File.WriteAllText(outputIcsPath, placeholder);
+                    return;
                 }
+
+                // Convert to MapiCalendar
+                MapiCalendar mapiCalendar = (MapiCalendar)msg.ToMapiMessageItem();
+
+                // Build an Appointment object from the MapiCalendar data
+                MailAddress organizer = new MailAddress("organizer@example.com");
+                MailAddressCollection attendees = new MailAddressCollection();
+
+                Appointment appointment = new Appointment(
+                    mapiCalendar.Subject,
+                    mapiCalendar.StartDate,
+                    mapiCalendar.EndDate,
+                    organizer,
+                    attendees);
+
+                appointment.Location = mapiCalendar.Location;
+                appointment.Description = mapiCalendar.Body;
+
+                // Save the appointment as an iCalendar file
+                appointment.Save(outputIcsPath);
+                Console.WriteLine($"Appointment saved to {outputIcsPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
