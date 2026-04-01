@@ -5,55 +5,71 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Input and output MSG file paths
             string inputPath = "sample.msg";
             string outputPath = "sample_updated.msg";
 
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
                 Console.Error.WriteLine($"Error: File not found – {inputPath}");
                 return;
             }
 
-            using (MapiMessage message = MapiMessage.Load(inputPath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Retrieve current priority (if set)
-                object currentPriorityObj = null;
-                try
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(inputPath))
+            {
+                // Retrieve current priority
+                int currentPriority = 0;
+                if (msg.TryGetPropertyInt32(KnownPropertyList.Priority.Tag, ref currentPriority))
                 {
-                    currentPriorityObj = message.GetProperty(KnownPropertyList.Priority);
+                    Console.WriteLine($"Current priority: {currentPriority}");
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.Error.WriteLine($"Warning: Unable to read priority – {ex.Message}");
+                    Console.WriteLine("Priority property not set.");
                 }
 
-                int currentPriority = currentPriorityObj != null ? (int)currentPriorityObj : -1;
-                Console.WriteLine($"Current Priority: {(currentPriority >= 0 ? currentPriority.ToString() : "Not set")}");
-
-                // Set priority to High (value 2)
-                int newPriority = 2; // 0 = Low, 1 = Normal, 2 = High (as per MAPI spec)
-                message.SetProperty(KnownPropertyList.Priority, newPriority);
-                Console.WriteLine($"Priority set to: {newPriority}");
+                // Set a new priority (e.g., 1 = High)
+                int newPriority = 1;
+                msg.SetProperty(new MapiProperty(KnownPropertyList.Priority, newPriority));
 
                 // Save the updated message
-                try
-                {
-                    message.Save(outputPath);
-                    Console.WriteLine($"Message saved to: {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving file – {ex.Message}");
-                }
+                msg.Save(outputPath);
+                Console.WriteLine($"Message saved with new priority to {outputPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
