@@ -1,8 +1,6 @@
-using Aspose.Email.Clients;
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -10,56 +8,77 @@ class Program
     {
         try
         {
-            // IMAP server connection parameters (replace with real values or keep placeholders)
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
+            string emailPath = "sample.eml";
 
-            // Create and configure the IMAP client inside a using block to ensure disposal
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            // Ensure the input file exists; create a minimal placeholder if missing
+            if (!File.Exists(emailPath))
             {
                 try
                 {
-                    // Select the folder to search (e.g., INBOX)
-                    client.SelectFolder("INBOX");
-
-                    // Build a search query: find messages whose subject contains "Report"
-                    ImapQueryBuilder builder = new ImapQueryBuilder();
-                    builder.Subject.Contains("Report");
-                    MailQuery query = builder.GetQuery();
-
-                    // Retrieve messages that match the query
-                    ImapMessageInfoCollection messages = client.ListMessages(query);
-
-                    // Iterate through the results
-                    foreach (ImapMessageInfo info in messages)
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        // Fetch the full message using its unique identifier
-                        using (MailMessage message = client.FetchMessage(info.UniqueId))
-                        {
-                            Console.WriteLine($"Subject: {info.Subject}");
-                            Console.WriteLine($"From: {info.From}");
-                            Console.WriteLine($"Date: {info.Date}");
-                            // Additional processing can be done here
-                        }
+                        placeholder.Save(emailPath, SaveOptions.DefaultEml);
                     }
-                }
-                catch (ImapException imapEx)
-                {
-                    Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
-                    return;
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
+
+                try
+                {
+                    MailMessage placeholder = new MailMessage();
+                    placeholder.From = new MailAddress("placeholder@example.com");
+                    placeholder.To = new MailAddressCollection { "recipient@example.com" };
+                    placeholder.Subject = "Placeholder Subject";
+                    placeholder.Body = "This is a placeholder email.";
+                    placeholder.Save(emailPath, SaveOptions.DefaultEml);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder email: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the email and perform simple validation
+            try
+            {
+                using (MailMessage message = MailMessage.Load(emailPath))
+                {
+                    if (string.IsNullOrWhiteSpace(message.Subject))
+                    {
+                        Console.WriteLine("Validation Warning: Email subject is empty.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Subject: {message.Subject}");
+                    }
+
+                    if (message.To == null || message.To.Count == 0)
+                    {
+                        Console.WriteLine("Validation Warning: No recipients specified.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Recipient count: {message.To.Count}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading or processing email: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fatal error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
