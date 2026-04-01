@@ -1,8 +1,6 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,50 +8,97 @@ class Program
     {
         try
         {
-            // Initialize EWS client with placeholder credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Define the path to the email file
+            string emailFilePath = "sample.eml";
 
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Ensure the file exists; if not, create a minimal placeholder
+            if (!File.Exists(emailFilePath))
             {
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                if (messages == null || messages.Count == 0)
+                try
                 {
-                    Console.WriteLine("No messages found in the Inbox.");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(emailFilePath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
 
-                // Fetch the first message
-                ExchangeMessageInfo firstInfo = messages[0];
-                MailMessage mail = client.FetchMessage(firstInfo.UniqueUri);
+                try
+                {
+                    string placeholderContent = "Subject: Placeholder Email\r\nFrom: sender@example.com\r\nTo: recipient@example.com\r\n\r\nThis is a placeholder email body.";
+                    File.WriteAllText(emailFilePath, placeholderContent);
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine("Failed to create placeholder email file: " + ioEx.Message);
+                    return;
+                }
+            }
 
+            // Load the email message
+            using (MailMessage message = MailMessage.Load(emailFilePath))
+            {
                 // Access standard properties
-                Console.WriteLine("Subject: " + mail.Subject);
-                Console.WriteLine("From: " + mail.From);
-                Console.WriteLine("To: " + string.Join(", ", mail.To));
-                Console.WriteLine("Date: " + mail.Date);
+                string subject = message.Subject;
+                string from = message.From != null ? message.From.ToString() : string.Empty;
+                string sender = message.Sender != null ? message.Sender.ToString() : string.Empty;
 
-                // Access custom header fields safely (HeaderCollection does not have ContainsKey)
-                string customHeaderName = "X-Custom-Field";
-                string customHeaderValue = mail.Headers[customHeaderName];
-                if (!string.IsNullOrEmpty(customHeaderValue))
+                // Recipients (To, Cc, Bcc)
+                string toRecipients = string.Empty;
+                if (message.To != null)
                 {
-                    Console.WriteLine($"{customHeaderName}: {customHeaderValue}");
-                }
-                else
-                {
-                    Console.WriteLine($"{customHeaderName} not present.");
+                    foreach (MailAddress address in message.To)
+                    {
+                        toRecipients += address.ToString() + "; ";
+                    }
                 }
 
-                // Dispose the fetched MailMessage
-                mail.Dispose();
+                string ccRecipients = string.Empty;
+                if (message.CC != null)
+                {
+                    foreach (MailAddress address in message.CC)
+                    {
+                        ccRecipients += address.ToString() + "; ";
+                    }
+                }
+
+                string bccRecipients = string.Empty;
+                if (message.Bcc != null)
+                {
+                    foreach (MailAddress address in message.Bcc)
+                    {
+                        bccRecipients += address.ToString() + "; ";
+                    }
+                }
+
+                // Access custom header fields
+                string customHeaderValue = string.Empty;
+                if (message.Headers != null && message.Headers.Contains("X-Custom-Header"))
+                {
+                    customHeaderValue = message.Headers["X-Custom-Header"];
+                }
+
+                // Output the retrieved information
+                Console.WriteLine("Subject: " + subject);
+                Console.WriteLine("From: " + from);
+                Console.WriteLine("Sender: " + sender);
+                Console.WriteLine("To: " + toRecipients);
+                Console.WriteLine("CC: " + ccRecipients);
+                Console.WriteLine("BCC: " + bccRecipients);
+                Console.WriteLine("Custom Header (X-Custom-Header): " + customHeaderValue);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine("An error occurred: " + ex.Message);
         }
     }
 }
