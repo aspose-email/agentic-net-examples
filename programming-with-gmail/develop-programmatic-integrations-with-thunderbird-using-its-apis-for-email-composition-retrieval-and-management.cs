@@ -1,91 +1,102 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Smtp;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Google;
 
-class Program
+namespace Sample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Compose a new email message
-            using (MailMessage message = new MailMessage())
+            try
             {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Test Email";
-                message.Body = "This is a test email sent via Aspose.Email.";
+                // Placeholder credentials – replace with real values for actual execution.
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string defaultEmail = "user@example.com";
 
-                // Add an attachment if the file exists
-                string attachmentPath = "attachment.txt";
-                if (File.Exists(attachmentPath))
+                // Guard against placeholder credentials to avoid external calls during CI.
+                if (clientId == "clientId" || clientSecret == "clientSecret" ||
+                    refreshToken == "refreshToken" || defaultEmail == "user@example.com")
                 {
-                    try
-                    {
-                        using (FileStream fs = File.OpenRead(attachmentPath))
-                        {
-                            Attachment attachment = new Attachment(fs, "attachment.txt");
-                            message.Attachments.Add(attachment);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to add attachment: {ex.Message}");
-                    }
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail operations.");
+                    return;
                 }
 
-                // Send the message using SMTP
+                // Create Gmail client instance.
+                IGmailClient gmailClient = null;
                 try
                 {
-                    using (SmtpClient smtpClient = new SmtpClient("smtp.example.com", 587, "username", "password"))
-                    {
-                        smtpClient.SecurityOptions = SecurityOptions.Auto;
-                        smtpClient.Send(message);
-                    }
+                    gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"SMTP send failed: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
                     return;
                 }
-            }
 
-            // Retrieve messages using IMAP
-            try
-            {
-                using (ImapClient imapClient = new ImapClient("imap.example.com", 993, "username", "password"))
+                // Ensure the client is disposed properly.
+                using (gmailClient)
                 {
-                    imapClient.SecurityOptions = SecurityOptions.Auto;
-
-                    // List messages in the INBOX folder
-                    var messageInfos = imapClient.ListMessages("INBOX");
-                    foreach (var info in messageInfos)
+                    // List messages in the mailbox.
+                    List<GmailMessageInfo> messages = null;
+                    try
                     {
+                        messages = gmailClient.ListMessages();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
+                        return;
+                    }
+
+                    Console.WriteLine($"Total messages: {messages.Count}");
+
+                    // Process the first message if available.
+                    if (messages.Count > 0)
+                    {
+                        GmailMessageInfo firstInfo = messages[0];
+                        MailMessage fetchedMessage = null;
                         try
                         {
-                            // Fetch the full message by its unique identifier
-                            MailMessage fetched = imapClient.FetchMessage(info.UniqueId);
-                            Console.WriteLine($"Subject: {fetched.Subject}");
+                            fetchedMessage = gmailClient.FetchMessage(firstInfo.Id);
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Failed to fetch message {info.UniqueId}: {ex.Message}");
+                            Console.Error.WriteLine($"Failed to fetch message ID {firstInfo.Id}: {ex.Message}");
                         }
+
+                        if (fetchedMessage != null)
+                        {
+                            Console.WriteLine($"Subject of first message: {fetchedMessage.Subject}");
+                        }
+                    }
+
+                    // Compose and send a new email.
+                    MailMessage newMessage = new MailMessage();
+                    newMessage.From = new MailAddress(defaultEmail);
+                    newMessage.To.Add(new MailAddress(defaultEmail));
+                    newMessage.Subject = "Test Email from Aspose.Email Gmail Client";
+                    newMessage.Body = "This is a test email sent using Aspose.Email Gmail integration.";
+
+                    try
+                    {
+                        string sentMessageId = gmailClient.SendMessage(newMessage);
+                        Console.WriteLine($"Message sent successfully. ID: {sentMessageId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to send message: {ex.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
