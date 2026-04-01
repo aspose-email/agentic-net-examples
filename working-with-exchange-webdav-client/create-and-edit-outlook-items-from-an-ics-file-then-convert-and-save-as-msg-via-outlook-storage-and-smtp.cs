@@ -4,46 +4,25 @@ using System.Net;
 using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Smtp;
 using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define file paths
-            string icsPath = "sample.ics";
-            string msgPath = "output.msg";
+            // Input and output paths
+            string icsPath = "appointment.ics";
+            string msgPath = "appointment.msg";
 
-            // Ensure the directory for the MSG file exists
-            string msgDir = Path.GetDirectoryName(Path.GetFullPath(msgPath));
-            if (!Directory.Exists(msgDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(msgDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create directory '{msgDir}': {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure the ICS file exists; create a minimal placeholder if missing
+            // Ensure the input .ics file exists; create a minimal placeholder if missing
             if (!File.Exists(icsPath))
             {
                 try
                 {
-                    // Create a simple appointment and save as .ics
-                    Appointment placeholder = new Appointment(
-                        "Placeholder Meeting",
-                        new DateTime(2025, 1, 1, 9, 0, 0),
-                        new DateTime(2025, 1, 1, 10, 0, 0),
-                        new MailAddress("organizer@example.com"),
-                        new MailAddressCollection { new MailAddress("attendee@example.com") });
-                    placeholder.Save(icsPath);
+                    File.WriteAllText(icsPath, "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR");
                 }
                 catch (Exception ex)
                 {
@@ -60,9 +39,13 @@ class Program
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load appointment from '{icsPath}': {ex.Message}");
+                Console.Error.WriteLine($"Failed to load appointment: {ex.Message}");
                 return;
             }
+
+            // Edit the appointment (example modification)
+            appointment.Summary = "Updated Summary";
+            appointment.Description = "Edited description via Aspose.Email.";
 
             // Convert the appointment to a MAPI message
             MapiMessage mapiMessage;
@@ -76,18 +59,36 @@ class Program
                 return;
             }
 
-            // Save the MAPI message as MSG
+            // Ensure output directory exists
             try
             {
-                mapiMessage.Save(msgPath);
+                string outputDir = Path.GetDirectoryName(msgPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to save MSG file '{msgPath}': {ex.Message}");
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
                 return;
             }
 
-            // Convert the MAPI message to a MailMessage for sending
+            // Save the MAPI message as .msg
+            try
+            {
+                using (mapiMessage)
+                {
+                    mapiMessage.Save(msgPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                return;
+            }
+
+            // Convert MAPI message to MailMessage for SMTP sending
             MailMessage mailMessage;
             try
             {
@@ -95,32 +96,63 @@ class Program
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to convert MAPI message to MailMessage: {ex.Message}");
+                Console.Error.WriteLine($"Failed to convert MAPI to MailMessage: {ex.Message}");
                 return;
             }
 
-            // Prepare Exchange WebDAV client (SMTP/Exchange) credentials
-            string exchangeUri = "https://exchange.example.com/ews/exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // SMTP client configuration (placeholders)
+            string smtpHost = "smtp.example.com";
+            int smtpPort = 25;
+            string smtpUser = "user";
+            string smtpPass = "password";
 
-            // Send the message via Exchange client
-            try
+            // Skip real SMTP send when placeholders are detected
+            if (smtpHost.Contains("example.com"))
             {
-                using (ExchangeClient client = new ExchangeClient(exchangeUri, new NetworkCredential(username, password)))
+                Console.WriteLine("Placeholder SMTP configuration detected; skipping send.");
+            }
+            else
+            {
+                using (SmtpClient smtpClient = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass))
                 {
-                    client.Send(mailMessage);
+                    try
+                    {
+                        smtpClient.Send(mailMessage);
+                        Console.WriteLine("Email sent via SMTP.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"SMTP send failed: {ex.Message}");
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to send email via Exchange client: {ex.Message}");
-                return;
-            }
 
-            // Clean up disposable objects
-            mailMessage.Dispose();
-            mapiMessage.Dispose();
+            // Exchange client configuration for uploading the MSG (placeholders)
+            string exchangeUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string exchangeUser = "user";
+            string exchangePass = "password";
+
+            // Skip real Exchange upload when placeholders are detected
+            if (exchangeUrl.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder Exchange configuration detected; skipping upload.");
+            }
+            else
+            {
+                using (ExchangeClient client = new ExchangeClient(exchangeUrl, new NetworkCredential(exchangeUser, exchangePass)))
+                {
+                    try
+                    {
+                        // Upload the message to the Inbox folder
+                        client.AppendMessage(client.MailboxInfo.InboxUri, mailMessage);
+                        Console.WriteLine("Message uploaded to Exchange mailbox.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Exchange upload failed: {ex.Message}");
+                    }
+                }
+            }
         }
         catch (Exception ex)
         {
