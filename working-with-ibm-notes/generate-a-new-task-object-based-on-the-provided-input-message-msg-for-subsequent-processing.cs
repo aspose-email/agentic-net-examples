@@ -9,37 +9,69 @@ class Program
     {
         try
         {
-            string msgPath = "input.msg";
+            string inputMsgPath = "input.msg";
+            string outputTaskPath = "task.msg";
 
-            if (!File.Exists(msgPath))
+            // Ensure input MSG exists; create a minimal placeholder if missing
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "sender@example.com", "recipient@example.com"))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the original message
+            MapiMessage originalMsg;
+            try
+            {
+                originalMsg = MapiMessage.Load(inputMsgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
                 return;
             }
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Create a new task message based on the original
+            using (MapiMessage taskMsg = new MapiMessage())
             {
-                // Create a new task based on the message content
-                using (MapiTask task = new MapiTask())
+                // Set task-specific properties
+                taskMsg.MessageClass = "IPM.Task";
+                taskMsg.Subject = $"Task: {originalMsg.Subject}";
+                taskMsg.Body = originalMsg.Body;
+
+                // Optionally copy categories if present
+                if (originalMsg.Categories != null && originalMsg.Categories.Length > 0)
                 {
-                    task.Subject = msg.Subject;
-                    task.Body = msg.Body;
+                    taskMsg.Categories = originalMsg.Categories;
+                }
 
-                    // Example: set task start and due dates to now and tomorrow
-                    task.StartDate = DateTime.Now;
-                    task.DueDate = DateTime.Now.AddDays(1);
-
-                    Console.WriteLine("Task created successfully:");
-                    Console.WriteLine($"Subject: {task.Subject}");
-                    Console.WriteLine($"Body: {task.Body}");
-                    Console.WriteLine($"Start Date: {task.StartDate}");
-                    Console.WriteLine($"Due Date: {task.DueDate}");
+                // Save the task message
+                try
+                {
+                    taskMsg.Save(outputTaskPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving task MSG: {ex.Message}");
+                    return;
                 }
             }
+
+            Console.WriteLine($"Task message created successfully at '{outputTaskPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
