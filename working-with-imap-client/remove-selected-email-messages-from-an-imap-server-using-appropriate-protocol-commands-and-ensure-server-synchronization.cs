@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
-using Aspose.Email;
 using Aspose.Email.Clients;
+using System;
+using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
-namespace Sample
+namespace RemoveImapMessagesSample
 {
     class Program
     {
@@ -13,48 +12,49 @@ namespace Sample
         {
             try
             {
-                // IMAP server connection parameters
+                // Placeholder connection settings – replace with real values.
                 string host = "imap.example.com";
                 int port = 993;
-                string username = "user@example.com";
+                string username = "username";
                 string password = "password";
 
-                // Create and connect the IMAP client
+                // Skip execution when placeholders are detected to avoid external calls during CI.
+                if (host.Contains("example.com") || username == "username" || password == "password")
+                {
+                    Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
+                    return;
+                }
+
+                // Create and connect the IMAP client.
                 using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
                 {
-                    try
+                    // Select the target folder (e.g., INBOX).
+                    client.SelectFolder("INBOX");
+
+                    // Build a query to locate the messages that should be removed.
+                    MailQueryBuilder builder = new MailQueryBuilder();
+                    builder.Subject.Contains("DeleteMe"); // Adjust criteria as needed.
+                    MailQuery query = builder.GetQuery();
+
+                    // Retrieve messages matching the query.
+                    ImapMessageInfoCollection messagesToDelete = client.ListMessages(query);
+
+                    if (messagesToDelete == null || messagesToDelete.Count == 0)
                     {
-                        // Select the folder to operate on
-                        client.SelectFolder("INBOX");
-
-                        // Build a query to identify messages to delete (e.g., subject contains "DeleteMe")
-                        MailQueryBuilder builder = new MailQueryBuilder();
-                        builder.Subject.Contains("DeleteMe");
-                        MailQuery query = builder.GetQuery();
-
-                        // Retrieve messages matching the query
-                        IEnumerable<ImapMessageInfo> messagesToDelete = client.ListMessages(query);
-
-                        // Delete the messages and commit the deletions
-                        if (messagesToDelete != null)
-                        {
-                            client.DeleteMessages(messagesToDelete, true);
-                            Console.WriteLine("Selected messages have been deleted and changes committed.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("No messages matched the deletion criteria.");
-                        }
+                        Console.WriteLine("No messages matched the deletion criteria.");
+                        return;
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                    }
+
+                    // Delete the selected messages and commit the deletions immediately.
+                    client.DeleteMessages(messagesToDelete, true); // 'true' commits the deletions.
+
+                    Console.WriteLine($"{messagesToDelete.Count} message(s) deleted and changes committed.");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                // Gracefully report any errors.
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }
