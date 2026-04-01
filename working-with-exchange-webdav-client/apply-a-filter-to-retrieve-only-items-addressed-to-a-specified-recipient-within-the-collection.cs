@@ -1,36 +1,65 @@
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Tools.Search;
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Initialize the Exchange WebDAV client
-            using (ExchangeClient client = new ExchangeClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
+            // Placeholder connection settings
+            string serverUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against executing with placeholder credentials
+            if (serverUri.Contains("example.com") || username.Contains("example.com"))
             {
-                // Build a query to filter messages addressed to a specific recipient
-                MailQueryBuilder builder = new MailQueryBuilder();
-                builder.To.Contains("recipient@example.com");
-                MailQuery query = builder.GetQuery();
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
 
-                // Retrieve messages from the Inbox that match the query
-                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", query, false);
-
-                // Process the filtered messages
-                foreach (ExchangeMessageInfo messageInfo in messages)
+            // Create and connect the Exchange client
+            try
+            {
+                using (ExchangeClient client = new ExchangeClient(serverUri, username, password))
                 {
-                    Console.WriteLine($"Subject: {messageInfo.Subject}");
+                    // Define the recipient to filter messages for
+                    string recipient = "alice@example.com";
+
+                    // Build a query that selects messages addressed to the specified recipient
+                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
+                    builder.To.Contains(recipient);
+                    MailQuery query = builder.GetQuery();
+
+                    // Retrieve messages from the Inbox that match the query (recursive = false)
+                    ExchangeMessageInfoCollection messages = client.ListMessages(
+                        client.MailboxInfo.InboxUri,
+                        query,
+                        false);
+
+                    // Process the filtered messages
+                    foreach (ExchangeMessageInfo info in messages)
+                    {
+                        Console.WriteLine($"Subject: {info.Subject}");
+                        Console.WriteLine($"From: {info.From}");
+                        Console.WriteLine($"To: {info.To}");
+                        Console.WriteLine();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Exchange client error: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
