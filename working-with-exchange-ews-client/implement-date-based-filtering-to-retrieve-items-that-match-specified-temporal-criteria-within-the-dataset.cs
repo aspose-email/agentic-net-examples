@@ -1,41 +1,49 @@
-using Aspose.Email.Tools.Search;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Placeholder connection details – replace with real values when testing.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Placeholder connection details
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create the EWS client using the factory method.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+            // Skip real network call when placeholders are used
+            if (serviceUrl.Contains("example.com"))
             {
-                // Build a query to retrieve messages sent in the last 7 days.
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping actual server connection.");
+                return;
+            }
+
+            NetworkCredential credentials = new NetworkCredential(username, password);
+
+            // Create EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            {
+                // Define date range (last 7 days)
+                DateTime startDate = DateTime.Today.AddDays(-7);
+                DateTime endDate = DateTime.Today;
+
+                // Build query using internal date
                 ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.SentDate.Since(DateTime.Today.AddDays(-7));
+                builder.InternalDate.Since(startDate);
+                builder.InternalDate.Before(endDate);
                 MailQuery query = builder.GetQuery();
 
-                // List messages from the Inbox that match the query (non‑recursive).
-                ExchangeMessageInfoCollection infos = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
+                // Retrieve messages from Inbox matching the date criteria
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
 
-                foreach (ExchangeMessageInfo info in infos)
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    // Fetch the full message using its unique URI.
-                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                    {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"Sent: {message.Date}");
-                        Console.WriteLine(new string('-', 40));
-                    }
+                    Console.WriteLine($"Subject: {info.Subject}, InternalDate: {info.InternalDate}");
                 }
             }
         }
