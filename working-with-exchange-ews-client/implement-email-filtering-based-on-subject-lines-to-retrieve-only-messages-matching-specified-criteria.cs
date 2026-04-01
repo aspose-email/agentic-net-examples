@@ -1,9 +1,8 @@
-using Aspose.Email.Tools.Search;
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -11,44 +10,50 @@ class Program
     {
         try
         {
-            // Service URL and credentials (replace with real values)
-            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
+            // Placeholder credentials – replace with real values for actual execution
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
+            // Skip real network call when placeholders are detected
+            if (serviceUrl.Contains("example.com"))
             {
-                try
+                Console.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
+                return;
+            }
+
+            NetworkCredential credentials = new NetworkCredential(username, password);
+
+            // Create the EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            {
+                // Retrieve message infos from the Inbox folder
+                ExchangeMessageInfoCollection messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
+
+                // Define the subject keyword to filter messages
+                string subjectKeyword = "Invoice";
+
+                foreach (ExchangeMessageInfo info in messageInfos)
                 {
-                    // Build a query to filter messages whose subject contains "Invoice"
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.Subject.Contains("Invoice");
-                    MailQuery query = builder.GetQuery();
-
-                    // List messages from the Inbox that match the query
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
-
-                    // Iterate through the filtered messages
-                    foreach (var info in messages)
+                    // Filter based on the Subject property (case‑insensitive)
+                    if (info.Subject != null && info.Subject.IndexOf(subjectKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        // Fetch the full message using its unique URI
-                        using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                        {
-                            Console.WriteLine($"Subject: {message.Subject}");
-                        }
+                        // Fetch the full message using the unique URI
+                        MailMessage fullMessage = client.FetchMessage(info.UniqueUri);
+
+                        Console.WriteLine($"Subject : {fullMessage.Subject}");
+                        Console.WriteLine($"From    : {fullMessage.From}");
+                        Console.WriteLine($"Received: {info.InternalDate}");
+                        Console.WriteLine(new string('-', 40));
+
+                        fullMessage.Dispose();
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during message retrieval: {ex.Message}");
-                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
