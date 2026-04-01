@@ -9,22 +9,29 @@ class Program
     {
         try
         {
-            // Initialize EWS client (replace placeholders with real values)
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            // Placeholder credentials – skip actual network call in CI environments
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
             string password = "password";
 
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
+            if (mailboxUri.Contains("example.com"))
             {
-                // Define the user configuration name and the folder where it is stored
-                string configName = "MyUserConfig";
-                string folderId = client.MailboxInfo.InboxUri; // Using Inbox as the folder
+                Console.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
+                return;
+            }
 
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Build the user configuration identifier (name + folder ID)
+                // Using the Inbox folder as the associated folder for the configuration
+                string configName = "MyUserConfig";
+                string folderId = client.MailboxInfo.InboxUri;
                 UserConfigurationName userConfig = new UserConfigurationName(configName, folderId);
 
                 // Delete the user configuration
                 client.DeleteUserConfiguration(userConfig);
-                Console.WriteLine("User configuration deleted successfully.");
+                Console.WriteLine($"User configuration '{configName}' deleted successfully.");
             }
         }
         catch (Exception ex)
