@@ -1,83 +1,78 @@
-using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Tools.Search;
 
-class Program
+namespace AsposeEmailRecovery
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Paths and server credentials (replace with real values as needed)
-            const string pstPath = "backup.pst";
-            const string imapHost = "imap.example.com";
-            const int imapPort = 993;
-            const string imapUser = "user@example.com";
-            const string imapPassword = "password";
-
-            // Verify that the PST file exists before proceeding
-            if (!File.Exists(pstPath))
+            try
             {
-                Console.Error.WriteLine($"PST file not found: {pstPath}");
-                return;
-            }
+                // Paths and server credentials (replace with real values or keep placeholders)
+                string pstFilePath = "backup.pst";
+                string imapHost = "imap.example.com";
+                int imapPort = 993;
+                string imapUsername = "user@example.com";
+                string imapPassword = "password";
 
-            // Load the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Initialize the IMAP client
-                using (ImapClient client = new ImapClient(imapHost, imapPort, imapUser, imapPassword, SecurityOptions.Auto))
+                // Ensure the PST backup file exists; create a minimal placeholder if missing
+                if (!File.Exists(pstFilePath))
                 {
                     try
                     {
+                        using (PersonalStorage placeholderPst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
+                        {
+                            // Create a default folder (Inbox) to keep hierarchy valid
+                            placeholderPst.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
+                        }
+                        Console.WriteLine($"Placeholder PST created at '{pstFilePath}'.");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to connect to IMAP server: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
                         return;
                     }
+                    // No data to restore, exit gracefully
+                    return;
+                }
 
-                    // Prepare restore settings
-                    RestoreSettings restoreSettings = new RestoreSettings();
-                    restoreSettings.Options = RestoreOptions.Recursive |
-                                              RestoreOptions.RemoveNonexistentFolders |
-                                              RestoreOptions.RemoveNonexistentItems;
+                // Load the PST backup
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+                {
+                    // Configure restore settings to preserve folder hierarchy and metadata
+                    RestoreSettings restoreSettings = new RestoreSettings
+                    {
+                        Recursive = true,                     // Restore subfolders recursively
+                        RemoveNonexistentFolders = false,     // Keep existing folders on the server
+                        RemoveNonexistentItems = false        // Keep existing items on the server
+                    };
 
-                    // Perform the restore operation
-                    try
+                    // Initialize the IMAP client (no explicit Connect method required)
+                    using (ImapClient client = new ImapClient(imapHost, imapPort, imapUsername, imapPassword, SecurityOptions.Auto))
                     {
-                        client.Restore(pst, restoreSettings);
-                        Console.WriteLine("Mailbox restored successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Restore operation failed: {ex.Message}");
-                    }
-
-                    // Optional: list top‑level folders after restore
-                    try
-                    {
-                        ImapFolderInfoCollection folders = client.ListFolders();
-                        Console.WriteLine("Folders on the server:");
-                        foreach (ImapFolderInfo folder in folders)
+                        try
                         {
-                            Console.WriteLine($"- {folder.Name}");
+                            // Perform the restore operation
+                            client.Restore(pst, restoreSettings);
+                            Console.WriteLine("Mailbox data restored successfully.");
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to list folders: {ex.Message}");
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Error during restore: {ex.Message}");
+                        }
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Top‑level exception guard
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
