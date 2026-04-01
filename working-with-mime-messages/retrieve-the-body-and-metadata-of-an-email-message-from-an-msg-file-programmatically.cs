@@ -3,34 +3,80 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailMsgReader
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string msgPath = "message.msg";
+            string msgFilePath = "sample.msg";
 
-                if (!File.Exists(msgPath))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+            if (!File.Exists(msgFilePath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"File not found: {msgPath}");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgFilePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                using (MapiMessage msg = MapiMessage.Load(msgPath))
+                try
                 {
-                    Console.WriteLine($"Subject: {msg.Subject}");
-                    Console.WriteLine($"From: {msg.SenderName} <{msg.SenderEmailAddress}>");
-                    Console.WriteLine($"Sent: {msg.ClientSubmitTime}");
-                    Console.WriteLine($"Body: {msg.Body}");
+                    // Create a simple placeholder MSG.
+                    MapiMessage placeholderMessage = new MapiMessage(
+                        "Placeholder Subject",
+                        "This is a placeholder body.",
+                        "sender@example.com",
+                        "recipient@example.com");
+                    placeholderMessage.Save(msgFilePath);
+                }
+                catch (Exception createEx)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {createEx.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
+
+            // Load the MSG file.
+            using (MapiMessage msg = MapiMessage.Load(msgFilePath))
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Output basic metadata.
+                Console.WriteLine($"Subject: {msg.Subject}");
+                Console.WriteLine($"Sender Email: {msg.SenderEmailAddress}");
+                Console.WriteLine($"Sent Representing Email: {msg.SentRepresentingEmailAddress}");
+                Console.WriteLine($"Sent Date: {msg.DeliveryTime}");
+                Console.WriteLine($"Body (plain text): {msg.Body}");
+                Console.WriteLine($"Body (HTML): {msg.BodyHtml}");
+
+                // List attachments, if any.
+                if (msg.Attachments != null && msg.Attachments.Count > 0)
+                {
+                    Console.WriteLine("Attachments:");
+                    foreach (MapiAttachment attachment in msg.Attachments)
+                    {
+                        Console.WriteLine($"- {attachment.FileName}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No attachments found.");
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
