@@ -5,56 +5,61 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputMsgPath = "input.msg";
-            string outputEmlPath = "output.eml";
+            // Paths for input MSG and output EML files
+            string inputPath = "input.msg";
+            string outputPath = "output.eml";
 
-            if (!File.Exists(inputMsgPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {inputMsgPath}");
-                return;
-            }
-
-            string outputDir = Path.GetDirectoryName(outputEmlPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create directory – {outputDir}. {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            try
-            {
-                using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
-                {
-                    MailConversionOptions conversionOptions = new MailConversionOptions();
-                    using (MailMessage mail = msg.ToMailMessage(conversionOptions))
-                    {
-                        SaveOptions emlSaveOptions = SaveOptions.DefaultEml;
-                        mail.Save(outputEmlPath, emlSaveOptions);
-                    }
-                }
-
-                Console.WriteLine($"MSG file converted to EML successfully: {outputEmlPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error during conversion: {ex.Message}");
+                Console.Error.WriteLine($"Error: File not found – {inputPath}");
                 return;
+            }
+
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Load the MSG file into a MapiMessage
+            using (MapiMessage msg = MapiMessage.Load(inputPath))
+            {
+                // Convert MapiMessage to MailMessage with default conversion options
+                MailConversionOptions convOptions = new MailConversionOptions();
+                using (MailMessage mail = msg.ToMailMessage(convOptions))
+                {
+                    // Save the MailMessage as an EML file
+                    EmlSaveOptions emlOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
+                    mail.Save(outputPath, emlOptions);
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
