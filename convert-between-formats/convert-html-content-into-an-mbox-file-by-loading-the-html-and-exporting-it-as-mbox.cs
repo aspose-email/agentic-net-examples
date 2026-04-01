@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Mapi;
+using Aspose.Email.Storage;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -9,16 +11,18 @@ class Program
     {
         try
         {
-            // Input HTML file and output MBOX file paths
+            // Define file paths
             string htmlPath = "input.html";
+            string pstPath = "temp.pst";
             string mboxPath = "output.mbox";
 
-            // Ensure the input HTML file exists; create a minimal placeholder if missing
+            // Ensure input HTML exists; create placeholder if missing
             if (!File.Exists(htmlPath))
             {
                 try
                 {
-                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder content</p></body></html>");
+                    Directory.CreateDirectory(Path.GetDirectoryName(htmlPath) ?? ".");
+                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder HTML content.</p></body></html>");
                 }
                 catch (Exception ex)
                 {
@@ -27,7 +31,21 @@ class Program
                 }
             }
 
-            // Read HTML content
+            // Ensure output directory exists
+            try
+            {
+                string mboxDir = Path.GetDirectoryName(mboxPath) ?? ".";
+                Directory.CreateDirectory(mboxDir);
+                string pstDir = Path.GetDirectoryName(pstPath) ?? ".";
+                Directory.CreateDirectory(pstDir);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create output directories: {ex.Message}");
+                return;
+            }
+
+            // Load HTML content
             string htmlContent;
             try
             {
@@ -39,43 +57,35 @@ class Program
                 return;
             }
 
-            // Create a mail message from the HTML content
-            using (MailMessage message = new MailMessage())
+            // Create MailMessage with HTML body
+            using (MailMessage mailMessage = new MailMessage())
             {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Converted HTML Message";
-                message.HtmlBody = htmlContent;
-                message.IsBodyHtml = true;
+                mailMessage.Subject = "Converted HTML Message";
+                mailMessage.HtmlBody = htmlContent;
 
-                // Ensure the output directory exists
-                string outputDir = Path.GetDirectoryName(mboxPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                // Create PST storage
+                using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                 {
+                    // Add Inbox folder
+                    FolderInfo inboxFolder = pst.RootFolder.AddSubFolder("Inbox");
+
+                    // Convert MailMessage to MapiMessage
+                    MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
+
+                    // Add the message to the Inbox folder
+                    inboxFolder.AddMessage(mapiMessage);
+
+                    // Convert PST to MBOX
                     try
                     {
-                        Directory.CreateDirectory(outputDir);
+                        MailboxConverter.ConvertPersonalStorageToMbox(pst, mboxPath, null);
+                        Console.WriteLine($"MBOX file created at: {mboxPath}");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to convert PST to MBOX: {ex.Message}");
                         return;
                     }
-                }
-
-                // Write the message to an MBOX file
-                try
-                {
-                    MboxSaveOptions saveOptions = new MboxSaveOptions();
-                    using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxPath, saveOptions))
-                    {
-                        writer.WriteMessage(message);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to write MBOX file: {ex.Message}");
-                    return;
                 }
             }
         }
