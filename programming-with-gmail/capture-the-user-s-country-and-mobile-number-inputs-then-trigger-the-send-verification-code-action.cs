@@ -1,50 +1,65 @@
 using System;
-using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailVerificationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            Console.Write("Enter your country: ");
-            string country = Console.ReadLine();
-
-            Console.Write("Enter your mobile number: ");
-            string mobileNumber = Console.ReadLine();
-
-            // Generate a simple verification code
-            Random rnd = new Random();
-            int verificationCode = rnd.Next(100000, 999999);
-
-            // Initialize Gmail client with dummy credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com"))
+            try
             {
-                // Create the email message
-                using (MailMessage message = new MailMessage())
-                {
-                    message.From = "no-reply@example.com";
-                    message.To = "recipient@example.com";
-                    message.Subject = "Your Verification Code";
-                    message.Body = $"Country: {country}\nMobile: {mobileNumber}\nVerification Code: {verificationCode}";
+                // Capture user inputs
+                Console.Write("Enter your country: ");
+                string country = Console.ReadLine();
 
-                    // Send the message
-                    gmailClient.SendMessage(message);
+                Console.Write("Enter your mobile number: ");
+                string mobileNumber = Console.ReadLine();
+
+                // Create a MAPI contact and set the required properties
+                using (MapiContact contact = new MapiContact())
+                {
+                    contact.SetProperty(KnownPropertyList.Country, country);
+                    contact.SetProperty(KnownPropertyList.MobileTelephoneNumber, mobileNumber);
+                }
+
+                // Placeholder EWS connection details
+                string ewsUrl = "https://ews.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
+                string domain = "";
+
+                // Guard against executing real network calls with placeholder data
+                if (ewsUrl.Contains("example.com"))
+                {
+                    Console.Error.WriteLine("Placeholder EWS credentials detected. Skipping external call.");
+                    return;
+                }
+
+                // Create EWS client and invoke PlayOnPhone
+                try
+                {
+                    using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password, domain))
+                    {
+                        // Placeholder message identifier
+                        string messageId = "sampleMessageId";
+
+                        client.PlayOnPhone(messageId, mobileNumber);
+                        Console.WriteLine("Verification code request sent successfully.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
+                    return;
                 }
             }
-
-            Console.WriteLine("Verification code sent successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
