@@ -9,31 +9,56 @@ class Program
     {
         try
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
+            // Define input and output MSG file paths
+            string inputMsgPath = "input.msg";
+            string outputMsgPath = "output.msg";
 
-            // Verify that the input MSG file exists
-            if (!File.Exists(inputPath))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
-                return;
+                try
+                {
+                    // Create a simple placeholder MAPI message
+                    MapiMessage placeholderMessage = new MapiMessage(
+                        "Placeholder Subject",
+                        "This is a placeholder message body.",
+                        "sender@example.com",
+                        "receiver@example.com"
+                    );
+
+                    // Save the placeholder to the expected input path
+                    placeholderMessage.Save(inputMsgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Load the MSG file into a MapiMessage object
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
+            // Load the original MSG file and duplicate it
+            try
             {
-                // Example: configure a replication property (optional)
-                // int replicationSize = (int)msg.Size;
-                // MapiProperty replicationProperty = new MapiProperty(KnownPropertyList.EmsAbReplicationMailMsgSize, replicationSize);
-                // msg.AddCustomProperty(replicationProperty, "ReplicationSize");
-
-                // Save the message to a new file to ensure accurate duplication
-                msg.Save(outputPath);
+                using (MapiMessage originalMessage = MapiMessage.Load(inputMsgPath))
+                {
+                    // Clone the message to ensure a separate instance
+                    using (MapiMessage duplicatedMessage = originalMessage.Clone())
+                    {
+                        // Save the duplicated message to the output path
+                        duplicatedMessage.Save(outputMsgPath);
+                        Console.WriteLine($"Message duplicated successfully to '{outputMsgPath}'.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing MSG files: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
