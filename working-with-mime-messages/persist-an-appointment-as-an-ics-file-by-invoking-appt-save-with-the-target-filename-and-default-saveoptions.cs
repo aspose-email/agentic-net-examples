@@ -9,38 +9,39 @@ class Program
     {
         try
         {
-            // Define the output file path for the iCalendar file
-            string outputPath = "appointment.ics";
-
-            // Ensure the target directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            // Prepare attendees list
+            // Prepare attendees
             MailAddressCollection attendees = new MailAddressCollection();
             attendees.Add(new MailAddress("person1@domain.com"));
             attendees.Add(new MailAddress("person2@domain.com"));
-            attendees.Add(new MailAddress("person3@domain.com"));
 
             // Create an appointment
-            Appointment appointment = new Appointment(
+            Appointment appt = new Appointment(
                 "Conference Room",
-                new DateTime(2023, 10, 1, 13, 0, 0),
-                new DateTime(2023, 10, 1, 14, 0, 0),
+                new DateTime(2024, 5, 20, 10, 0, 0),
+                new DateTime(2024, 5, 20, 11, 0, 0),
                 new MailAddress("organizer@domain.com"),
                 attendees);
-            appointment.Summary = "Project Kickoff";
-            appointment.Description = "Initial meeting to discuss project scope and timeline.";
 
-            // Save the appointment as an .ics file using default save options
-            appointment.Save(outputPath);
+            appt.Summary = "Project Kickoff";
+            appt.Description = "Discuss project goals and timelines.";
+
+            // Define output file path
+            string outputPath = Path.Combine(Directory.GetCurrentDirectory(), "appointment.ics");
+
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Save the appointment as an iCalendar (ICS) file using default save options
+            appt.Save(outputPath);
+            Console.WriteLine($"Appointment saved to: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
