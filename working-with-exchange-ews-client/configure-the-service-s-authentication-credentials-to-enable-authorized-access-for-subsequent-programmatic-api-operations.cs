@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -10,29 +9,40 @@ class Program
     {
         try
         {
-            // Authentication parameters
+            // Placeholder credentials for demonstration purposes
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Initialize the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Skip actual network call when placeholders are detected
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                try
+                Console.WriteLine("Placeholder credentials detected. Skipping connection to Exchange server.");
+                return;
+            }
+
+            // Prepare network credentials
+            NetworkCredential credentials = new NetworkCredential(username, password);
+
+            // Initialize the EWS client with the provided credentials
+            try
+            {
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
                 {
-                    // Verify the connection by retrieving the server version
-                    string versionInfo = client.GetVersionInfo();
-                    Console.WriteLine("Exchange Server version: " + versionInfo);
+                    // The client is now configured and ready for further API operations
+                    Console.WriteLine("EWS client configured successfully.");
+                    // Subsequent operations can be performed using 'client'
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("EWS operation failed: " + ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
