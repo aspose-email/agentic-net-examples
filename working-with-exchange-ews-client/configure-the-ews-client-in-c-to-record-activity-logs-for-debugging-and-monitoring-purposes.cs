@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -10,33 +9,37 @@ class Program
     {
         try
         {
-            // Define EWS connection parameters
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Placeholder connection details
+            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Prepare log file path and ensure its directory exists
-            string logFilePath = "EwsClientLog.txt";
-            string logDirectory = Path.GetDirectoryName(logFilePath);
-            if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
+            // Skip real connection when placeholders are used
+            if (mailboxUri.Contains("example.com"))
             {
-                Directory.CreateDirectory(logDirectory);
+                Console.WriteLine("Placeholder credentials detected. Skipping EWS client connection.");
+                return;
             }
 
-            // Create network credentials
-            NetworkCredential credentials = new NetworkCredential(username, password);
+            // Prepare log file path and ensure the directory exists
+            string logPath = Path.Combine(Environment.CurrentDirectory, "Logs", "EwsLog.txt");
+            string logDir = Path.GetDirectoryName(logPath);
+            if (!Directory.Exists(logDir))
+            {
+                Directory.CreateDirectory(logDir);
+            }
 
-            // Initialize the EWS client inside a using block for proper disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Create and configure the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
                 try
                 {
-                    // Configure activity logging
-                    client.LogFileName = logFilePath;
+                    client.LogFileName = logPath;
                     client.UseDateInLogFileName = true;
 
-                    // Perform a lightweight operation to generate log entries
-                    client.GetMailboxInfo();
+                    // Example operation to generate log entries
+                    var mailboxInfo = client.GetMailboxInfo();
+                    Console.WriteLine($"Connected to mailbox: {mailboxInfo.MailboxUri}");
                 }
                 catch (Exception ex)
                 {
