@@ -9,54 +9,70 @@ class Program
     {
         try
         {
-            string inputPath = "sample.msg";
-            string outputPath = "modified.msg";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
-                using (MapiMessage placeholder = new MapiMessage(
-                    "sender@example.com",
-                    "recipient@example.com",
-                    "Placeholder Subject",
-                    "Placeholder Body"))
+                try
                 {
-                    placeholder.Save(inputPath);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Error: Input file not found – {inputPath}");
+                return;
             }
 
-            // Load the MSG file.
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Add a new TO recipient.
-                msg.Recipients.Add("newto@example.com", "New To Recipient", MapiRecipientType.MAPI_TO);
+                Directory.CreateDirectory(outputDir);
+            }
 
-                // Add a new CC recipient.
-                msg.Recipients.Add("newcc@example.com", "New CC Recipient", MapiRecipientType.MAPI_CC);
-
-                // Add a new BCC recipient.
-                msg.Recipients.Add("newbcc@example.com", "New BCC Recipient", MapiRecipientType.MAPI_BCC);
-
-                // Modify the first recipient's email address if any exist.
-                if (msg.Recipients.Count > 0)
+            // Load the MSG file
+            using (MapiMessage message = MapiMessage.Load(inputPath))
+            {
+                // Modify the first recipient if any
+                if (message.Recipients != null && message.Recipients.Count > 0)
                 {
-                    MapiRecipient firstRecipient = msg.Recipients[0];
-                    firstRecipient.EmailAddress = "modified@example.com";
+                    message.Recipients[0].EmailAddress = "modified@example.com";
                 }
 
-                // Remove the second recipient if there are at least two.
-                if (msg.Recipients.Count > 1)
-                {
-                    msg.Recipients.RemoveAt(1);
-                }
+                // Add a new TO recipient
+                message.Recipients.Add(
+                    address: "newrecipient@example.com",
+                    displayName: "New Recipient",
+                    recipientType: MapiRecipientType.MAPI_TO);
 
-                // Save the modified MSG file.
-                msg.Save(outputPath);
+                // Save the updated MSG file
+                try
+                {
+                    message.Save(outputPath);
+                    Console.WriteLine($"Message saved to {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving file: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
