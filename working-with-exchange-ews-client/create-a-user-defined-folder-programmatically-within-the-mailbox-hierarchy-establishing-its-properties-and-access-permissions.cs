@@ -1,3 +1,4 @@
+using Aspose.Email.Storage.Pst;
 using System;
 using System.Net;
 using Aspose.Email;
@@ -6,41 +7,63 @@ using Aspose.Email.Clients.Exchange;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Initialize EWS client
-            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            // Placeholder credentials – replace with real values or skip execution.
+            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            string username = "username";
             string password = "password";
 
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
+
+            // Create EWS client.
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Get the URI of the Inbox folder (parent folder)
-                string inboxUri = client.MailboxInfo.InboxUri;
+                try
+                {
+                    // Define the parent folder (e.g., Inbox).
+                    string parentFolderUri = client.MailboxInfo.InboxUri;
 
-                // Prepare folder permissions
-                ExchangeFolderPermissionCollection permissions = new ExchangeFolderPermissionCollection();
+                    // Prepare folder permissions.
+                    var permissions = new ExchangeFolderPermissionCollection();
 
-                ExchangeFolderUserInfo userInfo = new ExchangeFolderUserInfo();
-                userInfo.PrimarySmtpAddress = "delegate@example.com";
+                    var userInfo = new ExchangeFolderUserInfo
+                    {
+                        PrimarySmtpAddress = "user@example.com",
+                        DisplayName = "User"
+                    };
 
-                ExchangeFolderPermission permission = new ExchangeFolderPermission(userInfo);
-                permission.PermissionLevel = ExchangeFolderPermissionLevel.Editor; // grant edit rights
+                    var folderPermission = new ExchangeFolderPermission(userInfo)
+                    {
+                        CanCreateItems = true,
+                        CanCreateSubFolders = true,
+                        IsFolderVisible = true,
+                        IsFolderOwner = true
+                    };
 
-                permissions.Add(permission);
+                    permissions.Add(folderPermission);
 
-                // Create a new folder under the Inbox with the specified permissions
-                string folderName = "MyCustomFolder";
-                ExchangeFolderInfo newFolder = client.CreateFolder(inboxUri, folderName, permissions);
+                    // Create the custom folder with permissions.
+                    string newFolderName = "MyCustomFolder";
+                    ExchangeFolderInfo newFolder = client.CreateFolder(parentFolderUri, newFolderName, permissions);
 
-                Console.WriteLine("Folder created: " + newFolder.Uri);
+                    Console.WriteLine($"Folder '{newFolderName}' created with URI: {newFolder.Uri}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during folder creation: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
