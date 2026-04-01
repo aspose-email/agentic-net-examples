@@ -5,38 +5,62 @@ using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Tools.Search;
 
-class Program
+namespace AsposeEmailWebDavFilterExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Exchange server connection details (replace with real values)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create and connect the Exchange WebDAV client
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, new NetworkCredential(username, password)))
+            try
             {
-                // Build a query to retrieve only unread messages
-                MailQuery unreadQuery = new MailQuery("IsRead = 'False'");
+                // Placeholder connection settings – replace with real values.
+                string serverUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "username";
+                string password = "password";
 
-                // List unread messages from the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", unreadQuery, false);
-
-                Console.WriteLine($"Found {messages.Count} unread message(s):");
-                foreach (ExchangeMessageInfo info in messages)
+                // Guard against executing with placeholder credentials.
+                if (serverUri.Contains("example.com") || username == "username" || password == "password")
                 {
-                    // Fetch the full message to access its properties
-                    MailMessage message = client.FetchMessage(info.UniqueUri);
-                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                    return;
+                }
+
+                // Create and connect the Exchange WebDAV client.
+                try
+                {
+                    using (ExchangeClient client = new ExchangeClient(serverUri, username, password))
+                    {
+                        // Build a query to retrieve only unread messages that have attachments.
+                        // The query language follows the Exchange MailQuery syntax.
+                        MailQuery query = new MailQuery("HasAttachment = True AND IsRead = False");
+
+                        // List messages from the Inbox that match the query (recursive = false).
+                        ExchangeMessageInfoCollection messages = client.ListMessages(
+                            client.MailboxInfo.InboxUri,
+                            query,
+                            false);
+
+                        // Process the filtered messages.
+                        foreach (ExchangeMessageInfo info in messages)
+                        {
+                            Console.WriteLine("Subject: " + info.Subject);
+                            Console.WriteLine("Has Attachments: " + info.HasAttachments);
+                            Console.WriteLine("Received: " + info.InternalDate);
+                            Console.WriteLine(new string('-', 40));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error during client operation: " + ex.Message);
+                    return;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+                return;
+            }
         }
     }
 }
