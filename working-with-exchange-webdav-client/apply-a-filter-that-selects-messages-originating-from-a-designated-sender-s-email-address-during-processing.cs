@@ -1,45 +1,49 @@
 using Aspose.Email.Clients.Exchange;
 using System;
 using Aspose.Email;
+using Aspose.Email.Tools.Search;
 using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Connection parameters (replace with real values)
-            string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
+            // Initialize Exchange WebDAV client (placeholder credentials)
+            string exchangeUrl = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create the Exchange WebDAV client
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            // Guard against placeholder credentials
+            if (exchangeUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                // Designated sender to filter messages from
-                string designatedSender = "sender@example.com";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping network call.");
+                return;
+            }
 
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messageInfos = client.ListMessages("Inbox");
+            using (ExchangeClient client = new ExchangeClient(exchangeUrl, username, password))
+            {
+                // Build a query to filter messages from a specific sender
+                string senderEmail = "sender@example.com";
+                MailQuery query = new MailQuery($"('From' = '{senderEmail}')");
 
-                foreach (ExchangeMessageInfo info in messageInfos)
+                // List messages in the Inbox that match the query (recursive set to false)
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
+
+                // Process the filtered messages
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    // Fetch the full message using its unique URI
-                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                    {
-                        if (message.From != null &&
-                            string.Equals(message.From.Address, designatedSender, StringComparison.OrdinalIgnoreCase))
-                        {
-                            Console.WriteLine($"Subject: {message.Subject}");
-                        }
-                    }
+                    Console.WriteLine($"Subject: {info.Subject}");
+                    Console.WriteLine($"From: {info.From}");
+                    Console.WriteLine($"Date: {info.InternalDate}");
+                    Console.WriteLine(new string('-', 40));
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
