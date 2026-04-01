@@ -1,54 +1,74 @@
 using System;
 using System.IO;
+using System.Text;
+using System.Net.Mime;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Mime;
 
-namespace MsgAmpExtractor
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Path to the MSG file
-                string msgPath = "sample.msg";
+            string msgPath = "sample.msg";
 
-                // Verify that the file exists before attempting to load it
-                if (!File.Exists(msgPath))
+            if (!File.Exists(msgPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"File not found: {msgPath}");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                // Load the MSG file into a MapiMessage
-                using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
+                Console.Error.WriteLine($"File not found: {msgPath}");
+                return;
+            }
+
+            using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
+            {
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+
+                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
                 {
-                    // Convert the MapiMessage to a MailMessage to access AlternateViews
-                    using (MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions()))
+                    bool ampFound = false;
+
+                    foreach (AlternateView view in mailMessage.AlternateViews)
                     {
-                        // Iterate through each AlternateView
-                        foreach (AlternateView alternateView in mailMessage.AlternateViews)
+                        if (view.ContentType != null &&
+                            string.Equals(view.ContentType.MediaType, "text/x-amp-html", StringComparison.OrdinalIgnoreCase))
                         {
-                            // Check for the AMP MIME type
-                            if (alternateView.ContentType != null &&
-                                alternateView.ContentType.MediaType.Equals("text/x-amp-html", StringComparison.OrdinalIgnoreCase))
+                            using (StreamReader reader = new StreamReader(view.ContentStream, Encoding.UTF8, true))
                             {
-                                // Extract the AMP content as a string
-                                string ampContent = mailMessage.GetAlternateViewContent(alternateView.ContentType.MediaType);
+                                string ampContent = reader.ReadToEnd();
                                 Console.WriteLine("AMP Content:");
                                 Console.WriteLine(ampContent);
+                                ampFound = true;
                             }
                         }
                     }
+
+                    if (!ampFound)
+                    {
+                        Console.WriteLine("No AMP content found in the message.");
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                // Output any unexpected errors
-                Console.Error.WriteLine(ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
