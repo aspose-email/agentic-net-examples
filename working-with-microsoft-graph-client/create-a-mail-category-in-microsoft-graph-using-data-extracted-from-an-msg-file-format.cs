@@ -3,6 +3,7 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,45 +11,107 @@ class Program
     {
         try
         {
-            // Path to the MSG file
+            // Input MSG file path
             string msgPath = "sample.msg";
 
-            // Verify the file exists before attempting to load
+            // Guard file existence
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
-                return;
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                // Create a minimal placeholder MSG file
+                using (var placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder", "No content"))
+                {
+                    placeholder.Save(msgPath);
+                }
             }
 
             // Load the MSG file
-            using (MailMessage msg = MailMessage.Load(msgPath))
+            MapiMessage mapiMessage;
+            try
             {
-                // Use the subject of the message as the category name (fallback to a default name)
-                string categoryName = string.IsNullOrEmpty(msg.Subject) ? "DefaultCategory" : msg.Subject;
+                mapiMessage = MapiMessage.Load(msgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                return;
+            }
 
-                // Create a token provider (replace placeholders with real values)
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    "clientId",      // Client ID
-                    "clientSecret",  // Client Secret
-                    "refreshToken"   // Refresh Token
-                );
-
-                // Initialize the Microsoft Graph client
-                using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
+            // Extract the first category from the message (if any)
+            string categoryName = "DefaultCategory";
+            try
+            {
+                var categories = FollowUpManager.GetCategories(mapiMessage);
+                if (categories != null && categories.Count > 0)
                 {
-                    // Create a new Outlook category using a preset color
-                    OutlookCategory createdCategory = client.CreateCategory(
-                        categoryName,
-                        CategoryPreset.Preset0   // Use a valid preset enum value
-                    );
-
-                    Console.WriteLine($"Created category: {createdCategory.DisplayName}, Preset: {createdCategory.Preset}");
+                    categoryName = categories[0];
                 }
             }
+            catch
+            {
+                // Ignore extraction errors and use default name
+            }
+
+            // Placeholder credentials – skip real network call if not replaced
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
+
+            if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-") || refreshToken.StartsWith("your-"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph operations.");
+                return;
+            }
+
+            // Create token provider
+            Aspose.Email.Clients.ITokenProvider tokenProvider;
+            try
+            {
+                tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
+                return;
+            }
+
+            // Create Graph client
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, null))
+            {
+                try
+                {
+                    // Create a new Outlook category in the user's master list
+                    OutlookCategory createdCategory = client.CreateCategory(categoryName, CategoryPreset.Preset0);
+                    Console.WriteLine($"Category created: {createdCategory.DisplayName}, Id: {createdCategory.Id}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Graph operation failed: {ex.Message}");
+                }
+            }
+
+            // Dispose the loaded message
+            mapiMessage.Dispose();
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
