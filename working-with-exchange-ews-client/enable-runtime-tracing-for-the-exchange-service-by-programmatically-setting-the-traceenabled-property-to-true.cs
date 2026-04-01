@@ -9,25 +9,33 @@ class Program
     {
         try
         {
-            // Initialize the EWS client with placeholder credentials.
+            // Placeholder connection details
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            string username = "username";
+            string password = "password";
 
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Skip execution when placeholders are detected
+            if (mailboxUri.Contains("example") || username == "username" || password == "password")
             {
-                // Enable logging (runtime tracing) by specifying a log file.
-                client.LogFileName = "exchange_trace.log";
-                client.UseDateInLogFileName = true; // optional: include date in log file name
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
 
-                // Example operation to verify the client works.
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Enable runtime tracing by specifying a log file
+                client.LogFileName = "exchange_trace.log";
+
+                // Example operation to generate trace entries
                 try
                 {
                     string versionInfo = client.GetVersionInfo();
-                    Console.WriteLine($"Exchange server version: {versionInfo}");
+                    Console.WriteLine($"Exchange version: {versionInfo}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during operation: {ex.Message}");
+                    Console.Error.WriteLine($"Error retrieving version info: {ex.Message}");
                 }
             }
         }
