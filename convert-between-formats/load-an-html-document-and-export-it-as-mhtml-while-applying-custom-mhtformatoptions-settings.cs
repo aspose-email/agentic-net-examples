@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
 
 class Program
 {
@@ -9,17 +8,18 @@ class Program
     {
         try
         {
+            // Paths for input HTML and output MHTML
             string inputPath = "input.html";
             string outputPath = "output.mht";
 
-            // Verify input file exists
+            // Verify input file exists; create a minimal placeholder if missing
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
-                return;
+                File.WriteAllText(inputPath, "<html><body><p>Placeholder content</p></body></html>");
+                Console.Error.WriteLine($"Input file not found. Created placeholder at '{inputPath}'.");
             }
 
-            // Ensure output directory exists
+            // Ensure the output directory exists
             string outputDirectory = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
@@ -28,17 +28,15 @@ class Program
 
             // Load the HTML document into a MailMessage
             HtmlLoadOptions loadOptions = new HtmlLoadOptions();
-            using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
+            using (MailMessage mailMessage = MailMessage.Load(inputPath, loadOptions))
             {
-                // Configure custom MHTML save options
+                // Configure custom MHT save options
                 MhtSaveOptions saveOptions = new MhtSaveOptions();
                 saveOptions.MhtFormatOptions = MhtFormatOptions.WriteHeader | MhtFormatOptions.WriteOutlineAttachments;
-                saveOptions.CheckBodyContentEncoding = true;
-                saveOptions.ExtractHTMLBodyResourcesAsAttachments = false;
-                saveOptions.SaveAllHeaders = true;
 
-                // Save the message as MHTML
-                message.Save(outputPath, saveOptions);
+                // Save the MailMessage as MHTML
+                mailMessage.Save(outputPath, saveOptions);
+                Console.WriteLine($"MHTML file saved to '{outputPath}'.");
             }
         }
         catch (Exception ex)
