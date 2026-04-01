@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
-using Aspose.Email;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -10,36 +9,52 @@ class Program
         // Top‑level exception guard
         try
         {
-            // Initialize Gmail client with placeholder credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com"))
-            {
-                // Retrieve the list of messages in the mailbox
-                List<GmailMessageInfo> messageInfos = gmailClient.ListMessages();
+            // Placeholder connection details
+            string host = "exchange.example.com";
+            string username = "user@example.com";
+            string password = "password";
 
-                foreach (GmailMessageInfo info in messageInfos)
+            // Skip real network call when placeholders are used
+            if (host.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping server connection.");
+                return;
+            }
+
+            // Ensure the client is instantiated before any use
+            using (ExchangeClient client = new ExchangeClient(host, username, password))
+            {
+                // Guard client operations for connection/authentication errors
+                try
                 {
-                    // Fetch the full message to access its properties (e.g., Subject)
-                    using (MailMessage fullMessage = gmailClient.FetchMessage(info.Id))
+                    // Retrieve messages from the Inbox folder
+                    ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
+
+                    // Apply filtering criteria
+                    foreach (ExchangeMessageInfo info in messages)
                     {
-                        // Apply filter: keep only messages whose subject contains "Invoice"
-                        if (!string.IsNullOrEmpty(fullMessage.Subject) &&
-                            fullMessage.Subject.Contains("Invoice", StringComparison.OrdinalIgnoreCase))
+                        // Example criteria: subject contains "Invoice" and size > 10 KB
+                        if (info.Subject != null &&
+                            info.Subject.Contains("Invoice") &&
+                            info.Size > 10_000)
                         {
-                            Console.WriteLine($"Subject: {fullMessage.Subject}");
-                            Console.WriteLine($"From: {fullMessage.From}");
+                            Console.WriteLine($"Subject: {info.Subject}");
+                            Console.WriteLine($"Size: {info.Size} bytes");
+                            Console.WriteLine($"From: {info.From}");
+                            Console.WriteLine($"Received: {info.Date}");
+                            Console.WriteLine(new string('-', 40));
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            // Friendly error output
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
