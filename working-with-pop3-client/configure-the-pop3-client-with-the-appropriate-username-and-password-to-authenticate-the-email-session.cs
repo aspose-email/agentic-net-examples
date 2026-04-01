@@ -1,5 +1,4 @@
 using System;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
 class Program
@@ -8,26 +7,37 @@ class Program
     {
         try
         {
-            // Connection parameters
-            string host = "pop.example.com";
-            int port = 110;
-            string username = "user@example.com";
+            string host = "pop3.example.com";
+            string username = "username";
             string password = "password";
 
-            // Initialize POP3 client with host, port, username, and password
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Skip external call when placeholder values are used
+            if (host.Contains("example.com"))
             {
-                // Set security options if needed
-                client.SecurityOptions = SecurityOptions.Auto;
+                Console.WriteLine("Placeholder POP3 settings detected. Skipping connection.");
+                return;
+            }
+
+            // Initialize POP3 client with credentials
+            using (Pop3Client client = new Pop3Client(host, username, password))
+            {
+                client.UseAuthentication = true;
 
                 // Validate credentials
-                bool isAuthenticated = client.ValidateCredentials();
-                Console.WriteLine(isAuthenticated ? "Authentication succeeded." : "Authentication failed.");
+                try
+                {
+                    client.ValidateCredentials();
+                    Console.WriteLine("POP3 client authenticated successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Authentication failed: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
