@@ -9,18 +9,25 @@ class Program
     {
         try
         {
-            // Placeholder mailbox URI and credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            // Placeholder connection details
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
             string password = "password";
 
-            // Initialize the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Skip execution when placeholders are detected
+            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
             {
-                // Placeholder task URI to be deleted
-                string taskUri = "https://exchange.example.com/EWS/Tasks/UniqueTaskId";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
 
-                // Delete the task permanently
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // URI of the task to be permanently deleted
+                string taskUri = "https://exchange.example.com/EWS/Exchange.asmx/Tasks/12345";
+
+                // Perform permanent deletion
                 client.DeleteItem(taskUri, DeletionOptions.DeletePermanently);
                 Console.WriteLine("Task deleted permanently.");
             }
