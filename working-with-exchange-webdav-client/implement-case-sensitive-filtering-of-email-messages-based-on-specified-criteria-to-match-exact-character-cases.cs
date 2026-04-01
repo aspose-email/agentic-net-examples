@@ -1,53 +1,61 @@
 using System;
-using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.Dav;
 
-class Program
+
+public class Program
 {
-    static void Main()
+    public static void Main(string[] args)
     {
         try
         {
-            // Initialize Gmail client with placeholder credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com"))
+            // Placeholder connection details – replace with real values for actual use.
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip real network call when placeholders are detected.
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping server interaction.");
+                return;
+            }
+
+            // Create and use the Exchange WebDAV client.
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
             {
                 try
                 {
-                    // Retrieve list of message metadata
-                    List<GmailMessageInfo> messagesInfo = gmailClient.ListMessages();
+                    // Get the Inbox folder URI.
+                    string inboxFolder = client.MailboxInfo.InboxUri;
 
-                    foreach (GmailMessageInfo info in messagesInfo)
+                    // Retrieve all messages from the Inbox.
+                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxFolder);
+
+                    // Define the case‑sensitive filter criteria.
+                    string filterSubject = "Test Subject";
+
+                    // Iterate through the messages and apply the case‑sensitive filter.
+                    foreach (ExchangeMessageInfo messageInfo in messages)
                     {
-                        // Fetch full message to access subject and body
-                        using (MailMessage message = gmailClient.FetchMessage(info.Id))
+                        if (String.Equals(messageInfo.Subject, filterSubject, StringComparison.Ordinal))
                         {
-                            // Case‑sensitive filter: subject must contain the exact word "Invoice"
-                            if (message.Subject != null && message.Subject.Contains("Invoice"))
-                            {
-                                Console.WriteLine($"Subject: {message.Subject}");
-                                Console.WriteLine($"From: {message.From}");
-                                Console.WriteLine($"Date: {message.Date}");
-                                Console.WriteLine(new string('-', 40));
-                            }
+                            Console.WriteLine("Subject: " + messageInfo.Subject);
+                            Console.WriteLine("From   : " + (messageInfo.From != null ? messageInfo.From.ToString() : "N/A"));
+                            Console.WriteLine();
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during Gmail operations: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine("Operation error: " + ex.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine("Unhandled error: " + ex.Message);
         }
     }
 }
