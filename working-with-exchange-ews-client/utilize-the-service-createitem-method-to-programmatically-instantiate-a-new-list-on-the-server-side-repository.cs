@@ -1,8 +1,8 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,24 +10,37 @@ class Program
     {
         try
         {
-            // Initialize credentials (replace with real values)
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            // Create the EWS client (variable name must be 'client')
-            using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
+            // Skip real network call when placeholders are used
+            if (mailboxUri.Contains("example.com"))
             {
-                // Create a MAPI message to be stored as a list item
-                using (MapiMessage message = new MapiMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is a test message."))
-                {
-                    // Create the item on the server (default folder)
-                    string itemId = client.CreateItem(message);
-                    Console.WriteLine("Item created with ID: " + itemId);
-                }
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping server call.");
+                return;
+            }
+
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Prepare a simple MAPI message to represent the new list item
+                MapiMessage newListMessage = new MapiMessage(
+                    "sender@example.com",
+                    "recipient@example.com",
+                    "New List",
+                    "This is a newly created list item.");
+
+                // Create the item on the server; the method returns the item URI as a string
+                string createdItemUri = client.CreateItem(newListMessage);
+
+                Console.WriteLine("Item created with URI: " + createdItemUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
