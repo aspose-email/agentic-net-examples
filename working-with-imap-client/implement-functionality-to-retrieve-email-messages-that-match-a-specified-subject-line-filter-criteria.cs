@@ -1,57 +1,63 @@
-using Aspose.Email.Clients;
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients.Pop3;
 
-namespace AsposeEmailImapSearch
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Placeholder connection settings
+            string host = "pop3.example.com";
+            int port = 110;
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip actual network call when placeholders are used
+            if (host.Contains("example.com"))
             {
-                // IMAP server connection parameters
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
-                string password = "password";
-                SecurityOptions security = SecurityOptions.Auto;
+                Console.Error.WriteLine("Placeholder POP3 server detected. Skipping connection.");
+                return;
+            }
 
-                // Create and connect the IMAP client inside a using block to ensure disposal
-                using (ImapClient client = new ImapClient(host, port, username, password, security))
+            // Subject filter criteria
+            string subjectFilter = "Important Report";
+
+            // Connect to POP3 server
+            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            {
+                try
                 {
-                    // Build a search query for messages whose subject contains the specified text
-                    ImapQueryBuilder builder = new ImapQueryBuilder();
-                    builder.Subject.Contains("Your Subject Text");
-                    MailQuery query = builder.GetQuery();
+                    // Retrieve list of message infos
+                    Pop3MessageInfoCollection messagesInfo = client.ListMessages();
 
-                    // Retrieve the list of messages that match the query
-                    ImapMessageInfoCollection infos = client.ListMessages(query);
+                    List<MailMessage> matchingMessages = new List<MailMessage>();
 
-                    Console.WriteLine($"Found {infos.Count} message(s) matching the subject filter.");
-
-                    // Iterate through the matched messages and fetch full details
-                    foreach (ImapMessageInfo info in infos)
+                    // Iterate through each message info and fetch the full message
+                    foreach (Pop3MessageInfo info in messagesInfo)
                     {
-                        // Fetch the full mail message using the unique identifier
                         MailMessage message = client.FetchMessage(info.UniqueId);
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"Date: {message.Date}");
-                        Console.WriteLine(new string('-', 40));
+                        if (message != null && message.Subject != null && message.Subject.Contains(subjectFilter))
+                        {
+                            matchingMessages.Add(message);
+                            Console.WriteLine($"Found matching message: Subject=\"{message.Subject}\"");
+                        }
                     }
+
+                    Console.WriteLine($"Total messages matching \"{subjectFilter}\": {matchingMessages.Count}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during POP3 operations: {ex.Message}");
+                    return;
                 }
             }
-            catch (ImapException imapEx)
-            {
-                Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
