@@ -1,51 +1,69 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             string pstPath = "sample.pst";
 
-            if (!File.Exists(pstPath))
+            // Ensure the directory for the PST file exists
+            string pstDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
-                Console.Error.WriteLine($"Error: File not found – {pstPath}");
-                return;
+                Directory.CreateDirectory(pstDirectory);
             }
 
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            // Guard file existence; create a minimal PST if missing
+            if (!File.Exists(pstPath))
             {
-                MessageStore store = pst.Store;
-                Console.WriteLine($"Is password protected: {store.IsPasswordProtected}");
-
-                if (!store.IsPasswordProtected)
+                try
                 {
-                    string newPassword = "Secret123";
-                    try
+                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                     {
-                        store.ChangePassword(newPassword);
-                        Console.WriteLine("Password set successfully.");
+                        // No additional setup required for an empty PST
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error setting password: {ex.Message}");
-                        return;
-                    }
-
-                    bool isValid = store.IsPasswordValid(newPassword);
-                    Console.WriteLine($"Password validation result: {isValid}");
+                    Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.Write("Enter password to validate: ");
-                    string inputPassword = Console.ReadLine();
-                    bool isValid = store.IsPasswordValid(inputPassword);
-                    Console.WriteLine($"Password validation result: {isValid}");
+                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    return;
                 }
+            }
+
+            // Open the PST file with write access
+            try
+            {
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
+                {
+                    bool isProtected = pst.Store.IsPasswordProtected;
+                    Console.WriteLine($"PST password protected: {isProtected}");
+
+                    string password = "Secret123";
+
+                    if (!isProtected)
+                    {
+                        // Set a password
+                        pst.Store.ChangePassword(password);
+                        Console.WriteLine("Password has been set on the PST file.");
+                    }
+                    else
+                    {
+                        // Validate the existing password
+                        bool isValid = pst.Store.IsPasswordValid(password);
+                        Console.WriteLine($"Provided password is {(isValid ? "valid" : "invalid")}.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error accessing PST file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
