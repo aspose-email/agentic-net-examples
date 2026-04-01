@@ -1,7 +1,6 @@
 using System;
+using System.Reflection;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -9,33 +8,36 @@ class Program
     {
         try
         {
-            // Initialize the EWS client (replace placeholders with real values)
-            using (IEWSClient client = EWSClient.GetEWSClient("https://example.com/EWS/Exchange.asmx", "username", "password"))
-            {
-                try
-                {
-                    // Retrieve all inbox rules
-                    InboxRule[] rules = client.GetInboxRules();
+            // Get the assembly that contains Aspose.Email types
+            Assembly asposeAssembly = typeof(MailMessage).Assembly;
 
-                    // Display rule details
-                    foreach (InboxRule rule in rules)
-                    {
-                        Console.WriteLine($"Name: {rule.DisplayName}");
-                        Console.WriteLine($"Enabled: {rule.IsEnabled}");
-                        Console.WriteLine($"Priority: {rule.Priority}");
-                        Console.WriteLine($"Rule ID: {rule.RuleId}");
-                        Console.WriteLine(new string('-', 40));
-                    }
-                }
-                catch (Exception ex)
+            // Retrieve all types defined in the assembly
+            Type[] allTypes = asposeAssembly.GetTypes();
+
+            foreach (Type currentType in allTypes)
+            {
+                // Filter only types that belong to the Aspose.Email namespace hierarchy
+                if (currentType.Namespace != null && currentType.Namespace.StartsWith("Aspose.Email"))
                 {
-                    Console.Error.WriteLine($"Error retrieving inbox rules: {ex.Message}");
+                    Console.WriteLine($"Type: {currentType.FullName}");
+
+                    // Get public members declared directly on the type
+                    MemberInfo[] members = currentType.GetMembers(
+                        BindingFlags.Public |
+                        BindingFlags.Instance |
+                        BindingFlags.Static |
+                        BindingFlags.DeclaredOnly);
+
+                    foreach (MemberInfo member in members)
+                    {
+                        Console.WriteLine($"  Member: {member.MemberType} {member.Name}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
