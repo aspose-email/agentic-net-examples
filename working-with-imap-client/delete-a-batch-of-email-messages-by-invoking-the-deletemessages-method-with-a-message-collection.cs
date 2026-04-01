@@ -1,40 +1,73 @@
 using Aspose.Email.Clients;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
-namespace DeleteBatchExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Placeholder credentials – skip real network call in CI environments
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "username";
+            string password = "password";
+
+            if (host.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping deletion operation.");
+                return;
+            }
+
+            // Create and connect the IMAP client
             try
             {
-                // Initialize IMAP client with server details
-                using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.Auto))
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
                 {
-                    // Select the folder containing messages
+                    // Select the folder containing the messages (e.g., INBOX)
                     client.SelectFolder("INBOX");
 
                     // Retrieve all messages in the folder
-                    List<ImapMessageInfo> allMessages = client.ListMessages();
+                    ImapMessageInfoCollection allMessages = client.ListMessages();
 
-                    // Determine how many messages to delete (e.g., first 5 or all if fewer)
-                    int deleteCount = Math.Min(5, allMessages.Count);
-                    List<ImapMessageInfo> messagesToDelete = allMessages.GetRange(0, deleteCount);
+                    // Prepare a batch of messages to delete (first 10 messages, if available)
+                    List<ImapMessageInfo> batch = new List<ImapMessageInfo>();
+                    int count = 0;
+                    foreach (ImapMessageInfo info in allMessages)
+                    {
+                        batch.Add(info);
+                        count++;
+                        if (count >= 10)
+                            break;
+                    }
 
-                    // Delete the selected batch and commit the deletions immediately
-                    client.DeleteMessages(messagesToDelete, true);
+                    if (batch.Count == 0)
+                    {
+                        Console.WriteLine("No messages found to delete.");
+                        return;
+                    }
+
+                    // Delete the batch of messages
+                    client.DeleteMessages(batch);
+
+                    // Commit the deletions on the server
+                    Console.WriteLine($"{batch.Count} messages have been deleted successfully.");
                 }
             }
             catch (Exception ex)
             {
-                // Output any errors without crashing the application
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
