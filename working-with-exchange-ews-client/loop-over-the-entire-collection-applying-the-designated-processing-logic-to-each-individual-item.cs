@@ -10,58 +10,44 @@ class Program
     {
         try
         {
-            // Initialize EWS client with placeholder credentials
-            IEWSClient client;
-            try
+            // Placeholder connection details
+            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against placeholder credentials to avoid real network calls
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
             {
-                client = EWSClient.GetEWSClient(
-                    "https://exchange.example.com/EWS/Exchange.asmx",
-                    new NetworkCredential("username", "password"));
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
+                Console.WriteLine("Placeholder credentials detected. Skipping execution.");
                 return;
             }
 
-            using (client)
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messageInfos;
                 try
                 {
-                    messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
+                    // List all messages in the Inbox folder
+                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                    foreach (ExchangeMessageInfo messageInfo in messages)
+                    {
+                        // Fetch the full MailMessage for each item
+                        using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
+                        {
+                            // Process each message (example: output subject)
+                            Console.WriteLine($"Subject: {message.Subject}");
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
-                    return;
-                }
-
-                // Iterate over each message info and fetch the full MailMessage
-                foreach (ExchangeMessageInfo info in messageInfos)
-                {
-                    MailMessage message;
-                    try
-                    {
-                        message = client.FetchMessage(info.UniqueUri);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to fetch message {info.UniqueUri}: {ex.Message}");
-                        continue;
-                    }
-
-                    using (message)
-                    {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                    }
+                    Console.Error.WriteLine($"Error during message processing: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
