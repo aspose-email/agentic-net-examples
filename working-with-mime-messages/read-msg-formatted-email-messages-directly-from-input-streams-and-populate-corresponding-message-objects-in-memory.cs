@@ -9,31 +9,55 @@ class Program
     {
         try
         {
-            // Path to the MSG file
-            string msgFilePath = "message.msg";
+            // Path to the input MSG file
+            string inputPath = "input.msg";
 
-            // Verify that the input file exists
-            if (!File.Exists(msgFilePath))
+            // Ensure the input file exists; create a minimal placeholder if it does not
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
-                return;
+                try
+                {
+                    // Create a simple placeholder MAPI message
+                    MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "receiver@example.com",
+                        "Placeholder Subject",
+                        "This is a placeholder message body."
+                    );
+
+                    // Save the placeholder to the expected path
+                    placeholder.Save(inputPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Open the file stream and load the MSG message
-            using (FileStream fileStream = new FileStream(msgFilePath, FileMode.Open, FileAccess.Read))
+            // Open the MSG file as a stream and load it into a MapiMessage object
+            using (FileStream fileStream = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
             {
-                using (MapiMessage message = MapiMessage.Load(fileStream))
+                try
                 {
-                    // Output basic properties of the message
-                    Console.WriteLine("Subject: " + message.Subject);
-                    Console.WriteLine("Sender Email: " + message.SenderEmailAddress);
-                    Console.WriteLine("Body: " + message.Body);
+                    MapiMessage message = MapiMessage.Load(fileStream);
+
+                    // Output some basic properties to verify successful loading
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine($"From: {message.SenderName} <{message.SenderEmailAddress}>");
+                    Console.WriteLine($"To: {message.DisplayTo}");
+                    Console.WriteLine($"Body: {message.Body}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error loading MSG from stream: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
