@@ -1,67 +1,104 @@
 using System;
-using System.Reflection;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Obtain the type representing the MSG handling class.
-            Type mapMsgType = typeof(MapiMessage);
-            Console.WriteLine("Capabilities for handling MSG format (MapiMessage):");
+            // Path to a sample MSG file
+            string msgPath = "sample.msg";
 
-            // List all public constructors.
-            ConstructorInfo[] constructors = mapMsgType.GetConstructors();
-            Console.WriteLine("\nConstructors:");
-            foreach (ConstructorInfo ctor in constructors)
+            // Ensure the sample MSG file exists; create a minimal placeholder if missing
+            try
             {
-                ParameterInfo[] parameters = ctor.GetParameters();
-                string paramList = "";
-                for (int i = 0; i < parameters.Length; i++)
+                if (!File.Exists(msgPath))
                 {
-                    paramList += parameters[i].ParameterType.Name + " " + parameters[i].Name;
-                    if (i < parameters.Length - 1) paramList += ", ";
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
-                Console.WriteLine($"  {mapMsgType.Name}({paramList})");
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                    using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "sender@example.com", "receiver@example.com"))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+            }
+            catch (Exception ioEx)
+            {
+                Console.Error.WriteLine($"File I/O error: {ioEx.Message}");
+                return;
             }
 
-            // List all public properties.
-            PropertyInfo[] properties = mapMsgType.GetProperties();
-            Console.WriteLine("\nProperties:");
-            foreach (PropertyInfo prop in properties)
+            // List of supported MSG handling capabilities
+            string[] capabilities = new string[]
             {
-                // Show get/set availability.
-                string accessor = "";
-                if (prop.CanRead) accessor += "get; ";
-                if (prop.CanWrite) accessor += "set; ";
-                Console.WriteLine($"  {prop.PropertyType.Name} {prop.Name} {{ {accessor}}}");
+                "Load from file",
+                "Load from stream",
+                "Load with LoadOptions",
+                "Save to file",
+                "Save to stream",
+                "Save with SaveOptions",
+                "Check if stream is MSG format",
+                "Check if file is MSG format",
+                "Destroy attachments in MSG file",
+                "Remove attachments from MSG file",
+                "Convert from MailMessage",
+                "Convert to MailMessage",
+                "Access Body, HtmlBody, BodyRtf",
+                "Access Attachments, Recipients, NamedProperties",
+                "Set custom properties",
+                "Encrypt / Decrypt",
+                "Check signature",
+                "Check bounced status",
+                "Clone message",
+                "Set message flags"
+            };
+
+            Console.WriteLine("Supported MSG capabilities:");
+            foreach (string capability in capabilities)
+            {
+                Console.WriteLine("- " + capability);
             }
 
-            // List all public methods defined on MapiMessage (excluding inherited Object methods).
-            MethodInfo[] methods = mapMsgType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
-            Console.WriteLine("\nMethods:");
-            foreach (MethodInfo method in methods)
+            // Demonstrate loading an MSG file
+            try
             {
-                if (method.DeclaringType != mapMsgType) continue; // Skip inherited members.
-
-                string staticModifier = method.IsStatic ? "static " : "";
-                string signature = $"{staticModifier}{method.ReturnType.Name} {method.Name}(";
-                ParameterInfo[] parms = method.GetParameters();
-                for (int i = 0; i < parms.Length; i++)
+                using (MapiMessage msg = MapiMessage.Load(msgPath))
                 {
-                    signature += $"{parms[i].ParameterType.Name} {parms[i].Name}";
-                    if (i < parms.Length - 1) signature += ", ";
+                    Console.WriteLine($"Loaded MSG: Subject = {msg.Subject}");
+
+                    // Demonstrate saving the message to a new file
+                    string outputPath = "output.msg";
+                    msg.Save(outputPath);
+                    Console.WriteLine($"Message saved to {outputPath}");
                 }
-                signature += ")";
-                Console.WriteLine($"  {signature}");
+            }
+            catch (Exception msgEx)
+            {
+                Console.Error.WriteLine($"MSG processing error: {msgEx.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
