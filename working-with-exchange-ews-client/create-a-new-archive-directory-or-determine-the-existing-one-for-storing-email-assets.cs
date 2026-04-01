@@ -1,31 +1,37 @@
 using System;
 using System.IO;
-using Aspose.Email; // Core Aspose.Email namespace
+using Aspose.Email;
 
-class Program
+namespace EmailArchiveSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Determine the path for the archive directory relative to the current working directory
-            string archivePath = Path.Combine(Environment.CurrentDirectory, "EmailArchive");
+            try
+            {
+                // Determine base directory of the application
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-            // Guarded file system operation: check existence before creation
-            if (!Directory.Exists(archivePath))
-            {
-                Directory.CreateDirectory(archivePath);
-                Console.WriteLine($"Archive directory created at: {archivePath}");
+                // Define the archive folder path
+                string archiveFolderPath = Path.Combine(baseDirectory, "EmailArchive");
+
+                // Guarded file system operation: check existence and create if necessary
+                if (!Directory.Exists(archiveFolderPath))
+                {
+                    DirectoryInfo archiveDirectory = Directory.CreateDirectory(archiveFolderPath);
+                    Console.WriteLine($"Created archive directory at: {archiveDirectory.FullName}");
+                }
+                else
+                {
+                    Console.WriteLine($"Archive directory already exists at: {archiveFolderPath}");
+                }
             }
-            else
+            catch (Exception exception)
             {
-                Console.WriteLine($"Archive directory already exists at: {archivePath}");
+                // Top‑level exception handling
+                Console.Error.WriteLine($"An error occurred: {exception.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            // Top‑level exception handling
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
