@@ -8,63 +8,52 @@ class Program
     {
         try
         {
-            string inputFile = "sample.eml";
-            string outputFile = "output.msg";
+            string inputPath = "input.eml";
+            string outputPath = "output.msg";
 
-            // Ensure input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputFile))
+            // Ensure the input EML file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    string placeholder = "Subject: Placeholder\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(inputFile, placeholder);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
+
+                string placeholderEml = "From: placeholder@example.com\r\nTo: recipient@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
+                File.WriteAllText(inputPath, placeholderEml);
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputFile);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Load the EML file with options
-            EmlLoadOptions loadOptions = new EmlLoadOptions
+            // Load the EML file
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                PreserveTnefAttachments = true,
-                PreserveEmbeddedMessageFormat = true
-            };
-
-            using (MailMessage message = MailMessage.Load(inputFile, loadOptions))
-            {
-                // Save as MSG format
-                try
-                {
-                    message.Save(outputFile, SaveOptions.DefaultMsg);
-                    Console.WriteLine($"Message converted and saved to '{outputFile}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                }
+                // Save the message in MSG format
+                message.Save(outputPath, SaveOptions.DefaultMsg);
             }
+
+            Console.WriteLine("EML to MSG conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
