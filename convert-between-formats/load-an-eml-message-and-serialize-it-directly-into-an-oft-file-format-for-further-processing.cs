@@ -9,35 +9,70 @@ class Program
     {
         try
         {
-            string emlPath = "input.eml";
-            string oftPath = "output.oft";
+            string inputPath = "input.eml";
+            string outputPath = "output.oft";
 
-            // Verify input file exists
-            if (!File.Exists(emlPath))
+            // Ensure input file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file not found: {emlPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string? outputDir = Path.GetDirectoryName(oftPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Load the EML message, convert to MAPI, and save as OFT
-            using (MailMessage mailMessage = MailMessage.Load(emlPath))
-            {
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                try
                 {
-                    mapiMessage.Save(oftPath, SaveOptions.DefaultOft);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    string placeholder = "From: placeholder@example.com\r\nTo: recipient@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
+                    File.WriteAllText(inputPath, placeholder);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the EML message
+            try
+            {
+                using (MailMessage mailMessage = MailMessage.Load(inputPath))
+                {
+                    // Convert to MAPI message
+                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                    {
+                        // Save as Outlook File Template (OFT)
+                        try
+                        {
+                            mapiMessage.SaveAsTemplate(outputPath);
+                            Console.WriteLine($"Successfully saved OFT file to '{outputPath}'.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save OFT file: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load or process EML file: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
