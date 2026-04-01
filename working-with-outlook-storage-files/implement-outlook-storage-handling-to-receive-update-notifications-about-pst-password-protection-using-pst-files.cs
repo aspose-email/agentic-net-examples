@@ -11,84 +11,55 @@ class Program
         {
             string pstPath = "sample.pst";
 
-            // Ensure the PST file exists; create a minimal one if missing.
+            // Ensure the PST file exists; create a minimal placeholder if missing
             if (!File.Exists(pstPath))
             {
                 try
                 {
-                    // Create an empty Unicode PST file.
                     PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
+                    Console.WriteLine("Placeholder PST file created.");
                 }
-                catch (Exception ex)
+                catch (Exception createEx)
                 {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating PST file: {createEx.Message}");
                     return;
                 }
             }
 
-            // Open the PST file.
+            // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Access the message store.
-                MessageStore store = pst.Store;
+                // Subscribe to the ItemMoved event
+                pst.ItemMoved += OnItemMoved;
 
-                // Check if the PST is password protected.
-                bool isProtected = store.IsPasswordProtected;
-                Console.WriteLine($"PST password protected: {isProtected}");
-
-                // If protected, validate a sample password.
-                if (isProtected)
+                // Check if the PST is password protected
+                if (pst.Store.IsPasswordProtected)
                 {
-                    string samplePassword = "oldPassword";
-                    bool isValid = store.IsPasswordValid(samplePassword);
-                    Console.WriteLine($"Sample password valid: {isValid}");
+                    Console.WriteLine("The PST file is password protected.");
                 }
                 else
                 {
-                    // Set a new password.
-                    string newPassword = "mySecret123";
-                    try
-                    {
-                        store.ChangePassword(newPassword);
-                        Console.WriteLine("Password set successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error setting password: {ex.Message}");
-                    }
+                    Console.WriteLine("The PST file is not password protected.");
                 }
 
-                // Example of monitoring the PST file for external changes (e.g., password updates).
-                using (FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(pstPath) ?? ".", Path.GetFileName(pstPath)))
-                {
-                    watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size;
-                    watcher.Changed += (sender, e) =>
-                    {
-                        Console.WriteLine($"PST file changed: {e.ChangeType}");
-                        // Re-open to reflect possible password changes.
-                        try
-                        {
-                            using (PersonalStorage refreshed = PersonalStorage.FromFile(pstPath))
-                            {
-                                Console.WriteLine($"Refreshed password protection status: {refreshed.Store.IsPasswordProtected}");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error reloading PST after change: {ex.Message}");
-                        }
-                    };
-                    watcher.EnableRaisingEvents = true;
+                // Keep the application alive briefly to demonstrate event handling (optional)
+                Console.WriteLine("Press Enter to exit...");
+                Console.ReadLine();
 
-                    Console.WriteLine("Press Enter to exit and stop watching...");
-                    Console.ReadLine();
-                }
+                // Unsubscribe from the event before disposing
+                pst.ItemMoved -= OnItemMoved;
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
+    }
+
+    // Event handler for ItemMoved
+    private static void OnItemMoved(object sender, ItemMovedEventArgs e)
+    {
+        // Use the verified EntryId property
+        Console.WriteLine($"Item moved. EntryId: {e.EntryId}");
     }
 }
