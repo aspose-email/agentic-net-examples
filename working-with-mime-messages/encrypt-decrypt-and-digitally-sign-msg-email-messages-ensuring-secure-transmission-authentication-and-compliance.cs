@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using Aspose.Email;
+using System.Security.Cryptography.X509Certificates;
 
 class Program
 {
@@ -9,68 +9,127 @@ class Program
     {
         try
         {
-            // Paths for certificates and message files
-            const string publicCertPath = "public.cer";
-            const string privateCertPath = "private.pfx";
-            const string privateCertPassword = "password";
-            const string encryptedMsgPath = "encrypted.msg";
-            const string signedMsgPath = "signed.msg";
+            string inputMsgPath = "input.msg";
+            string encryptedMsgPath = "encrypted.msg";
+            string decryptedMsgPath = "decrypted.msg";
+            string signedMsgPath = "signed.eml";
+            string publicCertPath = "public.cer";
+            string privateCertPath = "private.pfx";
+            string privateCertPassword = "password";
 
-            // Verify certificate files exist
-            if (!File.Exists(publicCertPath))
+            // Ensure input MSG exists; create a minimal placeholder if missing
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Public certificate not found: {publicCertPath}");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                using (var placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder", "This is a placeholder message."))
+                {
+                    var msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
+                    placeholder.Save(inputMsgPath, msgSaveOptions);
+                }
+            }
+
+            // Load the message
+            MailMessage message;
+            try
+            {
+                message = MailMessage.Load(inputMsgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load message: {ex.Message}");
                 return;
             }
-            if (!File.Exists(privateCertPath))
+
+            // Verify certificate files exist
+            if (!File.Exists(publicCertPath) || !File.Exists(privateCertPath))
             {
-                Console.Error.WriteLine($"Private certificate not found: {privateCertPath}");
+                Console.Error.WriteLine("Certificate files are missing. Skipping encryption, decryption, and signing.");
                 return;
             }
 
             // Load certificates
-            X509Certificate2 publicCert = new X509Certificate2(publicCertPath);
-            X509Certificate2 privateCert = new X509Certificate2(privateCertPath, privateCertPassword);
-
-            // Create a simple mail message
-            using (MailMessage message = new MailMessage(
-                "sender@example.com",
-                "receiver@example.com",
-                "Secure Email Sample",
-                "This message will be encrypted, decrypted, signed and verified."))
+            X509Certificate2 publicCert;
+            X509Certificate2 privateCert;
+            try
             {
-                // Encrypt the message with the public certificate
-                MailMessage encryptedMessage = message.Encrypt(publicCert);
+                publicCert = new X509Certificate2(publicCertPath);
+                privateCert = new X509Certificate2(privateCertPath, privateCertPassword);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load certificates: {ex.Message}");
+                return;
+            }
 
-                // Save the encrypted message
-                encryptedMessage.Save(encryptedMsgPath);
+            // Encrypt the message
+            MailMessage encryptedMessage;
+            try
+            {
+                encryptedMessage = message.Encrypt(publicCert);
+                var encryptSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
+                encryptedMessage.Save(encryptedMsgPath, encryptSaveOptions);
                 Console.WriteLine($"Encrypted message saved to {encryptedMsgPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Encryption failed: {ex.Message}");
+                return;
+            }
 
-                // Load the encrypted message from file
-                using (MailMessage loadedEncrypted = MailMessage.Load(encryptedMsgPath))
+            // Decrypt the message
+            MailMessage decryptedMessage;
+            try
+            {
+                decryptedMessage = encryptedMessage.Decrypt(privateCert);
+                var decryptSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
+                decryptedMessage.Save(decryptedMsgPath, decryptSaveOptions);
+                Console.WriteLine($"Decrypted message saved to {decryptedMsgPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Decryption failed: {ex.Message}");
+                return;
+            }
+
+            // Digitally sign the decrypted message
+            try
+            {
+                var secureManager = new SecureEmailManager();
+                MailMessage signedMessage = secureManager.AttachSignature(decryptedMessage, privateCert);
+
+                // Save signed message preserving signature content
+                var emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat)
                 {
-                    // Decrypt using the private certificate
-                    MailMessage decryptedMessage = loadedEncrypted.Decrypt(privateCert);
-                    Console.WriteLine("Message decrypted successfully.");
-
-                    // Sign the decrypted message using the private certificate
-                    SecureEmailManager secMgr = new SecureEmailManager();
-                    MailMessage signedMessage = secMgr.AttachSignature(decryptedMessage, privateCert);
-                    signedMessage.Save(signedMsgPath);
-                    Console.WriteLine($"Signed message saved to {signedMsgPath}");
-
-                    // Verify the signature
-                    SmimeResult verifyResult = secMgr.CheckSignature(signedMessage);
-                    bool isSignatureValid = verifyResult.IsSuccess && verifyResult.SigningCertificates.Count > 0;
-                    Console.WriteLine(isSignatureValid
-                        ? "Signature verification succeeded."
-                        : "Signature verification failed.");
-                }
+                    PreserveSignedContent = true
+                };
+                signedMessage.Save(signedMsgPath, emlSaveOptions);
+                Console.WriteLine($"Signed message saved to {signedMsgPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Signing failed: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
