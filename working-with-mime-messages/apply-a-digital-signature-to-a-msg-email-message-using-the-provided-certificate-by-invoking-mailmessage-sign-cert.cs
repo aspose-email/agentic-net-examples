@@ -2,48 +2,86 @@ using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Paths to the input MSG file, certificate file, and output signed MSG file
             string inputMsgPath = "input.msg";
-            string certificatePath = "certificate.pfx";
-            string certificatePassword = "password";
+            string certPath = "certificate.pfx";
             string outputMsgPath = "signed.msg";
 
-            // Verify that the input MSG file exists
+            // Ensure input MSG exists; create minimal placeholder if missing
             if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Input MSG file not found: {inputMsgPath}");
-                return;
-            }
-
-            // Verify that the certificate file exists
-            if (!File.Exists(certificatePath))
-            {
-                Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
-                return;
-            }
-
-            // Load the certificate
-            using (X509Certificate2 certificate = new X509Certificate2(certificatePath, certificatePassword))
-            {
-                // Load the original message
-                using (MailMessage originalMessage = MailMessage.Load(inputMsgPath))
+                try
                 {
-                    // Apply a digital signature (creates a signed copy)
-                    using (MailMessage signedMessage = originalMessage.AttachSignature(certificate))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        // Save the signed message
-                        signedMessage.Save(outputMsgPath);
-                        Console.WriteLine($"Signed message saved to: {outputMsgPath}");
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                using (MapiMessage placeholder = new MapiMessage("placeholder@example.com", "recipient@example.com", "Placeholder", "This is a placeholder message."))
+                {
+                    placeholder.Save(inputMsgPath);
+                }
+                Console.Error.WriteLine($"Input MSG not found. Created placeholder at '{inputMsgPath}'.");
+                return;
+            }
+
+            // Ensure certificate file exists
+            if (!File.Exists(certPath))
+            {
+                Console.Error.WriteLine($"Certificate file '{certPath}' not found.");
+                return;
+            }
+
+            // Load certificate (placeholder password)
+            X509Certificate2 certificate;
+            try
+            {
+                certificate = new X509Certificate2(certPath, "password");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load certificate: {ex.Message}");
+                return;
+            }
+
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Load MSG, convert to MailMessage, attach signature, and save
+            using (MapiMessage mapimsg = MapiMessage.Load(inputMsgPath))
+            {
+                using (MailMessage mail = mapimsg.ToMailMessage(new MailConversionOptions()))
+                {
+                    MailMessage signed = mail.AttachSignature(certificate);
+                    using (signed)
+                    {
+                        signed.Save(outputMsgPath);
                     }
                 }
             }
+
+            Console.WriteLine($"Signed message saved to '{outputMsgPath}'.");
         }
         catch (Exception ex)
         {
