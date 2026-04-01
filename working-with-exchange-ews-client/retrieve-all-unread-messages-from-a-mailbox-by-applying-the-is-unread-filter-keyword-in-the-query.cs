@@ -1,44 +1,54 @@
-using Aspose.Email.Tools.Search;
 using System;
-using System.Net;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Google;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Exchange server URL and credentials (replace with real values)
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            try
             {
-                // Build a query to find unread messages
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.HasNoFlags(ExchangeMessageFlag.IsRead);
-                MailQuery query = builder.GetQuery();
+                // Placeholder credentials – replace with real values for actual execution.
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string userEmail = "user@example.com";
 
-                // List unread messages from the Inbox folder
-                ExchangeMessageInfoCollection infos = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
-
-                // Fetch and display each unread message
-                foreach (ExchangeMessageInfo info in infos)
+                // Guard against placeholder credentials to avoid unwanted network calls.
+                if (clientId == "clientId" ||
+                    clientSecret == "clientSecret" ||
+                    refreshToken == "refreshToken")
                 {
-                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                    Console.WriteLine("Placeholder credentials detected. Skipping network operation.");
+                    return;
+                }
+
+                // Create the Gmail client using the factory method.
+                using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail))
+                {
+                    // Retrieve all messages. The Gmail API supports query strings like "is:unread",
+                    // but IGmailClient.ListMessages() does not expose a query overload.
+                    // Therefore, fetch all messages and process them.
+                    List<GmailMessageInfo> allMessages = gmailClient.ListMessages();
+
+                    foreach (GmailMessageInfo msgInfo in allMessages)
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
+                        // Fetch the full message content.
+                        using (MailMessage message = gmailClient.FetchMessage(msgInfo.Id))
+                        {
+                            Console.WriteLine($"Subject: {message.Subject}");
+                        }
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                // Top‑level exception guard – write error to standard error.
+                Console.Error.WriteLine(ex.Message);
+            }
         }
     }
 }
