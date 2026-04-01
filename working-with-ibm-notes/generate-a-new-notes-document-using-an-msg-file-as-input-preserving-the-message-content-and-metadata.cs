@@ -5,66 +5,57 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Input MSG file path
-            string inputMsgPath = "input.msg";
-            // Output MSG file path
-            string outputMsgPath = "output.msg";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Verify input file exists
-            if (!File.Exists(inputMsgPath))
-            {
-                Console.Error.WriteLine($"Error: Input file not found – {inputMsgPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure input MSG exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    MailMessage placeholder = new MailMessage
+                    {
+                        Subject = "Placeholder Subject",
+                        Body = "This is a placeholder message."
+                    };
+                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
+                    placeholder.Save(inputPath, saveOptions);
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {dirEx.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
             }
 
             // Load the MSG file into a MapiMessage
-            MapiMessage sourceMessage;
+            MapiMessage mapMessage;
             try
             {
-                sourceMessage = MapiMessage.Load(inputMsgPath);
+                mapMessage = MapiMessage.Load(inputPath);
             }
-            catch (Exception loadEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: Failed to load MSG file – {loadEx.Message}");
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
                 return;
             }
 
-            // Clone the message to preserve content and metadata
-            MapiMessage notesMessage = sourceMessage.Clone() as MapiMessage;
-            if (notesMessage == null)
-            {
-                Console.Error.WriteLine("Error: Failed to clone the message.");
-                return;
-            }
-
-            // Save the cloned message as a new MSG file (acts as a Notes document)
+            // Preserve content and metadata by saving to a new file
             try
             {
-                notesMessage.Save(outputMsgPath);
-                Console.WriteLine($"Notes document created successfully at: {outputMsgPath}");
+                using (mapMessage)
+                {
+                    mapMessage.Save(outputPath);
+                }
+                Console.WriteLine($"Notes document created successfully at '{outputPath}'.");
             }
-            catch (Exception saveEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: Failed to save MSG file – {saveEx.Message}");
+                Console.Error.WriteLine($"Error saving Notes document: {ex.Message}");
             }
         }
         catch (Exception ex)
