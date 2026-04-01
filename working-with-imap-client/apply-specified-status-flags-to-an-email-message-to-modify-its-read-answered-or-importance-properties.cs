@@ -1,40 +1,72 @@
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
+using Aspose.Email.Tools.Search;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Initialize the IMAP client (replace with actual server details)
-            using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.Auto))
+            try
             {
-                // Retrieve the list of messages in the default folder
-                ImapMessageInfoCollection messages = client.ListMessages();
-                if (messages == null || messages.Count == 0)
+                // Placeholder connection settings
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "username";
+                string password = "password";
+
+                // Guard against executing real network calls with placeholder credentials
+                if (host.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase) || password.Equals("password", StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine("No messages found in the mailbox.");
+                    Console.WriteLine("Placeholder IMAP settings detected. Skipping live connection.");
                     return;
                 }
 
-                // Select the first message to modify its status flags
-                ImapMessageInfo firstMessage = messages[0];
+                // Create and use the IMAP client
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+                {
+                    try
+                    {
+                        // Select the INBOX folder
+                        client.SelectFolder("INBOX");
 
-                // Combine the desired flags (e.g., mark as read and answered)
-                ImapMessageFlags flagsToAdd = ImapMessageFlags.IsRead | ImapMessageFlags.Answered;
+                        // Retrieve the list of messages in the folder
+                        ImapMessageInfoCollection messages = client.ListMessages();
 
-                // Apply the flags using the message's unique identifier
-                client.AddMessageFlags(firstMessage.UniqueId, flagsToAdd);
+                        if (messages != null && messages.Count > 0)
+                        {
+                            // Take the first message as an example
+                            ImapMessageInfo firstMessage = messages[0];
 
-                Console.WriteLine($"Updated flags for message UID {firstMessage.UniqueId}.");
+                            // Combine desired flags: Read, Answered, Flagged (used as importance)
+                            ImapMessageFlags flagsToAdd = ImapMessageFlags.IsRead |
+                                                          ImapMessageFlags.Answered |
+                                                          ImapMessageFlags.Flagged;
+
+                            // Apply the flags to the message using its unique identifier
+                            client.AddMessageFlags(firstMessage.UniqueId, flagsToAdd);
+                            Console.WriteLine($"Flags applied to message UID: {firstMessage.UniqueId}");
+                        }
+                        else
+                        {
+                            Console.WriteLine("No messages found in the INBOX folder.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Handle any errors that occur during IMAP operations
+                        Console.Error.WriteLine($"IMAP operation error: {ex.Message}");
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Top‑level exception guard
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
