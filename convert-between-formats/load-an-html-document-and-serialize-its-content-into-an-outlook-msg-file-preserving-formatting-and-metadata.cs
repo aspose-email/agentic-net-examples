@@ -8,15 +8,15 @@ class Program
     {
         try
         {
-            string htmlPath = "sample.html";
+            string htmlPath = "input.html";
             string msgPath = "output.msg";
 
-            // Ensure the HTML source file exists; create a minimal placeholder if missing.
+            // Ensure the input HTML file exists; create a minimal placeholder if missing
             if (!File.Exists(htmlPath))
             {
                 try
                 {
-                    File.WriteAllText(htmlPath, "<html><body><p>Hello World</p></body></html>");
+                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder</p></body></html>");
                 }
                 catch (Exception ex)
                 {
@@ -25,41 +25,37 @@ class Program
                 }
             }
 
-            // Load the HTML document into a MailMessage.
-            MailMessage mailMessage;
+            // Read HTML content
+            string htmlContent;
             try
             {
-                HtmlLoadOptions htmlLoadOptions = new HtmlLoadOptions();
-                mailMessage = MailMessage.Load(htmlPath, htmlLoadOptions);
+                htmlContent = File.ReadAllText(htmlPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load HTML file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
                 return;
             }
 
-            using (mailMessage)
+            // Create a MailMessage and populate it
+            using (MailMessage mail = new MailMessage())
             {
-                // Populate essential metadata if not already present.
-                if (mailMessage.From == null)
-                {
-                    mailMessage.From = new MailAddress("sender@example.com", "Sender");
-                }
+                mail.Subject = "Converted from HTML";
+                mail.HtmlBody = htmlContent;
+                mail.From = new MailAddress("sender@example.com");
+                mail.To.Add(new MailAddress("recipient@example.com"));
 
-                if (mailMessage.To == null || mailMessage.To.Count == 0)
+                // Configure MSG save options to preserve original dates
+                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
                 {
-                    mailMessage.To.Add(new MailAddress("recipient@example.com", "Recipient"));
-                }
+                    PreserveOriginalDates = true
+                };
 
-                if (string.IsNullOrEmpty(mailMessage.Subject))
-                {
-                    mailMessage.Subject = "Converted HTML to MSG";
-                }
-
-                // Save the message as an Outlook MSG file, preserving formatting.
+                // Save as Outlook MSG
                 try
                 {
-                    mailMessage.Save(msgPath, SaveOptions.DefaultMsg);
+                    mail.Save(msgPath, saveOptions);
+                    Console.WriteLine($"MSG file saved to {msgPath}");
                 }
                 catch (Exception ex)
                 {
