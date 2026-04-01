@@ -1,7 +1,6 @@
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Smtp;
-using Aspose.Email.Clients;
 
 class Program
 {
@@ -9,24 +8,48 @@ class Program
     {
         try
         {
-            // Create a mail message
-            using (MailMessage message = new MailMessage("sender@example.com", "recipient@example.com", "Test Subject", "This is the body."))
-            {
-                // Add a custom header
-                message.Headers.Add("X-Custom-Header", "MyValue");
+            // Placeholder SMTP configuration
+            string host = "smtp.example.com";
+            string username = "username";
+            string password = "password";
 
-                // Initialize SMTP client
-                using (SmtpClient client = new SmtpClient("smtp.example.com", 587, "username", "password"))
+            // Guard: skip sending when placeholders are used
+            if (host.Contains("example.com") || username == "username" || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder SMTP credentials detected. Skipping send operation.");
+                return;
+            }
+
+            // Create and configure the SMTP client
+            using (SmtpClient client = new SmtpClient(host, username, password))
+            {
+                try
                 {
-                    client.SecurityOptions = SecurityOptions.Auto;
-                    // Send the message
-                    client.Send(message);
+                    // Build the email message
+                    using (MailMessage message = new MailMessage())
+                    {
+                        message.From = new MailAddress("sender@example.com");
+                        message.To.Add(new MailAddress("recipient@example.com"));
+                        message.Subject = "Test Email with Custom Header";
+                        message.Body = "This email contains a custom header.";
+
+                        // Apply a custom header
+                        message.Headers.Add("X-Custom-Header", "MyHeaderValue");
+
+                        // Send the message
+                        client.Send(message);
+                        Console.WriteLine("Message sent successfully.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error sending email: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
