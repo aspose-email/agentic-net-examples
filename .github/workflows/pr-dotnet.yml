@@ -1,4 +1,4 @@
-name: dotnet-pr-check
+name: pr-dotnet
 
 on:
   pull_request:
@@ -20,6 +20,19 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libfontconfig1 \
+            libfreetype6 \
+            libjpeg-turbo8 \
+            libpng16-16 \
+            libx11-6 \
+            libxext6 \
+            libxrender1 \
+            libglib2.0-0
 
       - name: Find changed example files
         id: files
@@ -69,6 +82,7 @@ jobs:
             dotnet add package Aspose.Words --version "$WORDS_PKG_VERSION"
             dotnet add package System.Security.Cryptography.Pkcs
             dotnet add package HtmlAgilityPack
+            dotnet add package SkiaSharp.NativeAssets.Linux
 
             echo "Restoring..."
             if ! dotnet restore; then
