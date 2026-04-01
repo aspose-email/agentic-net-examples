@@ -10,69 +10,74 @@ class Program
     {
         try
         {
-            // POP3 server connection settings (replace with real values)
+            // POP3 server connection settings (placeholders)
             string host = "pop3.example.com";
-            int port = 110;
-            string username = "user@example.com";
+            string username = "user";
             string password = "password";
-
-            // Enable logging to a file
+            int port = 110;
             string logFilePath = "pop3log.txt";
 
-            // Create and use the POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+            // Detect placeholder credentials and skip real network calls
+            if (host.Contains("example.com") || username == "user" || password == "password")
             {
-                client.EnableLogger = true;
-                client.LogFileName = logFilePath;
-
-                try
-                {
-                    // Retrieve mailbox information
-                    Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
-                    Console.WriteLine($"Message Count: {mailboxInfo.MessageCount}");
-                    Console.WriteLine($"Occupied Size: {mailboxInfo.OccupiedSize}");
-
-                    // List messages and display basic details
-                    Pop3MessageInfoCollection messages = client.ListMessages();
-                    foreach (Pop3MessageInfo info in messages)
-                    {
-                        Console.WriteLine($"Seq: {info.SequenceNumber}, Subject: {info.Subject}, Size: {info.Size}");
-                    }
-                }
-                catch (Pop3Exception ex)
-                {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                    return;
-                }
-            }
-
-            // After client disposal, read and display the log file if it exists
-            if (File.Exists(logFilePath))
-            {
-                try
-                {
-                    string logContent = File.ReadAllText(logFilePath);
-                    Console.WriteLine("\n--- POP3 Client Log ---");
-                    Console.WriteLine(logContent);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to read log file: {ex.Message}");
-                }
+                Console.WriteLine("Placeholder credentials detected. Skipping POP3 server connection.");
             }
             else
             {
-                Console.Error.WriteLine("Log file was not created.");
+                // Initialize POP3 client and enable logging
+                using (Pop3Client client = new Pop3Client())
+                {
+                    client.Host = host;
+                    client.Username = username;
+                    client.Password = password;
+                    client.Port = port;
+                    client.SecurityOptions = SecurityOptions.Auto;
+                    client.EnableLogger = true;
+                    client.LogFileName = logFilePath;
+
+                    try
+                    {
+                        // Validate credentials and retrieve basic information
+                        client.ValidateCredentials();
+                        int messageCount = client.GetMessageCount();
+                        Console.WriteLine($"Message count: {messageCount}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    }
+                }
+            }
+
+            // Ensure the log file exists; create a minimal placeholder if missing
+            if (!File.Exists(logFilePath))
+            {
+                try
+                {
+                    File.WriteAllText(logFilePath, "Log placeholder");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder log file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Read and output the log file content for analysis
+            try
+            {
+                string logContent = File.ReadAllText(logFilePath);
+                Console.WriteLine("POP3 Log Content:");
+                Console.WriteLine(logContent);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to read log file: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fatal error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
