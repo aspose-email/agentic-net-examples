@@ -5,35 +5,56 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Path to the MSG file exported from IBM Notes
-            string msgFilePath = "NotesMessage.msg";
+            string msgPath = "notes_message.msg";
 
-            // Verify that the file exists before attempting to load it
-            if (!File.Exists(msgFilePath))
+            // Ensure the MSG file exists; create a minimal placeholder if missing
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgFilePath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "Placeholder Subject",
+                        "Placeholder Body",
+                        "sender@example.com",
+                        "receiver@example.com"))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                    Console.WriteLine($"Placeholder MSG file created at {msgPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file into a MapiMessage object
+            MapiMessage notesMessage;
+            try
+            {
+                notesMessage = MapiMessage.Load(msgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
                 return;
             }
 
-            // Load the MSG file into a MapiMessage instance
-            using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+            // Process the loaded message
+            using (notesMessage)
             {
-                // Example processing: display basic properties
-                Console.WriteLine($"Subject: {mapiMessage.Subject}");
-                Console.WriteLine($"From: {mapiMessage.SenderName}");
-                Console.WriteLine($"Body: {mapiMessage.Body}");
-
-                // Additional processing of the message can be performed here
+                Console.WriteLine($"Subject: {notesMessage.Subject}");
+                Console.WriteLine($"Body: {notesMessage.Body}");
             }
         }
         catch (Exception ex)
         {
-            // Gracefully handle any unexpected errors
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
