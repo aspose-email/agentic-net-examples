@@ -1,6 +1,6 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Activity;
 
 class Program
 {
@@ -8,30 +8,48 @@ class Program
     {
         try
         {
-            // Connection parameters for the Zimbra server (EWS endpoint)
-            string mailboxUri = "https://zimbra.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Placeholder credentials – replace with real values or skip execution.
+            const string clientId = "YOUR_CLIENT_ID";
+            const string clientSecret = "YOUR_CLIENT_SECRET";
+            const string refreshToken = "YOUR_REFRESH_TOKEN";
+            const string serviceUrl = "https://zimbra.example.com/api";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Guard against placeholder credentials to avoid real network calls during CI.
+            if (clientId.StartsWith("YOUR_") || clientSecret.StartsWith("YOUR_") || refreshToken.StartsWith("YOUR_"))
             {
-                // Enable the subscription service by configuring check interval and timeout
-                client.NotificationsCheckInterval = 300; // seconds between checks
-                client.NotificationTimeout = 60;        // seconds to wait for a response
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Zimbra subscription configuration.");
+                return;
+            }
 
-                // Specify the update channels (e.g., Inbox, Calendar, Contacts) via a custom header
-                client.AddHeader("X-Update-Channels", "Inbox,Calendar,Contacts");
+            // Obtain a token provider for Outlook (used here as an example; adjust for Zimbra if needed).
+            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
 
-                // Apply the subscription settings
-                client.UpdateSubscription();
+            // Create the activity client. The factory returns an IActivityClient implementation.
+            using (IActivityClient client = ActivityClient.GetClient(tokenProvider, serviceUrl))
+            {
+                try
+                {
+                    // Define the webhook that will receive product update notifications.
+                    var webhook = new Webhook
+                    {
+                        Address = "https://yourapp.example.com/webhook",
+                        Expiration = DateTime.UtcNow.AddDays(7)
+                    };
 
-                Console.WriteLine("Zimbra subscription service configured successfully.");
+                    // Enable the subscription service for the "productUpdates" content type.
+                    client.StartSubscription("productUpdates", webhook);
+
+                    Console.WriteLine("Subscription to product update notifications has been enabled.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error while configuring subscription: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
