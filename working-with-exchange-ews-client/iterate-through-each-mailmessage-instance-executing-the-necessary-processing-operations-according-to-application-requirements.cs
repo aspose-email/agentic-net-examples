@@ -1,52 +1,75 @@
 using System;
-using System.Collections.Generic;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-namespace GmailSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Placeholder connection details
+            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against placeholder credentials to avoid real network calls during CI
+            if (string.IsNullOrEmpty(serviceUrl) || serviceUrl.Contains("example"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
+
+            // Create and connect the EWS client
             try
             {
-                // Initialize Gmail client with placeholder credentials
-                IGmailClient gmailClient = GmailClient.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken",
-                    "user@example.com");
-
-                using (gmailClient)
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
+                    // List messages in the Inbox folder
+                    ExchangeMessageInfoCollection messageInfos;
                     try
                     {
-                        // List all messages in the mailbox
-                        List<GmailMessageInfo> messages = gmailClient.ListMessages();
-
-                        foreach (GmailMessageInfo messageInfo in messages)
-                        {
-                            // Fetch the full message using its Id
-                            using (MailMessage mailMessage = gmailClient.FetchMessage(messageInfo.Id))
-                            {
-                                // Example processing: output subject to console
-                                Console.WriteLine("Subject: " + mailMessage.Subject);
-                            }
-                        }
+                        messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine("Error during Gmail operations: " + ex.Message);
+                        Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
                         return;
+                    }
+
+                    // Iterate through each message info
+                    foreach (ExchangeMessageInfo info in messageInfos)
+                    {
+                        // Fetch the full MailMessage using UniqueUri
+                        try
+                        {
+                            using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                            {
+                                // Example processing: output subject and sender
+                                Console.WriteLine($"Subject: {message.Subject}");
+                                Console.WriteLine($"From: {message.From}");
+                                Console.WriteLine(new string('-', 40));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to fetch message '{info.UniqueUri}': {ex.Message}");
+                            // Continue with next message
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
+                Console.Error.WriteLine($"EWS client error: {ex.Message}");
                 return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
