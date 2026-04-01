@@ -10,43 +10,101 @@ class Program
         try
         {
             string msgPath = "sample.msg";
+
+            // Ensure the MSG file exists; create a minimal placeholder if missing
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
-                return;
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "receiver@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body");
+                    placeholder.Save(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
             }
 
+            // Ensure the output directory exists
             string outputDir = "Attachments";
             if (!Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDir);
+                try
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory '{outputDir}': {ex.Message}");
+                    return;
+                }
             }
 
-            using (MapiMessage message = MapiMessage.Load(msgPath))
+            // Load the MSG file and extract attachments
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                foreach (MapiAttachment attachment in message.Attachments)
+                foreach (MapiAttachment attachment in msg.Attachments)
                 {
+                    byte[] binaryData = attachment.BinaryData;
+                    if (binaryData == null || binaryData.Length == 0)
+                    {
+                        continue; // Skip empty attachments
+                    }
+
                     string fileName = attachment.FileName;
                     if (string.IsNullOrEmpty(fileName))
                     {
-                        fileName = "UnnamedAttachment.bin";
+                        fileName = attachment.LongFileName;
                     }
+                    if (string.IsNullOrEmpty(fileName))
+                    {
+                        fileName = "attachment.bin";
+                    }
+
+                    // Sanitize file name
+                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                    {
+                        fileName = fileName.Replace(invalidChar, '_');
+                    }
+
                     string outputPath = Path.Combine(outputDir, fileName);
                     try
                     {
-                        File.WriteAllBytes(outputPath, attachment.BinaryData);
+                        File.WriteAllBytes(outputPath, binaryData);
                         Console.WriteLine($"Saved attachment: {outputPath}");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to save attachment {fileName}: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to save attachment '{fileName}': {ex.Message}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
