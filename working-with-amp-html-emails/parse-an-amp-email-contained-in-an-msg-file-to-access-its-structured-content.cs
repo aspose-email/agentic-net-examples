@@ -9,35 +9,72 @@ class Program
     {
         try
         {
-            string msgFilePath = "sample.msg";
+            string inputMsgPath = "input.msg";
+            string outputHtmlPath = "amp_body.html";
 
-            // Verify that the input MSG file exists
-            if (!File.Exists(msgFilePath))
+            // Guard input file existence
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
                 return;
             }
 
-            // Open the MSG file stream and load it into an AmpMessage
-            using (FileStream fileStream = File.OpenRead(msgFilePath))
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputHtmlPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                using (AmpMessage ampMessage = new AmpMessage())
+                try
                 {
-                    // Import the MSG content into the AmpMessage instance
-                    ampMessage.Import(fileStream);
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
+                }
+            }
 
-                    // Access structured AMP content and other properties
-                    Console.WriteLine($"Subject: {ampMessage.Subject}");
-                    Console.WriteLine($"From: {ampMessage.From}");
-                    Console.WriteLine($"To: {ampMessage.To}");
+            // Load the MSG file into an AmpMessage
+            using (FileStream inputStream = new FileStream(inputMsgPath, FileMode.Open, FileAccess.Read))
+            using (AmpMessage ampMessage = new AmpMessage())
+            {
+                try
+                {
+                    ampMessage.Import(inputStream);
+                }
+                catch (Exception importEx)
+                {
+                    Console.Error.WriteLine($"Failed to import MSG file: {importEx.Message}");
+                    return;
+                }
+
+                // Access the AMP HTML body
+                string ampHtmlBody = ampMessage.AmpHtmlBody;
+                if (string.IsNullOrEmpty(ampHtmlBody))
+                {
+                    Console.WriteLine("The message does not contain AMP content.");
+                }
+                else
+                {
                     Console.WriteLine("AMP HTML Body:");
-                    Console.WriteLine(ampMessage.AmpHtmlBody ?? "(no AMP content)");
+                    Console.WriteLine(ampHtmlBody);
+
+                    // Save AMP HTML to a file
+                    try
+                    {
+                        File.WriteAllText(outputHtmlPath, ampHtmlBody);
+                        Console.WriteLine($"AMP HTML body saved to: {outputHtmlPath}");
+                    }
+                    catch (Exception writeEx)
+                    {
+                        Console.Error.WriteLine($"Failed to write AMP HTML to file: {writeEx.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
