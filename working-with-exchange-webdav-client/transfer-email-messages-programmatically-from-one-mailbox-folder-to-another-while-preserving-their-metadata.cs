@@ -1,51 +1,54 @@
 using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
 
-class Program
+
+namespace EmailTransferSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Exchange server URL and credentials (replace with real values)
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credential = new NetworkCredential("username", "password");
-
-            // Initialize the Exchange client inside a using block for proper disposal
-            using (ExchangeClient client = new ExchangeClient(serviceUrl, credential))
+            try
             {
-                // Define source folder (Inbox) and target folder name
-                string sourceFolderUri = client.MailboxInfo.InboxUri;
-                string targetFolderName = "TargetFolder";
+                // Placeholder Exchange server URL and credentials.
+                string exchangeUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-                // Ensure the target folder exists; create it if it does not
-                ExchangeFolderInfo targetFolderInfo;
-                if (!client.FolderExists(client.MailboxInfo.RootUri, targetFolderName, out targetFolderInfo))
+                // Guard: skip execution when placeholder credentials are detected.
+                if (exchangeUrl.Contains("example.com"))
                 {
-                    client.CreateFolder(client.MailboxInfo.RootUri, targetFolderName);
-                    client.FolderExists(client.MailboxInfo.RootUri, targetFolderName, out targetFolderInfo);
+                    Console.WriteLine("Placeholder credentials detected. Skipping operation.");
+                    return;
                 }
 
-                string destinationFolderUri = targetFolderInfo.Uri;
-
-                // Retrieve all messages from the source folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(sourceFolderUri);
-
-                // Move each message to the destination folder while preserving metadata
-                foreach (ExchangeMessageInfo msgInfo in messages)
+                // Initialize the Exchange client.
+                using (ExchangeClient client = new ExchangeClient(exchangeUrl, username, password))
                 {
-                    client.MoveMessage(msgInfo, destinationFolderUri);
-                }
+                    // Define source and destination folder URIs.
+                    // Here we use Inbox as source and Drafts as destination for illustration.
+                    string sourceFolderUri = client.MailboxInfo.InboxUri;
+                    string destinationFolderUri = client.MailboxInfo.DraftsUri;
 
-                Console.WriteLine("Messages transferred successfully.");
+                    // List messages in the source folder.
+                    ExchangeMessageInfoCollection messageInfos = client.ListMessages(sourceFolderUri);
+
+                    // Iterate over each message and move it to the destination folder.
+                    foreach (ExchangeMessageInfo messageInfo in messageInfos)
+                    {
+                        // MoveMessage preserves metadata such as subject, flags, etc.
+                        client.MoveMessage(messageInfo, destinationFolderUri);
+                        Console.WriteLine($"Moved message: {messageInfo.Subject}");
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Top‑level exception guard: output error without crashing.
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
