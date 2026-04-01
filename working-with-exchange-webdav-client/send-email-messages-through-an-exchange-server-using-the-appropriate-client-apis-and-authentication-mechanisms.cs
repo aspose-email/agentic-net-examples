@@ -1,52 +1,54 @@
 using System;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
 
-namespace ExchangeEmailSender
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Placeholder credentials – in real scenarios replace with actual values.
+            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Detect placeholder credentials and skip actual network call.
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
             {
-                // Exchange server connection details (replace with real values)
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping email send operation.");
+                return;
+            }
 
-                // Initialize the Exchange client
-                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            // Initialize the Exchange client.
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            {
+                try
                 {
-                    // Optional: enable pre-authentication
-                    client.PreAuthenticate = true;
-
-                    // Create the email message
+                    // Create a simple email message.
                     using (MailMessage message = new MailMessage())
                     {
-                        message.From = "user@example.com";
+                        message.From = "sender@example.com";
                         message.To.Add("recipient@example.com");
                         message.Subject = "Test Email via Exchange";
-                        message.Body = "Hello, this is a test email sent using Aspose.Email ExchangeClient.";
+                        message.Body = "This is a test email sent using Aspose.Email ExchangeClient.";
 
-                        // Send the message
-                        try
-                        {
-                            client.Send(message);
-                            Console.WriteLine("Message sent successfully.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error sending email: {ex.Message}");
-                            return;
-                        }
+                        // Send the message.
+                        client.Send(message);
+                        Console.WriteLine("Email sent successfully.");
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error while sending email: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
