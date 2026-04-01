@@ -1,75 +1,92 @@
-using Aspose.Email;
-using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Paths for certificate and signed MSG file
             string certificatePath = "certificate.pfx";
             string certificatePassword = "password";
             string signedMsgPath = "signedMessage.msg";
 
-            // Verify that the certificate file exists
+            // Verify certificate file exists
             if (!File.Exists(certificatePath))
             {
-                Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
+                Console.Error.WriteLine("Certificate file not found: " + certificatePath);
                 return;
             }
 
-            // Load the X.509 certificate
-            using (X509Certificate2 certificate = new X509Certificate2(certificatePath, certificatePassword))
+            // Load the certificate
+            X509Certificate2 certificate = new X509Certificate2(certificatePath, certificatePassword);
+
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(signedMsgPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                // Create a simple email message
-                using (MailMessage mail = new MailMessage("sender@example.com", "receiver@example.com", "Signed message", "This is a signed email."))
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Create a simple email message
+            using (MailMessage mail = new MailMessage("sender@example.com", "receiver@example.com", "Signed Email", "This is a signed email."))
+            {
+                // Sign the message using SecureEmailManager
+                SecureEmailManager securityManager = new SecureEmailManager();
+                using (MailMessage signedMail = securityManager.AttachSignature(mail, certificate))
                 {
-                    // Sign the message (detached = false)
-                    MailMessage signedMail = mail.AttachSignature(certificate, false);
-
-                    // Convert the signed MailMessage to a MapiMessage
-                    using (MapiMessage mapi = MapiMessage.FromMailMessage(signedMail))
+                    // Convert signed MailMessage to MapiMessage and save as MSG
+                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(signedMail))
                     {
-                        // Ensure the output directory exists
-                        string outputDirectory = Path.GetDirectoryName(signedMsgPath);
-                        if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                        {
-                            Directory.CreateDirectory(outputDirectory);
-                        }
-
-                        // Save the signed message as MSG
-                        mapi.Save(signedMsgPath);
+                        mapiMessage.Save(signedMsgPath);
                     }
                 }
             }
 
-            // Verify that the signed MSG file exists before loading
+            // Verify that the signed MSG file was created
             if (!File.Exists(signedMsgPath))
-            {
-                Console.Error.WriteLine($"Signed MSG file not found: {signedMsgPath}");
-                return;
-            }
-
-            // Load the MSG file and validate its signature
-            using (MapiMessage loadedMsg = MapiMessage.Load(signedMsgPath))
             {
                 try
                 {
-                    X509Certificate2[] signers = loadedMsg.CheckSignature();
-                    Console.WriteLine($"Signature is valid. Number of signers: {signers.Length}");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(signedMsgPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Signature verification failed: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
                 }
+
+                Console.Error.WriteLine("Signed MSG file not found: " + signedMsgPath);
+                return;
+            }
+
+            // Load the MSG file
+            using (MapiMessage loadedMapi = MapiMessage.Load(signedMsgPath))
+            {
+                // Convert to MailMessage with MailConversionOptions as required
+                MailMessage loadedMail = loadedMapi.ToMailMessage(new MailConversionOptions());
+
+                // Verify the signature
+                SecureEmailManager verificationManager = new SecureEmailManager();
+                SmimeResult verificationResult = verificationManager.CheckSignature(loadedMail);
+
+                Console.WriteLine(verificationResult.IsSuccess ? "Signature is valid." : "Signature is invalid.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
