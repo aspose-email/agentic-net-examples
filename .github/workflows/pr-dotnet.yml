@@ -7,9 +7,11 @@ on:
 jobs:
   build-and-run-examples:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         shell: bash
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,92 +23,206 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install native dependencies
+      - name: Install native Linux dependencies
         run: |
+          set -euo pipefail
+          echo "Updating apt package index..."
           sudo apt-get update
+
+          echo "Installing native libraries required by rendering/native packages..."
           sudo apt-get install -y \
             libfontconfig1 \
             libfreetype6 \
-            libjpeg-turbo8 \
+            libjpeg62-turbo \
             libpng16-16 \
             libx11-6 \
             libxext6 \
             libxrender1 \
             libglib2.0-0
 
+          echo "Native dependency installation completed."
+
       - name: Find changed example files
         id: files
         run: |
-          BASE=${{ github.base_ref }}
-          HEAD=${{ github.sha }}
-          MAP=$(git diff --name-only --diff-filter=ACMRT origin/"$BASE"...$HEAD -- '*.cs' | tr '\n' ' ')
-          if [ -z "$MAP" ]; then
+          set -euo pipefail
+
+          BASE="${{ github.base_ref }}"
+          HEAD="${{ github.sha }}"
+          FILE_LIST="$RUNNER_TEMP/changed_cs_files.txt"
+
+          echo "Base branch: $BASE"
+          echo "Head sha: $HEAD"
+          echo "Collecting changed .cs files..."
+
+          git diff --name-only --diff-filter=ACMRT "origin/$BASE...$HEAD" -- '*.cs' > "$FILE_LIST"
+
+          if [ ! -s "$FILE_LIST" ]; then
             echo "found=false" >> "$GITHUB_OUTPUT"
             echo "No changed .cs examples found." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
+
+          COUNT=$(wc -l < "$FILE_LIST" | tr -d ' ')
           echo "found=true" >> "$GITHUB_OUTPUT"
-          echo "files=$MAP" >> "$GITHUB_OUTPUT"
-          echo "Changed examples to test:" >> "$GITHUB_STEP_SUMMARY"
-          printf "%s\n" $MAP >> "$GITHUB_STEP_SUMMARY"
+          echo "file_list=$FILE_LIST" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Changed C# example files"
+            echo ""
+            echo "Total changed files: $COUNT"
+            echo ""
+            sed 's/^/- /' "$FILE_LIST"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "Found $COUNT changed .cs files."
 
       - name: Test each example (temp project)
         if: steps.files.outputs.found == 'true'
         run: |
           set -euo pipefail
 
-          PKG_VERSION=26.1.0
-          WORDS_PKG_VERSION=26.1.0
+          PKG_VERSION="26.1.0"
+          WORDS_PKG_VERSION="26.1.0"
+          FILE_LIST="${{ steps.files.outputs.file_list }}"
 
-          for f in ${{ steps.files.outputs.files }}; do
-            echo ""
-            echo "=== Testing $f ==="
-            echo "### Testing \`$f\`" >> "$GITHUB_STEP_SUMMARY"
+          TOTAL=$(wc -l < "$FILE_LIST" | tr -d ' ')
+          CURRENT=0
+          PASSED=0
 
-            workdir=$(mktemp -d)
-            dotnet new console --framework net8.0 --no-restore --output "$workdir" >/dev/null
-            rm "$workdir/Program.cs"
+          echo "Starting validation of $TOTAL changed example files."
+          echo ""
+
+          while IFS= read -r f || [ -n "$f" ]; do
+            CURRENT=$((CURRENT + 1))
+
+            echo "============================================================"
+            echo "[$CURRENT/$TOTAL] Testing: $f"
+            echo "============================================================"
+
+            {
+              echo ""
+              echo "## [$CURRENT/$TOTAL] \`$f\`"
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
 
             if [ ! -f "$f" ]; then
-              echo "Skipping deleted file: $f"
-              echo "- Skipped: file not found" >> "$GITHUB_STEP_SUMMARY"
-              rm -rf "$workdir"
+              echo "Skipping missing file: $f"
+              {
+                echo "- Status: skipped"
+                echo "- Reason: file not found in workspace"
+              } >> "$GITHUB_STEP_SUMMARY"
               continue
             fi
 
+            workdir=$(mktemp -d)
+            publishdir="$workdir/publish"
+
+            echo "Creating temp console project in: $workdir"
+            dotnet new console --framework net8.0 --no-restore --output "$workdir"
+
+            if [ -f "$workdir/Program.cs" ]; then
+              rm "$workdir/Program.cs"
+            fi
+
             cp "$f" "$workdir/Program.cs"
+
             pushd "$workdir" >/dev/null
 
-            echo "Adding packages..."
+            echo "Program.cs copied from repository file."
+            echo "Adding required NuGet packages..."
+
             dotnet add package Aspose.Email --version "$PKG_VERSION"
             dotnet add package Aspose.Words --version "$WORDS_PKG_VERSION"
             dotnet add package System.Security.Cryptography.Pkcs
             dotnet add package HtmlAgilityPack
-            dotnet add package SkiaSharp.NativeAssets.Linux
+            dotnet add package SkiaSharp.NativeAssets.Linux.NoDependencies
 
-            echo "Restoring..."
-            if ! dotnet restore; then
+            echo "Restoring packages for linux-x64..."
+            if ! dotnet restore -r linux-x64; then
               echo "::error file=$f::dotnet restore failed"
-              echo "- Restore failed" >> "$GITHUB_STEP_SUMMARY"
+              {
+                echo "- Status: failed"
+                echo "- Stage: restore"
+              } >> "$GITHUB_STEP_SUMMARY"
+              popd >/dev/null
+              rm -rf "$workdir"
               exit 1
             fi
 
-            echo "Building..."
-            if ! dotnet build -c Release; then
+            echo "Building project..."
+            if ! dotnet build -c Release -r linux-x64 --no-restore; then
               echo "::error file=$f::dotnet build failed"
-              echo "- Build failed" >> "$GITHUB_STEP_SUMMARY"
+              {
+                echo "- Status: failed"
+                echo "- Stage: build"
+              } >> "$GITHUB_STEP_SUMMARY"
+              popd >/dev/null
+              rm -rf "$workdir"
               exit 1
             fi
 
-            echo "Running..."
-            if ! dotnet run -c Release --no-build; then
-              echo "::error file=$f::dotnet run failed"
-              echo "- Run failed" >> "$GITHUB_STEP_SUMMARY"
+            echo "Publishing project for linux-x64..."
+            if ! dotnet publish -c Release -r linux-x64 --self-contained false --no-restore -o "$publishdir"; then
+              echo "::error file=$f::dotnet publish failed"
+              {
+                echo "- Status: failed"
+                echo "- Stage: publish"
+              } >> "$GITHUB_STEP_SUMMARY"
+              popd >/dev/null
+              rm -rf "$workdir"
+              exit 1
+            fi
+
+            MAIN_DLL=$(find "$publishdir" -maxdepth 1 -type f -name '*.dll' ! -name 'Aspose.*.dll' ! -name 'System.*.dll' ! -name 'Microsoft.*.dll' ! -name 'SkiaSharp*.dll' | head -n 1)
+
+            if [ -z "${MAIN_DLL:-}" ]; then
+              echo "::error file=$f::unable to locate published application dll"
+              {
+                echo "- Status: failed"
+                echo "- Stage: run setup"
+                echo "- Reason: published application dll not found"
+              } >> "$GITHUB_STEP_SUMMARY"
+              popd >/dev/null
+              rm -rf "$workdir"
+              exit 1
+            fi
+
+            echo "Published application dll: $MAIN_DLL"
+            echo "Published files:"
+            ls -la "$publishdir"
+
+            echo "Running published application..."
+            if ! dotnet "$MAIN_DLL"; then
+              echo "::error file=$f::dotnet execution failed"
+              {
+                echo "- Status: failed"
+                echo "- Stage: run"
+              } >> "$GITHUB_STEP_SUMMARY"
+              popd >/dev/null
+              rm -rf "$workdir"
               exit 1
             fi
 
             popd >/dev/null
             rm -rf "$workdir"
 
-            echo "- Passed" >> "$GITHUB_STEP_SUMMARY"
-          done
+            PASSED=$((PASSED + 1))
+
+            echo "Result: PASSED"
+            {
+              echo "- Status: passed"
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo ""
+          done < "$FILE_LIST"
+
+          {
+            echo ""
+            echo "## Final result"
+            echo ""
+            echo "- Total files processed: $TOTAL"
+            echo "- Passed: $PASSED"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "Completed successfully. Passed $PASSED out of $TOTAL files."
