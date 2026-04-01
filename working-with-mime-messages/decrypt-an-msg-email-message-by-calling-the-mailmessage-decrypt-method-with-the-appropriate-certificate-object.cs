@@ -9,60 +9,61 @@ class Program
     {
         try
         {
-            // Paths to the encrypted MSG file and the certificate file
-            string msgPath = "encryptedMessage.msg";
+            // Paths to the encrypted MSG file, certificate file and output file
+            string msgPath = "encrypted.msg";
             string certPath = "mycert.pfx";
-            string certPassword = "password";
+            string outputPath = "decrypted.msg";
 
-            // Verify that the message file exists
+            // Verify that the input files exist
             if (!File.Exists(msgPath))
             {
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
                 Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
 
-            // Verify that the certificate file exists
             if (!File.Exists(certPath))
             {
                 Console.Error.WriteLine($"Certificate file not found: {certPath}");
                 return;
             }
 
-            // Load the X509 certificate
-            X509Certificate2 certificate;
-            try
+            // Load the certificate (replace the password with the actual one if needed)
+            string certPassword = "password";
+            using (X509Certificate2 certificate = new X509Certificate2(certPath, certPassword))
             {
-                certificate = new X509Certificate2(certPath, certPassword);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load certificate: {ex.Message}");
-                return;
-            }
-
-            // Load the encrypted message
-            using (MailMessage mailMessage = MailMessage.Load(msgPath))
-            {
-                // Decrypt the message using the certificate
-                using (MailMessage decryptedMessage = mailMessage.Decrypt(certificate))
+                // Load the encrypted MSG message
+                using (MailMessage encryptedMessage = MailMessage.Load(msgPath))
                 {
-                    // Save the decrypted message to a new file
-                    string decryptedPath = "decryptedMessage.eml";
-                    try
+                    // Decrypt the message using the certificate
+                    using (MailMessage decryptedMessage = encryptedMessage.Decrypt(certificate))
                     {
-                        decryptedMessage.Save(decryptedPath);
-                        Console.WriteLine($"Decrypted message saved to {decryptedPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save decrypted message: {ex.Message}");
+                        // Save the decrypted message
+                        decryptedMessage.Save(outputPath);
+                        Console.WriteLine($"Message decrypted and saved to {outputPath}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
