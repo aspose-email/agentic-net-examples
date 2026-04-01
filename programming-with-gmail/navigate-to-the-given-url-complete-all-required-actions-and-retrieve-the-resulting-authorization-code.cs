@@ -1,33 +1,43 @@
 using System;
-using System.Diagnostics;
+using Aspose.Email.Clients;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // URL that initiates the authorization flow
-            string authorizationUrl = "https://example.com/oauth2/authorize";
+            // Placeholder values – replace with real credentials when available
+            string requestUrl = "https://example.com/token";
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
 
-            // Open the default browser to let the user complete the required actions
-            ProcessStartInfo startInfo = new ProcessStartInfo(authorizationUrl)
+            // Guard against executing live network calls with placeholder credentials
+            if (clientId == "clientId" || clientSecret == "clientSecret")
             {
-                UseShellExecute = true
-            };
-            Process.Start(startInfo);
+                Console.WriteLine("Placeholder credentials detected. Skipping token request.");
+                return;
+            }
 
-            // Prompt the user to paste the resulting authorization code
-            Console.Write("Enter the authorization code: ");
-            string authorizationCode = Console.ReadLine();
-
-            // Output the retrieved code (or handle it as needed)
-            Console.WriteLine("Authorization code received: " + authorizationCode);
+            // Create a TokenProvider instance for the OAuth flow
+            using (TokenProvider tokenProvider = TokenProvider.GetInstance(requestUrl, clientId, clientSecret, refreshToken))
+            {
+                try
+                {
+                    // Retrieve the access token (authorization code)
+                    OAuthToken oauthToken = tokenProvider.GetAccessToken();
+                    Console.WriteLine("Authorization code: " + oauthToken.Token);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error obtaining token: " + ex.Message);
+                }
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
-            return;
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
