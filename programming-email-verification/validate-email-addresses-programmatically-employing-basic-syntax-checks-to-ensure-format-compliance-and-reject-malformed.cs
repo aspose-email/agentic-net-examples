@@ -8,42 +8,51 @@ class Program
     {
         try
         {
-            // Sample email addresses to validate
-            string[] emailAddresses = new string[]
-            {
-                "john.doe@example.com",
-                "invalid-email",
-                "jane@subdomain.example",
-                "bad@@example.com"
-            };
-
-            // Create an instance of EmailValidator
+            // Create an EmailValidator instance
             EmailValidator validator = new EmailValidator();
 
-            foreach (string address in emailAddresses)
+            // List of email addresses to validate
+            string[] emailAddresses = new string[]
             {
-                try
-                {
-                    ValidationResult result;
-                    validator.Validate(address, out result);
+                "valid.user@example.com",
+                "invalid-email",
+                "another.valid+tag@sub.domain.org",
+                "bad@domain",
+                "user@.com"
+            };
 
-                    Console.WriteLine($"Email: {address}");
-                    Console.WriteLine($"Return Code: {result.ReturnCode}");
-                    if (!string.IsNullOrEmpty(result.Message))
-                    {
-                        Console.WriteLine($"Message: {result.Message}");
-                    }
-                    Console.WriteLine();
-                }
-                catch (Exception ex)
+            foreach (string email in emailAddresses)
+            {
+                ValidationResult result;
+                validator.Validate(email, out result);
+
+                Console.WriteLine($"Email: {email}");
+                if (result.ReturnCode == ValidationResponseCode.ValidationSuccess)
                 {
-                    Console.Error.WriteLine($"Error validating '{address}': {ex.Message}");
+                    Console.WriteLine("  Status: Valid");
+                }
+                else if (result.ReturnCode == ValidationResponseCode.SyntaxValidationFailed)
+                {
+                    Console.WriteLine("  Status: Invalid syntax");
+                }
+                else if (result.ReturnCode == ValidationResponseCode.DomainValidationFailed)
+                {
+                    Console.WriteLine("  Status: Invalid domain");
+                }
+                else
+                {
+                    Console.WriteLine($"  Status: Validation error (Code: {result.ReturnCode})");
+                }
+
+                if (!string.IsNullOrEmpty(result.Message))
+                {
+                    Console.WriteLine($"  Details: {result.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
