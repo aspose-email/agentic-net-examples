@@ -1,57 +1,57 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
+using Aspose.Email.Mapi;
 
-class Program
+namespace RetrieveTaskFromGraph
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Initialize token provider (dummy credentials)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                "clientId", "clientSecret", "refreshToken");
-
-            // Create Graph client
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
+            try
             {
-                // ID of the MSG task to retrieve
-                string messageId = "MESSAGE_ID";
+                // Placeholder credentials and identifiers
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string messageId = "messageId";
+                string outputPath = "task.msg";
 
-                // Fetch the message as a MapiMessage (disposable)
-                using (MapiMessage taskMessage = client.FetchMessage(messageId))
+                // Guard against placeholder credentials to avoid external calls
+                if (clientId == "clientId" || clientSecret == "clientSecret" || refreshToken == "refreshToken")
                 {
-                    // Verify that the fetched item is a task
-                    if (!string.IsNullOrEmpty(taskMessage.MessageClass) && taskMessage.MessageClass.StartsWith("IPM.Task"))
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                    return;
+                }
+
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Create token provider
+                Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+                // Initialize Graph client
+                using (IGraphClient client = GraphClient.GetClient(tokenProvider, null))
+                {
+                    // Fetch the MSG task as a MapiMessage
+                    using (MapiMessage taskMessage = client.FetchMessage(messageId))
                     {
-                        Console.WriteLine("Task Subject: " + taskMessage.Subject);
-
-                        // Save the task to a local MSG file
-                        string outputPath = "task.msg";
-
-                        // Ensure the target directory exists
-                        string directory = Path.GetDirectoryName(outputPath);
-                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                        {
-                            Directory.CreateDirectory(directory);
-                        }
-
+                        // Save the message to a file
                         taskMessage.Save(outputPath);
-                        Console.WriteLine("Task saved to: " + outputPath);
-                    }
-                    else
-                    {
-                        Console.WriteLine("The fetched item is not a task.");
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+            }
         }
     }
 }
