@@ -9,61 +9,71 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            // Define input MSG file and output directory
+            string inputMsgPath = "sample.msg";
+            string outputDirectory = "TnefAttachments";
 
-            if (!File.Exists(msgPath))
+            // Ensure the input MSG file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "receiver@example.com",
+                        "Placeholder",
+                        "This is a placeholder MSG file."))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Ensure the output directory exists
+            try
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                 return;
             }
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Load the MSG file with TNEF attachment preservation
+            MsgLoadOptions loadOptions = new MsgLoadOptions
             {
-                foreach (MapiAttachment attachment in msg.Attachments)
-                {
-                    Console.WriteLine($"Attachment: {attachment.FileName}");
+                PreserveTnefAttachments = true
+            };
 
-                    if (attachment.FileName.Equals("winmail.dat", StringComparison.OrdinalIgnoreCase))
+            using (MailMessage message = MailMessage.Load(inputMsgPath, loadOptions))
+            {
+                foreach (Attachment attachment in message.Attachments)
+                {
+                    // Identify TNEF‑encoded attachments
+                    if (attachment.IsTnef)
                     {
-                        string tempTnefPath = Path.Combine(Path.GetTempPath(), $"tnef_{Guid.NewGuid()}.dat");
+                        string attachmentName = attachment.Name;
+                        if (string.IsNullOrEmpty(attachmentName))
+                        {
+                            attachmentName = "tnef_attachment.dat";
+                        }
+
+                        string outputPath = Path.Combine(outputDirectory, attachmentName);
 
                         try
                         {
-                            // Save the TNEF attachment to a temporary file
-                            attachment.Save(tempTnefPath);
-
-                            // Load the TNEF content as a MapiMessage
-                            using (MapiMessage tnefMessage = MapiMessage.LoadFromTnef(tempTnefPath))
-                            {
-                                foreach (MapiAttachment innerAttachment in tnefMessage.Attachments)
-                                {
-                                    Console.WriteLine($"  TNEF inner attachment: {innerAttachment.FileName}");
-
-                                    // Example processing: save the inner attachment to the current directory
-                                    string outputPath = Path.Combine(Directory.GetCurrentDirectory(), innerAttachment.FileName);
-                                    innerAttachment.Save(outputPath);
-                                    Console.WriteLine($"  Saved to: {outputPath}");
-                                }
-                            }
+                            attachment.Save(outputPath);
+                            Console.WriteLine($"Saved TNEF attachment: {outputPath}");
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Error processing TNEF attachment: {ex.Message}");
-                        }
-                        finally
-                        {
-                            // Clean up the temporary file
-                            if (File.Exists(tempTnefPath))
-                            {
-                                try
-                                {
-                                    File.Delete(tempTnefPath);
-                                }
-                                catch
-                                {
-                                    // Ignore cleanup errors
-                                }
-                            }
+                            Console.Error.WriteLine($"Failed to save attachment '{attachmentName}': {ex.Message}");
                         }
                     }
                 }
