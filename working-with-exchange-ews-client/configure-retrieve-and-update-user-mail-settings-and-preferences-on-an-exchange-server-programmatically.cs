@@ -10,44 +10,51 @@ class Program
     {
         try
         {
-            // Define connection parameters
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Placeholder credentials – replace with real values or skip execution.
+            string serverUrl = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create network credentials
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Initialize the EWS client inside a using block to ensure disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Guard against placeholder values to avoid real network calls in CI.
+            if (serverUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
+                return;
+            }
+
+            // Create the EWS client using the factory method.
+            using (IEWSClient client = EWSClient.GetEWSClient(serverUrl, new NetworkCredential(username, password)))
+            {
+                // Retrieve mailbox information.
+                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
+                Console.WriteLine($"Calendar URI: {mailboxInfo.CalendarUri}");
+                Console.WriteLine($"Sent Items URI: {mailboxInfo.SentItemsUri}");
+
+                // Update client preferences.
+                client.TimezoneId = "Pacific Standard Time";
+                client.UseSlashAsFolderSeparator = true;
+                Console.WriteLine("Updated client timezone and folder separator settings.");
+
+                // List all mailboxes in the organization.
                 try
                 {
-                    // Retrieve mailbox information
-                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
-
-                    // Output some mailbox URIs (these are valid members of ExchangeMailboxInfo)
-                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
-                    Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
-                    Console.WriteLine("Drafts URI: " + mailboxInfo.DraftsUri);
-                    Console.WriteLine("Calendar URI: " + mailboxInfo.CalendarUri);
-
-                    // Update a user preference – set the timezone identifier
-                    client.TimezoneId = "Pacific Standard Time";
-                    Console.WriteLine("Timezone updated to: " + client.TimezoneId);
+                    var mailboxes = client.ListMailboxes();
+                    Console.WriteLine("Mailboxes in the organization:");
+                    foreach (var mb in mailboxes)
+                    {
+                        Console.WriteLine($"- {mb}");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // Handle any errors that occur during client operations
-                    Console.Error.WriteLine("Error during Exchange operations: " + ex.Message);
-                    return;
+                    Console.Error.WriteLine($"Failed to list mailboxes: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            // Top-level exception guard
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
