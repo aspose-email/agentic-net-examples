@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -11,33 +10,41 @@ class Program
     {
         try
         {
-            // Initialize credentials for the Exchange server
-            NetworkCredential credential = new NetworkCredential("username", "password");
+            // Placeholder credentials – replace with real values or skip execution.
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Create the EWS client inside a using block to ensure proper disposal
-            try
+            // Guard against running with placeholder data.
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credential))
-                {
-                    // Identify the existing distribution list by its Id
-                    ExchangeDistributionList distributionList = new ExchangeDistributionList();
-                    distributionList.Id = "distribution-list-id";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
 
-                    // Prepare the collection of new members to add
+            // Create the EWS client.
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                try
+                {
+                    // Identify the distribution list to update (use actual Id).
+                    ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                    distributionList.Id = "distributionlist-id";
+
+                    // Prepare the members to add.
                     MailAddressCollection members = new MailAddressCollection();
                     members.Add(new MailAddress("newmember1@example.com"));
                     members.Add(new MailAddress("newmember2@example.com"));
 
-                    // Append the new members to the distribution list
+                    // Add members to the distribution list.
                     client.AddToDistributionList(distributionList, members);
-
-                    Console.WriteLine("Members added to the distribution list successfully.");
+                    Console.WriteLine("Members added to distribution list successfully.");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
-                return;
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error updating distribution list: {ex.Message}");
+                    return;
+                }
             }
         }
         catch (Exception ex)
