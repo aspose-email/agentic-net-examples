@@ -1,68 +1,68 @@
 using Aspose.Email.Clients;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
-namespace ImapAsyncExample
+class Program
 {
-    class Program
+    static async System.Threading.Tasks.Task Main(string[] args)
     {
-        // Entry point – async to allow awaiting Aspose.Email async methods.
-        static async Task Main(string[] args)
+        try
         {
-            try
+            // Placeholder IMAP server details
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip real network call when placeholders are used
+            if (host.Contains("example.com"))
             {
-                // Wrap the client in a using block to ensure proper disposal.
-                using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.Auto))
+                Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
+                return;
+            }
+
+            // Create and connect the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            {
+                try
                 {
-                    try
+                    // Asynchronously list messages in the INBOX folder
+                    ImapMessageInfoCollection messageInfos = await client.ListMessagesAsync("INBOX", false, null, CancellationToken.None);
+
+                    List<MailMessage> messages = new List<MailMessage>();
+
+                    // Fetch each message asynchronously using its UniqueId
+                    foreach (ImapMessageInfo info in messageInfos)
                     {
-                        // Select the INBOX folder.
-                        await client.SelectFolderAsync("INBOX");
-
-                        // Asynchronously retrieve information about all messages in the selected folder.
-                        ImapMessageInfoCollection messageInfos = await client.ListMessagesAsync();
-
-                        if (messageInfos == null || messageInfos.Count == 0)
-                        {
-                            Console.WriteLine("No messages found in the INBOX.");
-                            return;
-                        }
-
-                        // Take a few message UIDs to demonstrate fetching.
-                        List<string> uids = messageInfos
-                            .Take(5)                     // limit to first 5 messages
-                            .Select(info => info.UniqueId)
-                            .ToList();
-
-                        // Asynchronously fetch the full messages using the UIDs.
-                        IEnumerable<MailMessage> messages = await client.FetchMessagesAsync(uids);
-
-                        // Output basic details of each fetched message.
-                        foreach (MailMessage msg in messages)
-                        {
-                            Console.WriteLine($"Subject: {msg.Subject}");
-                            Console.WriteLine($"From: {msg.From}");
-                            Console.WriteLine($"Date: {msg.Date}");
-                            Console.WriteLine(new string('-', 40));
-                        }
+                        MailMessage message = await client.FetchMessageAsync(info.UniqueId, CancellationToken.None);
+                        messages.Add(message);
                     }
-                    catch (Exception ex)
+
+                    // Output subjects of retrieved messages
+                    foreach (MailMessage msg in messages)
                     {
-                        // Handle any errors that occur during IMAP operations.
-                        Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                        Console.WriteLine($"Subject: {msg.Subject}");
                     }
                 }
+                catch (ImapException imapEx)
+                {
+                    Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                // Handle errors that occur while creating or disposing the client.
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Fatal error: {ex.Message}");
         }
     }
 }
