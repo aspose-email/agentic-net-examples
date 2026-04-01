@@ -4,47 +4,76 @@ using Aspose.Email.Calendar;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-class Program
+namespace RelocateAndRemoveGoogleCalendarEvents
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize Gmail client with dummy credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId", "clientSecret", "refreshToken", "user@example.com"))
+            try
             {
-                string sourceCalendarId = "sourceCalendarId";
-                string targetCalendarId = "targetCalendarId";
+                // Placeholder credentials – replace with real values when running against a live account.
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string userEmail = "user@example.com";
 
-                // Retrieve appointments from the source calendar
-                Appointment[] appointments = gmailClient.ListAppointments(sourceCalendarId);
-                if (appointments == null || appointments.Length == 0)
+                // Guard against executing live calls with placeholder credentials.
+                if (clientId == "clientId" || clientSecret == "clientSecret" ||
+                    refreshToken == "refreshToken" || userEmail == "user@example.com")
                 {
-                    Console.WriteLine("No appointments found in the source calendar.");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client operations.");
                     return;
                 }
 
-                // Select the first appointment to relocate
-                Appointment appointmentToMove = appointments[0];
-                string appointmentId = appointmentToMove.UniqueId;
-
-                // Relocate the appointment to the target calendar
-                gmailClient.MoveAppointment(sourceCalendarId, appointmentId, targetCalendarId);
-                Console.WriteLine($"Moved appointment {appointmentId} to calendar {targetCalendarId}.");
-
-                // Optionally delete the moved appointment from the target calendar
-                Appointment movedAppointment = gmailClient.FetchAppointment(targetCalendarId, appointmentId);
-                if (movedAppointment != null)
+                // Create the Gmail client.
+                IGmailClient gmailClient;
+                try
                 {
-                    gmailClient.DeleteAppointment(targetCalendarId, appointmentId);
-                    Console.WriteLine($"Deleted appointment {appointmentId} from calendar {targetCalendarId}.");
+                    gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                    return;
+                }
+
+                // Ensure the client is disposed properly.
+                using (gmailClient as IDisposable)
+                {
+                    // Identifiers for source and destination calendars and appointments.
+                    string sourceCalendarId = "source-calendar-id";
+                    string destinationCalendarId = "destination-calendar-id";
+                    string appointmentIdToMove = "appointment-id-to-move";
+                    string appointmentIdToDelete = "appointment-id-to-delete";
+
+                    // Relocate (move) an appointment from the source calendar to the destination calendar.
+                    try
+                    {
+                        gmailClient.MoveAppointment(sourceCalendarId, appointmentIdToMove, destinationCalendarId);
+                        Console.WriteLine($"Appointment '{appointmentIdToMove}' moved from calendar '{sourceCalendarId}' to '{destinationCalendarId}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to move appointment: {ex.Message}");
+                    }
+
+                    // Remove (delete) an appointment from the source calendar.
+                    try
+                    {
+                        gmailClient.DeleteAppointment(sourceCalendarId, appointmentIdToDelete);
+                        Console.WriteLine($"Appointment '{appointmentIdToDelete}' deleted from calendar '{sourceCalendarId}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to delete appointment: {ex.Message}");
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
