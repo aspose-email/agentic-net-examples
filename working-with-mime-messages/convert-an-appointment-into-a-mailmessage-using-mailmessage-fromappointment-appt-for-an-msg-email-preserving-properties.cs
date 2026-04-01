@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -18,43 +17,41 @@ class Program
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Create appointment
+            // Create sample appointment
             MailAddress organizer = new MailAddress("organizer@example.com");
-            MailAddressCollection attendees = new MailAddressCollection
-            {
-                new MailAddress("attendee1@example.com"),
-                new MailAddress("attendee2@example.com")
-            };
+            MailAddressCollection attendees = new MailAddressCollection();
+            attendees.Add(new MailAddress("attendee1@example.com"));
+            attendees.Add(new MailAddress("attendee2@example.com"));
 
             Appointment appointment = new Appointment(
                 "Conference Room",
                 new DateTime(2024, 5, 20, 10, 0, 0),
                 new DateTime(2024, 5, 20, 11, 0, 0),
                 organizer,
-                attendees)
-            {
-                Summary = "Project Kickoff",
-                Description = "Discuss project goals and timelines."
-            };
+                attendees);
+
+            appointment.Summary = "Project Kickoff";
+            appointment.Description = "Discuss project goals and timelines.";
 
             // Convert appointment to MailMessage
-            MailMessage mailMessage = appointment.ToMailMessage();
-
-            // Preserve properties (example: subject and body)
-            mailMessage.Subject = appointment.Summary;
-            mailMessage.Body = appointment.Description;
-
-            // Convert MailMessage to MapiMessage and save as MSG
-            using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+            using (MailMessage message = appointment.ToMailMessage())
             {
-                mapiMessage.Save(outputPath);
+                // Save as MSG preserving properties
+                try
+                {
+                    message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    Console.WriteLine($"Appointment saved as MSG to: {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                    return;
+                }
             }
-
-            Console.WriteLine($"Appointment saved as MSG to: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
