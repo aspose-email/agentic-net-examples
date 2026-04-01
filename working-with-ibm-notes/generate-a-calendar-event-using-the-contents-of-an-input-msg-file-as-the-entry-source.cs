@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using Aspose.Email.Calendar;
 
 class Program
 {
@@ -9,49 +10,80 @@ class Program
     {
         try
         {
-            string inputPath = "calendar.msg";
-            if (!File.Exists(inputPath))
+            string msgPath = "input.msg";
+            string icsPath = "output.ics";
+
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
-                return;
-            }
-
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
-            {
-                // Verify that the message contains a calendar item
-                if (msg.SupportedType != MapiItemType.Calendar)
-                {
-                    Console.Error.WriteLine("The provided MSG file does not contain a calendar item.");
-                    return;
-                }
-
-                // Convert to MapiCalendar
-                MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
-
-                // Display some calendar information
-                Console.WriteLine($"Subject: {calendar.Subject}");
-                Console.WriteLine($"Location: {calendar.Location}");
-                Console.WriteLine($"Start: {calendar.StartDate}");
-                Console.WriteLine($"End: {calendar.EndDate}");
-
-                // Save the calendar as an iCalendar file
-                string outputPath = "output.ics";
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-
                 try
                 {
-                    calendar.Save(outputPath);
-                    Console.WriteLine($"Calendar saved to {outputPath}");
+                    MapiCalendar placeholder = new MapiCalendar(
+                        "Placeholder Location",
+                        "Placeholder Subject",
+                        "Placeholder Body",
+                        DateTime.Now,
+                        DateTime.Now.AddHours(1));
+                    placeholder.Save(msgPath, new MapiCalendarMsgSaveOptions());
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error saving calendar: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
                 }
+            }
+
+            string outputDir = Path.GetDirectoryName(icsPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            {
+                if (msg.SupportedType != MapiItemType.Calendar)
+                {
+                    try
+                    {
+                        File.WriteAllText(icsPath, "BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n");
+                        Console.WriteLine("Input MSG is not a calendar item. Placeholder .ics created.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error writing placeholder .ics: {ex.Message}");
+                    }
+                    return;
+                }
+
+                MapiCalendar mapiCal = (MapiCalendar)msg.ToMapiMessageItem();
+
+                string organizerAddress = !string.IsNullOrEmpty(mapiCal.Organizer?.EmailAddress)
+                    ? mapiCal.Organizer.EmailAddress
+                    : "organizer@example.com";
+
+                MailAddressCollection attendees = new MailAddressCollection();
+                if (mapiCal.Attendees != null && mapiCal.Attendees.AppointmentRecipients != null)
+                {
+                    foreach (MapiRecipient recipient in mapiCal.Attendees.AppointmentRecipients)
+                    {
+                        if (!string.IsNullOrEmpty(recipient.EmailAddress))
+                        {
+                            attendees.Add(new MailAddress(recipient.EmailAddress));
+                        }
+                    }
+                }
+
+                Appointment appointment = new Appointment(
+                    mapiCal.Location,
+                    mapiCal.StartDate,
+                    mapiCal.EndDate,
+                    new MailAddress(organizerAddress),
+                    attendees);
+
+                appointment.Summary = mapiCal.Subject;
+                appointment.Description = mapiCal.Body;
+
+                appointment.Save(icsPath);
+                Console.WriteLine($"Calendar event saved to {icsPath}");
             }
         }
         catch (Exception ex)
