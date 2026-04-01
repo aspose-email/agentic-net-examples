@@ -10,34 +10,51 @@ class Program
     {
         try
         {
-            // Initialize the EWS client with credentials
-            try
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip real network call when placeholders are detected
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(
-                    "https://mail.example.com/EWS/Exchange.asmx",
-                    new NetworkCredential("username", "password")))
+                Console.WriteLine("Placeholder credentials detected – skipping connection.");
+                return;
+            }
+
+            // Create the EWS client inside a using block to ensure disposal
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                try
                 {
-                    // Get mailbox information
-                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
-                    string inboxUri = mailboxInfo.InboxUri;
+                    // List all messages in the default Inbox folder
+                    ExchangeMessageInfoCollection messageInfos = client.ListMessages();
 
-                    // List messages in the Inbox folder
-                    ExchangeMessageInfoCollection messagesInfo = client.ListMessages(inboxUri);
-
-                    // Iterate through each message info and fetch the full message
-                    foreach (ExchangeMessageInfo info in messagesInfo)
+                    foreach (ExchangeMessageInfo info in messageInfos)
                     {
-                        using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                        // Output basic information
+                        Console.WriteLine($"Subject: {info.Subject}");
+                        Console.WriteLine($"From: {info.From}");
+                        Console.WriteLine($"Received: {info.InternalDate}");
+                        Console.WriteLine($"URI: {info.UniqueUri}");
+                        Console.WriteLine(new string('-', 40));
+
+                        // Optionally fetch the full message if needed
+                        using (MailMessage fullMessage = client.FetchMessage(info.UniqueUri))
                         {
-                            Console.WriteLine($"Subject: {message.Subject}");
+                            // Example: display the first 100 characters of the body
+                            string bodySnippet = fullMessage.Body != null && fullMessage.Body.Length > 100
+                                ? fullMessage.Body.Substring(0, 100) + "..."
+                                : fullMessage.Body;
+                            Console.WriteLine($"Body snippet: {bodySnippet}");
+                            Console.WriteLine(new string('=', 40));
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Client error: {ex.Message}");
-                return;
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during message retrieval: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
