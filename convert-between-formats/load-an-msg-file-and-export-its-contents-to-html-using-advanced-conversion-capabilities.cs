@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,31 +10,41 @@ class Program
         try
         {
             string inputPath = "sample.msg";
-            string outputPath = "sample.html";
+            string outputPath = "output.html";
 
+            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
-
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            using (MailMessage mailMessage = MailMessage.Load(
-                inputPath,
-                new MsgLoadOptions
+                using (MapiMessage placeholder = new MapiMessage(
+                    "Placeholder Subject",
+                    "sender@example.com",
+                    "receiver@example.com",
+                    "This is a placeholder message."))
                 {
-                    PreserveRtfContent = true,
-                    PreserveEmbeddedMessageFormat = true
-                }))
+                    placeholder.Save(inputPath);
+                    Console.WriteLine($"Created placeholder MSG at \"{inputPath}\".");
+                }
+            }
+
+            // Load the MSG file into a MailMessage.
+            using (MailMessage mail = MailMessage.Load(inputPath, new MsgLoadOptions()))
             {
-                HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
-                mailMessage.Save(outputPath, htmlOptions);
-                Console.WriteLine($"Message exported to HTML: {outputPath}");
+                // Configure advanced HTML save options.
+                HtmlSaveOptions saveOptions = new HtmlSaveOptions
+                {
+                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                };
+
+                // Ensure the output directory exists.
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Save the message as HTML.
+                mail.Save(outputPath, saveOptions);
+                Console.WriteLine($"Message saved as HTML to \"{outputPath}\".");
             }
         }
         catch (Exception ex)
