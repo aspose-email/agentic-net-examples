@@ -2,36 +2,41 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace Sample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string outputPath = "output.msg";
-
-            // Ensure the target directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            try
             {
-                Directory.CreateDirectory(directory);
-            }
+                // Define the output MSG file path
+                string outputPath = "output.msg";
 
-            // Create a simple mail message
-            using (MailMessage message = new MailMessage())
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Create and configure a MailMessage
+                using (MailMessage message = new MailMessage())
+                {
+                    message.From = new MailAddress("sender@example.com");
+                    message.To.Add(new MailAddress("recipient@example.com"));
+                    message.Subject = "Test Message";
+                    message.Body = "This is a test email.";
+
+                    // Save the message as MSG using default options
+                    message.Save(outputPath);
+                }
+            }
+            catch (Exception ex)
             {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("receiver@example.com"));
-                message.Subject = "Test Message";
-                message.Body = "This is a test email.";
-
-                // Persist the message as MSG using default options
-                message.Save(outputPath);
+                Console.Error.WriteLine(ex.Message);
+                return;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
         }
     }
 }
