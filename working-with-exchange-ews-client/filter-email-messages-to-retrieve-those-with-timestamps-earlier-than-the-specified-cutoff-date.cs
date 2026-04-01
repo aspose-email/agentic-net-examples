@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -10,69 +10,49 @@ class Program
     {
         try
         {
-            // Define cutoff date
-            DateTime cutoffDate = new DateTime(2023, 1, 1);
+            // Placeholder values – in a real scenario replace with actual server URL and credentials.
+            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Initialize Gmail client with placeholder credentials
-            IGmailClient client;
-            try
+            // Skip execution when placeholder credentials are detected.
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                client = GmailClient.GetInstance(
-                    "clientId",
-                    "clientSecret",
-                    "refreshToken",
-                    "user@example.com");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
                 return;
             }
 
-            // Ensure the client is disposed after use
-            using (client)
+            // Create the EWS client inside a using block to ensure proper disposal.
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
             {
-                // Retrieve list of message infos
-                List<GmailMessageInfo> messageInfos;
-                try
-                {
-                    messageInfos = client.ListMessages();
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
-                    return;
-                }
+                // Define the cutoff date.
+                DateTime cutoffDate = new DateTime(2023, 1, 1);
 
-                // Iterate through messages and filter by date
-                foreach (GmailMessageInfo info in messageInfos)
-                {
-                    MailMessage fullMessage;
-                    try
-                    {
-                        fullMessage = client.FetchMessage(info.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to fetch message {info.Id}: {ex.Message}");
-                        continue;
-                    }
+                // Retrieve the inbox folder URI.
+                string inboxUri = client.MailboxInfo.InboxUri;
 
-                    using (fullMessage)
+                // List all messages in the inbox.
+                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+
+                // Iterate through the messages and filter by InternalDate.
+                foreach (ExchangeMessageInfo info in messages)
+                {
+                    // Use InternalDate for comparison as per validation rules.
+                    DateTime internalDate = info.InternalDate;
+
+                    if (internalDate < cutoffDate)
                     {
-                        if (fullMessage.Date < cutoffDate)
-                        {
-                            Console.WriteLine($"Subject: {fullMessage.Subject}");
-                            Console.WriteLine($"Date: {fullMessage.Date}");
-                            Console.WriteLine();
-                        }
+                        Console.WriteLine($"Subject: {info.Subject}");
+                        Console.WriteLine($"Internal Date: {internalDate}");
+                        Console.WriteLine($"URI: {info.UniqueUri}");
+                        Console.WriteLine(new string('-', 40));
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
