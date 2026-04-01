@@ -1,32 +1,47 @@
 using System;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using System.Net;
 
-namespace AsposeEmailExample
+namespace ExchangeEndpointConfiguration
 {
     class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
             try
             {
-                // Exchange server endpoint and credentials
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                // Placeholder endpoint and credentials
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
                 string username = "user@example.com";
                 string password = "password";
 
-                // Create the EWS client using the factory method
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                // Guard against executing with placeholder values
+                if (mailboxUri.Contains("example.com"))
                 {
-                    // Example operation: retrieve and display the server version
-                    string versionInfo = client.GetVersionInfo();
-                    Console.WriteLine("Exchange Server Version: " + versionInfo);
+                    Console.WriteLine("Placeholder endpoint detected. Skipping connection.");
+                    return;
+                }
+
+                // Create and configure the EWS client
+                try
+                {
+                    using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                    {
+                        // Example usage: display the Inbox URI
+                        Console.WriteLine("Connected to Exchange server.");
+                        Console.WriteLine("Inbox URI: " + client.MailboxInfo.InboxUri);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("EWS client error: " + ex.Message);
+                    return;
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Error: " + ex.Message);
+                Console.Error.WriteLine("Unexpected error: " + ex.Message);
             }
         }
     }
