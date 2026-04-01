@@ -1,31 +1,51 @@
 using System;
 using System.Net;
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Initialize the EWS client with mailbox URI and credentials
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://exchange.example.com/EWS/Exchange.asmx",
-                new NetworkCredential("username", "password")))
-            {
-                // Configure session settings
-                client.Timeout = 120000; // Timeout in milliseconds
-                client.UseDateInLogFileName = true;
-                client.LogFileName = "ews_log.txt";
+            // Connection parameters
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-                // Example: set a proxy if required (commented out as placeholder)
-                // client.Proxy = new WebProxy("http://proxy.example.com:8080");
+            // Guard against placeholder values
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder connection parameters detected. Skipping Exchange client initialization.");
+                return;
+            }
+
+            NetworkCredential credentials = new NetworkCredential(username, password);
+
+            // Initialize the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            {
+                try
+                {
+                    // Session settings
+                    client.Timeout = 120000; // 2 minutes
+                    client.UseDateInLogFileName = true;
+                    client.LogFileName = "exchange_log.txt";
+
+                    // Example operation: retrieve mailbox info
+                    var mailboxInfo = client.MailboxInfo;
+                    Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during client operation: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
