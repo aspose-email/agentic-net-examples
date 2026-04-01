@@ -12,50 +12,77 @@ class Program
         {
             string pstPath = "sample.pst";
 
+            // Ensure PST file exists; create a minimal one if missing
             if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {pstPath}");
-                return;
+                try
+                {
+                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // Create a default Contacts folder (optional)
+                        createdPst.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
+                    return;
+                }
             }
 
+            // Open the PST file and read distribution lists
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Iterate through each folder in the PST
-                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                // Process the root folder
+                ProcessFolder(pst.RootFolder, pst);
+
+                // Recursively process subfolders
+                foreach (FolderInfo subFolder in pst.RootFolder.GetSubFolders())
                 {
-                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
-
-                    // Enumerate messages in the current folder
-                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
-                    {
-                        // Extract the full MAPI message
-                        using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
-                        {
-                            // Check if the message represents a distribution list
-                            if (mapiMessage.SupportedType == MapiItemType.DistList)
-                            {
-                                // Convert to a MapiDistributionList object
-                                MapiDistributionList distributionList = (MapiDistributionList)mapiMessage.ToMapiMessageItem();
-
-                                Console.WriteLine($"Distribution List: {distributionList.DisplayName}");
-                                Console.WriteLine($"Members count: {distributionList.Members.Count}");
-
-                                // List each member's details
-                                foreach (MapiDistributionListMember member in distributionList.Members)
-                                {
-                                    Console.WriteLine($"  Name: {member.DisplayName}, Email: {member.EmailAddress}");
-                                }
-
-                                Console.WriteLine(new string('-', 40));
-                            }
-                        }
-                    }
+                    ProcessFolderRecursive(subFolder, pst);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    // Process a single folder's messages
+    private static void ProcessFolder(FolderInfo folder, PersonalStorage pst)
+    {
+        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
+        {
+            using (MapiMessage msg = pst.ExtractMessage(messageInfo))
+            {
+                if (msg.SupportedType == MapiItemType.DistList)
+                {
+                    // Convert to a distribution list object
+                    MapiDistributionList distList = (MapiDistributionList)msg.ToMapiMessageItem();
+
+                    Console.WriteLine($"Distribution List: {distList.DisplayName}");
+                    Console.WriteLine($"Members count: {distList.Members.Count}");
+
+                    foreach (MapiDistributionListMember member in distList.Members)
+                    {
+                        Console.WriteLine($" - {member.DisplayName} <{member.EmailAddress}>");
+                    }
+
+                    Console.WriteLine();
+                }
+            }
+        }
+    }
+
+    // Recursively process subfolders
+    private static void ProcessFolderRecursive(FolderInfo folder, PersonalStorage pst)
+    {
+        ProcessFolder(folder, pst);
+
+        foreach (FolderInfo subFolder in folder.GetSubFolders())
+        {
+            ProcessFolderRecursive(subFolder, pst);
         }
     }
 }
