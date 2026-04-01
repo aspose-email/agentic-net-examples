@@ -1,9 +1,8 @@
-using Aspose.Email.Clients;
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Smtp;
 using Aspose.Email.Calendar;
+using Aspose.Email.Calendar.Recurrences;
+using Aspose.Email.Clients.Smtp;
 
 class Program
 {
@@ -11,46 +10,59 @@ class Program
     {
         try
         {
-            // Create a new mail message
-            using (MailMessage msg = new MailMessage())
+            // Placeholder SMTP settings
+            string smtpHost = "smtp.example.com";
+            int smtpPort = 25;
+            string smtpUser = "user@example.com";
+            string smtpPass = "password";
+
+            // Guard against placeholder credentials
+            if (smtpHost.Contains("example.com"))
             {
-                msg.From = new MailAddress("organizer@example.com");
-                msg.To.Add("attendee1@example.com");
-                msg.To.Add("attendee2@example.com");
-                msg.Subject = "Project Kickoff Meeting";
+                Console.Error.WriteLine("Placeholder SMTP configuration detected. Skipping send operation.");
+                return;
+            }
 
-                // Prepare attendees collection
-                MailAddressCollection attendees = new MailAddressCollection();
-                attendees.Add(new MailAddress("attendee1@example.com"));
-                attendees.Add(new MailAddress("attendee2@example.com"));
-                attendees.Add(new MailAddress("attendee3@example.com"));
+            // Attendees collection
+            MailAddressCollection attendees = new MailAddressCollection();
+            attendees.Add(new MailAddress("person1@domain.com"));
+            attendees.Add(new MailAddress("person2@domain.com"));
+            attendees.Add(new MailAddress("person3@domain.com"));
 
-                // Create the appointment (meeting request)
-                Appointment meeting = new Appointment(
-                    "Conference Room 1",
-                    new DateTime(2024, 5, 20, 10, 0, 0),
-                    new DateTime(2024, 5, 20, 11, 0, 0),
-                    new MailAddress("organizer@example.com"),
-                    attendees);
+            // Create the appointment
+            Appointment appointment = new Appointment(
+                location: "Room 112",
+                summary: "Release Meeting",
+                description: "Discuss the next release",
+                startDate: new DateTime(2026, 4, 1, 13, 0, 0),
+                endDate: new DateTime(2026, 4, 1, 14, 0, 0),
+                organizer: new MailAddress("organizer@domain.com"),
+                attendees: attendees);
 
-                meeting.Summary = "Project Kickoff";
-                meeting.Description = "Discuss project goals, timeline, and responsibilities.";
-                meeting.Location = "Conference Room 1";
+            // Set a daily recurrence ending on a specific date (no OccurrenceCount property)
+            DailyRecurrencePattern recurrence = new DailyRecurrencePattern(5, 1);
+            recurrence.EndDate = new DateTime(2026, 4, 5);
+            appointment.Recurrence = recurrence;
 
-                // Add the iCalendar meeting request as an alternate view
-                msg.AlternateViews.Add(meeting.RequestApointment());
+            // Build the meeting request message
+            MailMessage message = new MailMessage();
+            message.From = new MailAddress("organizer@domain.com");
+            foreach (MailAddress addr in attendees)
+            {
+                message.To.Add(addr);
+            }
+            message.Subject = appointment.Summary;
+            message.AlternateViews.Add(appointment.RequestApointment());
 
-                // Send the meeting request via SMTP
-                using (SmtpClient smtp = new SmtpClient("smtp.example.com", 587, "user", "password"))
-                {
-                    smtp.SecurityOptions = SecurityOptions.Auto;
-                    smtp.Send(msg);
-                }
+            // Send the meeting request via SMTP
+            using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass))
+            {
+                client.Send(message);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
