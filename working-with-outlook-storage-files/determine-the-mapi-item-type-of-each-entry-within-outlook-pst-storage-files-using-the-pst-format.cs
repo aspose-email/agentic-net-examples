@@ -4,52 +4,80 @@ using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
-namespace DeterminePstItemTypes
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string pstPath = "sample.pst";
+            string pstPath = "sample.pst";
 
-                if (!File.Exists(pstPath))
+            // Ensure the PST file exists; create a minimal placeholder if missing
+            if (!File.Exists(pstPath))
+            {
+                string directory = Path.GetDirectoryName(pstPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    Console.Error.WriteLine($"Error: File not found – {pstPath}");
+                    Directory.CreateDirectory(directory);
+                }
+
+                try
+                {
+                    // Create an empty Unicode PST file
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Placeholder PST created at: {pstPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
                     return;
                 }
-
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-                {
-                    ProcessFolder(pst.RootFolder, pst);
-                }
             }
-            catch (Exception ex)
+
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Process the root folder
+                ProcessFolder(pst, pst.RootFolder);
             }
         }
-
-        private static void ProcessFolder(FolderInfo folder, PersonalStorage pst)
+        catch (Exception ex)
         {
-            // Process messages in the current folder
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    // Recursively process a folder and its subfolders
+    private static void ProcessFolder(PersonalStorage pst, FolderInfo folder)
+    {
+        try
+        {
+            // Enumerate messages in the current folder
             foreach (MessageInfo messageInfo in folder.EnumerateMessages())
             {
-                using (MapiMessage message = pst.ExtractMessage(messageInfo))
+                try
                 {
-                    MapiItemType itemType = message.SupportedType;
-                    Console.WriteLine($"Subject: {messageInfo.Subject}");
-                    Console.WriteLine($"Item Type: {itemType}");
-                    Console.WriteLine();
+                    using (MapiMessage message = pst.ExtractMessage(messageInfo))
+                    {
+                        MapiItemType itemType = message.SupportedType;
+                        Console.WriteLine($"EntryId: {messageInfo.EntryId} | Type: {itemType}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error processing message {messageInfo.EntryId}: {ex.Message}");
                 }
             }
 
             // Recursively process subfolders
             foreach (FolderInfo subFolder in folder.GetSubFolders())
             {
-                ProcessFolder(subFolder, pst);
+                ProcessFolder(pst, subFolder);
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error processing folder {folder.DisplayName}: {ex.Message}");
         }
     }
 }
