@@ -11,78 +11,48 @@ class Program
     {
         try
         {
-            // POP3 server connection parameters (replace with real values)
+            // Placeholder POP3 server details
             string host = "pop3.example.com";
             int port = 110;
             string username = "user@example.com";
             string password = "password";
 
-            // Create and configure the POP3 client
+            // Skip real network calls when placeholder values are used
+            if (host.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder host detected. Skipping POP3 operations.");
+                return;
+            }
+
+            // Initialize POP3 client with placeholder credentials
             using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
             {
-                // Assign a BindIPEndPoint handler to control local endpoint binding
+                // Subscribe to connection event
+                client.OnConnect += (sender, e) => Console.WriteLine("Connected to POP3 server.");
 
-                // Subscribe to the OnConnect event
-                client.OnConnect += (sender, e) =>
-                {
-                    Console.WriteLine("POP3 client connected to the server.");
-                };
+                // Asynchronously list messages
+                Pop3MessageInfoCollection messages = await client.ListMessagesAsync();
 
-                // Validate credentials (asynchronous)
-                try
+                Console.WriteLine($"Total messages: {messages.Count}");
+
+                // Iterate through messages and display basic info
+                foreach (var info in messages)
                 {
-                    await client.ValidateCredentialsAsync();
-                    Console.WriteLine("Credentials validated successfully.");
-                }
-                catch (Pop3Exception ex)
-                {
-                    Console.Error.WriteLine($"Credential validation failed: {ex.Message}");
-                    return;
+                    Console.WriteLine($"Subject: {info.Subject}, Size: {info.Size} bytes");
                 }
 
-                // List messages asynchronously
-                Pop3MessageInfoCollection messages;
-                try
+                // Fetch the first message asynchronously as a demonstration
+                if (messages.Count > 0)
                 {
-                    messages = await client.ListMessagesAsync();
-                    Console.WriteLine($"Total messages on server: {messages.Count}");
-                }
-                catch (Pop3Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
-                    return;
-                }
-
-                // Process each message (fetch subject asynchronously)
-                foreach (Pop3MessageInfo info in messages)
-                {
-                    try
-                    {
-                        using (MailMessage message = await client.FetchMessageAsync(info.UniqueId))
-                        {
-                            Console.WriteLine($"Message ID: {info.UniqueId}, Subject: {message.Subject}");
-                        }
-                    }
-                    catch (Pop3Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to fetch message {info.UniqueId}: {ex.Message}");
-                    }
-                }
-
-                // Commit any deletions (if any were performed)
-                try
-                {
-                    await client.CommitDeletesAsync();
-                }
-                catch (Pop3Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to commit deletions: {ex.Message}");
+                    var firstInfo = messages[0];
+                    var message = await client.FetchMessageAsync(firstInfo.SequenceNumber);
+                    Console.WriteLine($"Fetched message subject: {message.Subject}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
