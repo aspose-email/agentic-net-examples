@@ -13,38 +13,41 @@ namespace AsposeEmailSample
             try
             {
                 string pstPath = "sample.pst";
+                string outputPath = "SoftDeletedItems.txt";
 
+                // Ensure the PST file exists; create a minimal placeholder if missing
                 if (!File.Exists(pstPath))
                 {
-                    Console.Error.WriteLine($"Error: File not found – {pstPath}");
-                    return;
+                    using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // Placeholder PST created; no additional content required
+                    }
                 }
 
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Open the PST file
                 using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    // Extract soft‑deleted items
-                    IList<RestoredItemEntry> restoredItems = pst.FindAndExtractSoftDeletedItems();
+                    // Enumerate soft‑deleted items
+                    IEnumerable<RestoredItemEntry> softDeletedItems = pst.FindAndEnumerateSoftDeletedItems();
 
-                    foreach (RestoredItemEntry entry in restoredItems)
+                    // Write details to console and to a text file
+                    using (StreamWriter writer = new StreamWriter(outputPath, false))
                     {
-                        MapiMessage message = entry.Item;
-                        string safeSubject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
-                        // Replace invalid filename characters
-                        foreach (char c in Path.GetInvalidFileNameChars())
+                        foreach (RestoredItemEntry entry in softDeletedItems)
                         {
-                            safeSubject = safeSubject.Replace(c, '_');
+                            MapiMessage message = entry.Item as MapiMessage;
+                            string subject = message != null ? message.Subject : "N/A";
+                            string line = $"FolderId: {entry.FolderId}, Subject: {subject}";
+                            Console.WriteLine(line);
+                            writer.WriteLine(line);
                         }
-
-                        string outputPath = $"{safeSubject}_{Guid.NewGuid()}.msg";
-
-                        // Save the message as MSG; no SaveOptions needed
-                        message.Save(outputPath);
-                        Console.WriteLine($"Restored message saved to: {outputPath}");
-                    }
-
-                    if (restoredItems.Count == 0)
-                    {
-                        Console.WriteLine("No soft‑deleted items were found.");
                     }
                 }
             }
