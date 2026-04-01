@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
 using Aspose.Email.Clients;
+using Aspose.Email.Clients.Imap;
 
 class Program
 {
@@ -10,31 +9,42 @@ class Program
     {
         try
         {
-            // Initialize and connect the IMAP client
-            using (ImapClient client = new ImapClient("imap.example.com", 993, "username", "password", SecurityOptions.Auto))
+            // Placeholder connection parameters
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "username";
+            string password = "password";
+
+            // Guard against executing with placeholder credentials
+            if (host.Contains("example.com") || username == "username" || password == "password")
             {
-                // Select the INBOX folder
-                client.SelectFolder("INBOX");
+                Console.Error.WriteLine("Skipping IMAP operation due to placeholder credentials.");
+                return;
+            }
 
-                // Retrieve messages from the selected folder
-                ImapMessageInfoCollection messages = client.ListMessages();
-
-                // Find a message that has the Flagged flag set
-                foreach (ImapMessageInfo info in messages)
+            // Create and connect the IMAP client
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            {
+                try
                 {
-                    if (info.Flagged)
-                    {
-                        // Remove the Flagged flag from the message
-                        client.RemoveMessageFlags(new[] { info }, ImapMessageFlags.Flagged);
-                        Console.WriteLine($"Removed Flagged flag from message UID {info.UniqueId}");
-                        break;
-                    }
+                    client.SelectFolder("INBOX");
+
+                    // Example unique identifier of the message to modify
+                    string messageUid = "123";
+
+                    // Remove the Flagged flag from the specified message
+                    client.RemoveMessageFlags(messageUid, ImapMessageFlags.Flagged);
+                    Console.WriteLine("Flagged flag removed from message UID " + messageUid + ".");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("IMAP operation failed: " + ex.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
