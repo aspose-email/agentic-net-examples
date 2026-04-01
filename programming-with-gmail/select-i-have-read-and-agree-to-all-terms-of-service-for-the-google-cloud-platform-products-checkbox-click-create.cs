@@ -9,26 +9,39 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with dummy OAuth credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance("clientId", "clientSecret", "refreshToken", "user@example.com"))
+            // Placeholder credentials – replace with real values when available.
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string defaultEmail = "user@example.com";
+
+            // Guard against placeholder credentials to avoid live network calls.
+            if (clientId == "clientId" || clientSecret == "clientSecret" ||
+                refreshToken == "refreshToken" || defaultEmail == "user@example.com")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client operations.");
+                return;
+            }
+
+            // Create Gmail client.
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
+
+            // Use the client within a using block to ensure proper disposal.
+            using (gmailClient)
             {
                 try
                 {
-                    // Create the email message confirming acceptance of terms
-                    using (MailMessage message = new MailMessage())
+                    // Example operation: list calendars.
+                    Aspose.Email.Clients.Google.Calendar[] calendars = gmailClient.ListCalendars();
+                    Console.WriteLine("Calendars retrieved:");
+                    foreach (var calendar in calendars)
                     {
-                        message.From = "user@example.com";
-                        message.To = "support@example.com";
-                        message.Subject = "Acceptance of Google Cloud Platform Terms of Service";
-                        message.Body = "I have read and agree to all Terms of Service for the Google Cloud Platform products.";
-                        // Send the message
-                        gmailClient.SendMessage(message);
-                        Console.WriteLine("Confirmation email sent successfully.");
+                        Console.WriteLine($"- {calendar.Id}: {calendar.Summary}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error sending email: {ex.Message}");
+                    Console.Error.WriteLine($"Gmail operation failed: {ex.Message}");
                 }
             }
         }
