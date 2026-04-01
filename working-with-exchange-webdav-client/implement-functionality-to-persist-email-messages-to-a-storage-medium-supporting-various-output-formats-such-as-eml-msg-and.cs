@@ -8,97 +8,55 @@ class Program
     {
         try
         {
-            // Define input and output file paths
-            string inputPath = "sample.eml";
-            string outputEmlPath = "output.eml";
-            string outputMsgPath = "output.msg";
-            string outputMhtmlPath = "output.mhtml";
-
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Prepare output directory
+            string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "Output");
+            if (!Directory.Exists(outputDir))
             {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Create a simple email message
+            using (MailMessage message = new MailMessage())
+            {
+                message.From = new MailAddress("sender@example.com", "Sender");
+                message.To.Add(new MailAddress("recipient@example.com", "Recipient"));
+                message.Subject = "Sample Email";
+                message.Body = "This is a sample email message created with Aspose.Email.";
+
+                // Save as EML
+                string emlPath = Path.Combine(outputDir, "sample.eml");
                 try
                 {
-                    string placeholder = "From: test@example.com\r\nTo: test@example.com\r\nSubject: Test Email\r\n\r\nThis is a test email.";
-                    File.WriteAllText(inputPath, placeholder);
+                    message.Save(emlPath, SaveOptions.DefaultEml);
+                    Console.WriteLine($"EML saved to: {emlPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder input file: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to save EML: {ex.Message}");
                 }
-            }
 
-            // Ensure output directories exist
-            try
-            {
-                string outputDir = Path.GetDirectoryName(outputEmlPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                outputDir = Path.GetDirectoryName(outputMsgPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                outputDir = Path.GetDirectoryName(outputMhtmlPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to ensure output directories: {ex.Message}");
-                return;
-            }
-
-            // Load the email message
-            MailMessage message;
-            try
-            {
-                message = MailMessage.Load(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load email from '{inputPath}': {ex.Message}");
-                return;
-            }
-
-            // Use using to ensure disposal of the MailMessage
-            using (message)
-            {
-                // Save as EML (default format)
+                // Save as MSG
+                string msgPath = Path.Combine(outputDir, "sample.msg");
                 try
                 {
-                    message.Save(outputEmlPath);
+                    message.Save(msgPath, SaveOptions.DefaultMsg);
+                    Console.WriteLine($"MSG saved to: {msgPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save MSG: {ex.Message}");
                 }
 
-                // Save as MSG using appropriate SaveOptions
+                // Save as MHTML
+                string mhtmlPath = Path.Combine(outputDir, "sample.mhtml");
                 try
                 {
-                    SaveOptions msgOptions = SaveOptions.CreateSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                    message.Save(outputMsgPath, msgOptions);
+                    message.Save(mhtmlPath, SaveOptions.DefaultMhtml);
+                    Console.WriteLine($"MHTML saved to: {mhtmlPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                }
-
-                // Save as MHTML using appropriate SaveOptions
-                try
-                {
-                    SaveOptions mhtmlOptions = SaveOptions.CreateSaveOptions(MailMessageSaveType.MHtmlFormat);
-                    message.Save(outputMhtmlPath, mhtmlOptions);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MHTML file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save MHTML: {ex.Message}");
                 }
             }
         }
