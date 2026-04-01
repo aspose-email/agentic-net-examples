@@ -1,52 +1,73 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
-using Aspose.Email.Storage;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define input MSG file and output EMLX file paths
-            string inputPath = "sample.msg";
-            string outputPath = "sample.emlx";
+            string inputPath = "input.msg";
+            string outputPath = "output.emlx";
 
-            // Verify that the input file exists
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
                 Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                try
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
             }
 
-            // Load the MSG file as a MapiMessage
-            using (MapiMessage mapiMessage = MapiMessage.Load(inputPath))
+            // Load MSG and save as EMLX preserving all properties
+            try
             {
-                // Convert the MapiMessage to a MailMessage preserving all properties
-                MailConversionOptions conversionOptions = new MailConversionOptions();
-                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+                using (MailMessage mail = MailMessage.Load(inputPath))
                 {
-                    // Prepare save options for EMLX format
                     EmlSaveOptions saveOptions = new EmlSaveOptions(MailMessageSaveType.EmlxFormat);
-
-                    // Save the MailMessage as an EMLX file
-                    mailMessage.Save(outputPath, saveOptions);
-                    Console.WriteLine($"Message successfully saved as EMLX to: {outputPath}");
+                    mail.Save(outputPath, saveOptions);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing message: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
