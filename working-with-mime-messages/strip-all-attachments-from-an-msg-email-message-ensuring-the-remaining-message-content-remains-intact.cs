@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
@@ -8,55 +9,68 @@ class Program
     {
         try
         {
-            string inputPath = @"input.msg";
-            string outputPath = @"output.msg";
+            // Define input and output MSG file paths
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Guard input file existence
+            // Ensure the input MSG file exists; create a minimal placeholder if it does not
             if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    // Create a simple MAPI message with minimal content
+                    using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "Sender Name", "sender@example.com"))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                    Console.WriteLine($"Placeholder MSG created at '{inputPath}'.");
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
                     return;
                 }
             }
 
-            // Remove all attachments from the MSG file
+            // Copy the input file to the output location (overwrite if it already exists)
             try
             {
-                MapiAttachmentCollection removedAttachments = MapiMessage.RemoveAttachments(inputPath);
-                // Optionally, you can inspect removedAttachments here
+                File.Copy(inputPath, outputPath, true);
             }
-            catch (Exception removeEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to remove attachments: {removeEx.Message}");
+                Console.Error.WriteLine($"Failed to copy MSG file: {ex.Message}");
                 return;
             }
 
-            // Load the modified message and save to a new file
+            // Remove all attachments from the output MSG file
             try
             {
-                using (MapiMessage message = MapiMessage.Load(inputPath))
-                {
-                    message.Save(outputPath);
-                }
-                Console.WriteLine($"Attachments stripped successfully. Saved to: {outputPath}");
+                // This static method removes attachments in-place and returns the removed collection
+                MapiAttachmentCollection removed = MapiMessage.RemoveAttachments(outputPath);
+                Console.WriteLine($"Removed {removed.Count} attachment(s) from '{outputPath}'.");
             }
-            catch (Exception loadSaveEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error loading or saving message: {loadSaveEx.Message}");
+                Console.Error.WriteLine($"Failed to remove attachments: {ex.Message}");
+                return;
+            }
+
+            // Load the resulting message to verify that content remains intact
+            try
+            {
+                using (MapiMessage result = MapiMessage.Load(outputPath))
+                {
+                    Console.WriteLine("Message after stripping attachments:");
+                    Console.WriteLine($"Subject: {result.Subject}");
+                    Console.WriteLine($"Body: {result.Body}");
+                    Console.WriteLine($"Attachment count: {result.Attachments.Count}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load resulting MSG: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
