@@ -4,47 +4,64 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string inputPath = "Message.eml";
-            string outputPath = "Message.msg";
+            string inputPath = "sample.eml";
+            string outputPath = "sample.msg";
 
-            // Ensure the input EML file exists; create a minimal placeholder if missing.
-            try
+            // Ensure the input file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(inputPath))
             {
-                if (!File.Exists(inputPath))
+                try
                 {
-                    string placeholder = "From: sender@example.com\r\nTo: recipient@example.com\r\nSubject: Test\r\n\r\nBody of the email.";
-                    File.WriteAllText(inputPath, placeholder);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    using (MailMessage placeholderMessage = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "This is a placeholder email body."))
+                    {
+                        placeholderMessage.Save(inputPath);
+                    }
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ioEx.Message}");
+                    return;
                 }
             }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine($"Failed to prepare input file: {ioEx.Message}");
-                return;
-            }
 
-            // Ensure the output directory exists.
+            // Load the email message and save it as MSG.
             try
             {
-                string outputDirectory = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                using (MailMessage email = MailMessage.Load(inputPath))
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    // Saving with a .msg extension uses the default MSG format.
+                    email.Save(outputPath);
                 }
             }
-            catch (Exception dirEx)
+            catch (Exception msgEx)
             {
-                Console.Error.WriteLine($"Failed to prepare output directory: {dirEx.Message}");
+                Console.Error.WriteLine($"Error processing email message: {msgEx.Message}");
                 return;
-            }
-
-            // Load the email message and save it as MSG using default options.
-            using (MailMessage message = MailMessage.Load(inputPath))
-            {
-                message.Save(outputPath, SaveOptions.DefaultMsg);
             }
         }
         catch (Exception ex)
