@@ -1,39 +1,79 @@
+using Aspose.Email.Tools.Search;
 using System;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-class Program
+namespace Pop3Example
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize POP3 client with host, port, credentials, and security options
-            using (Pop3Client client = new Pop3Client("pop.example.com", 110, "username", "password", SecurityOptions.Auto))
+            try
             {
-                // Get mailbox information
-                Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
-                Console.WriteLine($"Message count: {mailboxInfo.MessageCount}, Size: {mailboxInfo.OccupiedSize}");
+                // Placeholder POP3 server credentials
+                string host = "pop3.example.com";
+                int port = 110;
+                string username = "username";
+                string password = "password";
 
-                // List messages in the mailbox
-                var messages = client.ListMessages();
-                foreach (var info in messages)
+                // Guard against executing with placeholder credentials
+                if (host.Contains("example.com") || username == "username" || password == "password")
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
+                    Console.Error.WriteLine("Placeholder POP3 server credentials detected. Skipping connection.");
+                    return;
+                }
 
-                    // Fetch the full message using its sequence number
-                    using (MailMessage message = client.FetchMessage(info.SequenceNumber))
+                // Initialize POP3 client
+                using (Pop3Client client = new Pop3Client(host, port, username, password))
+                {
+                    try
                     {
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"Body: {message.Body}");
+                        // Validate credentials
+                        client.ValidateCredentials();
+
+                        // Build a query to retrieve all messages
+                        MailQueryBuilder builder = new MailQueryBuilder();
+                        MailQuery query = builder.GetQuery();
+
+                        // List messages based on the query
+                        Pop3MessageInfoCollection messages = client.ListMessages(query);
+                        Console.WriteLine($"Total messages retrieved: {messages.Count}");
+
+                        // Ensure output directory exists
+                        string outputDir = "RetrievedMessages";
+                        if (!Directory.Exists(outputDir))
+                        {
+                            Directory.CreateDirectory(outputDir);
+                        }
+
+                        // Iterate through messages and save each to a file
+                        foreach (Pop3MessageInfo messageInfo in messages)
+                        {
+                            string filePath = Path.Combine(outputDir, $"Message_{messageInfo.SequenceNumber}.eml");
+                            try
+                            {
+                                client.SaveMessage(messageInfo.SequenceNumber, filePath);
+                                Console.WriteLine($"Saved message {messageInfo.SequenceNumber} to {filePath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to save message {messageInfo.SequenceNumber}: {ex.Message}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"POP3 client operation error: {ex.Message}");
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
