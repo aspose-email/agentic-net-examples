@@ -3,43 +3,57 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailTaskExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string msgFilePath = "task.msg";
+            string msgPath = "input.msg";
 
-                if (!File.Exists(msgFilePath))
+            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(msgPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                    // Create a simple placeholder message.
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "receiver@example.com",
+                        "Placeholder Subject",
+                        "This is a placeholder message body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
                     return;
                 }
+            }
 
-                using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+            // Load the MSG file into a MapiMessage instance.
+            try
+            {
+                using (MapiMessage message = MapiMessage.Load(msgPath))
                 {
-                    if (mapiMessage.SupportedType == MapiItemType.Task)
-                    {
-                        using (MapiTask task = (MapiTask)mapiMessage.ToMapiMessageItem())
-                        {
-                            Console.WriteLine($"Subject: {task.Subject}");
-                            Console.WriteLine($"Due Date: {task.DueDate}");
-                            // The task object is now instantiated in memory and can be used further.
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("The MSG file does not contain a task.");
-                    }
+                    // Example: output some basic properties.
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine($"Sender: {message.SenderName} <{message.SenderEmailAddress}>");
+                    Console.WriteLine($"Body: {message.Body}");
+                    Console.WriteLine($"Number of Attachments: {message.Attachments.Count}");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
