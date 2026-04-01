@@ -1,7 +1,7 @@
+using Aspose.Email.Clients.Exchange;
 using System;
-using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
@@ -9,31 +9,34 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with placeholder credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com"))
+            // Placeholder server URI and credentials.
+            string serverUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // If placeholders are detected, skip the external call to avoid runtime failures.
+            if (serverUri.Contains("example.com"))
             {
-                // Retrieve list of message infos (contains IDs)
-                List<GmailMessageInfo> messageInfos = gmailClient.ListMessages();
+                Console.WriteLine("Placeholder credentials detected. Skipping server call.");
+                return;
+            }
 
-                // Collect message IDs
-                List<string> ids = new List<string>();
-                foreach (GmailMessageInfo info in messageInfos)
-                {
-                    if (!string.IsNullOrEmpty(info.Id))
-                    {
-                        ids.Add(info.Id);
-                    }
-                }
+            // Create the Exchange WebDAV client.
+            using (ExchangeClient client = new ExchangeClient(serverUri, username, password))
+            {
+                // Unique identifiers (message IDs) of the messages to retrieve.
+                string[] messageIds = { "AAMkAGI2AAAAAA...", "AAMkAGI3BBBBBB..." };
 
-                // Fetch each message by its ID and display the subject
-                foreach (string id in ids)
+                foreach (string id in messageIds)
                 {
-                    using (MailMessage message = gmailClient.FetchMessage(id))
+                    // Retrieve message info by ID from the Inbox folder.
+                    ExchangeMessageInfoCollection infos = client.ListMessagesById("Inbox", id);
+
+                    // The collection should contain a single item; fetch the full message.
+                    foreach (var info in infos)
                     {
+                        // Fetch the complete MailMessage using the message's unique URI.
+                        MailMessage message = client.FetchMessage(info.UniqueUri);
                         Console.WriteLine($"Subject: {message.Subject}");
                     }
                 }
