@@ -1,67 +1,56 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
+using System.Text;
+using Aspose.Email;
 
-namespace LogInspector
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string logFilePath = "log.txt";
+            string logFilePath = "log.txt";
 
-                if (!File.Exists(logFilePath))
+            // Ensure the log file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(logFilePath))
+            {
+                try
                 {
-                    // Create a minimal placeholder log file
-                    using (StreamWriter placeholderWriter = new StreamWriter(logFilePath))
+                    using (FileStream createStream = File.Create(logFilePath))
                     {
-                        placeholderWriter.WriteLine("Request: Placeholder");
-                        placeholderWriter.WriteLine("Response: Placeholder");
+                        byte[] placeholder = Encoding.UTF8.GetBytes("Placeholder log content.");
+                        createStream.Write(placeholder, 0, placeholder.Length);
                     }
-                    Console.Error.WriteLine($"Log file not found. Created placeholder at {logFilePath}.");
+                }
+                catch (Exception createEx)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder log file: {createEx.Message}");
                     return;
                 }
+            }
 
-                List<string> requestLines = new List<string>();
-                List<string> responseLines = new List<string>();
-
-                using (StreamReader reader = new StreamReader(logFilePath))
+            // Read and display the log file contents.
+            try
+            {
+                using (FileStream readStream = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (StreamReader reader = new StreamReader(readStream, Encoding.UTF8))
                 {
                     string line;
                     while ((line = reader.ReadLine()) != null)
                     {
-                        if (line.StartsWith("Request:", StringComparison.OrdinalIgnoreCase))
-                        {
-                            requestLines.Add(line);
-                        }
-                        else if (line.StartsWith("Response:", StringComparison.OrdinalIgnoreCase))
-                        {
-                            responseLines.Add(line);
-                        }
+                        Console.WriteLine(line);
                     }
                 }
-
-                Console.WriteLine($"Total request entries: {requestLines.Count}");
-                Console.WriteLine($"Total response entries: {responseLines.Count}");
-
-                Console.WriteLine("\nRequests:");
-                foreach (string req in requestLines)
-                {
-                    Console.WriteLine(req);
-                }
-
-                Console.WriteLine("\nResponses:");
-                foreach (string resp in responseLines)
-                {
-                    Console.WriteLine(resp);
-                }
             }
-            catch (Exception ex)
+            catch (Exception readEx)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"Failed to read log file: {readEx.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
