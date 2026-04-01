@@ -9,61 +9,58 @@ class Program
     {
         try
         {
-            string htmlFilePath = "input.html";
-            string icsFilePath = "output.ics";
+            // Define input HTML and output iCalendar file paths
+            string inputHtmlPath = "input.html";
+            string outputIcsPath = "output.ics";
 
-            // Ensure the HTML input file exists; create a minimal placeholder if missing.
-            if (!File.Exists(htmlFilePath))
+            // Ensure the input HTML file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputHtmlPath))
             {
                 try
                 {
-                    File.WriteAllText(htmlFilePath, "<html><body>Sample Event</body></html>");
+                    File.WriteAllText(inputHtmlPath, "<html><body>Sample Event</body></html>");
+                    Console.WriteLine($"Placeholder HTML created at {inputHtmlPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder HTML: {ex.Message}");
                     return;
                 }
             }
 
-            // Read HTML content.
+            // Read the HTML content
             string htmlContent;
             try
             {
-                using (StreamReader reader = new StreamReader(htmlFilePath))
-                {
-                    htmlContent = reader.ReadToEnd();
-                }
+                htmlContent = File.ReadAllText(inputHtmlPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error reading HTML file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
                 return;
             }
 
-            // Prepare minimal appointment data.
-            DateTime startDate = DateTime.Now;
-            DateTime endDate = startDate.AddHours(1);
-            MailAddress organizer = new MailAddress("organizer@example.com");
-            MailAddressCollection attendees = new MailAddressCollection();
+            // Create an appointment and populate it with the HTML description
+            Appointment appointment = new Appointment(
+                "Sample Event",
+                DateTime.Now.AddHours(1),
+                DateTime.Now.AddHours(2),
+                new MailAddress("organizer@example.com"),
+                new MailAddressCollection());
 
-            // Create the appointment and set HTML description.
-            Appointment appointment = new Appointment("Sample Event", startDate, endDate, organizer, attendees);
             appointment.HtmlDescription = htmlContent;
             appointment.Summary = "Sample Event from HTML";
+            appointment.Description = "Event generated from HTML content";
 
-            // Save the appointment as an iCalendar (ICS) file.
+            // Save the appointment as an iCalendar (ICS) file
             try
             {
-                using (FileStream icsStream = new FileStream(icsFilePath, FileMode.Create, FileAccess.Write))
-                {
-                    appointment.Save(icsStream, AppointmentSaveFormat.Ics);
-                }
-                Console.WriteLine($"ICS file created at: {icsFilePath}");
+                appointment.Save(outputIcsPath);
+                Console.WriteLine($"iCalendar file saved to {outputIcsPath}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error saving iCalendar file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to save iCalendar file: {ex.Message}");
             }
         }
         catch (Exception ex)
