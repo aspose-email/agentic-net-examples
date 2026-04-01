@@ -2,56 +2,75 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Path to the PST file (adjust as needed)
             string pstPath = "sample.pst";
-
-            // Verify that the PST file exists before attempting to open it
+            // Ensure PST file exists; create a minimal placeholder if missing
             if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {pstPath}");
-                return;
+                try
+                {
+                    using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // Create a default Inbox folder
+                        placeholder.RootFolder.AddSubFolder("Inbox");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
+                    return;
+                }
             }
 
-            // Define the case‑insensitive search term
-            string searchTerm = "meeting";
-
-            // Open the PST file safely
+            // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Iterate through each subfolder of the root folder
-                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                // Define the case‑insensitive search term
+                string searchTerm = "invoice";
+
+                // Iterate through all subfolders recursively
+                foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
                 {
-                    // Enumerate messages within the current folder
-                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
-                    {
-                        // Extract the full message as a MapiMessage
-                        using (MapiMessage msg = pst.ExtractMessage(messageInfo))
-                        {
-                            // Perform a case‑insensitive search on the Subject field
-                            if (!string.IsNullOrEmpty(msg.Subject) &&
-                                msg.Subject.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
-                            {
-                                Console.WriteLine($"Folder: {folderInfo.DisplayName}");
-                                Console.WriteLine($"Subject: {msg.Subject}");
-                                Console.WriteLine($"From: {msg.SenderName}");
-                                Console.WriteLine(new string('-', 40));
-                            }
-                        }
-                    }
+                    SearchFolder(folder, searchTerm);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    // Recursively search a folder for messages whose Subject contains the term (case‑insensitive)
+    private static void SearchFolder(FolderInfo folder, string term)
+    {
+        try
+        {
+            foreach (MessageInfo messageInfo in folder.EnumerateMessages())
+            {
+                if (!string.IsNullOrEmpty(messageInfo.Subject) &&
+                    messageInfo.Subject.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    Console.WriteLine($"Found in folder \"{folder.DisplayName}\": Subject = {messageInfo.Subject}");
+                }
+            }
+
+            // Recurse into subfolders
+            foreach (FolderInfo subFolder in folder.GetSubFolders())
+            {
+                SearchFolder(subFolder, term);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error processing folder \"{folder.DisplayName}\": {ex.Message}");
         }
     }
 }
