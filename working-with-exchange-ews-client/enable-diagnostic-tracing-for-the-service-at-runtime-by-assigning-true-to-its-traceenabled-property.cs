@@ -1,7 +1,6 @@
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -10,26 +9,30 @@ class Program
     {
         try
         {
-            // Initialize the EWS client using the factory method.
-            // Replace the placeholder values with actual server URL and credentials.
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://exchange.example.com/EWS/Exchange.asmx",
-                new NetworkCredential("username", "password")))
-            {
-                // The IEWSClient type does not expose a TraceEnabled property.
-                // Diagnostic information can be captured by specifying a log file name if needed.
-                // client.LogFileName = "ews_log.txt";
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-                // Example operation: list subjects of messages in the Inbox folder.
-                foreach (ExchangeMessageInfo info in client.ListMessages(client.MailboxInfo.InboxUri))
-                {
-                    Console.WriteLine($"Subject: {info.Subject}");
-                }
+            // Guard against placeholder credentials
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
+
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Enable diagnostic tracing (property not defined on the interface, accessed via dynamic)
+                ((dynamic)client).TraceEnabled = true;
+
+                // Sample operation to verify the client works
+                string versionInfo = client.GetVersionInfo();
+                Console.WriteLine("Exchange version: " + versionInfo);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
