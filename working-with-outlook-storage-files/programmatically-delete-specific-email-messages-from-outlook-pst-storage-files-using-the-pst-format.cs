@@ -11,35 +11,52 @@ class Program
         {
             string pstPath = "sample.pst";
 
-            // Verify PST file exists
+            // Ensure the PST file exists; create a minimal one if missing.
             if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {pstPath}");
-                return;
+                try
+                {
+                    // Create a new Unicode PST file.
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Created placeholder PST file at '{pstPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Open PST file
+            // Open the PST file.
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Access the Inbox folder (adjust folder name as needed)
-                FolderInfo inbox = pst.RootFolder.GetSubFolder("Inbox");
-
-                // Iterate through messages and delete those matching a condition
-                foreach (MessageInfo msgInfo in inbox.EnumerateMessages())
+                // Iterate through each subfolder of the root folder.
+                foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
                 {
-                    // Example condition: delete messages whose subject contains "DeleteMe"
-                    if (msgInfo.Subject != null && msgInfo.Subject.Contains("DeleteMe"))
+                    // Enumerate messages in the current folder.
+                    foreach (MessageInfo msgInfo in folder.EnumerateMessages())
                     {
-                        // Delete the message using its string entry ID
-                        pst.DeleteItem(msgInfo.EntryIdString);
+                        // Example condition: delete messages whose subject contains "DeleteMe".
+                        if (!string.IsNullOrEmpty(msgInfo.Subject) && msgInfo.Subject.Contains("DeleteMe"))
+                        {
+                            try
+                            {
+                                // Delete the message by its string entry ID.
+                                pst.DeleteItem(msgInfo.EntryIdString);
+                                Console.WriteLine($"Deleted message with Subject: '{msgInfo.Subject}'");
+                            }
+                            catch (Exception delEx)
+                            {
+                                Console.Error.WriteLine($"Failed to delete message '{msgInfo.Subject}': {delEx.Message}");
+                            }
+                        }
                     }
                 }
-                // Changes are saved when the PersonalStorage object is disposed
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unhandled error: {ex.Message}");
         }
     }
 }
