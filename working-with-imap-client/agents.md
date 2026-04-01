@@ -18,19 +18,23 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (57 file(s))
-- `using Aspose.Email.Clients;` (52 file(s))
-- `using Aspose.Email;` (52 file(s))
+- `using System;` (59 file(s))
+- `using Aspose.Email;` (55 file(s))
 - `using Aspose.Email.Clients.Imap;` (52 file(s))
-- `using Aspose.Email.Tools.Search;` (23 file(s))
-- `using System.IO;` (11 file(s))
-- `using System.Collections.Generic;` (8 file(s))
-- `using System.Threading.Tasks;` (5 file(s))
-- `using System.Threading;` (3 file(s))
-- `using Aspose.Email.Storage.Pst;` (3 file(s))
-- `using Aspose.Email.Clients.Google;` (2 file(s))
-- `using System.Linq;` (1 file(s))
+- `using Aspose.Email.Clients;` (51 file(s))
+- `using Aspose.Email.Tools.Search;` (21 file(s))
+- `using System.IO;` (13 file(s))
+- `using System.Collections.Generic;` (10 file(s))
+- `using Aspose.Email.Storage.Pst;` (6 file(s))
+- `using System.Threading.Tasks;` (6 file(s))
+- `using System.Threading;` (6 file(s))
+- `using System.Linq;` (3 file(s))
+- `using System.Net;` (2 file(s))
+- `using Aspose.Email.Clients.Pop3;` (1 file(s))
 - `using Aspose.Email.Clients.Imap.Models;` (1 file(s))
+- `using System.Text;` (1 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
+- `using Aspose.Email.Clients.Google;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
@@ -49,6 +53,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [delete-a-specific-email-message-by-invoking-client-deletemessage-with-the-target-message-object-instance.cs](./delete-a-specific-email-message-by-invoking-client-deletemessage-with-the-target-message-object-instance.cs) | delete a specific email message by invoking client deletemessage with the target message object instance |
 | [enable-and-disable-client-side-logging-by-invoking-client-startlogging-to-begin-and-client-stoplogging-to-end.cs](./enable-and-disable-client-side-logging-by-invoking-client-startlogging-to-begin-and-client-stoplogging-to-end.cs) | enable and disable client side logging by invoking client startlogging to begin and client stoplogging to end |
 | [establish-a-secure-connection-to-an-imap-server-utilizing-the-imapclient-class-with-appropriate-credentials.cs](./establish-a-secure-connection-to-an-imap-server-utilizing-the-imapclient-class-with-appropriate-credentials.cs) | establish a secure connection to an imap server utilizing the imapclient class with appropriate credentials |
+| [establish-an-asynchronous-connection-by-invoking-the-connectasync-method-on-the-client-object-instance.cs](./establish-an-asynchronous-connection-by-invoking-the-connectasync-method-on-the-client-object-instance.cs) | establish an asynchronous connection by invoking the connectasync method on the client object instance |
 | [establish-an-asynchronous-connection-to-an-imap-server-handling-authentication-and-network-latency-efficiently.cs](./establish-an-asynchronous-connection-to-an-imap-server-handling-authentication-and-network-latency-efficiently.cs) | establish an asynchronous connection to an imap server handling authentication and network latency efficiently |
 | [establish-an-imap-connection-using-the-imapclient-class-by-implementing-the-steps-demonstrated-in-the-example.cs](./establish-an-imap-connection-using-the-imapclient-class-by-implementing-the-steps-demonstrated-in-the-example.cs) | establish an imap connection using the imapclient class by implementing the steps demonstrated in the example |
 | [examine-the-provided-imap-connection-notes-to-validate-configuration-parameters-and-authentication-procedures-thoroughly.cs](./examine-the-provided-imap-connection-notes-to-validate-configuration-parameters-and-authentication-procedures-thoroughly.cs) | examine the provided imap connection notes to validate configuration parameters and authentication procedures thoroughly |
@@ -84,6 +89,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [remove-the-specified-directory-from-the-file-system-ensuring-all-contained-files-are-permanently-deleted.cs](./remove-the-specified-directory-from-the-file-system-ensuring-all-contained-files-are-permanently-deleted.cs) | remove the specified directory from the file system ensuring all contained files are permanently deleted |
 | [retrieve-and-display-imap-server-activity-logs-for-monitoring-connection-and-command-events-including-authentication.cs](./retrieve-and-display-imap-server-activity-logs-for-monitoring-connection-and-command-events-including-authentication.cs) | retrieve and display imap server activity logs for monitoring connection and command events including authentication |
 | [retrieve-and-interpret-flag-properties-of-email-messages-using-the-api-to-determine-each-message-s-status.cs](./retrieve-and-interpret-flag-properties-of-email-messages-using-the-api-to-determine-each-message-s-status.cs) | retrieve and interpret flag properties of email messages using the api to determine each message s status |
+| [retrieve-email-messages-asynchronously-by-invoking-the-client-fetchmessagesasync-method-handling-the-returned-task-appropriatel.cs](./retrieve-email-messages-asynchronously-by-invoking-the-client-fetchmessagesasync-method-handling-the-returned-task-appropriatel.cs) | retrieve email messages asynchronously by invoking the client fetchmessagesasync method handling the returned task appropriatel |
 | [retrieve-email-messages-from-an-imap-server-using-appropriate-authentication-and-mailbox-selection-parameters.cs](./retrieve-email-messages-from-an-imap-server-using-appropriate-authentication-and-mailbox-selection-parameters.cs) | retrieve email messages from an imap server using appropriate authentication and mailbox selection parameters |
 | [set-up-imap-protocol-logging-to-capture-client-server-communication-details-and-enable-diagnostic-analysis.cs](./set-up-imap-protocol-logging-to-capture-client-server-communication-details-and-enable-diagnostic-analysis.cs) | set up imap protocol logging to capture client server communication details and enable diagnostic analysis |
 | [transfer-email-messages-between-imap-folders-programmatically-ensuring-proper-synchronization-state-updates-and-efficient.cs](./transfer-email-messages-between-imap-folders-programmatically-ensuring-proper-synchronization-state-updates-and-efficient.cs) | transfer email messages between imap folders programmatically ensuring proper synchronization state updates and efficient |
@@ -94,7 +100,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [verify-the-correctness-of-imap-server-authentication-parameters-by-attempting-a-login-and-handling-potential-failures.cs](./verify-the-correctness-of-imap-server-authentication-parameters-by-attempting-a-login-and-handling-potential-failures.cs) | verify the correctness of imap server authentication parameters by attempting a login and handling potential failures |
 
 ## Category Statistics
-- Total examples: 57
+- Total examples: 59
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -103,5 +109,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_182303` | examples/batch-20260328_182303 |
+| 2026-04-01 | `20260401_031001` | [examples/batch-20260401_031001](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260401_031001) |
 <!-- AUTOGENERATED:END -->

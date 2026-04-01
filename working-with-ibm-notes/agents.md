@@ -18,13 +18,16 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (28 file(s))
-- `using System.IO;` (28 file(s))
-- `using Aspose.Email;` (28 file(s))
-- `using Aspose.Email.Mapi;` (27 file(s))
-- `using Aspose.Email.Storage.Nsf;` (2 file(s))
-- `using System.Text;` (1 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
+- `using System;` (30 file(s))
+- `using System.IO;` (30 file(s))
+- `using Aspose.Email;` (30 file(s))
+- `using Aspose.Email.Mapi;` (30 file(s))
+- `using Aspose.Email.Calendar;` (2 file(s))
+- `using System.Linq;` (1 file(s))
+- `using Aspose.Email.PersonalInfo;` (1 file(s))
+- `using Aspose.Email.Storage.Nsf;` (1 file(s))
+- `using Aspose.Email.Calendar.Recurrences;` (1 file(s))
+- `using System.Collections.Generic;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
@@ -33,6 +36,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs](./configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs) | configure replication parameters for processing an input msg file to ensure accurate message duplication |
 | [construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs](./construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs) | construct a new email object using the contents of an input msg file preserving all original message properties |
 | [design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs](./design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs) | design a user interface form that accepts msg files as input directly for processing |
+| [extract-a-contact-from-an-msg-file-and-save-it-as-a-vcf-vcard.cs](./extract-a-contact-from-an-msg-file-and-save-it-as-a-vcf-vcard.cs) | extract a contact from an msg file and save it as a vcf vcard |
 | [generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs](./generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs) | generate a calendar event using the contents of an input msg file as the entry source |
 | [generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs](./generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs) | generate a new ibm notes database using an msg file as the source input |
 | [generate-a-new-notes-document-using-an-msg-file-as-input-preserving-the-message-content-and-metadata.cs](./generate-a-new-notes-document-using-an-msg-file-as-input-preserving-the-message-content-and-metadata.cs) | generate a new notes document using an msg file as input preserving the message content and metadata |
@@ -54,12 +58,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [programmatically-add-a-new-attachment-to-an-email-message-using-an-input-msg-file.cs](./programmatically-add-a-new-attachment-to-an-email-message-using-an-input-msg-file.cs) | programmatically add a new attachment to an email message using an input msg file |
 | [read-a-contact-from-an-msg-file-into-an-object-model-for-subsequent-processing.cs](./read-a-contact-from-an-msg-file-into-an-object-model-for-subsequent-processing.cs) | read a contact from an msg file into an object model for subsequent processing |
 | [read-and-parse-an-input-msg-file-to-instantiate-the-corresponding-task-object-in-memory.cs](./read-and-parse-an-input-msg-file-to-instantiate-the-corresponding-task-object-in-memory.cs) | read and parse an input msg file to instantiate the corresponding task object in memory |
+| [read-and-parse-an-msg-file-to-access-its-form-data-within-the-application.cs](./read-and-parse-an-msg-file-to-access-its-form-data-within-the-application.cs) | read and parse an msg file to access its form data within the application |
 | [read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs](./read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs) | read and parse an msg file to instantiate a mail message object for processing |
 | [read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs](./read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs) | read replication settings from an msg file and map them to the appropriate configuration objects |
 | [when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs](./when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs) | when saving the parent msg file attachments are automatically persisted within the resulting output message file |
 
 ## Category Statistics
-- Total examples: 28
+- Total examples: 30
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -68,5 +73,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_182303` | examples/batch-20260328_182303 |
+| 2026-04-01 | `20260401_031001` | [examples/batch-20260401_031001](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260401_031001) |
 <!-- AUTOGENERATED:END -->
