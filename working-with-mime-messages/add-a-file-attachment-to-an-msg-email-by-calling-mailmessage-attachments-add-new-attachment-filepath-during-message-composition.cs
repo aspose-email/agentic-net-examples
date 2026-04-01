@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mime;
 
 class Program
 {
@@ -9,14 +8,16 @@ class Program
     {
         try
         {
+            // Paths for the attachment and the output MSG file
             string attachmentPath = "sample.txt";
+            string outputPath = "output.msg";
 
-            // Ensure the attachment file exists; create a minimal placeholder if missing.
+            // Ensure the attachment file exists; create a minimal placeholder if it does not
             if (!File.Exists(attachmentPath))
             {
                 try
                 {
-                    File.WriteAllText(attachmentPath, "Sample attachment content");
+                    File.WriteAllText(attachmentPath, "Placeholder content");
                 }
                 catch (Exception ex)
                 {
@@ -25,6 +26,22 @@ class Program
                 }
             }
 
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                try
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Compose the email message
             using (MailMessage message = new MailMessage())
             {
                 message.From = "sender@example.com";
@@ -32,33 +49,14 @@ class Program
                 message.Subject = "Message with attachment";
                 message.Body = "Please see the attached file.";
 
-                // Add the attachment to the message.
-                using (Attachment attachment = new Attachment(attachmentPath))
-                {
-                    message.Attachments.Add(attachment);
-                }
+                // Add the file attachment
+                Attachment attachment = new Attachment(attachmentPath);
+                message.Attachments.Add(attachment);
 
-                string outputPath = "MessageWithAttachment.msg";
-
-                // Ensure the output directory exists.
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                        return;
-                    }
-                }
-
-                // Save the composed message to disk.
+                // Save the message as an Outlook MSG file
                 try
                 {
-                    message.Save(outputPath);
+                    message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     Console.WriteLine($"Message saved to {outputPath}");
                 }
                 catch (Exception ex)
