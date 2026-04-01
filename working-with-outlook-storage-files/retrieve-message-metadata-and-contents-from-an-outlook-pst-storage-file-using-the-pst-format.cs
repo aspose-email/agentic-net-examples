@@ -4,76 +4,87 @@ using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailPstExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string pstPath = "storage.pst";
+            string pstPath = "sample.pst";
+            string outputDir = "ExtractedMessages";
 
-                // Verify PST file exists
-                if (!File.Exists(pstPath))
+            // Ensure output directory exists
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Guard PST file existence; create minimal placeholder if missing
+            if (!File.Exists(pstPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"Error: File not found – {pstPath}");
+                    // Create an empty Unicode PST file
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Placeholder PST created at '{pstPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
                     return;
                 }
+            }
 
-                // Open the PST file
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                // Display total items count
+                Console.WriteLine($"Total items in PST: {pst.Store.GetTotalItemsCount()}");
+
+                // Iterate through each subfolder of the root folder
+                foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
                 {
-                    // Retrieve total items count
-                    int totalItems = pst.Store.GetTotalItemsCount();
-                    Console.WriteLine($"Total items count: {totalItems}");
+                    Console.WriteLine($"Folder: {folder.DisplayName}");
+                    Console.WriteLine($"  Items: {folder.ContentCount}");
+                    Console.WriteLine($"  Unread: {folder.ContentUnreadCount}");
 
-                    // Iterate through each subfolder
-                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                    // Enumerate messages in the current folder
+                    foreach (MessageInfo msgInfo in folder.EnumerateMessages())
                     {
-                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
-                        Console.WriteLine($"Total items: {folderInfo.ContentCount}");
-                        Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+                        // Output selected metadata
+                        Console.WriteLine($"  Subject: {msgInfo.Subject}");
+                        Console.WriteLine($"  Sender: {msgInfo.SenderRepresentativeName}");
+                        Console.WriteLine($"  To: {msgInfo.DisplayTo}");
+                        Console.WriteLine($"  CC: {msgInfo.DisplayCC}");
 
-                        // Enumerate messages in the current folder
-                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        // Extract full MAPI message
+                        using (MapiMessage message = pst.ExtractMessage(msgInfo))
                         {
-                            Console.WriteLine($"Subject: {messageInfo.Subject}");
-                            Console.WriteLine($"From: {messageInfo.SenderRepresentativeName}");
+                            // Build a safe filename from the subject
+                            string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                                safeSubject = safeSubject.Replace(c, '_');
 
-                            // Extract the full message
-                            using (MapiMessage msg = pst.ExtractMessage(messageInfo))
+                            string msgPath = Path.Combine(outputDir, $"{safeSubject}.msg");
+
+                            // Save the message as .msg
+                            try
                             {
-                                // Print a preview of the body (first 100 characters)
-                                if (!string.IsNullOrEmpty(msg.Body))
-                                {
-                                    int previewLength = Math.Min(100, msg.Body.Length);
-                                    Console.WriteLine($"Body preview: {msg.Body.Substring(0, previewLength)}");
-                                }
-
-                                // Create a safe filename based on the subject
-                                string safeSubject = string.IsNullOrWhiteSpace(msg.Subject) ? "Untitled" : string.Concat(msg.Subject.Split(Path.GetInvalidFileNameChars()));
-                                string msgFilePath = $"{safeSubject}.msg";
-
-                                // Save the message as a .msg file
-                                try
-                                {
-                                    msg.Save(msgFilePath);
-                                    Console.WriteLine($"Saved message to {msgFilePath}");
-                                }
-                                catch (Exception saveEx)
-                                {
-                                    Console.Error.WriteLine($"Error saving message: {saveEx.Message}");
-                                }
+                                message.Save(msgPath);
+                                Console.WriteLine($"    Saved to: {msgPath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"    Error saving message: {ex.Message}");
                             }
                         }
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
