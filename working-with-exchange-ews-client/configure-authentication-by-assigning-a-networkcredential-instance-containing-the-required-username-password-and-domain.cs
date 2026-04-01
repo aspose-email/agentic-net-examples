@@ -2,49 +2,50 @@ using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // Configure credentials
-                NetworkCredential credentials = new NetworkCredential("username", "password", "DOMAIN");
+            // Placeholder mailbox URI and credentials
+            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+            string domain = "EXAMPLE";
 
-                // Initialize EWS client with credentials
+            // Guard against executing real network calls with placeholder data
+            if (mailboxUri.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder mailbox URI detected. Skipping network call.");
+                return;
+            }
+
+            // Create a NetworkCredential instance with required details
+            NetworkCredential credentials = new NetworkCredential(username, password, domain);
+
+            // Initialize the EWS client using the credentials
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            {
+                // Optionally assign the credentials explicitly (already set via factory)
+                client.Credentials = credentials;
+
+                // Example operation: fetch mailbox information (wrapped in its own try/catch)
                 try
                 {
-                    using (IEWSClient client = EWSClient.GetEWSClient("https://exchange.example.com/EWS/Exchange.asmx", credentials))
-                    {
-                        try
-                        {
-                            // Retrieve mailbox information
-                            ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
-
-                            // Output some mailbox URIs
-                            Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
-                            Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine("Operation error: " + ex.Message);
-                        }
-                    }
+                    var mailboxInfo = client.GetMailboxInfo();
+                    Console.WriteLine("Mailbox URI: " + mailboxInfo.MailboxUri);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Connection error: " + ex.Message);
-                    return;
+                    Console.Error.WriteLine("Error during mailbox operation: " + ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
         }
     }
 }
