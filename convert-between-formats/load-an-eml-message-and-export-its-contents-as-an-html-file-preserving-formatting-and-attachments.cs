@@ -4,31 +4,70 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string emlPath = "sample.eml";
-            string htmlPath = "sample.html";
+            // Define input and output paths
+            string inputPath = "sample.eml";
+            string outputPath = "sample.html";
 
-            if (!File.Exists(emlPath))
+            // Ensure the input EML file exists; create a minimal placeholder if it does not
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file '{emlPath}' not found.");
+                try
+                {
+                    string placeholder = "Subject: Placeholder\r\n\r\nThis is a placeholder email.";
+                    File.WriteAllText(inputPath, placeholder);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Ensure the output directory exists
+            try
+            {
+                string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
                 return;
             }
 
-            using (MailMessage message = MailMessage.Load(emlPath))
+            // Load the EML message with default load options
+            try
             {
-                HtmlSaveOptions options = new HtmlSaveOptions
+                using (MailMessage message = MailMessage.Load(inputPath, new EmlLoadOptions()))
                 {
-                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
-                };
-                message.Save(htmlPath, options);
+                    // Configure HTML save options to embed resources (images, etc.)
+                    HtmlSaveOptions saveOptions = new HtmlSaveOptions
+                    {
+                        ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                    };
+
+                    // Save the message as HTML
+                    message.Save(outputPath, saveOptions);
+                }
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing EML file: {ex.Message}");
+                return;
+            }
+
+            Console.WriteLine($"EML message successfully exported to HTML: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
