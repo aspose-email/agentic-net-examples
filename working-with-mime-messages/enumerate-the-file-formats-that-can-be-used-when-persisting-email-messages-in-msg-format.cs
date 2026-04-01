@@ -1,39 +1,35 @@
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Mapi.Msg;
 
-namespace AsposeEmailMsgFormats
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            List<string> msgFormats = new List<string>();
+            // MailMessageSaveType formats for MSG
+            msgFormats.Add(nameof(MailMessageSaveType.OutlookMessageFormat));
+            msgFormats.Add(nameof(MailMessageSaveType.OutlookMessageFormatUnicode));
+            msgFormats.Add(nameof(MailMessageSaveType.OutlookTemplateFormat));
+            // MessageFormat format for MSG
+            msgFormats.Add(nameof(MessageFormat.Msg));
+            // FileFormatType format for MSG
+            msgFormats.Add(nameof(FileFormatType.Msg));
+            // MessageObjectSaveFormat format for MSG
+            msgFormats.Add(nameof(MessageObjectSaveFormat.Msg));
+
+            Console.WriteLine("File formats that can be used when persisting email messages in MSG format:");
+            foreach (string formatName in msgFormats)
             {
-                // MailMessageSaveType provides several MSG related options
-                MailMessageSaveType saveTypeStandard = MailMessageSaveType.OutlookMessageFormat;
-                MailMessageSaveType saveTypeUnicode = MailMessageSaveType.OutlookMessageFormatUnicode;
-                MailMessageSaveType saveTypeTemplate = MailMessageSaveType.OutlookTemplateFormat;
-
-                // MAPI MessageObjectSaveFormat enumeration for MSG
-                MessageObjectSaveFormat mapiSaveFormat = MessageObjectSaveFormat.Msg;
-
-                // MessageFormat class also defines a MSG format
-                MessageFormat messageFormat = MessageFormat.Msg;
-
-                Console.WriteLine("Available MSG persistence formats in Aspose.Email:");
-                Console.WriteLine($"- MailMessageSaveType.OutlookMessageFormat");
-                Console.WriteLine($"- MailMessageSaveType.OutlookMessageFormatUnicode");
-                Console.WriteLine($"- MailMessageSaveType.OutlookTemplateFormat");
-                Console.WriteLine($"- MessageObjectSaveFormat.Msg");
-                Console.WriteLine($"- MessageFormat.Msg");
+                Console.WriteLine("- " + formatName);
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
