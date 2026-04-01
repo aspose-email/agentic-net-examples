@@ -4,24 +4,27 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define input and output file paths
-            string inputPath = "sample.eml";
             string outputPath = "output.html";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                string placeholder = "From: example@example.com\r\nTo: recipient@example.com\r\nSubject: Test\r\n\r\nThis is a test email.";
-                File.WriteAllText(inputPath, placeholder);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the email message and save it as HTML
-            using (MailMessage message = MailMessage.Load(inputPath))
+            using (MailMessage message = new MailMessage())
             {
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Sample Email";
+                message.Body = "This is a sample email body.";
+
+                // Persist the email as an HTML document with default settings
                 message.Save(outputPath, SaveOptions.DefaultHtml);
             }
         }
