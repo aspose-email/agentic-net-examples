@@ -18,35 +18,30 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (41 file(s))
-- `using Aspose.Email;` (32 file(s))
-- `using Aspose.Email.Clients;` (22 file(s))
-- `using Aspose.Email.Clients.Google;` (19 file(s))
-- `using System.IO;` (17 file(s))
-- `using System.Collections.Generic;` (10 file(s))
-- `using Aspose.Email.Calendar;` (10 file(s))
-- `using Aspose.Email.Storage.Mbox;` (10 file(s))
-- `using Aspose.Email.Storage;` (8 file(s))
-- `using Aspose.Email.Storage.Pst;` (7 file(s))
-- `using Aspose.Email.Clients.Imap;` (3 file(s))
-- `using Aspose.Email.Mapi;` (3 file(s))
-- `using Aspose.Email.Clients.Smtp;` (2 file(s))
-- `using System.Text;` (2 file(s))
-- `using System.Net.Http;` (1 file(s))
-- `using System.Text.Json;` (1 file(s))
+- `using System;` (48 file(s))
+- `using Aspose.Email;` (44 file(s))
+- `using Aspose.Email.Clients;` (28 file(s))
+- `using Aspose.Email.Clients.Google;` (27 file(s))
+- `using System.IO;` (16 file(s))
+- `using Aspose.Email.Calendar;` (13 file(s))
+- `using Aspose.Email.Storage.Mbox;` (9 file(s))
+- `using Aspose.Email.Storage;` (7 file(s))
+- `using System.Collections.Generic;` (6 file(s))
+- `using Aspose.Email.Storage.Pst;` (5 file(s))
+- `using Aspose.Email.Mapi;` (4 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (2 file(s))
+- `using Aspose.Email.Calendar.Recurrences;` (1 file(s))
+- `using Aspose.Email.Clients.Smtp;` (1 file(s))
 - `using System.Threading;` (1 file(s))
-- `using System.Threading.Tasks;` (1 file(s))
-- `using System.Linq;` (1 file(s))
-- `using System.Diagnostics;` (1 file(s))
-- `using System.Reflection;` (1 file(s))
-- `using GoogleRange = Aspose.Email.Clients.Google.Range;` (1 file(s))
-- `using Aspose.Email.Clients.Activity;` (1 file(s))
-- `using System.Net;` (1 file(s))
+- `using Aspose.Email.Clients.Imap;` (1 file(s))
+- `using Aspose.Email.Clients.Pop3;` (1 file(s))
+- `using System.Text;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
 |------|-------------|
 | [access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs](./access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs) | access and obtain the metadata fields of an email message programmatically for further processing |
+| [add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs](./add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs) | add a new appointment entry to the calendar store with specified details and recurrence settings |
 | [add-a-new-calendar-appointment-to-the-schedule-using-the-library-s-appointment-insertion-api.cs](./add-a-new-calendar-appointment-to-the-schedule-using-the-library-s-appointment-insertion-api.cs) | add a new calendar appointment to the schedule using the library s appointment insertion api |
 | [capture-the-user-s-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs](./capture-the-user-s-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs) | capture the user s country and mobile number inputs then trigger the send verification code action |
 | [convert-an-mbox-archive-to-pst-format-providing-the-option-to-strip-or-retain-email-signatures-as-required.cs](./convert-an-mbox-archive-to-pst-format-providing-the-option-to-strip-or-retain-email-signatures-as-required.cs) | convert an mbox archive to pst format providing the option to strip or retain email signatures as required |
@@ -62,9 +57,14 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [fetch-existing-google-calendar-events-and-modify-their-properties-programmatically-using-the-appropriate-api-calls.cs](./fetch-existing-google-calendar-events-and-modify-their-properties-programmatically-using-the-appropriate-api-calls.cs) | fetch existing google calendar events and modify their properties programmatically using the appropriate api calls |
 | [generate-and-write-email-messages-to-an-mbox-file-adhering-to-the-standard-mailbox-format.cs](./generate-and-write-email-messages-to-an-mbox-file-adhering-to-the-standard-mailbox-format.cs) | generate and write email messages to an mbox file adhering to the standard mailbox format |
 | [implement-a-c-solution-to-convert-thunderbird-email-files-into-compatible-formats-while-preserving-message-integrity.cs](./implement-a-c-solution-to-convert-thunderbird-email-files-into-compatible-formats-while-preserving-message-integrity.cs) | implement a c solution to convert thunderbird email files into compatible formats while preserving message integrity |
+| [implement-a-googleuser-class-that-handles-oauth-2-0-authentication-flows-and-token-management-including-token-acquisition-refre.cs](./implement-a-googleuser-class-that-handles-oauth-2-0-authentication-flows-and-token-management-including-token-acquisition-refre.cs) | implement a googleuser class that handles oauth 2 0 authentication flows and token management including token acquisition refre |
 | [implement-email-file-conversion-in-a-thunderbird-based-application-using-the-c-api-covering-zimbra-integration-overview.cs](./implement-email-file-conversion-in-a-thunderbird-based-application-using-the-c-api-covering-zimbra-integration-overview.cs) | implement email file conversion in a thunderbird based application using the c api covering zimbra integration overview |
+| [implement-functionality-to-programmatically-create-modify-and-remove-gmail-calendar-entries-via-the-api.cs](./implement-functionality-to-programmatically-create-modify-and-remove-gmail-calendar-entries-via-the-api.cs) | implement functionality to programmatically create modify and remove gmail calendar entries via the api |
 | [implement-functionality-to-relocate-and-remove-calendar-events-within-a-google-calendar-using-the-api.cs](./implement-functionality-to-relocate-and-remove-calendar-events-within-a-google-calendar-using-the-api.cs) | implement functionality to relocate and remove calendar events within a google calendar using the api |
 | [implement-functionality-to-split-an-mbox-storage-file-into-separate-messages-and-provide-the-ability-to-abort-the-splitting.cs](./implement-functionality-to-split-an-mbox-storage-file-into-separate-messages-and-provide-the-ability-to-abort-the-splitting.cs) | implement functionality to split an mbox storage file into separate messages and provide the ability to abort the splitting |
+| [implement-handling-of-calendar-client-configuration-and-associated-color-metadata-properly-within-the-application.cs](./implement-handling-of-calendar-client-configuration-and-associated-color-metadata-properly-within-the-application.cs) | implement handling of calendar client configuration and associated color metadata properly within the application |
+| [implement-oauth-2-0-authentication-flow-utilizing-the-googleoauthhelper-class-to-obtain-valid-access-tokens.cs](./implement-oauth-2-0-authentication-flow-utilizing-the-googleoauthhelper-class-to-obtain-valid-access-tokens.cs) | implement oauth 2 0 authentication flow utilizing the googleoauthhelper class to obtain valid access tokens |
+| [implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs](./implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs) | implement permission based access control for calendar resources enabling read write and share restrictions per user |
 | [implement-secure-google-oauth-2-0-authentication-flow-ensuring-token-handling-and-data-transmission-meet-industry-standards.cs](./implement-secure-google-oauth-2-0-authentication-flow-ensuring-token-handling-and-data-transmission-meet-industry-standards.cs) | implement secure google oauth 2 0 authentication flow ensuring token handling and data transmission meet industry standards |
 | [initialize-a-new-cloud-console-project-by-configuring-the-required-settings-and-enabling-necessary-apis.cs](./initialize-a-new-cloud-console-project-by-configuring-the-required-settings-and-enabling-necessary-apis.cs) | initialize a new cloud console project by configuring the required settings and enabling necessary apis |
 | [navigate-to-https-cloud-google-com-console-project-and-authenticate-with-your-gmail-account-credentials-to-access-the-console.cs](./navigate-to-https-cloud-google-com-console-project-and-authenticate-with-your-gmail-account-credentials-to-access-the-console.cs) | navigate to https cloud google com console project and authenticate with your gmail account credentials to access the console |
@@ -73,6 +73,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [parse-mbox-files-to-retrieve-email-messages-and-their-metadata-programmatically-for-further-processing.cs](./parse-mbox-files-to-retrieve-email-messages-and-their-metadata-programmatically-for-further-processing.cs) | parse mbox files to retrieve email messages and their metadata programmatically for further processing |
 | [perform-a-freebusy-query-against-google-calendar-to-retrieve-availability-information-for-specified-users-and-time-range.cs](./perform-a-freebusy-query-against-google-calendar-to-retrieve-availability-information-for-specified-users-and-time-range.cs) | perform a freebusy query against google calendar to retrieve availability information for specified users and time range |
 | [perform-google-calendar-operations-through-the-gmail-client-api-enabling-creation-retrieval-and-modification-of-events.cs](./perform-google-calendar-operations-through-the-gmail-client-api-enabling-creation-retrieval-and-modification-of-events.cs) | perform google calendar operations through the gmail client api enabling creation retrieval and modification of events |
+| [perform-oauth2-authentication-using-tokenresponse-and-configure-client.cs.cs](./perform-oauth2-authentication-using-tokenresponse-and-configure-client.cs.cs) | perform oauth2 authentication using tokenresponse and configure client |
 | [programmatically-convert-thunderbird-email-files-to-standard-formats-using-the-provided-api-for-application-integration.cs](./programmatically-convert-thunderbird-email-files-to-standard-formats-using-the-provided-api-for-application-integration.cs) | programmatically convert thunderbird email files to standard formats using the provided api for application integration |
 | [programmatically-retrieve-the-total-count-of-email-messages-stored-in-an-mbox-file-using-the-api.cs](./programmatically-retrieve-the-total-count-of-email-messages-stored-in-an-mbox-file-using-the-api.cs) | programmatically retrieve the total count of email messages stored in an mbox file using the api |
 | [prompt-the-user-to-input-the-otp-received-via-mobile-sms-for-authentication-verification.cs](./prompt-the-user-to-input-the-otp-received-via-mobile-sms-for-authentication-verification.cs) | prompt the user to input the otp received via mobile sms for authentication verification |
@@ -89,7 +90,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs](./transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs) | transform an icalendar ics file into an outlook msg message handling associated outlook items and storage files |
 
 ## Category Statistics
-- Total examples: 41
+- Total examples: 48
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -98,5 +99,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_182303` | examples/batch-20260328_182303 |
+| 2026-04-01 | `20260401_034414` | [examples/batch-20260401_034414](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260401_034414) |
 <!-- AUTOGENERATED:END -->

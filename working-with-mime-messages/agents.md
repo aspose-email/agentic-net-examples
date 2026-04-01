@@ -18,20 +18,20 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (118 file(s))
-- `using System.IO;` (116 file(s))
-- `using Aspose.Email;` (115 file(s))
-- `using Aspose.Email.Mapi;` (63 file(s))
-- `using System.Security.Cryptography.X509Certificates;` (13 file(s))
+- `using System;` (126 file(s))
+- `using Aspose.Email;` (126 file(s))
+- `using System.IO;` (123 file(s))
+- `using Aspose.Email.Mapi;` (72 file(s))
+- `using System.Security.Cryptography.X509Certificates;` (15 file(s))
 - `using Aspose.Email.Calendar;` (12 file(s))
-- `using Aspose.Email.Mime;` (9 file(s))
-- `using System.Net.Mime;` (3 file(s))
-- `using System.Collections.Generic;` (2 file(s))
-- `using System.Text;` (2 file(s))
-- `using Aspose.Email.Tools.Verifications;` (2 file(s))
+- `using Aspose.Email.Mime;` (7 file(s))
+- `using System.Collections.Generic;` (3 file(s))
+- `using System.Net.Mime;` (2 file(s))
+- `using Aspose.Email.Storage.Pst;` (1 file(s))
 - `using Aspose.Email.Mapi.Msg;` (1 file(s))
-- `using Aspose.Email.Storage;` (1 file(s))
+- `using Aspose.Email.Calendar.Recurrences;` (1 file(s))
 - `using Aspose.Email.Storage.Mbox;` (1 file(s))
+- `using System.Text;` (1 file(s))
 - `using Aspose.Email.Clients.Smtp;` (1 file(s))
 
 ## Files in this folder
@@ -41,6 +41,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [add-a-file-attachment-to-an-msg-email-by-calling-mailmessage-attachments-add-new-attachment-filepath-during-message-composition.cs](./add-a-file-attachment-to-an-msg-email-by-calling-mailmessage-attachments-add-new-attachment-filepath-during-message-composition.cs) | add a file attachment to an msg email by calling mailmessage attachments add new attachment filepath during message composition |
 | [add-a-linked-resource-to-the-first-alternate-view-of-an-msg-email-by-calling-mailmessage-alternateviews-0-linkedresources-add.cs](./add-a-linked-resource-to-the-first-alternate-view-of-an-msg-email-by-calling-mailmessage-alternateviews-0-linkedresources-add.cs) | add a linked resource to the first alternate view of an msg email by calling mailmessage alternateviews 0 linkedresources add |
 | [add-a-recipient-to-an-msg-email-by-calling-mailmessage-to-add-new-mailaddress-recipient-example-com-ensuring-the-address-is.cs](./add-a-recipient-to-an-msg-email-by-calling-mailmessage-to-add-new-mailaddress-recipient-example-com-ensuring-the-address-is.cs) | add a recipient to an msg email by calling mailmessage to add new mailaddress recipient example com ensuring the address is |
+| [add-modify-and-remove-recipients-in-an-msg-file.cs](./add-modify-and-remove-recipients-in-an-msg-file.cs) | add modify and remove recipients in an msg file |
 | [add-modify-or-remove-email-recipients-within-msg-files-programmatically-ensuring-correct-address-handling.cs](./add-modify-or-remove-email-recipients-within-msg-files-programmatically-ensuring-correct-address-handling.cs) | add modify or remove email recipients within msg files programmatically ensuring correct address handling |
 | [add-one-or-more-attachments-to-the-email-via-the-attachments-collection-and-save-the-message-as-an-msg-file.cs](./add-one-or-more-attachments-to-the-email-via-the-attachments-collection-and-save-the-message-as-an-msg-file.cs) | add one or more attachments to the email via the attachments collection and save the message as an msg file |
 | [analyze-the-tnef-data-embedded-within-msg-files-to-interpret-its-structure-and-contents.cs](./analyze-the-tnef-data-embedded-within-msg-files-to-interpret-its-structure-and-contents.cs) | analyze the tnef data embedded within msg files to interpret its structure and contents |
@@ -78,6 +79,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [embed-images-into-an-email-s-html-body-via-linkedresource-objects-attach-them-to-an-alternateview-and-save-as-msg.cs](./embed-images-into-an-email-s-html-body-via-linkedresource-objects-attach-them-to-an-alternateview-and-save-as-msg.cs) | embed images into an email s html body via linkedresource objects attach them to an alternateview and save as msg |
 | [encrypt-an-email-message-with-an-x509-certificate-and-persist-the-encrypted-output-as-a-msg-file.cs](./encrypt-an-email-message-with-an-x509-certificate-and-persist-the-encrypted-output-as-a-msg-file.cs) | encrypt an email message with an x509 certificate and persist the encrypted output as a msg file |
 | [encrypt-decrypt-and-digitally-sign-msg-email-messages-ensuring-secure-transmission-authentication-and-compliance.cs](./encrypt-decrypt-and-digitally-sign-msg-email-messages-ensuring-secure-transmission-authentication-and-compliance.cs) | encrypt decrypt and digitally sign msg email messages ensuring secure transmission authentication and compliance |
+| [encrypt-decrypt-sign-and-verify-an-email-message-using-s-mime-and-a-certificate.cs](./encrypt-decrypt-sign-and-verify-an-email-message-using-s-mime-and-a-certificate.cs) | encrypt decrypt sign and verify an email message using s mime and a certificate |
 | [enumerate-the-file-formats-that-can-be-used-when-persisting-email-messages-in-msg-format.cs](./enumerate-the-file-formats-that-can-be-used-when-persisting-email-messages-in-msg-format.cs) | enumerate the file formats that can be used when persisting email messages in msg format |
 | [export-a-calendar-appointment-to-an-icalendar-file-encapsulated-within-an-msg-message-format.cs](./export-a-calendar-appointment-to-an-icalendar-file-encapsulated-within-an-msg-message-format.cs) | export a calendar appointment to an icalendar file encapsulated within an msg message format |
 | [extract-all-attachments-from-an-msg-file-and-provide-them-in-their-original-formats.cs](./extract-all-attachments-from-an-msg-file-and-provide-them-in-their-original-formats.cs) | extract all attachments from an msg file and provide them in their original formats |
@@ -85,6 +87,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [extract-an-embedded-image-from-an-email-via-linkedresource-contentstream-and-write-it-to-a-msg-file.cs](./extract-an-embedded-image-from-an-email-via-linkedresource-contentstream-and-write-it-to-a-msg-file.cs) | extract an embedded image from an email via linkedresource contentstream and write it to a msg file |
 | [extract-both-plain-text-and-html-message-bodies-from-msg-files-using-the-provided-api.cs](./extract-both-plain-text-and-html-message-bodies-from-msg-files-using-the-provided-api.cs) | extract both plain text and html message bodies from msg files using the provided api |
 | [extract-tnef-attachments-from-an-msg-email-and-convert-them-into-widely-supported-standard-file-formats.cs](./extract-tnef-attachments-from-an-msg-email-and-convert-them-into-widely-supported-standard-file-formats.cs) | extract tnef attachments from an msg email and convert them into widely supported standard file formats |
+| [extract-tnef-attachments-from-an-msg-message-and-save-them-to-disk.cs](./extract-tnef-attachments-from-an-msg-message-and-save-them-to-disk.cs) | extract tnef attachments from an msg message and save them to disk |
 | [extract-tnef-encoded-attachments-from-messages-and-save-them-as-msg-files-while-preserving-original-metadata.cs](./extract-tnef-encoded-attachments-from-messages-and-save-them-as-msg-files-while-preserving-original-metadata.cs) | extract tnef encoded attachments from messages and save them as msg files while preserving original metadata |
 | [generate-a-basic-msg-email-message-including-standard-headers-subject-line-and-plain-text-body-content.cs](./generate-a-basic-msg-email-message-including-standard-headers-subject-line-and-plain-text-body-content.cs) | generate a basic msg email message including standard headers subject line and plain text body content |
 | [generate-alternate-views-for-an-msg-email-by-invoking-alternateview-createalternateviewfromstring-html-null-text-html-to-embed.cs](./generate-alternate-views-for-an-msg-email-by-invoking-alternateview-createalternateviewfromstring-html-null-text-html-to-embed.cs) | generate alternate views for an msg email by invoking alternateview createalternateviewfromstring html null text html to embed |
@@ -94,6 +97,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [handle-email-attachments-and-embedded-objects-within-msg-files-ensuring-proper-extraction-and-preservation-of-content.cs](./handle-email-attachments-and-embedded-objects-within-msg-files-ensuring-proper-extraction-and-preservation-of-content.cs) | handle email attachments and embedded objects within msg files ensuring proper extraction and preservation of content |
 | [handle-tnef-encoded-attachments-within-msg-files-enabling-extraction-conversion-editing-and-proper-metadata-preservation.cs](./handle-tnef-encoded-attachments-within-msg-files-enabling-extraction-conversion-editing-and-proper-metadata-preservation.cs) | handle tnef encoded attachments within msg files enabling extraction conversion editing and proper metadata preservation |
 | [identify-all-file-formats-that-can-be-loaded-as-email-messages-through-the-msg-import-capability.cs](./identify-all-file-formats-that-can-be-loaded-as-email-messages-through-the-msg-import-capability.cs) | identify all file formats that can be loaded as email messages through the msg import capability |
+| [implement-comprehensive-operations-for-handling-email-messages-in-the-msg-file-format-including-creation-modification-and-extra.cs](./implement-comprehensive-operations-for-handling-email-messages-in-the-msg-file-format-including-creation-modification-and-extra.cs) | implement comprehensive operations for handling email messages in the msg file format including creation modification and extra |
 | [import-an-existing-ics-file-into-an-appointment-object-modify-its-location-then-export-as-an-outlook-msg-file.cs](./import-an-existing-ics-file-into-an-appointment-object-modify-its-location-then-export-as-an-outlook-msg-file.cs) | import an existing ics file into an appointment object modify its location then export as an outlook msg file |
 | [import-an-icalendar-appointment-stored-in-an-msg-file-and-convert-it-into-a-usable-calendar-object.cs](./import-an-icalendar-appointment-stored-in-an-msg-file-and-convert-it-into-a-usable-calendar-object.cs) | import an icalendar appointment stored in an msg file and convert it into a usable calendar object |
 | [insert-a-custom-header-into-an-msg-email-by-invoking-headers-add-with-the-desired-name-and-value.cs](./insert-a-custom-header-into-an-msg-email-by-invoking-headers-add-with-the-desired-name-and-value.cs) | insert a custom header into an msg email by invoking headers add with the desired name and value |
@@ -124,10 +128,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [persist-the-email-object-as-an-html-document-by-invoking-message-save-output-html-saveoptions-defaulthtml-with-default-html.cs](./persist-the-email-object-as-an-html-document-by-invoking-message-save-output-html-saveoptions-defaulthtml-with-default-html.cs) | persist the email object as an html document by invoking message save output html saveoptions defaulthtml with default html |
 | [persist-the-linkedresource-contentstream-from-an-msg-email-to-a-local-file-by-calling-copyto-file-create-outputpath.cs](./persist-the-linkedresource-contentstream-from-an-msg-email-to-a-local-file-by-calling-copyto-file-create-outputpath.cs) | persist the linkedresource contentstream from an msg email to a local file by calling copyto file create outputpath |
 | [populate-the-to-cc-and-bcc-collections-of-a-mailmessage-to-include-recipients-in-an-msg-file.cs](./populate-the-to-cc-and-bcc-collections-of-a-mailmessage-to-include-recipients-in-an-msg-file.cs) | populate the to cc and bcc collections of a mailmessage to include recipients in an msg file |
+| [programmatically-generate-and-modify-calendar-appointments-stored-in-msg-files-handling-all-relevant-properties-and-formats.cs](./programmatically-generate-and-modify-calendar-appointments-stored-in-msg-files-handling-all-relevant-properties-and-formats.cs) | programmatically generate and modify calendar appointments stored in msg files handling all relevant properties and formats |
 | [provide-programmatic-access-to-retrieve-replace-or-analyze-embedded-images-in-msg-email-messages.cs](./provide-programmatic-access-to-retrieve-replace-or-analyze-embedded-images-in-msg-email-messages.cs) | provide programmatic access to retrieve replace or analyze embedded images in msg email messages |
+| [read-and-update-the-priority-of-an-msg-message-using-knownpropertylist-priority.cs](./read-and-update-the-priority-of-an-msg-message-using-knownpropertylist-priority.cs) | read and update the priority of an msg message using knownpropertylist priority |
 | [read-email-messages-from-msg-files-and-write-them-back-in-msg-format-while-preserving-all-properties.cs](./read-email-messages-from-msg-files-and-write-them-back-in-msg-format-while-preserving-all-properties.cs) | read email messages from msg files and write them back in msg format while preserving all properties |
 | [read-msg-formatted-email-messages-directly-from-input-streams-and-populate-corresponding-message-objects-in-memory.cs](./read-msg-formatted-email-messages-directly-from-input-streams-and-populate-corresponding-message-objects-in-memory.cs) | read msg formatted email messages directly from input streams and populate corresponding message objects in memory |
 | [read-the-attachment-s-data-from-an-msg-message-by-accessing-its-contentstream-as-a-net-stream.cs](./read-the-attachment-s-data-from-an-msg-message-by-accessing-its-contentstream-as-a-net-stream.cs) | read the attachment s data from an msg message by accessing its contentstream as a net stream |
+| [read-write-and-manage-custom-properties-in-msg-format-messages-using-the-library-property-handling-methods.cs](./read-write-and-manage-custom-properties-in-msg-format-messages-using-the-library-property-handling-methods.cs) | read write and manage custom properties in msg format messages using the library property handling methods |
 | [read-write-and-manage-custom-properties-in-msg-format-messages-using-the-library-s-property-handling-methods.cs](./read-write-and-manage-custom-properties-in-msg-format-messages-using-the-library-s-property-handling-methods.cs) | read write and manage custom properties in msg format messages using the library s property handling methods |
 | [retrieve-all-embedded-image-assets-from-an-msg-email-file-while-maintaining-original-image-format.cs](./retrieve-all-embedded-image-assets-from-an-msg-email-file-while-maintaining-original-image-format.cs) | retrieve all embedded image assets from an msg email file while maintaining original image format |
 | [retrieve-an-msg-message-s-html-content-by-assigning-mailmessage-htmlbody-to-your-string-variable-in-code.cs](./retrieve-an-msg-message-s-html-content-by-assigning-mailmessage-htmlbody-to-your-string-variable-in-code.cs) | retrieve an msg message s html content by assigning mailmessage htmlbody to your string variable in code |
@@ -153,11 +160,12 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [update-appointment-attributes-within-an-msg-file-to-reflect-new-scheduling-details-such-as-subject-location-start-time-and.cs](./update-appointment-attributes-within-an-msg-file-to-reflect-new-scheduling-details-such-as-subject-location-start-time-and.cs) | update appointment attributes within an msg file to reflect new scheduling details such as subject location start time and |
 | [use-tnefreader-to-open-an-msg-file-parse-its-tnef-attachments-and-write-each-attachment-to-the-specified-folder.cs](./use-tnefreader-to-open-an-msg-file-parse-its-tnef-attachments-and-write-each-attachment-to-the-specified-folder.cs) | use tnefreader to open an msg file parse its tnef attachments and write each attachment to the specified folder |
 | [validate-the-digital-signature-of-an-msg-email-message-to-ensure-its-authenticity-and-integrity.cs](./validate-the-digital-signature-of-an-msg-email-message-to-ensure-its-authenticity-and-integrity.cs) | validate the digital signature of an msg email message to ensure its authenticity and integrity |
+| [verify-the-digital-signature-of-an-msg-email-using-an-x509-certificate.cs](./verify-the-digital-signature-of-an-msg-email-using-an-x509-certificate.cs) | verify the digital signature of an msg email using an x509 certificate |
 | [write-code-to-persist-email-attachments-onto-the-filesystem-using-the-msg-file-format.cs](./write-code-to-persist-email-attachments-onto-the-filesystem-using-the-msg-file-format.cs) | write code to persist email attachments onto the filesystem using the msg file format |
 | [write-the-extracted-email-components-to-msg-file-format-ensuring-proper-mime-structure-and-metadata-preservation.cs](./write-the-extracted-email-components-to-msg-file-format-ensuring-proper-mime-structure-and-metadata-preservation.cs) | write the extracted email components to msg file format ensuring proper mime structure and metadata preservation |
 
 ## Category Statistics
-- Total examples: 118
+- Total examples: 126
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -166,5 +174,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-03-28 | `20260328_182303` | examples/batch-20260328_182303 |
+| 2026-04-01 | `20260401_034414` | [examples/batch-20260401_034414](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260401_034414) |
 <!-- AUTOGENERATED:END -->
