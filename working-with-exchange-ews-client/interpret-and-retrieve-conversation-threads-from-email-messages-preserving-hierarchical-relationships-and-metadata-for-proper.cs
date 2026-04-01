@@ -1,4 +1,3 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
@@ -10,43 +9,64 @@ class Program
     {
         try
         {
-            // Set up credentials and service URL
-            NetworkCredential credential = new NetworkCredential("username", "password");
-            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip real network calls when using placeholder credentials
+            if (mailboxUri.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
 
             // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
-
-                foreach (ExchangeMessageInfo info in messageInfos)
+                try
                 {
-                    // Placeholder: use a property that identifies the conversation.
-                    // In real scenarios, replace with the appropriate ConversationId property.
-                    string conversationId = info.UniqueUri;
+                    // Get Inbox folder URI
+                    string inboxUri = client.MailboxInfo.InboxUri;
 
-                    // Retrieve all messages belonging to the conversation
-                    MailMessageCollection conversationMessages = client.FetchConversationMessages(conversationId);
-
-                    Console.WriteLine($"Conversation ID: {conversationId}");
-                    Console.WriteLine($"Number of messages in conversation: {conversationMessages.Count}");
-
-                    foreach (MailMessage message in conversationMessages)
+                    // Find conversations in the Inbox
+                    ExchangeConversation[] conversations = client.FindConversations(inboxUri);
+                    if (conversations == null || conversations.Length == 0)
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"Date: {message.Date}");
-                        Console.WriteLine("---");
+                        Console.WriteLine("No conversations found.");
+                        return;
                     }
 
-                    Console.WriteLine();
+                    foreach (ExchangeConversation conversation in conversations)
+                    {
+                        Console.WriteLine($"Conversation ID: {conversation.ConversationId}");
+                        Console.WriteLine($"Topic: {conversation.ConversationTopic}");
+                        Console.WriteLine($"Total messages in conversation: {conversation.MessageCount}");
+
+                        // Fetch all messages belonging to this conversation
+                        MailMessageCollection messages = client.FetchConversationMessages(conversation.ConversationId);
+                        foreach (MailMessage message in messages)
+                        {
+                            using (message)
+                            {
+                                Console.WriteLine("--------------------------------------------------");
+                                Console.WriteLine($"Subject: {message.Subject}");
+                                Console.WriteLine($"From: {message.From}");
+                                Console.WriteLine($"Date: {message.Date}");
+                            }
+                        }
+                        Console.WriteLine();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during EWS operations: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
