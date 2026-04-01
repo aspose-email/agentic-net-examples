@@ -8,16 +8,15 @@ class Program
     {
         try
         {
-            string inputPath = "input.html";
-            string outputPath = "output.mhtml";
+            string inputHtmlPath = "input.html";
+            string outputMhtmlPath = "output.mhtml";
 
-            // Ensure the input HTML file exists; create a minimal placeholder if missing.
-            if (!File.Exists(inputPath))
+            // Verify that the input HTML file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputHtmlPath))
             {
                 try
                 {
-                    const string placeholderHtml = "<html><body><p>Placeholder content</p></body></html>";
-                    File.WriteAllText(inputPath, placeholderHtml);
+                    File.WriteAllText(inputHtmlPath, "<html><body><p>Placeholder</p></body></html>");
                 }
                 catch (Exception ex)
                 {
@@ -26,35 +25,32 @@ class Program
                 }
             }
 
-            // Load the HTML document with HtmlLoadOptions.
-            HtmlLoadOptions loadOptions = new HtmlLoadOptions();
-            MailMessage mailMessage;
-            try
-            {
-                mailMessage = MailMessage.Load(inputPath, loadOptions);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load HTML as MailMessage: {ex.Message}");
-                return;
-            }
-
-            // Save the message directly to MHTML format.
-            using (mailMessage)
+            // Ensure the output directory exists.
+            string outputDirectory = Path.GetDirectoryName(outputMhtmlPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
                 try
                 {
-                    mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
+                    Directory.CreateDirectory(outputDirectory);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save MHTML file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
                 }
+            }
+
+            // Load the HTML document into a MailMessage using HtmlLoadOptions.
+            HtmlLoadOptions loadOptions = new HtmlLoadOptions();
+            using (MailMessage message = MailMessage.Load(inputHtmlPath, loadOptions))
+            {
+                // Export the MailMessage directly to MHTML format, preserving content fidelity.
+                message.Save(outputMhtmlPath, SaveOptions.DefaultMhtml);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
