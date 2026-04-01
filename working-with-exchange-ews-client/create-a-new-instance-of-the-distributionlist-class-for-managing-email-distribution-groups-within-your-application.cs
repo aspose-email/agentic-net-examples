@@ -1,33 +1,50 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Initialize the EWS client with placeholder credentials.
-            using (IEWSClient client = EWSClient.GetEWSClient("https://example.com/EWS/Exchange.asmx", "username", "password"))
+            // Placeholder connection details
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Detect placeholder values and skip real server interaction
+            if (serviceUrl.Contains("example.com"))
             {
-                // Create a new distribution list instance.
-                ExchangeDistributionList distributionList = new ExchangeDistributionList
-                {
-                    DisplayName = "Sample Distribution List"
-                };
+                // Create a distribution list instance locally
+                ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                distributionList.DisplayName = "Sample Distribution List";
 
-                // Prepare the list of members.
-                MailAddressCollection members = new MailAddressCollection
-                {
-                    new MailAddress("alice@example.com"),
-                    new MailAddress("bob@example.com")
-                };
+                // Prepare members collection
+                MailAddressCollection members = new MailAddressCollection();
+                members.Add(new MailAddress("user1@example.com"));
+                members.Add(new MailAddress("user2@example.com"));
 
-                // Create the distribution list on the Exchange server.
-                string listId = client.CreateDistributionList(distributionList, members);
-                Console.WriteLine($"Distribution List created with Id: {listId}");
+                Console.WriteLine($"Created distribution list '{distributionList.DisplayName}' with {members.Count} members (no server call).");
+                return;
+            }
+
+            // Connect to Exchange using EWS
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // Create a distribution list object
+                ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                distributionList.DisplayName = "Sample Distribution List";
+
+                // Prepare members collection
+                MailAddressCollection members = new MailAddressCollection();
+                members.Add(new MailAddress("user1@example.com"));
+                members.Add(new MailAddress("user2@example.com"));
+
+                // Create the distribution list on the server
+                string distributionListId = client.CreateDistributionList(distributionList, members);
+                Console.WriteLine($"Distribution List created with Id: {distributionListId}");
             }
         }
         catch (Exception ex)
