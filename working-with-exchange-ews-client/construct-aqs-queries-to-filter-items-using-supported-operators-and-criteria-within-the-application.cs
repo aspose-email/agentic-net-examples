@@ -1,38 +1,62 @@
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Tools.Search;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AqsQuerySample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize EWS client using the correct factory method
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            try
             {
-                // Build an AQS query (e.g., subject contains "Report" and from a specific sender)
-                MailQueryBuilder builder = new MailQueryBuilder();
-                builder.Subject.Contains("Report");
-                builder.From.Contains("sender@example.com");
-                MailQuery query = builder.GetQuery();
+                // Placeholder credentials – replace with real values or skip execution.
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "username";
+                string password = "password";
 
-                // List messages in the Inbox that match the query (non‑recursive)
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
-                foreach (ExchangeMessageInfo info in messages)
+                // Guard against placeholder credentials to avoid real network calls in CI.
+                if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                    return;
+                }
+
+                // Create the EWS client.
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    try
+                    {
+                        // Build an AQS query: subject contains "report" AND from contains "example@domain.com".
+                        ExchangeAdvancedSyntaxQueryBuilder builder = new ExchangeAdvancedSyntaxQueryBuilder();
+                        builder.Subject.Contains("report");
+                        builder.From.Contains("example@domain.com");
+                        MailQuery query = builder.GetQuery();
+
+                        // List messages from the Inbox that match the query.
+                        string inboxUri = client.MailboxInfo.InboxUri;
+                        ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri, query);
+
+                        // Output the subjects of the retrieved messages.
+                        foreach (var messageInfo in messages)
+                        {
+                            Console.WriteLine($"Message URI: {messageInfo.UniqueUri}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
+                        return;
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
