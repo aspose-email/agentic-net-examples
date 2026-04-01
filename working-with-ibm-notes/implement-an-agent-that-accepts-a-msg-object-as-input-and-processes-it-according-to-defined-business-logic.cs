@@ -5,70 +5,44 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            if (args.Length == 0)
+            string inputPath = "input.msg";
+            string outputPath = "output.eml";
+
+            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine("Error: No input file path provided.");
-                return;
+                using (MapiMessage placeholder = new MapiMessage())
+                {
+                    placeholder.Subject = "Placeholder";
+                    placeholder.Body = "This is a placeholder message.";
+                    placeholder.Save(inputPath);
+                }
+                Console.WriteLine($"Placeholder MSG created at '{inputPath}'.");
             }
 
-            string msgPath = args[0];
-
-            if (!File.Exists(msgPath))
+            // Load the MSG file.
+            using (MapiMessage msg = MapiMessage.Load(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
-                return;
-            }
+                Console.WriteLine($"Subject: {msg.Subject}");
+                Console.WriteLine($"From: {msg.SenderEmailAddress}");
 
-            // Load the MSG file
-            using (MapiMessage message = MapiMessage.Load(msgPath))
-            {
-                Console.WriteLine($"Subject: {message.Subject}");
-                Console.WriteLine($"From: {message.SenderName} <{message.SenderEmailAddress}>");
-                Console.WriteLine($"Body: {message.Body}");
-
-                // Determine output directory for attachments
-                string outputDirectory = Path.GetDirectoryName(msgPath);
-                if (string.IsNullOrEmpty(outputDirectory))
+                // Business logic: convert to a MailMessage and save as EML.
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mail = msg.ToMailMessage(conversionOptions))
                 {
-                    outputDirectory = ".";
+                    mail.Save(outputPath);
                 }
 
-                if (!Directory.Exists(outputDirectory))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Console.Error.WriteLine($"Error creating directory {outputDirectory}: {dirEx.Message}");
-                        return;
-                    }
-                }
-
-                // Process attachments
-                foreach (MapiAttachment attachment in message.Attachments)
-                {
-                    string attachmentPath = Path.Combine(outputDirectory, attachment.FileName);
-                    try
-                    {
-                        attachment.Save(attachmentPath);
-                        Console.WriteLine($"Saved attachment: {attachment.FileName}");
-                    }
-                    catch (Exception attEx)
-                    {
-                        Console.Error.WriteLine($"Error saving attachment {attachment.FileName}: {attEx.Message}");
-                    }
-                }
+                Console.WriteLine($"Converted message saved as EML at '{outputPath}'.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
