@@ -1,34 +1,39 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Initialize the Exchange WebDAV client
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-            using (ExchangeClient client = new ExchangeClient(serviceUrl, credentials))
-            {
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messageInfos = client.ListMessages("Inbox");
-                foreach (ExchangeMessageInfo messageInfo in messageInfos)
-                {
-                    Console.WriteLine($"Message URI: {messageInfo.UniqueUri}");
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-                    // Fetch the full message content
-                    using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
-                    {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"Body: {message.Body}");
-                        Console.WriteLine(new string('-', 40));
-                    }
+            // Skip actual network call when placeholders are used
+            if (mailboxUri.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping connection to Exchange server.");
+                return;
+            }
+
+            // Create and use the Exchange client
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            {
+                // List messages from the Inbox folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+
+                foreach (ExchangeMessageInfo info in messages)
+                {
+                    Console.WriteLine($"Subject: {info.Subject}");
+                    Console.WriteLine($"From: {info.From}");
+                    Console.WriteLine($"Date: {info.InternalDate}");
+                    Console.WriteLine($"Has Attachments: {info.HasAttachments}");
+                    Console.WriteLine(new string('-', 40));
                 }
             }
         }
