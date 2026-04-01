@@ -1,51 +1,57 @@
+using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Initialize EWS client with placeholder credentials
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://exchange.example.com/EWS/Exchange.asmx",
-                new NetworkCredential("username", "password")))
+            try
             {
-                try
-                {
-                    // Enable impersonation using primary SMTP address
-                    client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, "impersonated@example.com");
+                // Placeholder credentials – skip actual execution in CI environments.
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-                    // List messages in the impersonated user's Inbox
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                    if (messages != null && messages.Count > 0)
-                    {
-                        // Fetch the first message using its UniqueUri
-                        MailMessage firstMessage = client.FetchMessage(messages[0].UniqueUri);
-                        Console.WriteLine("Subject: " + firstMessage.Subject);
-                    }
-                    else
-                    {
-                        Console.WriteLine("No messages found in the Inbox.");
-                    }
-
-                    // Reset impersonation after operation
-                    client.ResetImpersonation();
-                }
-                catch (Exception ex)
+                if (mailboxUri.Contains("example.com"))
                 {
-                    Console.Error.WriteLine("Error during EWS operations: " + ex.Message);
+                    Console.WriteLine("Placeholder credentials detected. Skipping execution.");
                     return;
                 }
+
+                // Create the EWS client using the verified factory method.
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    try
+                    {
+                        // Enable impersonation (optional). Replace with the desired impersonated address.
+                        client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, "impersonated@example.com");
+
+                        // Example operation: list messages in the Inbox folder.
+                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                        foreach (ExchangeMessageInfo info in messages)
+                        {
+                            Console.WriteLine(info.UniqueUri);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"EWS operation error: {ex.Message}");
+                    }
+                    finally
+                    {
+                        // Reset impersonation to avoid side effects.
+                        client.ResetImpersonation();
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Failed to initialize EWS client: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unhandled error: {ex.Message}");
+            }
         }
     }
 }
