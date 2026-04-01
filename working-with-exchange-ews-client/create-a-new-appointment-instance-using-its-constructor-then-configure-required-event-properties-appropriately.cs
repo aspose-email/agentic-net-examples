@@ -10,32 +10,38 @@ class Program
         {
             // Prepare attendees
             MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("person1@domain.com"));
-            attendees.Add(new MailAddress("person2@domain.com"));
+            attendees.Add(new MailAddress("person1@example.com"));
+            attendees.Add(new MailAddress("person2@example.com"));
+            attendees.Add(new MailAddress("person3@example.com"));
 
-            // Create an appointment using the constructor
+            // Organizer address
+            MailAddress organizer = new MailAddress("organizer@example.com");
+
+            // Create the appointment using the constructor that accepts location, summary, description, dates, organizer and attendees
             Appointment appointment = new Appointment(
                 "Conference Room",
-                new DateTime(2023, 12, 15, 10, 0, 0),
-                new DateTime(2023, 12, 15, 11, 0, 0),
-                new MailAddress("organizer@domain.com"),
-                attendees);
+                "Project Kickoff",
+                "Discuss project goals and milestones.",
+                new DateTime(2023, 10, 1, 9, 0, 0),
+                new DateTime(2023, 10, 1, 10, 0, 0),
+                organizer,
+                attendees
+            );
 
-            // Configure required properties
-            appointment.Summary = "Project Kickoff";
-            appointment.Description = "Discuss project scope and deliverables.";
-            appointment.Location = "Conference Room";
+            // Configure additional required properties
+            appointment.Location = "Conference Room A";
+            appointment.Summary = "Project Kickoff Meeting";
+            appointment.Description = "Initial meeting to discuss project scope and deliverables.";
+            appointment.StartDate = new DateTime(2023, 10, 1, 9, 0, 0);
+            appointment.EndDate = new DateTime(2023, 10, 1, 10, 0, 0);
+            appointment.Organizer = organizer;
+            appointment.Attendees = attendees;
 
-            // Display appointment details
-            Console.WriteLine("Appointment created:");
-            Console.WriteLine($"Subject: {appointment.Summary}");
-            Console.WriteLine($"Organizer: {appointment.Organizer}");
-            Console.WriteLine($"Start: {appointment.StartDate}");
-            Console.WriteLine($"End: {appointment.EndDate}");
+            Console.WriteLine("Appointment created successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
