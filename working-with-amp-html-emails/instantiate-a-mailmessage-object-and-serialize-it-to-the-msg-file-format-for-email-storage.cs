@@ -8,27 +8,37 @@ class Program
     {
         try
         {
-            string outputPath = "Message.msg";
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Define output MSG file path
+            string outputPath = "output.msg";
+
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(outputDirectory);
             }
 
+            // Create a new MailMessage instance
             using (MailMessage message = new MailMessage())
             {
+                // Set basic properties
                 message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("receiver@example.com"));
-                message.Subject = "Test Subject";
-                message.Body = "Hello, this is a test email.";
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Sample MSG Message";
+                message.Body = "This is a sample email saved as MSG format.";
 
+                // Configure MSG save options
                 MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+
+                // Save the message to MSG file
                 message.Save(outputPath, saveOptions);
             }
+
+            Console.WriteLine("MailMessage saved successfully to " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
