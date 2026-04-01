@@ -1,53 +1,66 @@
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace UpdateInboxRuleSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
+            try
             {
-                // Retrieve existing inbox rules
-                InboxRule[] inboxRules = client.GetInboxRules();
+                // Placeholder connection settings – replace with real values.
+                string serviceUrl = "https://example.com/EWS";
+                string username = "username";
+                string password = "password";
+                string domain = "";
 
-                // Find the rule to modify (by display name)
-                InboxRule ruleToUpdate = null;
-                foreach (InboxRule rule in inboxRules)
+                // Guard against executing with placeholder credentials.
+                if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
                 {
-                    if (rule.DisplayName == "Sample Rule")
-                    {
-                        ruleToUpdate = rule;
-                        break;
-                    }
-                }
-
-                if (ruleToUpdate == null)
-                {
-                    Console.WriteLine("Specified inbox rule not found.");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping inbox rule update.");
                     return;
                 }
 
-                // Example modification: disable the rule
-                ruleToUpdate.IsEnabled = false;
+                // Create the EWS client.
+                using (IEWSClient service = EWSClient.GetEWSClient(serviceUrl, username, password, domain))
+                {
+                    try
+                    {
+                        // Retrieve existing inbox rules.
+                        InboxRule[] existingRules = service.GetInboxRules();
 
-                // Apply the update to the server
-                client.UpdateInboxRule(ruleToUpdate);
+                        if (existingRules == null || existingRules.Length == 0)
+                        {
+                            Console.Error.WriteLine("No inbox rules found to update.");
+                            return;
+                        }
 
-                Console.WriteLine("Inbox rule updated successfully.");
+                        // Select the first rule for demonstration purposes.
+                        InboxRule ruleToUpdate = existingRules[0];
+
+                        // Modify the rule – for example, toggle its enabled state and change the display name.
+                        ruleToUpdate.IsEnabled = !ruleToUpdate.IsEnabled;
+                        ruleToUpdate.DisplayName = ruleToUpdate.DisplayName + " (Updated)";
+
+                        // Apply the update.
+                        service.UpdateInboxRule(ruleToUpdate);
+
+                        Console.WriteLine("Inbox rule updated successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error while updating inbox rule: {ex.Message}");
+                        return;
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
