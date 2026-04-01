@@ -1,7 +1,5 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Tools.Verifications;
 
 class Program
 {
@@ -9,27 +7,33 @@ class Program
     {
         try
         {
-            // Initialize the IMAP client with server details
-            using (ImapClient client = new ImapClient("imap.example.com", 993, SecurityOptions.SSLImplicit))
-            {
-                client.Username = "user@example.com";
-                client.Password = "password";
+            // Create an instance of the email validator.
+            EmailValidator validator = new EmailValidator();
 
-                try
+            // Email address to be validated.
+            string emailAddress = "test@example.com";
+
+            // Perform validation using the default MailServer validation policy.
+            ValidationResult result;
+            validator.Validate(emailAddress, out result);
+
+            // Check the validation result using the ReturnCode property.
+            if (result.ReturnCode == ValidationResponseCode.ValidationSuccess)
+            {
+                Console.WriteLine("The email address is valid and the mail server is reachable.");
+            }
+            else
+            {
+                Console.WriteLine($"Validation failed. Reason: {result.Message}");
+                if (result.LastException != null)
                 {
-                    bool isValid = client.ValidateCredentials();
-                    Console.WriteLine(isValid ? "Connection successful." : "Invalid credentials.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Validation failed: {ex.Message}");
-                    return;
+                    Console.WriteLine($"Exception: {result.LastException.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An unexpected error occurred: {ex.Message}");
         }
     }
 }
