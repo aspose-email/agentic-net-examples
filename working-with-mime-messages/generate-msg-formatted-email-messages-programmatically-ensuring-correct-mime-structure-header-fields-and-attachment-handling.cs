@@ -9,18 +9,25 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string outputDirectory = Path.Combine(Environment.CurrentDirectory, "Output");
-            string outputPath = Path.Combine(outputDirectory, "SampleMessage.msg");
+            // Define file paths
+            string outputMsgPath = Path.Combine(Environment.CurrentDirectory, "output.msg");
+            string attachmentPath = Path.Combine(Environment.CurrentDirectory, "sample.txt");
+            string attachmentSaveDir = Path.Combine(Environment.CurrentDirectory, "Attachments");
 
             // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
+            string outputDir = Path.GetDirectoryName(outputMsgPath);
+            if (!Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Prepare a simple attachment file
-            string attachmentPath = Path.Combine(outputDirectory, "Attachment.txt");
+            // Ensure attachment directory exists
+            if (!Directory.Exists(attachmentSaveDir))
+            {
+                Directory.CreateDirectory(attachmentSaveDir);
+            }
+
+            // Create a placeholder attachment file if it does not exist
             if (!File.Exists(attachmentPath))
             {
                 try
@@ -29,36 +36,88 @@ class Program
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create attachment file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
                     return;
                 }
             }
 
-            // Create the email message
-            using (MailMessage mailMessage = new MailMessage())
+            // Create a new MailMessage
+            using (MailMessage mailMessage = new MailMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is the body of the message."))
             {
-                mailMessage.From = new MailAddress("sender@example.com", "Sender Name");
-                mailMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
-                mailMessage.Subject = "Sample MSG Message";
-                mailMessage.Body = "This is the body of the sample MSG message.";
-                mailMessage.IsBodyHtml = false;
-
                 // Add attachment
                 using (Attachment attachment = new Attachment(attachmentPath))
                 {
                     mailMessage.Attachments.Add(attachment);
+                }
 
-                    // Convert to MAPI message and save as MSG
-                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                // Save as MSG with preserved dates
+                MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                {
+                    PreserveOriginalDates = true
+                };
+
+                try
+                {
+                    mailMessage.Save(outputMsgPath, msgSaveOptions);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the saved MSG file as MapiMessage
+            if (!File.Exists(outputMsgPath))
+            {
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
+                        placeholder.Save(outputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine("MSG file was not created.");
+                return;
+            }
+
+            using (MapiMessage loadedMsg = MapiMessage.Load(outputMsgPath))
+            {
+                // Iterate over headers using Keys as required
+                foreach (string key in loadedMsg.Headers.Keys)
+                {
+                    string value = loadedMsg.Headers[key];
+                    Console.WriteLine($"{key}: {value}");
+                }
+
+                // Process attachments
+                foreach (MapiAttachment att in loadedMsg.Attachments)
+                {
+                    string attName = !string.IsNullOrEmpty(att.LongFileName) ? att.LongFileName : att.FileName;
+                    Console.WriteLine($"Attachment found: {attName}");
+
+                    // Save attachment binary data if present
+                    if (att.BinaryData != null && att.BinaryData.Length > 0)
+                    {
+                        string savePath = Path.Combine(attachmentSaveDir, attName);
                         try
                         {
-                            mapiMessage.Save(outputPath);
-                            Console.WriteLine($"MSG file saved successfully at: {outputPath}");
+                            File.WriteAllBytes(savePath, att.BinaryData);
+                            Console.WriteLine($"Attachment saved to: {savePath}");
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                            Console.Error.WriteLine($"Failed to save attachment '{attName}': {ex.Message}");
                         }
                     }
                 }
