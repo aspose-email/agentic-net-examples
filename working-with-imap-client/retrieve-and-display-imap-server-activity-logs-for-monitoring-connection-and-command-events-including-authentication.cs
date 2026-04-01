@@ -1,89 +1,104 @@
+using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Clients;
 
-class Program
+namespace ImapActivityMonitor
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // IMAP server connection parameters
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
-            SecurityOptions security = SecurityOptions.Auto;
-
-            // Path for the activity log file
-            string logPath = "imap_activity.log";
-
-            // Ensure the log file directory exists
             try
             {
-                string logDirectory = Path.GetDirectoryName(Path.GetFullPath(logPath));
+                // Placeholder IMAP server credentials
+                string host = "imap.example.com";
+                string username = "user@example.com";
+                string password = "password";
+
+                // Guard against executing real network calls with placeholder data
+                if (host.Contains("example.com") || username.Contains("example.com"))
+                {
+                    Console.WriteLine("Placeholder credentials detected. Skipping IMAP connection.");
+                    return;
+                }
+
+                // Prepare log file path and ensure its directory exists
+                string logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "ImapLogs", "imap_activity.log");
+                string logDirectory = Path.GetDirectoryName(logFilePath);
                 if (!Directory.Exists(logDirectory))
                 {
                     Directory.CreateDirectory(logDirectory);
                 }
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Failed to prepare log directory: {dirEx.Message}");
-                return;
-            }
 
-            // Create and configure the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, security))
-            {
-                // Enable activity logging
-                client.EnableLogger = true;
-                client.LogFileName = logPath;
+                // Create and configure the IMAP client
+                using (ImapClient client = new ImapClient(host, username, password, SecurityOptions.Auto))
+                {
+                    client.EnableLogger = true;
+                    client.LogFileName = logFilePath;
 
-                // Attempt to connect and authenticate
-                try
-                {
-                    client.Noop(); // Triggers connection and authentication
-                }
-                catch (ImapException imapEx)
-                {
-                    Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error during IMAP connection: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Read and display the activity log
-            try
-            {
-                if (File.Exists(logPath))
-                {
-                    string[] logLines = File.ReadAllLines(logPath);
-                    Console.WriteLine("=== IMAP Activity Log ===");
-                    foreach (string line in logLines)
+                    // Subscribe to connection event for authentication monitoring
+                    client.OnConnect += (sender, e) =>
                     {
-                        Console.WriteLine(line);
+                        Console.WriteLine("IMAP connection established and authenticated.");
+                    };
+
+                    // Define monitoring callbacks
+                    ImapMonitoringEventHandler onChange = new ImapMonitoringEventHandler(OnImapChange);
+                    ImapMonitoringErrorEventHandler onError = new ImapMonitoringErrorEventHandler(OnImapError);
+
+                    try
+                    {
+                        // Start monitoring the INBOX folder
+                        client.StartMonitoring(onChange, onError, "INBOX");
+                        Console.WriteLine("Monitoring started. Press ENTER to stop...");
+
+                        // Wait for user input to stop monitoring
+                        Console.ReadLine();
+
+                        // Stop monitoring
+                        client.StopMonitoring();
+                        Console.WriteLine("Monitoring stopped.");
+                    }
+                    catch (ImapException imapEx)
+                    {
+                        Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
                     }
                 }
-                else
-                {
-                    Console.Error.WriteLine("Log file was not created.");
-                }
             }
-            catch (Exception logEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to read log file: {logEx.Message}");
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
-        catch (Exception ex)
+
+        // Callback for new/deleted messages
+        private static void OnImapChange(object sender, ImapMonitoringEventArgs e)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.WriteLine($"Folder: {e.FolderName}");
+            if (e.NewMessages != null && e.NewMessages.Length > 0)
+            {
+                Console.WriteLine($"New messages count: {e.NewMessages.Length}");
+                foreach (ImapMessageInfo info in e.NewMessages)
+                {
+                    Console.WriteLine($"  New - UID: {info.UniqueId}, Subject: {info.Subject}");
+                }
+            }
+            if (e.DeletedMessages != null && e.DeletedMessages.Length > 0)
+            {
+                Console.WriteLine($"Deleted messages count: {e.DeletedMessages.Length}");
+                foreach (ImapMessageInfo info in e.DeletedMessages)
+                {
+                    Console.WriteLine($"  Deleted - UID: {info.UniqueId}, Subject: {info.Subject}");
+                }
+            }
+        }
+
+        // Callback for monitoring errors
+        private static void OnImapError(object sender, ImapMonitoringErrorEventArgs e)
+        {
+            Console.Error.WriteLine($"Monitoring error in folder '{e.FolderName}': {e.Error?.Message}");
         }
     }
 }
