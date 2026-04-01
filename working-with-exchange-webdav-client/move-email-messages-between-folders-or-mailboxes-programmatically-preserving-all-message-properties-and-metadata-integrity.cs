@@ -1,41 +1,66 @@
+using Aspose.Email.Storage.Pst;
 using Aspose.Email.Clients.Exchange;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Exchange server connection details (replace with real values)
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string userName = "user@example.com";
-            string password = "password";
-
-            // Initialize the Exchange client inside a using block to ensure disposal
-            using (ExchangeClient client = new ExchangeClient(serviceUrl, userName, password))
+            try
             {
-                // Define source and destination folder URIs
-                string sourceFolderUri = client.MailboxInfo.InboxUri;
-                string destinationFolderUri = client.MailboxInfo.SentItemsUri; // example destination
+                // Placeholder credentials – in real scenarios replace with actual values.
+                string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
+                string username = "username";
+                string password = "password";
 
-                // Retrieve all messages from the source folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(sourceFolderUri);
-
-                // Move each message to the destination folder, preserving all properties
-                foreach (ExchangeMessageInfo msgInfo in messages)
+                // Guard against executing with placeholder credentials.
+                if (mailboxUri.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
                 {
-                    client.MoveMessage(msgInfo, destinationFolderUri);
-                    Console.WriteLine($"Moved message URI: {msgInfo.UniqueUri}");
+                    Console.WriteLine("Placeholder credentials detected. Skipping operation.");
+                    return;
+                }
+
+                // Initialize the Exchange WebDAV client.
+                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+                {
+                    // Define source and destination folder names.
+                    string sourceFolderName = "Inbox";
+                    string destinationFolderName = "Processed";
+
+                    // Retrieve folder information to obtain their URIs.
+                    ExchangeFolderInfo sourceFolderInfo = client.GetFolderInfo(sourceFolderName);
+                    ExchangeFolderInfo destinationFolderInfo = client.GetFolderInfo(destinationFolderName);
+
+                    if (sourceFolderInfo == null || destinationFolderInfo == null)
+                    {
+                        Console.Error.WriteLine("Unable to locate one or both folders.");
+                        return;
+                    }
+
+                    string sourceFolderUri = sourceFolderInfo.Uri;
+                    string destinationFolderUri = destinationFolderInfo.Uri;
+
+                    // List messages in the source folder.
+                    var messages = client.ListMessages(sourceFolderUri);
+
+                    foreach (ExchangeMessageInfo messageInfo in messages)
+                    {
+                        // Move each message to the destination folder.
+                        client.MoveMessage(messageInfo, destinationFolderUri);
+                        Console.WriteLine($"Moved message: Subject = \"{messageInfo.Subject}\"");
+                    }
+
+                    Console.WriteLine("Message move operation completed.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // Output any errors without crashing the application
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
