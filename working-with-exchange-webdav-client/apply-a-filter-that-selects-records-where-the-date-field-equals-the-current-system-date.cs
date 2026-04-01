@@ -1,38 +1,47 @@
 using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Tools.Search;
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Tools.Search;
 using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
+            // Placeholder credentials – skip execution to avoid real network calls
+            string exchangeUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            if (exchangeUri.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping network operation.");
+                return;
+            }
+
+            // Create Exchange client inside a try/catch to handle connection issues
             try
             {
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("username", "password");
-                using (ExchangeClient client = new ExchangeClient(serviceUrl, credentials))
+                using (ExchangeClient client = new ExchangeClient(exchangeUri, username, password))
                 {
-                    // Build a query to select messages where the internal date equals today
+                    // Build a query that selects messages where the internal date equals today
                     MailQueryBuilder builder = new MailQueryBuilder();
-                    builder.InternalDate.Equals(DateTime.Today);
-                    MailQuery query = builder.GetQuery();
+                    MailQuery query = builder.InternalDate.On(DateTime.Today);
 
                     // List messages from the Inbox that match the query
-                    ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", query, false);
-                    foreach (ExchangeMessageInfo messageInfo in messages)
+                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, true);
+
+                    foreach (ExchangeMessageInfo info in messages)
                     {
-                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+                        Console.WriteLine($"Subject: {info.Subject}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"Error connecting to Exchange: {ex.Message}");
                 return;
             }
         }
