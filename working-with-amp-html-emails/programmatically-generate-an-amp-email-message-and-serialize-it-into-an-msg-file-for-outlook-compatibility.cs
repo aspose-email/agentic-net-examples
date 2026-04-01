@@ -10,23 +10,23 @@ class Program
         try
         {
             // Define output MSG file path
-            string outputPath = Path.Combine(Environment.CurrentDirectory, "AmpEmail.msg");
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!Directory.Exists(outputDir))
+            string outputPath = "amp_message.msg";
+
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Create AMP email message
+            // Create and configure the AMP message
             using (AmpMessage ampMessage = new AmpMessage())
             {
-                // Set standard properties
                 ampMessage.From = new MailAddress("sender@example.com", "Sender Name");
                 ampMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
                 ampMessage.Subject = "AMP Email Example";
-                ampMessage.Body = "This is the plain text fallback body.";
 
-                // Set AMP HTML body
+                // Set the AMP HTML body (AMP component)
                 ampMessage.AmpHtmlBody = @"
 <!doctype html>
 <html amp4email>
@@ -34,32 +34,25 @@ class Program
   <meta charset=""utf-8"">
   <script async src=""https://cdn.ampproject.org/v0.js""></script>
   <style amp4email-boilerplate>body{visibility:hidden}</style>
-  <style amp-custom>
-    h1 {color: #1e88e5;}
-  </style>
 </head>
 <body>
   <h1>Hello from AMP Email!</h1>
-  <p>This content is displayed in AMP‑supported email clients.</p>
+  <p>This is an AMP-enabled email.</p>
 </body>
 </html>";
 
-                // Save as Outlook MSG file
-                try
-                {
-                    ampMessage.Save(outputPath);
-                    Console.WriteLine($"AMP message saved to: {outputPath}");
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
-                    return;
-                }
+                // Optionally set a fallback HTML body
+                ampMessage.HtmlBody = "<p>This is a fallback HTML body for non‑AMP clients.</p>";
+
+                // Save the message as an Outlook MSG file
+                ampMessage.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
             }
+
+            Console.WriteLine("AMP message saved successfully to: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
