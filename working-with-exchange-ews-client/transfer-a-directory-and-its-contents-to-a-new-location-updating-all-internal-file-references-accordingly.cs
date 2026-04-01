@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using Aspose.Email;
 
 class Program
 {
@@ -8,23 +7,22 @@ class Program
     {
         try
         {
-            // Define source and destination directories
-            string sourceDirectory = @"C:\Source";
-            string destinationDirectory = @"C:\Destination";
+            string sourceDir = @"C:\SourceDirectory";
+            string destinationDir = @"C:\DestinationDirectory";
 
             // Verify source directory exists
-            if (!Directory.Exists(sourceDirectory))
+            if (!Directory.Exists(sourceDir))
             {
-                Console.Error.WriteLine($"Source directory does not exist: {sourceDirectory}");
+                Console.Error.WriteLine($"Source directory does not exist: {sourceDir}");
                 return;
             }
 
-            // Ensure destination directory exists
+            // Ensure destination directory exists or create it
             try
             {
-                if (!Directory.Exists(destinationDirectory))
+                if (!Directory.Exists(destinationDir))
                 {
-                    Directory.CreateDirectory(destinationDirectory);
+                    Directory.CreateDirectory(destinationDir);
                 }
             }
             catch (Exception ex)
@@ -33,58 +31,77 @@ class Program
                 return;
             }
 
-            // Get all files from source directory recursively
-            string[] allFiles;
+            // Copy all files and subdirectories
             try
             {
-                allFiles = Directory.GetFiles(sourceDirectory, "*", SearchOption.AllDirectories);
+                foreach (string dirPath in Directory.GetDirectories(sourceDir, "*", SearchOption.AllDirectories))
+                {
+                    string targetSubDir = dirPath.Replace(sourceDir, destinationDir);
+                    if (!Directory.Exists(targetSubDir))
+                    {
+                        Directory.CreateDirectory(targetSubDir);
+                    }
+                }
+
+                foreach (string filePath in Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories))
+                {
+                    string destFilePath = filePath.Replace(sourceDir, destinationDir);
+                    try
+                    {
+                        File.Copy(filePath, destFilePath, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to copy file '{filePath}': {ex.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to enumerate files: {ex.Message}");
+                Console.Error.WriteLine($"Error during copy operation: {ex.Message}");
                 return;
             }
 
-            foreach (string sourceFilePath in allFiles)
+            // Update internal file references in copied files
+            try
             {
-                try
+                foreach (string filePath in Directory.GetFiles(destinationDir, "*.*", SearchOption.AllDirectories))
                 {
-                    // Compute relative path and destination path
-                    string relativePath = Path.GetRelativePath(sourceDirectory, sourceFilePath);
-                    string destinationFilePath = Path.Combine(destinationDirectory, relativePath);
-                    string destinationFileDir = Path.GetDirectoryName(destinationFilePath);
-
-                    // Ensure destination subdirectory exists
-                    if (!Directory.Exists(destinationFileDir))
+                    // Process only text-based files to avoid corrupting binaries
+                    string extension = Path.GetExtension(filePath).ToLowerInvariant();
+                    if (extension == ".txt" || extension == ".html" || extension == ".htm" || extension == ".eml" || extension == ".xml")
                     {
-                        Directory.CreateDirectory(destinationFileDir);
-                    }
-
-                    // If the file is an email message (EML), load and save using Aspose.Email to update internal references
-                    if (string.Equals(Path.GetExtension(sourceFilePath), ".eml", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Load the email message
-                        using (MailMessage mailMessage = MailMessage.Load(sourceFilePath))
+                        try
                         {
-                            // Example placeholder: update any custom headers or properties if needed
-                            // mailMessage.Headers["X-Custom-Header"] = "UpdatedValue";
+                            string content;
+                            using (StreamReader reader = new StreamReader(filePath))
+                            {
+                                content = reader.ReadToEnd();
+                            }
 
-                            // Save the email to the new location
-                            mailMessage.Save(destinationFilePath);
+                            if (content.Contains(sourceDir))
+                            {
+                                string updatedContent = content.Replace(sourceDir, destinationDir);
+                                using (StreamWriter writer = new StreamWriter(filePath, false))
+                                {
+                                    writer.Write(updatedContent);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to update references in file '{filePath}': {ex.Message}");
                         }
                     }
-                    else
-                    {
-                        // For non-email files, perform a simple copy
-                        File.Copy(sourceFilePath, destinationFilePath, true);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing file '{sourceFilePath}': {ex.Message}");
-                    // Continue with next file
                 }
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during reference update: {ex.Message}");
+                return;
+            }
+
+            Console.WriteLine("Directory transfer completed successfully.");
         }
         catch (Exception ex)
         {
