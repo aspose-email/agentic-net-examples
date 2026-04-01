@@ -3,100 +3,76 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
 
-
 class Program
 {
     static void Main()
     {
         try
         {
-            string emlPath = "input.eml";
-            string icsPath = "output.ics";
+            string inputPath = "input.eml";
+            string outputPath = "output.ics";
 
-            // Ensure input file exists; create a minimal placeholder if missing
-            if (!File.Exists(emlPath))
+            // Ensure the input EML file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage("from@example.com", "to@example.com"))
-                    {
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Body = "This is a placeholder EML file.";
-                        placeholder.Save(emlPath);
-                    }
+                    string placeholderContent = "From: sender@example.com\r\nTo: recipient@example.com\r\nSubject: Sample\r\n\r\nThis is a sample email.";
+                    File.WriteAllText(inputPath, placeholderContent);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the EML message
-            MailMessage message;
+            // Load the EML message.
+            MailMessage mailMessage;
             try
             {
-                message = MailMessage.Load(emlPath);
+                mailMessage = MailMessage.Load(inputPath, new EmlLoadOptions());
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load EML file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to load EML message: {ex.Message}");
                 return;
             }
 
-            using (message)
+            using (mailMessage)
             {
-                // Prepare appointment data
-                string subject = string.IsNullOrEmpty(message.Subject) ? "No Subject" : message.Subject;
-                DateTime start = DateTime.Now;
-                DateTime end = start.AddHours(1);
-                MailAddress organizer = message.From ?? new MailAddress("organizer@example.com");
-
-                // Collect attendees from To and CC fields
+                // Build an appointment using data from the email.
+                MailAddress organizer = new MailAddress("organizer@example.com");
                 MailAddressCollection attendees = new MailAddressCollection();
-                if (message.To != null)
-                {
-                    foreach (MailAddress addr in message.To)
-                    {
-                        attendees.Add(addr);
-                    }
-                }
-                if (message.CC != null)
-                {
-                    foreach (MailAddress addr in message.CC)
-                    {
-                        attendees.Add(addr);
-                    }
-                }
+                attendees.Add(new MailAddress("attendee1@example.com"));
+                attendees.Add(new MailAddress("attendee2@example.com"));
 
-                // Create the appointment
-                Appointment appointment = new Appointment(subject, start, end, organizer, attendees);
-                appointment.Description = message.Body ?? string.Empty;
+                DateTime start = DateTime.Now.AddDays(1).AddHours(9);
+                DateTime end = start.AddHours(1);
 
-                // Ensure output directory exists
+                Appointment appointment = new Appointment(
+                    mailMessage.Subject ?? "No Subject",
+                    start,
+                    end,
+                    organizer,
+                    attendees);
+                appointment.Description = mailMessage.Body ?? string.Empty;
+
+                // Save the appointment as an iCalendar (ICS) file.
                 try
                 {
-                    string outputDir = Path.GetDirectoryName(Path.GetFullPath(icsPath));
-                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                    string outputDirectory = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
                     {
-                        Directory.CreateDirectory(outputDir);
+                        Directory.CreateDirectory(outputDirectory);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to ensure output directory: {ex.Message}");
-                    return;
-                }
 
-                // Save as iCalendar (ICS) file
-                try
-                {
-                    appointment.Save(icsPath);
-                    Console.WriteLine($"ICS file saved to: {icsPath}");
+                    appointment.Save(outputPath, AppointmentSaveFormat.Ics);
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Failed to save ICS file: {ex.Message}");
+                    return;
                 }
             }
         }

@@ -1,7 +1,5 @@
 using Aspose.Email.Clients.Exchange;
 using System;
-using System.Collections.Generic;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
 
@@ -11,42 +9,38 @@ class Program
     {
         try
         {
-            // Initialize the Exchange WebDAV client
-            try
+            // Placeholder connection data – replace with real values for actual use
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // If placeholders are detected, skip the network call to avoid runtime failures
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
             {
-                using (ExchangeClient client = new ExchangeClient("https://exchange.example.com/EWS/Exchange.asmx", "username", "password"))
+                Console.WriteLine("Placeholder credentials detected. Skipping server connection.");
+                return;
+            }
+
+            // Create and dispose the Exchange client safely
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            {
+                // Retrieve messages from the Inbox folder
+                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
+
+                // Filter messages whose subject contains the word "Test" (case‑insensitive)
+                foreach (var msgInfo in messages)
                 {
-                    // List messages in the Inbox folder
-                    ExchangeMessageInfoCollection infoCollection = client.ListMessages("Inbox");
-
-                    // Convert the collection to a list of MailMessage objects
-                    List<MailMessage> messages = new List<MailMessage>();
-                    foreach (ExchangeMessageInfo info in infoCollection)
+                    if (!string.IsNullOrEmpty(msgInfo.Subject) &&
+                        msgInfo.Subject.IndexOf("Test", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        // Fetch each message by its unique URI
-                        using (MailMessage fetched = client.FetchMessage(info.UniqueUri))
-                        {
-                            // Clone the message to detach it from the using scope
-                            messages.Add(fetched.Clone());
-                        }
-                    }
-
-                    // Example usage: output subject of each message
-                    foreach (MailMessage message in messages)
-                    {
-                        Console.WriteLine(message.Subject);
+                        Console.WriteLine($"Filtered message: {msgInfo.Subject}");
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error initializing or using Exchange client: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

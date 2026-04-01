@@ -1,65 +1,68 @@
-using System;
-using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
+using System;
+using System.Collections.Generic;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-namespace AsposeEmailGraphExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // ---------- Local MSG file handling ----------
-                string msgFilePath = "sample.msg";
+            // Placeholder credentials – replace with real values or keep as placeholders to skip execution.
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
+            string tenantId = "your-tenant-id";
 
-                // Ensure the MSG file exists; create a minimal placeholder if missing
-                if (!File.Exists(msgFilePath))
+            // Skip external calls when placeholders are detected.
+            if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-") ||
+                refreshToken.StartsWith("your-") || tenantId.StartsWith("your-"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph operations.");
+                return;
+            }
+
+            // Create token provider and Graph client.
+            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
+            {
+                // List messages in the Inbox folder (fallback overload).
+                // "Inbox" is a well‑known folder name accepted by the API.
+                IList<MessageInfo> messages = client.ListMessages("Inbox");
+
+                // Find the message that represents the new application registration blade.
+                MessageInfo targetMessage = null;
+                foreach (MessageInfo info in messages)
                 {
-                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "receiver@example.com", "Placeholder Subject", "This is a placeholder MSG file."))
+                    if (info.Subject != null && info.Subject.Contains("Application registration", StringComparison.OrdinalIgnoreCase))
                     {
-                        placeholder.Save(msgFilePath);
+                        targetMessage = info;
+                        break;
                     }
                 }
 
-                // Load and display the local MSG file
-                using (MapiMessage localMessage = MapiMessage.Load(msgFilePath))
+                if (targetMessage == null)
                 {
-                    Console.WriteLine("Local MSG Subject: " + localMessage.Subject);
-                    Console.WriteLine("Local MSG Body: " + localMessage.Body);
+                    Console.WriteLine("No application registration message found.");
+                    return;
                 }
 
-                // ---------- Microsoft Graph client usage ----------
-                // Dummy credentials – replace with real values when running the sample
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string tenantId = "tenantId";
-
-                // Create token provider (Outlook) – 3‑argument overload
-                Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-                // Initialize Graph client
-                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+                // Fetch the full MAPI message using its ItemId.
+                using (MapiMessage mapiMessage = client.FetchMessage(targetMessage.ItemId))
                 {
-                    // Placeholder message ID – replace with an actual ID from your mailbox
-                    string messageId = "message-id";
-
-                    // Fetch the message from Microsoft Graph
-                    MapiMessage graphMessage = graphClient.FetchMessage(messageId);
-
-                    // Display fetched message details
-                    Console.WriteLine("Graph Message Subject: " + graphMessage.Subject);
-                    Console.WriteLine("Graph Message Body: " + graphMessage.Body);
+                    Console.WriteLine("Subject: " + mapiMessage.Subject);
+                    Console.WriteLine("From: " + mapiMessage.SenderName);
+                    Console.WriteLine("Body:");
+                    Console.WriteLine(mapiMessage.Body);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

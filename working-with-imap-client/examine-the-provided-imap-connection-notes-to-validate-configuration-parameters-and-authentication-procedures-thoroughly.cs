@@ -9,63 +9,68 @@ class Program
     {
         try
         {
-            // IMAP configuration parameters
+            // IMAP connection parameters
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
-            SecurityOptions security = SecurityOptions.SSLImplicit; // Adjust as needed
 
-            // Basic validation of configuration values
-            if (string.IsNullOrWhiteSpace(host))
+            // Guard against placeholder credentials to avoid real network calls in CI
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("IMAP host is not specified.");
-                return;
-            }
-            if (port <= 0 || port > 65535)
-            {
-                Console.Error.WriteLine("Invalid IMAP port number.");
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                Console.Error.WriteLine("Username is not specified.");
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                Console.Error.WriteLine("Password is not specified.");
+                Console.Error.WriteLine("Placeholder IMAP credentials detected. Skipping connection.");
                 return;
             }
 
-            // Create the IMAP client and attempt connection/validation
-            using (ImapClient client = new ImapClient(host, port, username, password, security))
+            // Create the IMAP client and validate the connection
+            try
             {
-                try
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
                 {
-                    // Validate credentials with the server
-                    client.ValidateCredentials();
-                    Console.WriteLine("IMAP connection and authentication succeeded.");
+                    try
+                    {
+                        client.ValidateCredentials();
+                        Console.WriteLine("IMAP credentials are valid.");
+                    }
+                    catch (ImapException imapEx)
+                    {
+                        Console.Error.WriteLine($"IMAP validation failed: {imapEx.Message}");
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Unexpected error during validation: {ex.Message}");
+                        return;
+                    }
 
-                    // Perform a simple NOOP to verify server responsiveness
-                    client.Noop();
-                    Console.WriteLine("Server responded to NOOP command.");
+                    // Example additional check: list available folders
+                    try
+                    {
+                        var folders = client.ListFolders();
+                        Console.WriteLine("Available folders:");
+                        foreach (var folder in folders)
+                        {
+                            Console.WriteLine($"- {folder.Name}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to list folders: {ex.Message}");
+                    }
                 }
-                catch (ImapException imapEx)
-                {
-                    Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error during IMAP operations: {ex.Message}");
-                    return;
-                }
+            }
+            catch (ImapException imapEx)
+            {
+                Console.Error.WriteLine($"IMAP client error: {imapEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error creating IMAP client: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fatal error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }

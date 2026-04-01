@@ -4,46 +4,44 @@ using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailEwsDeleteExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            // Top‑level exception guard
-            try
-            {
-                // Initialize connection to the Exchange server
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                NetworkCredential credentials = new NetworkCredential("user@example.com", "password");
+            // Placeholder credentials – in real scenarios replace with actual values.
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-                // Obtain an IEWSClient instance via the factory method
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            // Guard against executing with placeholder data.
+            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
+
+            // Create the EWS client.
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // List all messages in the default inbox folder.
+                ExchangeMessageInfoCollection messages = client.ListMessages();
+
+                // Delete each message permanently.
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    // Retrieve all messages from the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-
-                    // Iterate through each message and delete it permanently
-                    foreach (ExchangeMessageInfo info in messages)
-                    {
-                        try
-                        {
-                            client.DeleteItem(info.UniqueUri, DeletionOptions.DeletePermanently);
-                            Console.WriteLine($"Deleted message: {info.UniqueUri}");
-                        }
-                        catch (Exception ex)
-                        {
-                            // Log any deletion errors but continue processing remaining items
-                            Console.Error.WriteLine($"Failed to delete {info.UniqueUri}: {ex.Message}");
-                        }
-                    }
+                    // DeletionOptions can be customized if needed; default performs permanent delete.
+                    DeletionOptions options = new DeletionOptions();
+                    client.DeleteItem(info.UniqueUri, options);
                 }
+
+                Console.WriteLine("All messages have been permanently deleted.");
             }
-            catch (Exception ex)
-            {
-                // Log any unexpected errors that occur during setup or execution
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

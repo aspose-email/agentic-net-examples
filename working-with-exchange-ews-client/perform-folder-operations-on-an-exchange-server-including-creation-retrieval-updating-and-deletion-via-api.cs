@@ -1,88 +1,101 @@
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailExchangeFolderDemo
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Placeholder credentials – replace with real values or skip execution in CI
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Guard against placeholder values to avoid unwanted network calls
+            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
+                return;
+            }
+
+            // Create the EWS client
+            IEWSClient client;
             try
             {
-                // Exchange server connection settings
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
+                client = EWSClient.GetEWSClient(serviceUrl, username, password);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
+                return;
+            }
 
-                // Create and connect the EWS client
+            // Ensure the client is disposed properly
+            using (client as IDisposable)
+            {
+                // Define folder names
+                string parentFolderUri = client.MailboxInfo.InboxUri;
+                string newFolderName = "SampleFolder";
+
+                // 1. Create a new folder under Inbox
+                ExchangeFolderInfo createdFolderInfo;
                 try
                 {
-                    using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                    createdFolderInfo = client.CreateFolder(parentFolderUri, newFolderName);
+                    Console.WriteLine($"Folder created: {createdFolderInfo.Uri}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Folder creation failed: {ex.Message}");
+                    return;
+                }
+
+                // 2. Retrieve information about the created folder
+                ExchangeFolderInfo retrievedInfo;
+                try
+                {
+                    retrievedInfo = client.GetFolderInfo(createdFolderInfo.Uri);
+                    Console.WriteLine($"Retrieved folder display name: {retrievedInfo.DisplayName}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to retrieve folder info: {ex.Message}");
+                }
+
+                // 3. List subfolders of the parent folder (Inbox)
+                try
+                {
+                    Console.WriteLine("Subfolders of Inbox:");
+                    foreach (ExchangeFolderInfo subFolder in client.ListSubFolders(parentFolderUri))
                     {
-                        // -----------------------------------------------------------------
-                        // 1. Create a new folder under the Inbox
-                        // -----------------------------------------------------------------
-                        string parentFolderUri = client.MailboxInfo.InboxUri;
-                        string newFolderName = "SampleFolder";
-
-                        try
-                        {
-                            client.CreateFolder(parentFolderUri, newFolderName);
-                            Console.WriteLine($"Folder '{newFolderName}' created under '{parentFolderUri}'.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error creating folder: {ex.Message}");
-                        }
-
-                        // -----------------------------------------------------------------
-                        // 2. Retrieve information about the newly created folder
-                        // -----------------------------------------------------------------
-                        string newFolderUri = $"{parentFolderUri}/{newFolderName}";
-                        try
-                        {
-                            ExchangeFolderInfo folderInfo = client.GetFolderInfo(newFolderUri);
-                            Console.WriteLine($"Folder Info: Uri = {folderInfo.Uri}, DisplayName = {folderInfo.DisplayName}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error retrieving folder info: {ex.Message}");
-                        }
-
-                        // -----------------------------------------------------------------
-                        // 3. Update folder (example: set a custom property or permission)
-                        //    For demonstration, we'll just output that an update could be placed here.
-                        // -----------------------------------------------------------------
-                        // Note: Specific update methods depend on the required operation.
-                        // This placeholder shows where such logic would be inserted.
-
-                        // -----------------------------------------------------------------
-                        // 4. Delete the folder
-                        // -----------------------------------------------------------------
-                        try
-                        {
-                            client.DeleteFolder(newFolderUri);
-                            Console.WriteLine($"Folder '{newFolderUri}' deleted.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error deleting folder: {ex.Message}");
-                        }
+                        Console.WriteLine($"- {subFolder.DisplayName} ({subFolder.Uri})");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to connect to Exchange server: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to list subfolders: {ex.Message}");
+                }
+
+                // 4. Delete the created folder
+                try
+                {
+                    client.DeleteFolder(createdFolderInfo.Uri);
+                    Console.WriteLine($"Folder deleted: {createdFolderInfo.Uri}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Folder deletion failed: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

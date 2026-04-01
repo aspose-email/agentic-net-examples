@@ -1,113 +1,113 @@
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailPstSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            string pstPath = "sample.pst";
+
+            // Guard file existence and create a minimal PST if missing
+            if (!File.Exists(pstPath))
             {
-                string pstPath = "sample.pst";
-
-                // Ensure the PST file exists; create a minimal one if missing
-                if (!File.Exists(pstPath))
-                {
-                    try
-                    {
-                        using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                        {
-                            // No additional setup required for an empty PST
-                        }
-                        Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
-                        return;
-                    }
-                }
-
-                // Open the PST file for read/write operations
                 try
                 {
-                    using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                    // Ensure the directory for the PST exists
+                    string pstDirectory = Path.GetDirectoryName(pstPath);
+                    if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
                     {
-                        // List existing top‑level folders
-                        Console.WriteLine("Existing top‑level folders:");
-                        foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
-                        {
-                            Console.WriteLine($"- {folder.DisplayName} (Items: {folder.ContentCount})");
-                        }
+                        Directory.CreateDirectory(pstDirectory);
+                    }
 
-                        // Create a new subfolder under the root folder
-                        FolderInfo myFolder;
-                        try
-                        {
-                            myFolder = pst.RootFolder.AddSubFolder("MyFolder");
-                            Console.WriteLine("Created folder 'MyFolder'.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error creating folder: {ex.Message}");
-                            return;
-                        }
+                    // Create an empty Unicode PST file
+                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // Optionally create a default folder structure
+                        createdPst.RootFolder.AddSubFolder("Inbox");
+                    }
 
-                        // Add a simple message to the new folder
-                        MapiMessage newMessage = new MapiMessage(
-                            "sender@example.com",
-                            "receiver@example.com",
-                            "Sample Subject",
-                            "This is a sample message body.");
-                        try
-                        {
-                            string entryId = myFolder.AddMessage(newMessage);
-                            Console.WriteLine($"Added message to 'MyFolder' (EntryId: {entryId}).");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error adding message: {ex.Message}");
-                            return;
-                        }
+                    Console.WriteLine($"Placeholder PST created at '{pstPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
+                    return;
+                }
 
-                        // Move the first message from the root folder (if any) to the new folder
-                        MessageInfo firstMessageInfo = null;
-                        foreach (MessageInfo info in pst.RootFolder.EnumerateMessages())
-                        {
-                            firstMessageInfo = info;
-                            break;
-                        }
+                // No further processing needed for a newly created empty PST
+                return;
+            }
 
-                        if (firstMessageInfo != null)
-                        {
-                            try
-                            {
-                                pst.MoveItem(firstMessageInfo, myFolder);
-                                Console.WriteLine($"Moved message '{firstMessageInfo.Subject}' to 'MyFolder'.");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Error moving message: {ex.Message}");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("No messages found in the root folder to move.");
-                        }
+            // Open existing PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                // Ensure output directory exists
+                string outputDir = "output";
+                try
+                {
+                    if (!Directory.Exists(outputDir))
+                    {
+                        Directory.CreateDirectory(outputDir);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error accessing PST file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating output directory: {ex.Message}");
+                    return;
+                }
+
+                // Iterate through each subfolder in the PST root
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                {
+                    Console.WriteLine($"Processing folder: {folderInfo.DisplayName}");
+
+                    // Enumerate messages within the current folder
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                    {
+                        Console.WriteLine($"  Message subject: {messageInfo.Subject}");
+
+                        // Build a safe file name for the extracted MSG
+                        string safeSubject = string.IsNullOrWhiteSpace(messageInfo.Subject) ? "NoSubject" : messageInfo.Subject;
+                        foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(invalidChar, '_');
+                        }
+                        string msgFilePath = Path.Combine(outputDir, $"{safeSubject}.msg");
+
+                        try
+                        {
+                            // Extract the message to a MapiMessage object
+                            using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
+                            {
+                                // Save the original message
+                                mapiMessage.Save(msgFilePath);
+
+                                // Modify the subject
+                                mapiMessage.Subject = $"Modified - {mapiMessage.Subject}";
+
+                                // Overwrite the MSG file with the modified message
+                                mapiMessage.Save(msgFilePath);
+                            }
+
+                            Console.WriteLine($"    Extracted and modified message saved to: {msgFilePath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"    Error processing message '{messageInfo.Subject}': {ex.Message}");
+                            // Continue with next message
+                        }
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }

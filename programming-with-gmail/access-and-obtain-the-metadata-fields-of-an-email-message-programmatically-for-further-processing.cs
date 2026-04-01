@@ -2,48 +2,65 @@ using System;
 using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Google;
 
-class Program
+namespace AsposeEmailGmailMetadata
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize and configure the IMAP client
-            using (ImapClient client = new ImapClient())
+            try
             {
-                client.Host = "imap.example.com";
-                client.Port = 993;
-                client.SecurityOptions = SecurityOptions.SSLImplicit;
-                client.Username = "user@example.com";
-                client.Password = "password";
+                // Placeholder credentials – replace with real values for actual execution
+                string clientId = "clientId";
+                string clientSecret = "clientSecret";
+                string refreshToken = "refreshToken";
+                string defaultEmail = "user@example.com";
 
-                // Connect to the server
+                // Skip network call when placeholders are used
+                bool placeholders = clientId == "clientId" ||
+                                    clientSecret == "clientSecret" ||
+                                    refreshToken == "refreshToken" ||
+                                    defaultEmail == "user@example.com";
 
-                // Select the INBOX folder
-                client.SelectFolder("INBOX");
-
-                // Retrieve basic information for all messages in the folder
-                List<ImapMessageInfo> messages = client.ListMessages();
-
-                foreach (ImapMessageInfo info in messages)
+                if (placeholders)
                 {
-                    // Fetch the full message using its unique identifier
-                    using (MailMessage message = client.FetchMessage(info.UniqueId))
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail operations.");
+                    return;
+                }
+
+                using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+                {
+                    try
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"Date: {message.Date}");
-                        Console.WriteLine($"Size: {info.Size} bytes");
-                        Console.WriteLine(new string('-', 40));
+                        List<GmailMessageInfo> messages = gmailClient.ListMessages();
+
+                        foreach (GmailMessageInfo messageInfo in messages)
+                        {
+                            // Fetch the full message to access detailed metadata
+                            using (MailMessage fullMessage = gmailClient.FetchMessage(messageInfo.Id))
+                            {
+                                Console.WriteLine("Subject: " + fullMessage.Subject);
+                                Console.WriteLine("From: " + fullMessage.From);
+                                Console.WriteLine("Date: " + fullMessage.Date);
+                                Console.WriteLine("To: " + fullMessage.To);
+                                Console.WriteLine("Message Id: " + fullMessage.MessageId);
+                                Console.WriteLine(new string('-', 40));
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("Error during Gmail operations: " + ex.Message);
+                        return;
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            }
         }
     }
 }

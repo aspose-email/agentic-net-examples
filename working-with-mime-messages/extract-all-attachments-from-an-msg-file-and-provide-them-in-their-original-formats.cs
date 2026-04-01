@@ -9,47 +9,79 @@ class Program
     {
         try
         {
-            // Path to the MSG file
-            string msgPath = "sample.msg";
+            // Define input MSG file path and output directory for attachments
+            string msgFilePath = "input.msg";
+            string attachmentsFolder = "Attachments";
 
-            // Verify that the MSG file exists before attempting to load it
-            if (!File.Exists(msgPath))
+            // Ensure the output directory exists
+            if (!Directory.Exists(attachmentsFolder))
             {
-                Console.Error.WriteLine($"The file '{msgPath}' does not exist.");
-                return;
+                Directory.CreateDirectory(attachmentsFolder);
             }
 
-            // Load the MSG file and extract its attachments
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Guard against missing input file; create a minimal placeholder if absent
+            if (!File.Exists(msgFilePath))
             {
-                MapiAttachmentCollection attachments = msg.Attachments;
-
-                if (attachments == null || attachments.Count == 0)
+                try
                 {
-                    Console.WriteLine("No attachments found in the message.");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgFilePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                foreach (MapiAttachment attachment in attachments)
+                try
                 {
-                    // Output attachment information
-                    Console.WriteLine($"Saving attachment: {attachment.FileName}");
-
-                    // Save the attachment using its original file name
-                    try
+                    using (MapiMessage placeholder = new MapiMessage())
                     {
-                        attachment.Save(attachment.FileName);
+                        placeholder.Save(msgFilePath);
                     }
-                    catch (Exception ex)
+                    Console.WriteLine($"Placeholder MSG created at '{msgFilePath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the MSG file and extract attachments
+            try
+            {
+                using (MapiMessage message = MapiMessage.Load(msgFilePath))
+                {
+                    foreach (MapiAttachment attachment in message.Attachments)
                     {
-                        Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
+                        string fileName = attachment.FileName;
+                        if (string.IsNullOrEmpty(fileName))
+                        {
+                            fileName = $"attachment_{Guid.NewGuid()}.dat";
+                        }
+
+                        string outputPath = Path.Combine(attachmentsFolder, fileName);
+                        attachment.Save(outputPath);
+                        Console.WriteLine($"Saved attachment: {outputPath}");
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

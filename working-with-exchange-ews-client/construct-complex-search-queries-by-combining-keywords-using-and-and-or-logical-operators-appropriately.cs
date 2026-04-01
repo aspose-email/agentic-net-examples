@@ -1,62 +1,65 @@
-using System;
-using System.Net;
-using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Tools.Search;
+using System;
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailEwsSearchExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Initialize EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://exchange.example.com/EWS/Exchange.asmx",
-                new NetworkCredential("username", "password")))
+            // Top‑level exception guard
+            try
             {
-                // Build a query for messages with Subject containing "Report"
-                ExchangeQueryBuilder subjectBuilder = new ExchangeQueryBuilder();
-                subjectBuilder.Subject.Contains("Report");
-                MailQuery subjectQuery = subjectBuilder.GetQuery();
+                // Placeholder connection details – replace with real values when running against a live server
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-                // Build a query for messages from Alice
-                ExchangeQueryBuilder aliceBuilder = new ExchangeQueryBuilder();
-                aliceBuilder.From.Contains("alice@example.com");
-                MailQuery aliceQuery = aliceBuilder.GetQuery();
-
-                // Build a query for messages from Bob
-                ExchangeQueryBuilder bobBuilder = new ExchangeQueryBuilder();
-                bobBuilder.From.Contains("bob@example.com");
-                MailQuery bobQuery = bobBuilder.GetQuery();
-
-                // Combine Alice and Bob queries with OR
-                ExchangeQueryBuilder orBuilder = new ExchangeQueryBuilder();
-                MailQuery fromOrQuery = orBuilder.Or(aliceQuery, bobQuery);
-
-                // Combine Subject query (AND) with the ORed From query
-                // Since the default combination is AND, we add both filters to a new builder
-                ExchangeQueryBuilder finalBuilder = new ExchangeQueryBuilder();
-                finalBuilder.Subject.Contains("Report");
-                // Use Or method to incorporate the ORed From condition
-                MailQuery combinedQuery = finalBuilder.Or(finalBuilder.GetQuery(), fromOrQuery);
-
-                // List messages using the combined query
-                ExchangeMessageInfoCollection messages = client.ListMessages(
-                    client.MailboxInfo.InboxUri,
-                    combinedQuery,
-                    false);
-
-                foreach (ExchangeMessageInfo info in messages)
+                // Skip actual network call when placeholder data is detected (prevents CI failures)
+                if (mailboxUri.Contains("example.com"))
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
+                    Console.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                    return;
+                }
+
+                // Create the EWS client using the factory method (no direct constructor)
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    // ------------------------------
+                    // Example 1: AND query
+                    // Subject contains "Report" AND From contains "alice@example.com"
+                    // ------------------------------
+                    ExchangeQueryBuilder andBuilder = new ExchangeQueryBuilder();
+                    andBuilder.Subject.Contains("Report");
+                    andBuilder.From.Contains("alice@example.com");
+                    MailQuery andQuery = andBuilder.GetQuery();
+
+                    // List messages that match the AND query
+                    ExchangeMessageInfoCollection andMessages = client.ListMessages(client.MailboxInfo.InboxUri, andQuery);
+                    Console.WriteLine($"AND query returned {andMessages.Count} message(s).");
+
+                    // ------------------------------
+                    // Example 2: OR query
+                    // From contains "alice@example.com" OR From contains "bob@example.com"
+                    // ------------------------------
+                    ExchangeQueryBuilder orBuilder = new ExchangeQueryBuilder();
+                    MailQuery fromAlice = orBuilder.From.Contains("alice@example.com");
+                    MailQuery fromBob = orBuilder.From.Contains("bob@example.com");
+                    MailQuery orQuery = orBuilder.Or(fromAlice, fromBob);
+
+                    // List messages that match the OR query
+                    ExchangeMessageInfoCollection orMessages = client.ListMessages(client.MailboxInfo.InboxUri, orQuery);
+                    Console.WriteLine($"OR query returned {orMessages.Count} message(s).");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Friendly error output – prevents unhandled exceptions from crashing the program
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

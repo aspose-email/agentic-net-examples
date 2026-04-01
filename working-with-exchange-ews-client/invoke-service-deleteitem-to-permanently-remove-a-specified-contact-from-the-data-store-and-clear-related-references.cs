@@ -1,6 +1,6 @@
+using Aspose.Email.PersonalInfo;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -9,25 +9,40 @@ class Program
     {
         try
         {
-            // Initialize the EWS client with placeholder credentials.
-            // Replace the placeholders with actual server URI, username, and password.
+            // Placeholder credentials and service URL
             string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            string username = "username";
             string password = "password";
 
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
+            // Detect placeholder values and skip actual network call
+            if (serviceUrl.Contains("example.com") || username == "username")
             {
-                // The URI of the contact to be permanently deleted.
-                // Replace with the actual contact URI obtained from a prior operation.
-                string contactUri = "https://exchange.example.com/EWS/Contacts/ContactId";
+                Console.WriteLine("Placeholder credentials detected. Skipping operation.");
+                return;
+            }
 
-                // Delete the contact permanently.
-                client.DeleteItem(contactUri, DeletionOptions.DeletePermanently);
+            // Create the EWS client
+            using (IEWSClient service = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                try
+                {
+                    // Identifier of the contact to be deleted
+                    string contactUri = "contact-uri-to-delete";
+
+                    // Permanently delete the contact using the static DeletePermanently option
+                    service.DeleteItem(contactUri, DeletionOptions.DeletePermanently);
+
+                    Console.WriteLine("Contact deleted permanently.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during deletion: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

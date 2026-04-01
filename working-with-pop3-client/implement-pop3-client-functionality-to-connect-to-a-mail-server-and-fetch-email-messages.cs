@@ -1,88 +1,103 @@
-using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace Pop3Example
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Placeholder connection settings
+            string host = "pop.example.com";
+            int port = 110;
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against executing with placeholder credentials
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder POP3 credentials detected. Skipping network operation.");
+                return;
+            }
+
+            // Ensure output directory exists
+            string outputDir = "Output";
             try
             {
-                // Server configuration
-                string host = "pop3.example.com";
-                int port = 110;
-                string username = "user@example.com";
-                string password = "password";
-                string saveDirectory = "SavedEmails";
-
-                // Ensure the save directory exists
-                try
+                if (!Directory.Exists(outputDir))
                 {
-                    if (!Directory.Exists(saveDirectory))
-                    {
-                        Directory.CreateDirectory(saveDirectory);
-                    }
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create directory '{saveDirectory}': {dirEx.Message}");
-                    return;
-                }
-
-                // Initialize POP3 client
-                try
-                {
-                    using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
-                    {
-                        // Get mailbox information
-                        Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
-                        Console.WriteLine($"Message count: {mailboxInfo.MessageCount}, Size: {mailboxInfo.OccupiedSize} bytes");
-
-                        // List messages
-                        Pop3MessageInfoCollection messages = client.ListMessages();
-                        foreach (Pop3MessageInfo info in messages)
-                        {
-                            Console.WriteLine($"Fetching message #{info.SequenceNumber}: {info.Subject}");
-
-                            // Fetch the full message
-                            using (MailMessage message = client.FetchMessage(info.SequenceNumber))
-                            {
-                                Console.WriteLine($"Subject: {message.Subject}");
-                                Console.WriteLine($"From: {message.From}");
-                                Console.WriteLine($"Date: {message.Date}");
-
-                                // Save the message to a file
-                                string filePath = Path.Combine(saveDirectory, $"Email_{info.SequenceNumber}.eml");
-                                try
-                                {
-                                    using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                                    {
-                                        client.SaveMessage(info.SequenceNumber, fileStream);
-                                    }
-                                    Console.WriteLine($"Saved to {filePath}");
-                                }
-                                catch (Exception saveEx)
-                                {
-                                    Console.Error.WriteLine($"Failed to save message #{info.SequenceNumber}: {saveEx.Message}");
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception clientEx)
-                {
-                    Console.Error.WriteLine($"POP3 client error: {clientEx.Message}");
-                    return;
+                    Directory.CreateDirectory(outputDir);
                 }
             }
-            catch (Exception ex)
+            catch (Exception dirEx)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Failed to prepare output directory: {dirEx.Message}");
+                return;
             }
+
+            // Create and connect POP3 client
+            try
+            {
+                using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+                {
+                    // List messages on the server
+                    Pop3MessageInfoCollection messageInfos;
+                    try
+                    {
+                        messageInfos = client.ListMessages();
+                    }
+                    catch (Exception listEx)
+                    {
+                        Console.Error.WriteLine($"Failed to list messages: {listEx.Message}");
+                        return;
+                    }
+
+                    int index = 1;
+                    foreach (Pop3MessageInfo info in messageInfos)
+                    {
+                        // Fetch the full message
+                        MailMessage message;
+                        try
+                        {
+                            message = client.FetchMessage(info.SequenceNumber);
+                        }
+                        catch (Exception fetchEx)
+                        {
+                            Console.Error.WriteLine($"Failed to fetch message #{index}: {fetchEx.Message}");
+                            continue;
+                        }
+
+                        // Save the message to a file
+                        string filePath = Path.Combine(outputDir, $"Message_{index}.eml");
+                        try
+                        {
+                            using (message)
+                            {
+                                message.Save(filePath);
+                            }
+                            Console.WriteLine($"Saved message #{index} to {filePath}");
+                        }
+                        catch (Exception saveEx)
+                        {
+                            Console.Error.WriteLine($"Failed to save message #{index}: {saveEx.Message}");
+                        }
+
+                        index++;
+                    }
+                }
+            }
+            catch (Exception clientEx)
+            {
+                Console.Error.WriteLine($"POP3 client error: {clientEx.Message}");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

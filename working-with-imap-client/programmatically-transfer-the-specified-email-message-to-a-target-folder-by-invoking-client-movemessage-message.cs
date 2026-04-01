@@ -1,69 +1,68 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients;
+using Aspose.Email.Tools.Search;
 
-class Program
+namespace Sample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // IMAP server connection parameters
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
-            string sourceFolder = "INBOX";
-            string destinationFolder = "Processed";
-
-            // Create and connect the IMAP client
             try
             {
+                // Placeholder connection settings
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "user@example.com";
+                string password = "password";
+                string destinationFolder = "Processed";
+
+                // Guard against executing real network calls with placeholder data
+                if (host.Contains("example.com") || username.Contains("example.com"))
+                {
+                    Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
+                    return;
+                }
+
+                // Create and connect the IMAP client
                 using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
                 {
-                    // Ensure the source folder exists
-                    if (!client.ExistFolder(sourceFolder))
+                    try
                     {
-                        Console.Error.WriteLine($"Source folder \"{sourceFolder}\" does not exist.");
+                        // Select the source folder (INBOX)
+                        client.SelectFolder("INBOX");
+
+                        // Retrieve the list of messages in the selected folder
+                        ImapMessageInfoCollection messages = client.ListMessages();
+
+                        if (messages == null || messages.Count == 0)
+                        {
+                            Console.WriteLine("No messages found to move.");
+                            return;
+                        }
+
+                        // Take the first message's unique identifier
+                        ImapMessageInfo firstMessage = messages[0];
+                        string uniqueId = firstMessage.UniqueId;
+
+                        // Move the message to the destination folder
+                        string newUniqueId = client.MoveMessage(uniqueId, destinationFolder);
+
+                        Console.WriteLine($"Message moved successfully. New UID: {newUniqueId}");
+                    }
+                    catch (ImapException imapEx)
+                    {
+                        Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
                         return;
                     }
-
-                    // Ensure the destination folder exists; create it if missing
-                    if (!client.ExistFolder(destinationFolder))
-                    {
-                        client.CreateFolder(destinationFolder);
-                    }
-
-                    // Select the source folder
-                    client.SelectFolder(sourceFolder);
-
-                    // Retrieve the list of messages in the source folder
-                    ImapMessageInfoCollection messages = client.ListMessages();
-                    if (messages == null || messages.Count == 0)
-                    {
-                        Console.WriteLine("No messages to move.");
-                        return;
-                    }
-
-                    // Take the first message's unique identifier
-                    ImapMessageInfo firstMessage = messages[0];
-                    string uniqueId = firstMessage.UniqueId;
-
-                    // Move the message to the destination folder
-                    string newUid = client.MoveMessage(uniqueId, destinationFolder);
-                    Console.WriteLine($"Message UID {uniqueId} moved to \"{destinationFolder}\". New UID: {newUid}");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

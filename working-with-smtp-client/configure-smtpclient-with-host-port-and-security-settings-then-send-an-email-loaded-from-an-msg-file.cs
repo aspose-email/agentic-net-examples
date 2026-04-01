@@ -4,46 +4,86 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 
-class Program
+namespace EmailSender
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "email.msg";
-
-            if (!File.Exists(msgPath))
+            try
             {
-                Console.Error.WriteLine($"Message file not found: {msgPath}");
-                return;
-            }
+                string msgFilePath = "email.msg";
 
-            using (MailMessage message = MailMessage.Load(msgPath))
-            {
-                string host = "smtp.example.com";
-                int port = 587;
-                SecurityOptions security = SecurityOptions.Auto;
-
-                using (SmtpClient client = new SmtpClient(host, port, security))
+                // Verify that the MSG file exists
+                if (!File.Exists(msgFilePath))
                 {
-                    client.Username = "user@example.com";
-                    client.Password = "password";
-
-                    try
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        client.Send(message);
-                        Console.WriteLine("Email sent successfully.");
+                        placeholder.Save(msgFilePath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
-                    catch (Exception ex)
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                    Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                    return;
+                }
+
+                // Load the message from the MSG file
+                MailMessage mailMessage;
+                try
+                {
+                    mailMessage = MailMessage.Load(msgFilePath);
+                }
+                catch (Exception loadEx)
+                {
+                    Console.Error.WriteLine($"Failed to load MSG file: {loadEx.Message}");
+                    return;
+                }
+
+                using (mailMessage)
+                {
+                    // SMTP configuration (placeholders)
+                    string smtpHost = "smtp.example.com";
+                    int smtpPort = 587;
+                    string smtpUsername = "user@example.com";
+                    string smtpPassword = "password";
+
+                    // Guard against placeholder credentials to avoid real network calls
+                    if (smtpHost.Contains("example.com"))
                     {
-                        Console.Error.WriteLine($"Failed to send email: {ex.Message}");
+                        Console.WriteLine("Placeholder SMTP configuration detected. Skipping send operation.");
+                        return;
+                    }
+
+                    // Create and configure the SmtpClient
+                    using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, smtpUsername, smtpPassword, SecurityOptions.Auto))
+                    {
+                        try
+                        {
+                            client.Send(mailMessage);
+                            Console.WriteLine("Email sent successfully.");
+                        }
+                        catch (Exception sendEx)
+                        {
+                            Console.Error.WriteLine($"Failed to send email: {sendEx.Message}");
+                        }
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

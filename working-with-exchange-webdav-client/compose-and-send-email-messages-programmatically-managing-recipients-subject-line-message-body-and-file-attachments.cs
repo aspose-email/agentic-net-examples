@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Clients.Smtp;
 
 class Program
 {
@@ -9,44 +9,68 @@ class Program
     {
         try
         {
-            // Exchange WebDAV server URI and credentials
-            string mailboxUri = "https://exchange.example.com/exchange";
+            // Placeholder credentials detection
+            string smtpHost = "smtp.example.com";
+            string smtpPort = "587";
             string username = "user@example.com";
             string password = "password";
 
-            // Path to the attachment file
-            string attachmentPath = "attachment.txt";
-
-            // Verify that the attachment file exists before proceeding
-            if (!File.Exists(attachmentPath))
+            if (smtpHost.Contains("example.com"))
             {
-                Console.Error.WriteLine($"Attachment file not found: {attachmentPath}");
+                Console.Error.WriteLine("Placeholder SMTP host detected. Skipping send operation.");
                 return;
             }
 
-            // Initialize the Exchange WebDAV client
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            // Compose the email message
+            using (MailMessage message = new MailMessage())
             {
-                // Compose the email message
-                using (MailMessage message = new MailMessage())
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient1@example.com"));
+                message.CC.Add(new MailAddress("recipient2@example.com"));
+                message.Bcc.Add(new MailAddress("recipient3@example.com"));
+                message.Subject = "Test Email";
+                message.Body = "This is a test email sent using Aspose.Email.";
+
+                // Prepare attachment
+                string attachmentPath = "test.txt";
+                try
                 {
-                    message.From = "sender@example.com";
-                    message.To.Add("recipient@example.com");
-                    message.Subject = "Test Email via Aspose.Email";
-                    message.Body = "Hello,\n\nThis is a test email sent using Aspose.Email Exchange WebDAV client.\n";
+                    if (!File.Exists(attachmentPath))
+                    {
+                        // Create a minimal placeholder file if missing
+                        File.WriteAllText(attachmentPath, "Placeholder attachment content.");
+                    }
 
-                    // Add the attachment
-                    message.Attachments.Add(new Attachment(attachmentPath));
+                    using (FileStream fs = File.OpenRead(attachmentPath))
+                    {
+                        Attachment attachment = new Attachment(fs, Path.GetFileName(attachmentPath));
+                        message.Attachments.Add(attachment);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Attachment handling error: {ex.Message}");
+                    // Continue without attachment if it fails
+                }
 
-                    // Send the message
-                    client.Send(message);
-                    Console.WriteLine("Email sent successfully.");
+                // Send the email via SMTP
+                try
+                {
+                    using (SmtpClient client = new SmtpClient(smtpHost, int.Parse(smtpPort), username, password))
+                    {
+                        client.Send(message);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to send email: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

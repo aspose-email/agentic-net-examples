@@ -1,44 +1,67 @@
 using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailEwsSharedMailboxSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Service URL and user credentials
-            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-            // Email address of the shared mailbox
-            string sharedMailbox = "shared@example.com";
-
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            try
             {
-                // Obtain mailbox information for the shared mailbox
-                ExchangeMailboxInfo sharedInfo = client.GetMailboxInfo(sharedMailbox);
+                // Placeholder values – replace with real server URL and credentials.
+                string ewsUrl = "https://example.com/EWS/Exchange.asmx";
+                string username = "username";
+                string password = "password";
+                string sharedMailboxEmail = "shared@example.com";
 
-                // List messages in the Inbox of the shared mailbox
-                ExchangeMessageInfoCollection messageInfos = client.ListMessages(sharedInfo.InboxUri);
-
-                foreach (ExchangeMessageInfo messageInfo in messageInfos)
+                // Guard against executing with placeholder credentials.
+                if (ewsUrl.Contains("example.com") || username == "username" || password == "password")
                 {
-                    // Fetch the full message using its unique URI
-                    using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
+                    return;
+                }
+
+                // Create the EWS client.
+                using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password))
+                {
+                    // Obtain information about the shared mailbox.
+                    ExchangeMailboxInfo sharedMailboxInfo;
+                    try
                     {
-                        Console.WriteLine("Subject: " + (message.Subject ?? string.Empty));
+                        sharedMailboxInfo = client.GetMailboxInfo(sharedMailboxEmail);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to retrieve shared mailbox info: {ex.Message}");
+                        return;
+                    }
+
+                    // List messages in the shared mailbox's Inbox folder.
+                    try
+                    {
+                        ExchangeMessageInfoCollection messageInfos = client.ListMessages(sharedMailboxInfo.InboxUri);
+                        foreach (ExchangeMessageInfo messageInfo in messageInfos)
+                        {
+                            // Fetch the full message using its unique URI.
+                            using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
+                            {
+                                Console.WriteLine($"Subject: {message.Subject}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error while listing or fetching messages: {ex.Message}");
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

@@ -4,17 +4,24 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgPath = "input.msg";
+            // Define input MSG file path and output directory
+            string inputMsgPath = "input.msg";
             string outputDirectory = "ExtractedAttachments";
 
-            // Verify input MSG file exists
-            if (!File.Exists(msgPath))
+            // Verify input file exists
+            if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+                // Optionally create a minimal placeholder MSG to avoid failure
+                using (MailMessage placeholder = new MailMessage())
+                {
+                    placeholder.Save(inputMsgPath, SaveOptions.DefaultMsg);
+                }
+                Console.Error.WriteLine("Created placeholder MSG file.");
                 return;
             }
 
@@ -27,28 +34,54 @@ class Program
             // Load MSG with TNEF attachment extraction enabled
             MsgLoadOptions loadOptions = new MsgLoadOptions
             {
-                PreserveTnefAttachments = true
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
             };
 
-            using (MailMessage message = MailMessage.Load(msgPath, loadOptions))
+            using (MailMessage message = MailMessage.Load(inputMsgPath, loadOptions))
             {
+                int attachmentIndex = 0;
                 foreach (Attachment attachment in message.Attachments)
                 {
-                    using (Attachment att = attachment)
+                    // Determine a safe file name for the attachment
+                    string attachmentName = attachment.Name;
+                    if (string.IsNullOrEmpty(attachmentName))
                     {
-                        string outputPath = Path.Combine(outputDirectory, att.Name);
+                        attachmentName = $"attachment_{attachmentIndex}";
+                    }
+
+                    // Sanitize file name (remove invalid path characters)
+                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                    {
+                        attachmentName = attachmentName.Replace(invalidChar, '_');
+                    }
+
+                    string outputPath = Path.Combine(outputDirectory, attachmentName);
+
+                    // Save attachment content to file
+                    try
+                    {
                         using (FileStream fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
                         {
-                            att.ContentStream.CopyTo(fileStream);
+                            if (attachment.ContentStream != null)
+                            {
+                                attachment.ContentStream.CopyTo(fileStream);
+                            }
                         }
-                        Console.WriteLine($"Extracted: {outputPath}");
+                        Console.WriteLine($"Saved attachment: {outputPath}");
                     }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save attachment '{attachmentName}': {ex.Message}");
+                    }
+
+                    attachmentIndex++;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -10,46 +10,53 @@ class Program
     {
         try
         {
-            // IMAP server connection parameters (replace with real values if available)
+            // Placeholder IMAP server details
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
 
-            // Define the date range (inclusive)
-            DateTime startDate = new DateTime(2022, 1, 1);
-            DateTime endDate   = new DateTime(2022, 1, 31);
+            // Guard against executing with placeholder credentials
+            if (host.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder IMAP server details detected. Skipping execution.");
+                return;
+            }
 
-            // Build the query string using the required format: d-MMM-yyyy (e.g., 01-Jan-2022)
-            string queryString = string.Format(
-                "('InternalDate' >= '{0:dd-MMM-yyyy}' & 'InternalDate' <= '{1:dd-MMM-yyyy}')",
-                startDate, endDate);
-
-            // Create a MailQuery with the constructed query string
-            MailQuery dateRangeQuery = new MailQuery(queryString);
-
-            // Connect to the IMAP server and fetch messages that match the date range
+            // Create and connect the IMAP client
             using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
-                // Retrieve the list of messages that satisfy the query
-                ImapMessageInfoCollection messages = client.ListMessages(dateRangeQuery);
-
-                Console.WriteLine($"Found {messages.Count} message(s) between {startDate:d} and {endDate:d}:");
-
-                foreach (ImapMessageInfo info in messages)
+                try
                 {
-                    // Fetch the full message to access its properties (e.g., Subject)
-                    using (MailMessage message = client.FetchMessage(info.UniqueId))
+                    // Define the date range (inclusive)
+                    DateTime startDate = new DateTime(2023, 1, 1);
+                    DateTime endDate = new DateTime(2023, 12, 31);
+
+                    // Build a MailQuery for the date range
+                    string queryString = $"('SentDate' >= '{startDate:dd-MMM-yyyy}' AND 'SentDate' <= '{endDate:dd-MMM-yyyy}')";
+                    MailQuery query = new MailQuery(queryString);
+
+                    // Retrieve messages that match the query
+                    ImapMessageInfoCollection messages = client.ListMessages(query);
+
+                    // Output basic information about each message
+                    foreach (ImapMessageInfo info in messages)
                     {
-                        Console.WriteLine($"- Subject: {message.Subject}");
+                        Console.WriteLine($"Subject: {info.Subject}");
+                        Console.WriteLine($"Sent Date: {info.Date}");
+                        Console.WriteLine(new string('-', 40));
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            // Gracefully report any errors without crashing the application
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

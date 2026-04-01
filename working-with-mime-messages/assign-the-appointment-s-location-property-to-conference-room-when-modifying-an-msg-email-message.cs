@@ -1,7 +1,7 @@
+using Aspose.Email.Calendar;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Calendar;
 using Aspose.Email.Mapi;
 
 class Program
@@ -10,47 +10,65 @@ class Program
     {
         try
         {
-            string inputMsgPath = "input.msg";
-            string outputMsgPath = "output.msg";
+            string inputPath = "appointment.msg";
+            string outputPath = "appointment_updated.msg";
 
             // Verify input file exists
-            if (!File.Exists(inputMsgPath))
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+                try
+                {
+                    MapiCalendar placeholderCalendar = new MapiCalendar(
+                        "Placeholder Location",
+                        "Placeholder Summary",
+                        "Placeholder Description",
+                        DateTime.Now,
+                        DateTime.Now.AddHours(1));
+                    placeholderCalendar.Save(inputPath, new MapiCalendarMsgSaveOptions());
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Load the existing MSG file
-            using (MapiMessage originalMessage = MapiMessage.Load(inputMsgPath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Create a minimal appointment (subject, dates, organizer, attendees)
-                MailAddress organizer = new MailAddress("organizer@example.com");
-                MailAddressCollection attendees = new MailAddressCollection();
-                attendees.Add(new MailAddress("attendee1@example.com"));
-
-                Appointment appointment = new Appointment(
-                    "Sample Meeting",
-                    new DateTime(2024, 12, 1, 10, 0, 0),
-                    new DateTime(2024, 12, 1, 11, 0, 0),
-                    organizer,
-                    attendees);
-
-                // Set the desired location
-                appointment.Location = "Conference Room";
-
-                // Convert the appointment to a MapiMessage
-                using (MapiMessage updatedMessage = appointment.ToMapiMessage())
-                {
-                    // Preserve original message properties (subject, body, etc.) if needed
-                    updatedMessage.Subject = originalMessage.Subject;
-                    updatedMessage.Body = originalMessage.Body;
-
-                    // Save the modified message
-                    updatedMessage.Save(outputMsgPath);
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            Console.WriteLine($"Message saved to {outputMsgPath}");
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(inputPath))
+            {
+                // Check if the message is a calendar item
+                if (msg.SupportedType == MapiItemType.Calendar)
+                {
+                    // Convert to MapiCalendar
+                    MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
+
+                    // Update the Location property
+                    calendar.Location = "Conference Room";
+
+                    // Get the underlying MapiMessage after modification
+                    using (MapiMessage updatedMsg = calendar.GetUnderlyingMessage())
+                    {
+                        // Save the modified MSG
+                        updatedMsg.Save(outputPath);
+                    }
+
+                    Console.WriteLine($"Appointment location updated and saved to: {outputPath}");
+                }
+                else
+                {
+                    Console.Error.WriteLine("The provided MSG file is not a calendar item.");
+                }
+            }
         }
         catch (Exception ex)
         {

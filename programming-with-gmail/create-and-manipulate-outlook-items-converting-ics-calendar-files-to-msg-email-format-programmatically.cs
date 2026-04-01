@@ -6,46 +6,58 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string icsPath = "sample.ics";
-            string msgPath = "output.msg";
+            string inputIcsPath = "input.ics";
+            string outputMsgPath = "output.msg";
 
-            if (!File.Exists(icsPath))
+            // Verify input file exists
+            if (!File.Exists(inputIcsPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {icsPath}");
+                Console.Error.WriteLine($"Error: File not found – {inputIcsPath}");
                 return;
             }
 
-            Appointment appointment;
-            try
-            {
-                appointment = Appointment.Load(icsPath);
-            }
-            catch (Exception loadEx)
-            {
-                Console.Error.WriteLine($"Error loading appointment: {loadEx.Message}");
-                return;
-            }
-
-            using (MapiMessage mapiMessage = appointment.ToMapiMessage())
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
                 try
                 {
-                    mapiMessage.Save(msgPath);
-                    Console.WriteLine($"MSG file saved to {msgPath}");
+                    Directory.CreateDirectory(outputDirectory);
                 }
-                catch (Exception saveEx)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Error saving MSG: {saveEx.Message}");
+                    Console.Error.WriteLine($"Error creating output directory: {dirEx.Message}");
+                    return;
                 }
             }
+
+            try
+            {
+                // Load the iCalendar file into an Appointment object
+                Appointment appointment = Appointment.Load(inputIcsPath);
+
+                // Convert the Appointment to a MAPI message
+                using (MapiMessage mapiMessage = appointment.ToMapiMessage())
+                {
+                    // Save the MAPI message as a MSG file
+                    mapiMessage.Save(outputMsgPath);
+                }
+
+                Console.WriteLine($"Successfully converted '{inputIcsPath}' to '{outputMsgPath}'.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during conversion: {ex.Message}");
+                return;
+            }
         }
-        catch (Exception ex)
+        catch (Exception outerEx)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {outerEx.Message}");
         }
     }
 }

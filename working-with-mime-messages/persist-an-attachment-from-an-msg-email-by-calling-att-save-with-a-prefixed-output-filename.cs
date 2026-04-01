@@ -9,39 +9,70 @@ class Program
     {
         try
         {
+            // Define paths and prefix
             string inputMsgPath = "sample.msg";
+            string outputDirectory = "output";
+            string fileNamePrefix = "saved_";
 
-            // Verify input file exists
+            // Ensure the output directory exists
+            Directory.CreateDirectory(outputDirectory);
+
+            // Guard input file existence
             if (!File.Exists(inputMsgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
-                return;
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                // Create a minimal placeholder MSG file
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "sender@example.com", "receiver@example.com"))
+                    {
+                        placeholder.Save(inputMsgPath);
+                        Console.WriteLine($"Placeholder MSG created at '{inputMsgPath}'.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    return;
+                }
             }
 
-            // Load the MSG file and process attachments
+            // Load the MSG file and extract attachments
             try
             {
                 using (MapiMessage message = MapiMessage.Load(inputMsgPath))
                 {
                     foreach (MapiAttachment attachment in message.Attachments)
                     {
-                        // Ensure attachment has a file name
-                        string originalName = attachment.FileName;
-                        if (string.IsNullOrEmpty(originalName))
-                        {
-                            originalName = "attachment.bin";
-                        }
+                        // Determine output file name with prefix
+                        string originalFileName = attachment.FileName ?? "attachment";
+                        string outputFilePath = Path.Combine(outputDirectory, fileNamePrefix + originalFileName);
 
-                        string outputFileName = $"output_{originalName}";
+                        // Save the attachment
                         try
                         {
-                            // Save the attachment to the prefixed file name
-                            attachment.Save(outputFileName);
-                            Console.WriteLine($"Saved attachment to {outputFileName}");
+                            attachment.Save(outputFilePath);
+                            Console.WriteLine($"Attachment saved to '{outputFilePath}'.");
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Failed to save attachment '{originalName}': {ex.Message}");
+                            Console.Error.WriteLine($"Failed to save attachment '{originalFileName}': {ex.Message}");
                         }
                     }
                 }

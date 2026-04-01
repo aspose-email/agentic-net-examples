@@ -1,8 +1,6 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,27 +8,46 @@ class Program
     {
         try
         {
-            // Initialize the EWS client using the factory method.
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://example.com/EWS/Exchange.asmx",
-                new NetworkCredential("username", "password")))
-            {
-                // List messages from the Inbox folder.
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+            string emlPath = "sample.eml";
 
-                foreach (ExchangeMessageInfo info in messages)
+            // Ensure the input file exists; create a minimal placeholder if missing.
+            if (!File.Exists(emlPath))
+            {
+                try
                 {
-                    // Output basic information about each message.
-                    Console.WriteLine("Subject: " + info.Subject);
-                    // Use the correct property for the message date.
-                    Console.WriteLine("Date: " + info.Date);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                using (FileStream fs = File.Create(emlPath))
+                {
+                    string placeholder = "From: placeholder@example.com\r\nTo: recipient@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
+                    byte[] bytes = System.Text.Encoding.UTF8.GetBytes(placeholder);
+                    fs.Write(bytes, 0, bytes.Length);
+                }
+                Console.WriteLine($"Created placeholder EML at {emlPath}");
+            }
+
+            // Load the email message and display its subject.
+            using (MailMessage message = MailMessage.Load(emlPath))
+            {
+                Console.WriteLine($"Subject: {message.Subject}");
             }
         }
         catch (Exception ex)
         {
-            // Write any errors to the error output.
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

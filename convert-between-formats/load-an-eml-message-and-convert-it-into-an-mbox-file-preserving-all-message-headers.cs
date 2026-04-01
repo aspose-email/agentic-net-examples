@@ -9,36 +9,61 @@ class Program
     {
         try
         {
-            // Input and output paths
             string emlPath = "input.eml";
             string mboxPath = "output.mbox";
 
-            // Ensure the input EML file exists; create a minimal placeholder if missing
+            // Ensure the input EML file exists; create a minimal placeholder if missing.
             if (!File.Exists(emlPath))
             {
                 try
                 {
-                    using (var writer = new StreamWriter(emlPath))
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        writer.WriteLine("From: placeholder@example.com");
-                        writer.WriteLine("To: recipient@example.com");
-                        writer.WriteLine("Subject: Placeholder");
-                        writer.WriteLine();
-                        writer.WriteLine("This is a placeholder EML message.");
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                string placeholderContent = "From: placeholder@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
+                try
+                {
+                    File.WriteAllText(emlPath, placeholderContent);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the EML message
-            MailMessage message;
+            // Ensure the output directory exists.
+            string outputDirectory = Path.GetDirectoryName(mboxPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                try
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the EML message.
+            MailMessage emlMessage;
             try
             {
-                message = MailMessage.Load(emlPath);
+                emlMessage = MailMessage.Load(emlPath);
             }
             catch (Exception ex)
             {
@@ -46,13 +71,16 @@ class Program
                 return;
             }
 
-            // Write the message to an MBOX file using a concrete writer
+            // Convert and save as MBOX, preserving all headers.
             try
             {
-                var saveOptions = new MboxSaveOptions();
-                using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxPath, saveOptions))
+                using (FileStream mboxStream = new FileStream(mboxPath, FileMode.Create, FileAccess.Write))
                 {
-                    writer.WriteMessage(message);
+                    MboxSaveOptions saveOptions = new MboxSaveOptions();
+                    using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxStream, saveOptions))
+                    {
+                        writer.WriteMessage(emlMessage);
+                    }
                 }
             }
             catch (Exception ex)
@@ -60,14 +88,8 @@ class Program
                 Console.Error.WriteLine($"Failed to write MBOX file: {ex.Message}");
                 return;
             }
-            finally
-            {
-                // Dispose the loaded message
-                if (message != null)
-                    message.Dispose();
-            }
 
-            Console.WriteLine("Conversion completed successfully.");
+            Console.WriteLine("EML successfully converted to MBOX.");
         }
         catch (Exception ex)
         {

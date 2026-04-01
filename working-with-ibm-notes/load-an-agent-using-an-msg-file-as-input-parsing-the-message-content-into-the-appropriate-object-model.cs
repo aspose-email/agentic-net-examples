@@ -3,64 +3,82 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string msgFilePath = "sample.msg";
+            string inputPath = "agent.msg";
+            string outputDirectory = "output";
+            string outputPath = Path.Combine(outputDirectory, "parsed.txt");
 
-                if (!File.Exists(msgFilePath))
+            // Ensure output directory exists
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Guard input file existence, create minimal placeholder if missing
+            if (!File.Exists(inputPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                    using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder Subject", "This is a placeholder body."))
+                    {
+                        MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
+                        placeholder.Save(inputPath, saveOptions);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
                     return;
                 }
+            }
 
-                using (MapiMessage message = MapiMessage.Load(msgFilePath))
+            // Load the MSG file and parse its content
+            try
+            {
+                using (MapiMessage mapiMessage = MapiMessage.Load(inputPath))
                 {
-                    Console.WriteLine("Subject: " + message.Subject);
-                    Console.WriteLine("From: " + message.SenderEmailAddress);
-                    Console.WriteLine("Body: " + message.Body);
-
-                    if (message.Attachments != null && message.Attachments.Count > 0)
+                    using (MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions()))
                     {
-                        string attachmentDir = "Attachments";
+                        // Display parsed information
+                        Console.WriteLine($"Subject: {mailMessage.Subject}");
+                        Console.WriteLine($"From: {mailMessage.From}");
+                        Console.WriteLine($"To: {mailMessage.To}");
+                        Console.WriteLine($"Body: {mailMessage.Body}");
+
+                        // Optionally write parsed details to a file
                         try
                         {
-                            if (!Directory.Exists(attachmentDir))
+                            using (StreamWriter writer = new StreamWriter(outputPath, false))
                             {
-                                Directory.CreateDirectory(attachmentDir);
+                                writer.WriteLine($"Subject: {mailMessage.Subject}");
+                                writer.WriteLine($"From: {mailMessage.From}");
+                                writer.WriteLine($"To: {mailMessage.To}");
+                                writer.WriteLine("Body:");
+                                writer.WriteLine(mailMessage.Body);
                             }
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Error creating attachment directory: {ex.Message}");
-                            return;
-                        }
-
-                        foreach (MapiAttachment attachment in message.Attachments)
-                        {
-                            string attachmentPath = Path.Combine(attachmentDir, attachment.FileName);
-                            try
-                            {
-                                attachment.Save(attachmentPath);
-                                Console.WriteLine($"Saved attachment: {attachmentPath}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Error saving attachment {attachment.FileName}: {ex.Message}");
-                            }
+                            Console.Error.WriteLine($"Error writing parsed output: {ex.Message}");
+                            // Continue without aborting; parsed data already displayed on console
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Error loading or parsing MSG file: {ex.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

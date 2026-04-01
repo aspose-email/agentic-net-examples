@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email.Storage.Pst;
 
 class Program
@@ -8,53 +9,69 @@ class Program
     {
         try
         {
-            string pstPath = "output.pst";
-            string fileToAdd = "sample.txt";
+            // Define PST file path
+            string pstFilePath = "output.pst";
 
-            // Ensure the file to add exists; create a minimal placeholder if missing
-            if (!File.Exists(fileToAdd))
+            // Ensure the directory for the PST file exists
+            string pstDirectory = Path.GetDirectoryName(pstFilePath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
-                try
-                {
-                    File.WriteAllText(fileToAdd, "Placeholder content");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder file: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(pstDirectory);
             }
 
-            // Open existing PST for writing or create a new one if it does not exist
-            PersonalStorage pst = null;
-            try
+            // Create or open the PST file
+            PersonalStorage pst;
+            if (File.Exists(pstFilePath))
             {
-                if (File.Exists(pstPath))
-                {
-                    pst = PersonalStorage.FromFile(pstPath, true);
-                }
-                else
-                {
-                    pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                }
+                // Open existing PST for writing
+                pst = PersonalStorage.FromFile(pstFilePath, true);
             }
-            catch (Exception ex)
+            else
             {
-                Console.Error.WriteLine($"Error opening or creating PST file: {ex.Message}");
-                return;
+                // Create a new Unicode PST file
+                pst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
             }
 
             using (pst)
             {
-                // Add the file into the root folder of the PST
-                try
+                // List of files to add to the PST
+                List<string> filesToAdd = new List<string>
                 {
-                    string entryId = pst.RootFolder.AddFile(fileToAdd, "IPM.Note");
-                    Console.WriteLine($"File added to PST. EntryId: {entryId}");
-                }
-                catch (Exception ex)
+                    "sample1.txt",
+                    "sample2.pdf"
+                };
+
+                // Ensure each input file exists; create a tiny placeholder if missing
+                foreach (string filePath in filesToAdd)
                 {
-                    Console.Error.WriteLine($"Error adding file to PST: {ex.Message}");
+                    if (!File.Exists(filePath))
+                    {
+                        try
+                        {
+                            // Create a minimal placeholder file
+                            using (FileStream placeholder = File.Create(filePath))
+                            {
+                                byte[] content = System.Text.Encoding.UTF8.GetBytes("Placeholder content");
+                                placeholder.Write(content, 0, content.Length);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Error creating placeholder for '{filePath}': {ex.Message}");
+                            continue;
+                        }
+                    }
+
+                    try
+                    {
+                        // Add the file to the root folder of the PST as a standard mail item
+                        string entryId = pst.RootFolder.AddFile(filePath, "IPM.Note");
+                        Console.WriteLine($"Added '{filePath}' to PST. EntryId: {entryId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error adding file '{filePath}' to PST: {ex.Message}");
+                    }
                 }
             }
         }

@@ -8,22 +8,38 @@ class Program
     {
         try
         {
-            string msgPath = @"c:\temp\sample.msg";
-            string attachmentNameToRemove = "unwanted.txt";
+            string inputPath = "sample.msg";
+            string outputPath = "sample_modified.msg";
+            string attachmentNameToRemove = "remove.txt";
 
-            // Verify the MSG file exists before attempting to load it.
-            if (!File.Exists(msgPath))
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Error: File not found – {inputPath}");
                 return;
             }
 
-            // Load the MSG file into a MailMessage instance.
-            using (MailMessage mailMessage = MailMessage.Load(msgPath))
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Locate the attachment with the specified name.
+                // Locate the attachment to remove by name
                 Attachment attachmentToRemove = null;
-                foreach (Attachment att in mailMessage.Attachments)
+                foreach (Attachment att in message.Attachments)
                 {
                     if (string.Equals(att.Name, attachmentNameToRemove, StringComparison.OrdinalIgnoreCase))
                     {
@@ -32,25 +48,25 @@ class Program
                     }
                 }
 
-                // If the attachment was found, remove it.
                 if (attachmentToRemove != null)
                 {
-                    mailMessage.Attachments.Remove(attachmentToRemove);
-                    Console.WriteLine($"Attachment \"{attachmentNameToRemove}\" removed.");
+                    // Remove the attachment
+                    message.Attachments.Remove(attachmentToRemove);
+
+                    // Save the modified message
+                    try
+                    {
+                        message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        Console.WriteLine($"Attachment '{attachmentNameToRemove}' removed and message saved to {outputPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error saving message: {ex.Message}");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine($"Attachment \"{attachmentNameToRemove}\" not found.");
-                }
-
-                // Save the modified message back to the same file.
-                try
-                {
-                    mailMessage.Save(msgPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving file: {ex.Message}");
+                    Console.WriteLine($"Attachment '{attachmentNameToRemove}' not found in the message.");
                 }
             }
         }

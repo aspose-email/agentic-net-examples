@@ -11,49 +11,46 @@ class Program
             string inputPath = "input.eml";
             string outputPath = "output.html";
 
+            // Ensure the input EML file exists; create a minimal placeholder if missing
             if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
-
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
+
+                string placeholderEml = "From: placeholder@example.com\r\nTo: placeholder@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
+                File.WriteAllText(inputPath, placeholderEml);
             }
 
+            // Load the EML message
             using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Save as HTML while preserving the original message dates
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.HtmlFormat)
+                // Configure save options to preserve the original message date
+                MhtSaveOptions saveOptions = new MhtSaveOptions()
                 {
-                    PreserveOriginalDates = true
+                    PreserveOriginalDate = true
                 };
 
-                try
-                {
-                    message.Save(outputPath, saveOptions);
-                    Console.WriteLine($"EML file converted to HTML successfully: {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save HTML file: {ex.Message}");
-                }
+                // Save the message as HTML (MHTML) with preserved date
+                message.Save(outputPath, saveOptions);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

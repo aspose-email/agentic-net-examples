@@ -1,8 +1,8 @@
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Storage.Pst;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -10,23 +10,30 @@ class Program
     {
         try
         {
-            // Server connection parameters (replace with real values)
+            // Placeholder connection details – real values should be provided for actual execution
             string serverUrl = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create and connect the Exchange WebDav client
+            // Skip execution when placeholder credentials are detected
+            if (serverUrl.Contains("example.com") || username.Contains("example.com"))
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
+                return;
+            }
+
+            // Create and use the Exchange WebDav client
             using (ExchangeClient client = new ExchangeClient(serverUrl, username, password))
             {
                 try
                 {
-                    // Start enumeration from the Inbox folder
-                    string inboxUri = client.MailboxInfo.InboxUri;
-                    EnumerateFolder(client, inboxUri, 0);
+                    // Start enumeration from the root folder (Inbox) – you can change this to any known folder URI
+                    string rootFolderUri = client.MailboxInfo.InboxUri;
+                    EnumerateFolder(client, rootFolderUri, string.Empty);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during folder enumeration: {ex.Message}");
+                    Console.Error.WriteLine($"Error during mailbox enumeration: {ex.Message}");
                 }
             }
         }
@@ -36,30 +43,31 @@ class Program
         }
     }
 
-    // Recursively enumerates a folder, its messages and subfolders
-    private static void EnumerateFolder(ExchangeClient client, string folderUri, int depth)
+    // Recursively enumerates folders and their messages, preserving hierarchy via indentation
+    private static void EnumerateFolder(ExchangeClient client, string folderUri, string indent)
     {
-        // Get folder information
+        // Retrieve folder information
         ExchangeFolderInfo folderInfo = client.GetFolderInfo(folderUri);
-        string indent = new string(' ', depth * 2);
-        Console.WriteLine($"{indent}Folder: {folderInfo.DisplayName}");
 
-        // List messages in the current folder (non‑recursive)
-        ExchangeMessageInfoCollection messages = client.ListMessages(folderUri, false);
-        foreach (ExchangeMessageInfo messageInfo in messages)
+        // Display folder name (fallback to URI if DisplayName is unavailable)
+        string folderName = !string.IsNullOrEmpty(folderInfo.DisplayName) ? folderInfo.DisplayName : folderInfo.Uri;
+        Console.WriteLine($"{indent}Folder: {folderName}");
+
+        // List messages in the current folder
+        ExchangeMessageInfoCollection messages = client.ListMessages(folderInfo.Uri);
+        foreach (ExchangeMessageInfo msgInfo in messages)
         {
-            // Fetch the full message to read metadata
-            MailMessage message = client.FetchMessage(messageInfo.UniqueUri);
-            Console.WriteLine($"{indent}  Message Subject: {message.Subject}");
-            Console.WriteLine($"{indent}  From: {message.From}");
-            Console.WriteLine($"{indent}  Received: {message.Date}");
+            // Use InternalDate as per validation rule
+            Console.WriteLine($"{indent}  Subject: {msgInfo.Subject}");
+            Console.WriteLine($"{indent}  From: {msgInfo.From}");
+            Console.WriteLine($"{indent}  Date (Internal): {msgInfo.InternalDate}");
         }
 
-        // List subfolders and recurse
-        ExchangeFolderInfoCollection subFolders = client.ListSubFolders(folderUri);
-        foreach (ExchangeFolderInfo subFolderInfo in subFolders)
+        // Recursively process subfolders
+        ExchangeFolderInfoCollection subFolders = client.ListSubFolders(folderInfo);
+        foreach (ExchangeFolderInfo subFolder in subFolders)
         {
-            EnumerateFolder(client, subFolderInfo.Uri, depth + 1);
+            EnumerateFolder(client, subFolder.Uri, indent + "  ");
         }
     }
 }

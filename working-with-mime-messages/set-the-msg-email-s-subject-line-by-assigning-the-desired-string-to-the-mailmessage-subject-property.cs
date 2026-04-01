@@ -8,31 +8,55 @@ class Program
     {
         try
         {
-            // Define the output MSG file path
+            string inputPath = "input.msg";
             string outputPath = "output.msg";
 
-            // Ensure the target directory exists
-            string directoryPath = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (!Directory.Exists(directoryPath))
+            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(inputPath))
             {
-                Directory.CreateDirectory(directoryPath);
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                // Create a simple placeholder message.
+                using (MailMessage placeholder = new MailMessage("from@example.com", "to@example.com", "Placeholder Subject", "Placeholder body"))
+                {
+                    placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                }
             }
 
-            // Create a new MailMessage and set its properties
-            using (MailMessage message = new MailMessage())
+            // Ensure the output directory exists.
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Desired Subject";
-
-                // Save the message as MSG using appropriate SaveOptions
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                message.Save(outputPath, saveOptions);
+                Directory.CreateDirectory(outputDirectory);
             }
+
+            // Load the MSG file, set a new subject, and save it.
+            using (MailMessage message = MailMessage.Load(inputPath))
+            {
+                message.Subject = "New Subject Line";
+                message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+            }
+
+            Console.WriteLine("Subject updated and saved to: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

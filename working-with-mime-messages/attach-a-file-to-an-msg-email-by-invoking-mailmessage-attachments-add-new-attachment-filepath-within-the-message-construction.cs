@@ -10,14 +10,14 @@ class Program
         {
             // Define paths
             string attachmentPath = "sample.txt";
-            string outputMsgPath = "output.msg";
+            string outputPath = "output.msg";
 
-            // Ensure attachment file exists; create a minimal placeholder if missing
+            // Ensure attachment file exists
             if (!File.Exists(attachmentPath))
             {
                 try
                 {
-                    File.WriteAllText(attachmentPath, "Placeholder attachment content.");
+                    File.WriteAllText(attachmentPath, "Sample attachment content");
                 }
                 catch (Exception ex)
                 {
@@ -27,7 +27,7 @@ class Program
             }
 
             // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputMsgPath);
+            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 try
@@ -41,26 +41,29 @@ class Program
                 }
             }
 
-            // Create the email message and add the attachment
-            using (MailMessage message = new MailMessage())
+            // Create the email message
+            using (MailMessage mail = new MailMessage())
             {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Sample Email with Attachment";
-                message.Body = "Please see the attached file.";
+                mail.From = "sender@example.com";
+                mail.To.Add("receiver@example.com");
+                mail.Subject = "Message with attachment";
+                mail.Body = "Please see the attached file.";
 
                 // Add attachment
-                message.Attachments.Add(new Attachment(attachmentPath));
+                using (Attachment attachment = new Attachment(attachmentPath))
+                {
+                    mail.Attachments.Add(attachment);
+                }
 
-                // Save the message as MSG
+                // Save as MSG
                 try
                 {
-                    message.Save(outputMsgPath, SaveOptions.DefaultMsgUnicode);
-                    Console.WriteLine($"Message saved to {outputMsgPath}");
+                    mail.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    Console.WriteLine($"Message saved to {outputPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
                 }
             }
         }

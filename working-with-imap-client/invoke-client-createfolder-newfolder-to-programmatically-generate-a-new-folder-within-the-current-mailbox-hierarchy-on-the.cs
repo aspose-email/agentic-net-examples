@@ -1,47 +1,47 @@
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Clients;
 
-namespace AsposeEmailImapCreateFolder
+namespace Sample
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             try
             {
-                // IMAP server connection settings
+                // Placeholder credentials and host
                 string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
+                string username = "username";
                 string password = "password";
-                SecurityOptions security = SecurityOptions.Auto;
 
-                try
+                // Guard against placeholder values to avoid real network calls
+                if (host.Contains("example.com", StringComparison.OrdinalIgnoreCase) ||
+                    username.Equals("username", StringComparison.OrdinalIgnoreCase) ||
+                    password.Equals("password", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Initialize and connect the IMAP client
-                    using (ImapClient client = new ImapClient(host, port, username, password, security))
+                    Console.WriteLine("Placeholder credentials detected. Skipping folder creation.");
+                    return;
+                }
+
+                // Create and connect the IMAP client
+                using (ImapClient client = new ImapClient(host, username, password))
+                {
+                    try
                     {
-                        // Create a new folder named "NewFolder" in the mailbox
+                        // Create a new folder named "NewFolder"
                         client.CreateFolder("NewFolder");
                         Console.WriteLine("Folder 'NewFolder' created successfully.");
                     }
-                }
-                catch (ImapException imapEx)
-                {
-                    Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error: {ex.Message}");
-                    return;
+                    catch (ImapException imapEx)
+                    {
+                        Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }

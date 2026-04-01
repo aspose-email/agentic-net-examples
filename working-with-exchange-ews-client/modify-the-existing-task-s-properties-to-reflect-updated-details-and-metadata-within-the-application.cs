@@ -1,61 +1,51 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
-public class Program
+class Program
 {
-    public static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Initialize the EWS client using the factory method.
-            // Wrap client creation in a try/catch to handle connection/authentication errors.
-            IEWSClient client;
-            try
+            // Placeholder connection details
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Skip execution when placeholders are detected
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                client = EWSClient.GetEWSClient(
-                    "https://example.com/EWS/Exchange.asmx",
-                    new NetworkCredential("username", "password"));
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Failed to create EWS client: " + ex.Message);
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
                 return;
             }
 
-            // Ensure the client is disposed after use.
-            using (client)
+            // Create EWS client using the factory method
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
                 try
                 {
-                    // List messages in the Inbox folder.
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                    if (messages != null && messages.Count > 0)
+                    // Retrieve mailbox information
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+
+                    // List messages in the inbox folder
+                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
+                    foreach (var msgInfo in messages)
                     {
-                        // Fetch the first message using its UniqueUri.
-                        ExchangeMessageInfo firstInfo = messages[0];
-                        using (MailMessage mail = client.FetchMessage(firstInfo.UniqueUri))
-                        {
-                            Console.WriteLine("Subject: " + mail.Subject);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("No messages found in the Inbox.");
+                        Console.WriteLine("Subject: " + msgInfo.Subject);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Error while accessing mailbox: " + ex.Message);
+                    Console.Error.WriteLine("EWS operation error: " + ex.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            // Top-level exception guard.
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
         }
     }
 }

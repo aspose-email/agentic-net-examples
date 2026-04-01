@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
@@ -11,29 +9,34 @@ class Program
     {
         try
         {
-            // Initialize Gmail client with placeholder credentials
-            using (IGmailClient gmailClient = GmailClient.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken",
-                "user@example.com"))
+            // Placeholder credentials for the Google Cloud project
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string defaultEmail = "user@example.com";
+
+            // Guard: skip real network calls when placeholders are used
+            if (clientId == "clientId" || clientSecret == "clientSecret" || refreshToken == "refreshToken")
             {
-                // List messages in the mailbox
-                List<GmailMessageInfo> messages = gmailClient.ListMessages();
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client initialization.");
+                return;
+            }
 
-                // Extract message IDs into a string array
-                string[] messageIds = messages.Select(m => m.Id).ToArray();
-
-                // Output each message ID
-                foreach (string id in messageIds)
+            // Initialize the Gmail client
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
+            using (gmailClient)
+            {
+                // Example operation: list calendars
+                var calendars = gmailClient.ListCalendars();
+                foreach (var calendar in calendars)
                 {
-                    Console.WriteLine(id);
+                    Console.WriteLine($"Calendar ID: {calendar.Id}, Summary: {calendar.Summary}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -5,58 +5,86 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            if (args.Length < 2)
-            {
-                Console.Error.WriteLine("Usage: <program> <msgFilePath> <outputFolder>");
-                return;
-            }
+            string msgPath = "input.msg";
+            string outputFolder = "Attachments";
 
-            string msgFilePath = args[0];
-            string outputFolderPath = args[1];
-
-            if (!File.Exists(msgFilePath))
-            {
-                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
-                return;
-            }
-
-            if (!Directory.Exists(outputFolderPath))
+            // Verify input MSG file exists
+            if (!File.Exists(msgPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputFolderPath);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output folder: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
             }
 
-            using (MapiMessageReader reader = new MapiMessageReader(msgFilePath))
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputFolder))
             {
-                MapiAttachmentCollection attachments = reader.ReadAttachments();
-                int attachmentIndex = 0;
+                Directory.CreateDirectory(outputFolder);
+            }
+
+            // Load the MSG file
+            using (MapiMessage message = MapiMessage.Load(msgPath))
+            {
+                MapiAttachmentCollection attachments = message.Attachments;
+
                 foreach (MapiAttachment attachment in attachments)
                 {
-                    string fileExtension = Path.GetExtension(attachment.FileName ?? ".dat");
-                    string outputFilePath = Path.Combine(outputFolderPath, $"attachment_{attachmentIndex}{fileExtension}");
+                    // Determine a safe file name for the attachment
+                    string fileName = attachment.LongFileName;
+                    if (string.IsNullOrEmpty(fileName))
+                    {
+                        fileName = attachment.FileName;
+                    }
+                    if (string.IsNullOrEmpty(fileName))
+                    {
+                        fileName = "attachment.bin";
+                    }
+
+                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                    {
+                        fileName = fileName.Replace(invalidChar, '_');
+                    }
+
+                    string outputPath = Path.Combine(outputFolder, fileName);
 
                     try
                     {
-                        // Save the attachment content to a file.
-                        attachment.SaveToTnef(outputFilePath);
+                        // Write attachment bytes to file
+                        byte[] data = attachment.BinaryData;
+                        if (data != null && data.Length > 0)
+                        {
+                            File.WriteAllBytes(outputPath, data);
+                            Console.WriteLine($"Saved attachment: {outputPath}");
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine($"Attachment {fileName} contains no data.");
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to save attachment {attachmentIndex}: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to save attachment {fileName}: {ex.Message}");
                     }
-
-                    attachmentIndex++;
                 }
             }
         }

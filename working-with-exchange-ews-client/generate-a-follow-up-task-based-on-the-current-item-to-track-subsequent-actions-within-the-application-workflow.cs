@@ -1,50 +1,72 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace FollowUpTaskSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Initialize the EWS client
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            try
             {
-                // Get the Inbox folder URI
-                string inboxUri = client.MailboxInfo.InboxUri;
+                // Placeholder Exchange service URL and credentials
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-                // List the most recent message in the Inbox
-                ExchangeMessageInfoCollection messageInfos = client.ListMessages(inboxUri, 1);
-                if (messageInfos == null || messageInfos.Count == 0)
+                // Skip execution when placeholder values are detected
+                if (serviceUrl.Contains("example.com"))
                 {
-                    Console.WriteLine("No messages found in the Inbox.");
+                    Console.Error.WriteLine("Placeholder Exchange service URL detected. Skipping execution.");
                     return;
                 }
 
-                // Fetch the full message
-                MailMessage message = client.FetchMessage(messageInfos[0].UniqueUri);
+                // Create the EWS client using the factory method
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    try
+                    {
+                        // Retrieve mailbox information
+                        ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
 
-                // Create a follow‑up task based on the fetched message
-                ExchangeTask task = new ExchangeTask();
-                task.Subject = "Follow‑up: " + message.Subject;
-                task.Body = "Please follow up on the email received from " + message.From + ".\n\nOriginal Message:\n" + message.Body;
-                task.StartDate = DateTime.Now;
-                task.DueDate = DateTime.Now.AddDays(2);
+                        // List messages in the Inbox folder
+                        ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
+                        if (messages == null || messages.Count == 0)
+                        {
+                            Console.WriteLine("No messages found in the Inbox.");
+                            return;
+                        }
 
-                // Add the task to the default Tasks folder
-                client.CreateTask(task);
+                        // Fetch the first message to use its details for the follow‑up task
+                        ExchangeMessageInfo firstInfo = messages[0];
+                        using (MailMessage email = client.FetchMessage(firstInfo.UniqueUri))
+                        {
+                            // Create a follow‑up task based on the email
+                            ExchangeTask followUpTask = new ExchangeTask
+                            {
+                                Subject = "Follow‑up: " + email.Subject,
+                                Body = "Please follow up on the email received from " + (email.From.Count > 0 ? email.From[0].Address : "unknown sender") + ".",
+                                StartDate = DateTime.Now,
+                                DueDate = DateTime.Now.AddDays(2)
+                            };
 
-                Console.WriteLine("Follow‑up task created successfully.");
+                            // Save the task to the default Tasks folder
+                            client.CreateTask(followUpTask);
+                            Console.WriteLine("Follow‑up task created successfully.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("Error during Exchange operations: " + ex.Message);
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            }
         }
     }
 }

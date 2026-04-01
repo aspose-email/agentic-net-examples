@@ -1,41 +1,57 @@
 using System;
-using System.Net;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailRuleSample
 {
-    static void Main()
+    // Simple rule class with condition and action
+    public class Rule
     {
-        try
+        public Func<MailMessage, bool> Condition { get; set; }
+        public Action<MailMessage> Action { get; set; }
+
+        public void Apply(MailMessage message)
         {
-            // Initialize EWS client safely
-            using (IEWSClient client = EWSClient.GetEWSClient(
-                "https://example.com/EWS/Exchange.asmx",
-                new NetworkCredential("username", "password")))
+            if (Condition != null && Condition(message))
             {
-                // Create a new inbox rule that deletes messages from a specific sender
-                InboxRule rule = InboxRule.CreateRuleDeleteFrom(new MailAddress("spam@example.com"));
-                rule.DisplayName = "Delete Spam Sender";
-                rule.IsEnabled = true;
-                rule.Priority = 1;
-
-                // Add the rule to the mailbox
-                client.CreateInboxRule(rule);
-
-                // Retrieve and display all inbox rules
-                InboxRule[] rules = client.GetInboxRules();
-                Console.WriteLine("Inbox Rules:");
-                foreach (InboxRule r in rules)
-                {
-                    Console.WriteLine($"- {r.DisplayName} (Enabled: {r.IsEnabled})");
-                }
+                Action?.Invoke(message);
             }
         }
-        catch (Exception ex)
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            try
+            {
+                // Create a sample mail message
+                MailMessage sampleMessage = new MailMessage();
+                sampleMessage.From = "sender@example.com";
+                sampleMessage.To.Add("recipient@example.com");
+                sampleMessage.Subject = "Test Email";
+                sampleMessage.Body = "This is a test email.";
+
+                // Create a new rule instance
+                Rule moveToFolderRule = new Rule();
+
+                // Configure condition: subject contains "Test"
+                moveToFolderRule.Condition = (MailMessage msg) => msg.Subject != null && msg.Subject.Contains("Test");
+
+                // Configure action: add a custom header
+                moveToFolderRule.Action = (MailMessage msg) => msg.Headers.Add("X-Processed", "True");
+
+                // Apply rule to the message
+                moveToFolderRule.Apply(sampleMessage);
+
+                // Output result
+                Console.WriteLine("Rule applied. Header X-Processed: " + sampleMessage.Headers["X-Processed"]);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return;
+            }
         }
     }
 }

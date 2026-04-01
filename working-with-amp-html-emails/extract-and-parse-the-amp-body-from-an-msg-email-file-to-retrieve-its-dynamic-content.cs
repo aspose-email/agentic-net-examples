@@ -5,42 +5,69 @@ using Aspose.Email.Amp;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string msgPath = "sample.msg";
+            string msgPath = "input.msg";
+            string outputPath = "amp_body.html";
 
+            // Verify input file exists
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
-                return;
-            }
-
-            try
-            {
-                using (FileStream fileStream = File.OpenRead(msgPath))
+                try
                 {
-                    using (AmpMessage ampMessage = new AmpMessage())
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        ampMessage.Import(fileStream);
-
-                        string ampHtmlBody = ampMessage.AmpHtmlBody;
-
-                        Console.WriteLine("AMP HTML Body:");
-                        Console.WriteLine(ampHtmlBody ?? "[No AMP body found]");
+                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
-            }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine($"Error processing file: {ioEx.Message}");
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input MSG file not found: {msgPath}");
                 return;
+            }
+
+            // Load the MSG as an AmpMessage
+            using (AmpMessage ampMessage = (AmpMessage)MailMessage.Load(msgPath))
+            {
+                string ampHtmlBody = ampMessage.AmpHtmlBody;
+
+                if (string.IsNullOrEmpty(ampHtmlBody))
+                {
+                    Console.WriteLine("The message does not contain an AMP body.");
+                    return;
+                }
+
+                try
+                {
+                    // Ensure output directory exists
+                    string outputDirectory = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+
+                    File.WriteAllText(outputPath, ampHtmlBody);
+                    Console.WriteLine($"AMP body extracted and saved to: {outputPath}");
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to write AMP body to file: {ioEx.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

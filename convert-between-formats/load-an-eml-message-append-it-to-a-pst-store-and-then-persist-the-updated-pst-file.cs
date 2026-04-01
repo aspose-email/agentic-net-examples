@@ -10,67 +10,73 @@ class Program
     {
         try
         {
-            // Define file paths
-            string emlPath = "message.eml";
-            string pstPath = "output.pst";
+            // Paths to the source EML file and the target PST file
+            string emlFilePath = "sample.eml";
+            string pstFilePath = "output.pst";
 
-            // Ensure the EML file exists; create a minimal placeholder if missing
-            if (!File.Exists(emlPath))
+            // Verify that the EML file exists
+            if (!File.Exists(emlFilePath))
             {
                 try
                 {
-                    string placeholder = "From: placeholder@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(emlPath, placeholder);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(emlFilePath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"EML file not found: {emlFilePath}");
+                return;
+            }
+
+            // Ensure the PST file exists; create a new one if it does not
+            if (!File.Exists(pstFilePath))
+            {
+                try
+                {
+                    PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
+                }
+                catch (Exception createEx)
+                {
+                    Console.Error.WriteLine($"Failed to create PST file: {createEx.Message}");
                     return;
                 }
             }
 
-            // Ensure the PST file exists; create a new one if missing
-            if (!File.Exists(pstPath))
-            {
-                try
-                {
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
             {
                 // Load the EML message
-                using (MailMessage mailMessage = MailMessage.Load(emlPath))
+                using (MailMessage mailMessage = MailMessage.Load(emlFilePath))
                 {
-                    // Convert MailMessage to MapiMessage
-                    MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
+                    // Convert the MailMessage to a MapiMessage
+                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                    {
+                        // Get the Inbox folder (creates it if missing)
+                        FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
 
-                    // Add the message to the root folder of the PST
-                    try
-                    {
-                        string entryId = pst.RootFolder.AddMessage(mapiMessage);
-                        Console.WriteLine($"Message added to PST with EntryId: {entryId}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to add message to PST: {ex.Message}");
-                        return;
+                        // Append the message to the Inbox folder
+                        inboxFolder.AddMessage(mapiMessage);
                     }
                 }
 
-                // Changes are persisted on dispose; no SaveAs to the same path.
+                // Changes are saved when the PersonalStorage object is disposed
+                // Optionally, you can explicitly save:
+                // pst.SaveAs(pstFilePath, FileFormat.Pst);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

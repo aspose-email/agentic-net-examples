@@ -1,59 +1,65 @@
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             string pstPath = "sample.pst";
 
-            // Ensure the PST file exists; create a minimal placeholder if it does not.
+            // Ensure the PST file exists; create a minimal one if missing.
             if (!File.Exists(pstPath))
             {
                 try
                 {
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine($"Created placeholder PST at {pstPath}");
+                    // Create a new Unicode PST file.
+                    using (PersonalStorage pstCreate = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // Optionally create a default Inbox folder.
+                        pstCreate.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
+                    }
                 }
-                catch (Exception createEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {createEx.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
                     return;
                 }
             }
 
-            // Open the PST file and validate folder container classes.
-            try
+            // Open the PST file.
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                // Retrieve the Inbox predefined folder.
+                FolderInfo inboxFolder;
+                try
                 {
-                    ValidateFolderContainerClass(pst.RootFolder);
+                    inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
                 }
-            }
-            catch (Exception pstEx)
-            {
-                Console.Error.WriteLine($"Error processing PST file: {pstEx.Message}");
-                return;
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error retrieving Inbox folder: {ex.Message}");
+                    return;
+                }
+
+                // Validate the container class of the folder.
+                try
+                {
+                    string containerClass = inboxFolder.ContainerClass;
+                    Console.WriteLine($"Inbox folder container class: {containerClass}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error accessing ContainerClass: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    private static void ValidateFolderContainerClass(FolderInfo folder)
-    {
-        // Output the folder's display name and its container class.
-        Console.WriteLine($"Folder: {folder.DisplayName}, ContainerClass: {folder.ContainerClass}");
-
-        // Recursively validate subfolders.
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            ValidateFolderContainerClass(subFolder);
         }
     }
 }
