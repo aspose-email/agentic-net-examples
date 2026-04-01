@@ -1,51 +1,68 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string mboxPath = "archive.mbox";
+            // Input MBOX file path
+            string mboxPath = "sample.mbox";
 
+            // Output directory for processed messages
+            string outputFolder = "output";
+
+            // Unique identifiers of messages to retrieve (Message-Id header values)
+            string[] targetIds = new string[] { "<msg1@example.com>", "<msg2@example.com>" };
+
+            // Guard input file existence
             if (!File.Exists(mboxPath))
             {
                 Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // List of message EntryIds to retrieve
-            List<string> targetIds = new List<string>
-            {
-                "id1",
-                "id2"
-            };
+            // Ensure output directory exists
+            Directory.CreateDirectory(outputFolder);
 
-            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            // Create the MBOX reader using the required factory method
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                foreach (string id in targetIds)
+                MailMessage message;
+                // Read messages sequentially
+                while ((message = reader.ReadNextMessage()) != null)
                 {
-                    try
+                    using (message)
                     {
-                        MailMessage message = mbox.ExtractMessage(id, new EmlLoadOptions());
-                        Console.WriteLine($"Message ID: {id}");
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        // Additional processing can be done here
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to extract message with ID {id}: {ex.Message}");
+                        // Check if the current message matches one of the requested IDs
+                        if (Array.Exists(targetIds, id => id == message.MessageId))
+                        {
+                            // Prepare a safe file name
+                            string safeSubject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
+                            string fileName = Path.Combine(outputFolder, $"{safeSubject}_{Guid.NewGuid()}.html");
+
+                            try
+                            {
+                                // Save the message as HTML
+                                HtmlSaveOptions saveOptions = new HtmlSaveOptions();
+                                message.Save(fileName, saveOptions);
+                                Console.WriteLine($"Saved message {message.MessageId} to {fileName}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to save message {message.MessageId}: {ex.Message}");
+                            }
+                        }
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
