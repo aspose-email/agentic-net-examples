@@ -5,46 +5,54 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             string inputPath = "input.msg";
-            string outputPath = "output.oft";
+            string outputPath = "template.oft";
 
-            // Verify input file exists
             if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
+                return;
             }
 
-            // Load MSG and save as OFT template
-            using (MapiMessage message = MapiMessage.Load(inputPath))
+            try
             {
-                message.SaveAsTemplate(outputPath);
+                using (MapiMessage message = MapiMessage.Load(inputPath))
+                {
+                    // Save the message as an Outlook template (OFT) preserving all properties
+                    message.SaveAsTemplate(outputPath);
+                    Console.WriteLine($"Message saved as OFT template to '{outputPath}'.");
+                }
             }
-
-            Console.WriteLine("Conversion completed successfully.");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                return;
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
