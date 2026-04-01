@@ -9,42 +9,38 @@ class Program
     {
         try
         {
-            // Define the output file path
+            // Define output file path
             string outputPath = "appointment.ics";
 
-            // Ensure the output directory exists
-            string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (!Directory.Exists(directory))
+            // Ensure the directory for the output file exists
+            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(outputDir);
             }
 
             // Prepare attendees collection
             MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("attendee@example.com"));
+            attendees.Add(new MailAddress("attendee1@example.com"));
+            attendees.Add(new MailAddress("attendee2@example.com"));
 
-            // Create the appointment with organizer, attendees, subject, start and end times
+            // Create the appointment with location, summary, description, start/end, organizer, attendees
             Appointment appointment = new Appointment(
-                "Conference Room",                     // location
-                "Team Meeting",                        // summary (subject)
-                "Discuss project status and next steps.", // description
-                new DateTime(2023, 12, 1, 10, 0, 0),   // start time
-                new DateTime(2023, 12, 1, 11, 0, 0),   // end time
-                new MailAddress("organizer@example.com"), // organizer
-                attendees);                            // attendees
-
-            // Optionally set additional properties
-            appointment.Summary = "Team Meeting";
-            appointment.Description = "Discuss project status and next steps.";
+                location: "Conference Room 1",
+                summary: "Project Kickoff",
+                description: "Discuss project goals and timelines.",
+                startDate: new DateTime(2024, 5, 20, 10, 0, 0),
+                endDate: new DateTime(2024, 5, 20, 11, 0, 0),
+                organizer: new MailAddress("organizer@example.com"),
+                attendees: attendees
+            );
 
             // Save the appointment as an iCalendar (ICS) file
             appointment.Save(outputPath);
-
-            Console.WriteLine("Appointment saved to: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
