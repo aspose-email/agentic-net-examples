@@ -4,52 +4,61 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace AsposeEmailPop3Example
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // POP3 server connection parameters (placeholders)
+            string host = "pop3.example.com";
+            string username = "username";
+            string password = "password";
+
+            // Guard against executing real network calls with placeholder credentials
+            if (host.Contains("example.com"))
             {
-                // POP3 server connection details (replace with real values)
-                string host = "pop.example.com";
-                int port = 110;
-                string username = "user@example.com";
-                string password = "password";
+                Console.Error.WriteLine("Placeholder POP3 server detected. Skipping operation.");
+                return;
+            }
 
-                // Subject pattern to match for deletion
-                string subjectPattern = "Invoice";
+            // Pattern to match in the subject
+            string subjectPattern = "Invoice";
 
-                // Initialize POP3 client inside a using block to ensure disposal
-                using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Create and use the POP3 client
+            using (Pop3Client client = new Pop3Client(host, username, password))
+            {
+                try
                 {
-                    // Build a query (required by POP3 rule) – fetch all messages
+                    // Build a query to retrieve messages (optional, can retrieve all)
                     MailQueryBuilder builder = new MailQueryBuilder();
                     builder.Subject.Contains(subjectPattern);
                     MailQuery query = builder.GetQuery();
 
-                    // Retrieve messages matching the query
+                    // List messages matching the query
                     Pop3MessageInfoCollection messages = client.ListMessages(query);
 
-                    // Iterate through messages and delete those whose subject contains the pattern
+                    // Delete messages whose subject contains the pattern
                     foreach (Pop3MessageInfo info in messages)
                     {
-                        if (info.Subject != null && info.Subject.Contains(subjectPattern))
+                        if (!string.IsNullOrEmpty(info.Subject) && info.Subject.Contains(subjectPattern))
                         {
                             client.DeleteMessage(info.SequenceNumber);
                         }
                     }
 
-                    // Commit deletions to finalize removal on the server
-                    client.CommitDeletes();
+                    // Commit deletions on the server
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    // No rethrow; ensure client is disposed by using block
                 }
             }
-            catch (Exception ex)
-            {
-                // Friendly error output without crashing the application
-                Console.Error.WriteLine(ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
