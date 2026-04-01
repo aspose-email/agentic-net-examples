@@ -1,7 +1,8 @@
 using System;
 using System.IO;
-using Aspose.Email;
 using System.Security.Cryptography.X509Certificates;
+using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,76 +10,87 @@ class Program
     {
         try
         {
-            // Path to the PFX file and its password
             string pfxPath = "certificate.pfx";
-            string pfxPassword = "password";
+            string pfxPassword = "yourPassword";
+            string msgPath = "input.msg";
+            string outputPath = "encrypted.msg";
 
-            // Verify that the PFX file exists
+            // Ensure input files exist
             if (!File.Exists(pfxPath))
             {
-                Console.Error.WriteLine($"PFX file not found: {pfxPath}");
-                return;
+                // Create a minimal placeholder PFX (empty content)
+                File.WriteAllBytes(pfxPath, new byte[0]);
+                Console.Error.WriteLine($"Placeholder PFX created at '{pfxPath}'.");
             }
 
-            // Load the certificate
-            X509Certificate2 certificate;
-            try
+            if (!File.Exists(msgPath))
             {
-                certificate = new X509Certificate2(pfxPath, pfxPassword);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load certificate: {ex.Message}");
-                return;
-            }
-
-            // Create and configure the email message
-            using (certificate)
-            using (MailMessage message = new MailMessage())
-            {
-                message.From = "sender@example.com";
-                message.To = "recipient@example.com";
-                message.Subject = "Test Subject";
-                message.Body = "Test Body";
-
-                // Encrypt the message using the loaded certificate
-                MailMessage encryptedMessage = message.Encrypt(certificate);
-
-                // Prepare output path for the encrypted message
-                string emlPath = "encrypted.eml";
-                string emlDirectory = Path.GetDirectoryName(emlPath);
-                if (!string.IsNullOrEmpty(emlDirectory) && !Directory.Exists(emlDirectory))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(emlDirectory);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create directory: {dirEx.Message}");
-                        encryptedMessage.Dispose();
-                        return;
-                    }
-                }
-
-                // Save the encrypted message to a file
                 try
                 {
-                    encryptedMessage.Save(emlPath);
-                    Console.WriteLine($"Encrypted message saved to {emlPath}");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
-                catch (Exception saveEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save encrypted message: {saveEx.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
                 }
 
-                // Clean up the encrypted message instance
-                encryptedMessage.Dispose();
+                // Create a minimal placeholder MSG file
+                using (MapiMessage placeholderMsg = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder Body"))
+                {
+                    placeholderMsg.Save(msgPath);
+                }
+                Console.Error.WriteLine($"Placeholder MSG created at '{msgPath}'.");
+            }
+
+            // Load the MSG file
+            using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
+            {
+                // Convert to MailMessage for encryption
+                using (MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions()))
+                {
+                    // Load the certificate
+                    X509Certificate2 certificate;
+                    try
+                    {
+                        certificate = new X509Certificate2(pfxPath, pfxPassword);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to load certificate: {ex.Message}");
+                        return;
+                    }
+
+                    // Encrypt the message with the certificate
+                    MailMessage encryptedMessage = mailMessage.Encrypt(certificate);
+
+                    // Convert back to MapiMessage
+                    using (MapiMessage encryptedMapi = MapiMessage.FromMailMessage(encryptedMessage))
+                    {
+                        // Ensure output directory exists
+                        string outputDir = Path.GetDirectoryName(outputPath);
+                        if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                        {
+                            Directory.CreateDirectory(outputDir);
+                        }
+
+                        // Save the encrypted MSG
+                        encryptedMapi.Save(outputPath);
+                        Console.WriteLine($"Encrypted MSG saved to '{outputPath}'.");
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
