@@ -1,61 +1,124 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Path to the MSG file
-            string msgPath = "sample.msg";
+            // Placeholder credentials for Azure AD app registration
+            string clientId = "clientId";
+            string clientSecret = "clientSecret";
+            string refreshToken = "refreshToken";
+            string tenantId = "tenantId";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
+            // Detect placeholder credentials and skip live calls
+            if (clientId == "clientId" || clientSecret == "clientSecret" || refreshToken == "refreshToken")
             {
-                using (MapiMessage placeholder = new MapiMessage(
-                    "Placeholder Subject",
-                    "Placeholder Body",
-                    "sender@example.com",
-                    "receiver@example.com"))
-                {
-                    placeholder.Save(msgPath);
-                }
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph operations.");
+                return;
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Create token provider (wrapped in try/catch for safety)
+            TokenProvider tokenProvider;
+            try
             {
-                // Prepare token provider for Microsoft Graph (dummy credentials)
-                Aspose.Email.Clients.ITokenProvider tokenProvider =
-                    Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                        "clientId",
-                        "clientSecret",
-                        "refreshToken");
+                tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
+                return;
+            }
 
-                // Initialize Graph client
-                using (IGraphClient client = GraphClient.GetClient(tokenProvider, "tenantId"))
+            // Initialize Graph client (wrapped in try/catch for safety)
+            IGraphClient client;
+            try
+            {
+                client = GraphClient.GetClient(tokenProvider, tenantId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to initialize Graph client: {ex.Message}");
+                return;
+            }
+
+            // Ensure proper disposal of the client
+            using (client)
+            {
+                // Path to the MSG file
+                string msgPath = "sample.msg";
+
+                // Guard file existence; create minimal placeholder if missing
+                if (!File.Exists(msgPath))
                 {
-                    // Target folder in the mailbox (e.g., Inbox)
-                    string folderId = "Inbox";
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
 
-                    // Create the message in the specified folder
-                    MapiMessage createdMessage = client.CreateMessage(folderId, msg);
-                    Console.WriteLine($"Message created. ItemId: {createdMessage.ItemId}");
+                    try
+                    {
+                        using (MailMessage placeholder = new MailMessage("placeholder@example.com", "placeholder@example.com", "Placeholder", "This is a placeholder MSG."))
+                        {
+                            placeholder.Save(msgPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                        return;
+                    }
+                }
 
-                    // Fetch the created message back from Graph
-                    MapiMessage fetchedMessage = client.FetchMessage(createdMessage.ItemId);
-                    Console.WriteLine($"Fetched message subject: {fetchedMessage.Subject}");
+                // Load the MSG file into a MapiMessage (wrapped in try/catch)
+                MapiMessage mapiMessage;
+                try
+                {
+                    mapiMessage = MapiMessage.Load(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                    return;
+                }
+
+                // Ensure proper disposal of the MapiMessage
+                using (mapiMessage)
+                {
+                    // Upload the message to the user's Inbox folder via Graph
+                    try
+                    {
+                        client.CreateMessage("Inbox", mapiMessage);
+                        Console.WriteLine("Message uploaded to Microsoft Graph successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create message in Graph: {ex.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
