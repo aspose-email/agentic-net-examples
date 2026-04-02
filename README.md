@@ -15,7 +15,7 @@ Examples are organized by feature category:
 - `working-with-exchange-webdav-client/` - 41 example(s)
 - `working-with-ibm-notes/` - 30 example(s)
 - `working-with-imap-client/` - 59 example(s)
-- `working-with-microsoft-graph-client/` - 32 example(s)
+- `working-with-microsoft-graph-client/` - 33 example(s)
 - `working-with-mime-messages/` - 121 example(s)
 - `working-with-outlook-storage-files/` - 61 example(s)
 - `working-with-pop3-client/` - 40 example(s)
