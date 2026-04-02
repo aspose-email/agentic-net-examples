@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
-using Aspose.Email.Mime;
 
 class Program
 {
@@ -10,48 +8,51 @@ class Program
     {
         try
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
+            string msgPath = "sample.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Ensure the MSG file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage())
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Save(inputPath);
+                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file, add a custom header, and save the result
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(inputPath))
+                using (MailMessage placeholder = new MailMessage("from@example.com", "to@example.com", "Placeholder", "Body"))
                 {
-                    // Add custom header X-My-Property with value 12345
-                    message.Headers.Add("X-My-Property", "12345");
-
-                    // Save the modified message
-                    message.Save(outputPath);
+                    placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                 }
             }
-            catch (Exception ex)
+
+            // Load the MSG, add a custom header, display all headers, and save back.
+            using (MailMessage mail = MailMessage.Load(msgPath))
             {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
+                mail.Headers.Add("X-My-Property", "12345");
+
+                // Iterate headers using Keys as required.
+                foreach (string key in mail.Headers.Keys)
+                {
+                    Console.WriteLine($"{key}: {mail.Headers[key]}");
+                }
+
+                mail.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
