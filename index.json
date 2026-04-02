@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 695,
+  "total_examples": 696,
   "total_categories": 14,
-  "last_updated": "2026-04-01",
+  "last_updated": "2026-04-02",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -699,16 +699,16 @@
           "count": 30
         },
         {
+          "name": "System.IO",
+          "count": 9
+        },
+        {
           "name": "System.Net",
-          "count": 10
+          "count": 9
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 8
-        },
-        {
-          "name": "System.IO",
-          "count": 8
+          "count": 7
         },
         {
           "name": "Aspose.Email.Calendar",
@@ -950,7 +950,7 @@
     },
     {
       "name": "working-with-microsoft-graph-client",
-      "file_count": 32,
+      "file_count": 33,
       "files": [
         "authenticate-with-azure-active-directory-via-microsoft-graph-client-using-office-credentials-extracted-from-an-msg-file.cs",
         "copy-an-msg-format-email-message-to-a-destination-mailbox-utilizing-the-microsoft-graph-client-api.cs",
@@ -973,6 +973,7 @@
         "retrieve-an-msg-format-attachment-via-the-microsoft-graph-client-handling-authentication-and-response-parsing.cs",
         "retrieve-an-msg-formatted-email-message-using-the-microsoft-graph-client-api-and-process-its-contents.cs",
         "retrieve-message-rules-from-an-msg-file-by-utilizing-the-microsoft-graph-client-api.cs",
+        "retrieve-the-message-category-from-an-msg-file-using-the-microsoft-graph-client-library.cs",
         "retrieve-the-tasks-list-embedded-within-an-msg-file-using-the-microsoft-graph-client-api.cs",
         "use-microsoft-graph-client-to-enumerate-steps-for-creating-an-azure-ad-admin-center-project-from-an-msg-file.cs",
         "utilize-microsoft-graph-client-to-add-the-msal-net-package-and-install-the-microsoft-identity-client-nuget-containing.cs",
@@ -988,27 +989,27 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 32
+          "count": 33
         },
         {
           "name": "Aspose.Email",
-          "count": 32
+          "count": 33
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 32
+          "count": 33
         },
         {
           "name": "Aspose.Email.Clients.Graph",
-          "count": 32
+          "count": 33
         },
         {
           "name": "System.IO",
-          "count": 25
+          "count": 27
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 22
+          "count": 26
         },
         {
           "name": "System.Collections.Generic",
@@ -1170,7 +1171,7 @@
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 68
+          "count": 67
         },
         {
           "name": "System.Security.Cryptography.X509Certificates",
@@ -1182,7 +1183,7 @@
         },
         {
           "name": "Aspose.Email.Mime",
-          "count": 7
+          "count": 6
         },
         {
           "name": "System.Collections.Generic",
@@ -1304,7 +1305,7 @@
         },
         {
           "name": "System.Collections.Generic",
-          "count": 9
+          "count": 8
         },
         {
           "name": "Aspose.Email.Tools.Search",

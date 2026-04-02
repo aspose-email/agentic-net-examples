@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
@@ -18,10 +17,9 @@ class Program
             {
                 try
                 {
-                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Empty PST created
-                    }
+                    // Create a new Unicode PST file
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode).Dispose();
+                    Console.WriteLine($"Created placeholder PST file at '{pstPath}'.");
                 }
                 catch (Exception ex)
                 {
@@ -30,52 +28,25 @@ class Program
                 }
             }
 
-            // Open PST with write access
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
+            // Open the PST file with write access
+            try
             {
-                // Delete a specific folder named "OldFolder" if it exists
-                try
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
                 {
-                    FolderInfo oldFolder = pst.RootFolder.GetSubFolder("OldFolder");
-                    if (oldFolder != null)
-                    {
-                        // Delete the folder using its entry ID string
-                        pst.DeleteItem(oldFolder.EntryIdString);
-                        Console.WriteLine("Folder 'OldFolder' deleted.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error deleting folder: {ex.Message}");
-                }
+                    // Add a test message to the root folder
+                    MapiMessage testMessage = new MapiMessage("sender@example.com", "recipient@example.com", "Test Subject", "Test Body");
+                    string entryId = pst.RootFolder.AddMessage(testMessage);
+                    Console.WriteLine($"Added message with EntryId: {entryId}");
 
-                // Delete a specific message with subject "DeleteMe" from Inbox
-                try
-                {
-                    FolderInfo inbox = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                    if (inbox != null)
-                    {
-                        List<string> messagesToDelete = new List<string>();
-                        foreach (MessageInfo msgInfo in inbox.EnumerateMessages())
-                        {
-                            if (msgInfo.Subject != null && msgInfo.Subject.Equals("DeleteMe", StringComparison.OrdinalIgnoreCase))
-                            {
-                                messagesToDelete.Add(msgInfo.EntryIdString);
-                            }
-                        }
-
-                        if (messagesToDelete.Count > 0)
-                        {
-                            // Delete messages using their entry ID strings
-                            inbox.DeleteChildItems(messagesToDelete);
-                            Console.WriteLine($"{messagesToDelete.Count} message(s) with subject 'DeleteMe' deleted.");
-                        }
-                    }
+                    // Delete the previously added message
+                    pst.DeleteItem(entryId);
+                    Console.WriteLine($"Deleted message with EntryId: {entryId}");
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error deleting messages: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)

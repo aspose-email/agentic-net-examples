@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
@@ -10,24 +11,50 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            // Paths for the MSG file
+            const string msgPath = "sample.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+            // Ensure the MSG file exists; create a minimal placeholder if missing
             if (!File.Exists(msgPath))
             {
-                using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Subject", "Body"))
+                try
                 {
-                    placeholder.Save(msgPath);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
-                Console.Error.WriteLine($"Input file not found. Created placeholder at {msgPath}.");
-                return;
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    using (var placeholder = new MapiMessage())
+                    {
+                        placeholder.Subject = "Placeholder";
+                        placeholder.Body = "This is a placeholder MSG file.";
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Load the MSG file.
-            MailMessage message;
+            // Load the MSG file
+            MapiMessage msg;
             try
             {
-                message = MailMessage.Load(msgPath);
+                msg = MapiMessage.Load(msgPath);
             }
             catch (Exception ex)
             {
@@ -35,19 +62,49 @@ class Program
                 return;
             }
 
-            using (message)
+            using (msg)
             {
-                string senderEmail = message.From?.Address ?? "unknown@example.com";
+                // Extract categories from the message
+                string[] categories = msg.Categories ?? Array.Empty<string>();
+                if (categories.Length == 0)
+                {
+                    Console.WriteLine("No categories found in the MSG file.");
+                    return;
+                }
 
-                // Initialize token provider for Outlook (dummy credentials).
-                Aspose.Email.Clients.TokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                    "clientId", "clientSecret", "refreshToken");
+                // Placeholder token provider credentials
+                const string clientId = "your-client-id";
+                const string clientSecret = "your-client-secret";
+                const string refreshToken = "your-refresh-token";
+                const string tenantId = "your-tenant-id";
 
-                // Create Graph client.
+                // Guard against placeholder credentials
+                if (clientId.StartsWith("your-") ||
+                    clientSecret.StartsWith("your-") ||
+                    refreshToken.StartsWith("your-") ||
+                    tenantId.StartsWith("your-"))
+                {
+                    Console.WriteLine("Placeholder credentials detected. Skipping Graph API calls.");
+                    return;
+                }
+
+                // Create token provider
+                Aspose.Email.Clients.ITokenProvider tokenProvider;
+                try
+                {
+                    tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
+                    return;
+                }
+
+                // Initialize Graph client
                 IGraphClient client;
                 try
                 {
-                    client = GraphClient.GetClient(tokenProvider, "tenantId");
+                    client = GraphClient.GetClient(tokenProvider, tenantId);
                 }
                 catch (Exception ex)
                 {
@@ -57,15 +114,18 @@ class Program
 
                 using (client)
                 {
-                    // Create or update a classification override for the sender.
-                    try
+                    // Create each category in the user's master list
+                    foreach (string category in categories)
                     {
-                        client.CreateOrUpdateOverride(new MailAddress(senderEmail), ClassificationType.Focused);
-                        Console.WriteLine("Override created/updated successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to create/update override: {ex.Message}");
+                        try
+                        {
+                            client.CreateCategory(category, CategoryPreset.None);
+                            Console.WriteLine($"Created category: {category}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to create category '{category}': {ex.Message}");
+                        }
                     }
                 }
             }
