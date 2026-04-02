@@ -12,45 +12,56 @@ class Program
         {
             string msgPath = "sample.msg";
 
-            // Verify that the MSG file exists before attempting to load it.
+            // Guard file existence
             if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
-
-            // Load the MSG file into a MapiMessage instance.
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
-            {
-                // Check whether the message is signed.
-                if (!msg.IsSigned)
-                {
-                    Console.WriteLine("The message is not signed.");
-                    return;
-                }
-
                 try
                 {
-                    // Validate the digital signature and retrieve signer certificates.
-                    X509Certificate2[] signerCertificates = msg.CheckSignature();
-
-                    Console.WriteLine($"Signature is valid. Number of signers: {signerCertificates.Length}");
-                    foreach (X509Certificate2 cert in signerCertificates)
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        Console.WriteLine($"Signer Subject: {cert.Subject}");
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Handle signature validation errors (e.g., invalid signature, unsupported type).
-                    Console.Error.WriteLine($"Signature validation failed: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"File not found: {msgPath}");
+                return;
+            }
+
+            // Load MSG file
+            using (MapiMessage mapimsg = MapiMessage.Load(msgPath))
+            {
+                // Convert to MailMessage with required options
+                using (MailMessage mail = mapimsg.ToMailMessage(new MailConversionOptions()))
+                {
+                    if (mail.IsSigned)
+                    {
+                        // Verify signature and retrieve signer certificates
+                        X509Certificate2[] signers = mail.CheckSignature();
+                        Console.WriteLine($"Signature is valid. Number of signers: {signers.Length}");
+                        foreach (var cert in signers)
+                        {
+                            Console.WriteLine($"Signer: {cert.Subject}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("The message is not signed.");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            // Catch any unexpected errors.
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
