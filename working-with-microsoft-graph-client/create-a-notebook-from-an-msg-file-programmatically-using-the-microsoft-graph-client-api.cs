@@ -1,60 +1,121 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
-
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Path to the MSG file
-            string msgPath = "sample.msg";
+            // Placeholder credentials – replace with real values.
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
+            string tenantId = "your-tenant-id";
 
-            // Verify the input file exists
-            if (!File.Exists(msgPath))
+            // Guard against placeholder credentials to avoid live calls in CI.
+            if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-") || refreshToken.StartsWith("your-") || tenantId.StartsWith("your-"))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph operations.");
                 return;
             }
 
-            // Load the MSG file into a MailMessage (disposed after use)
-            using (FileStream msgStream = File.OpenRead(msgPath))
+            // Initialize token provider.
+            Aspose.Email.Clients.ITokenProvider tokenProvider;
+            try
             {
-                using (MailMessage message = MailMessage.Load(msgStream))
-                {
-                    // Message loaded – you can access its properties if needed
-                    // For this example we only need to ensure the file is read successfully
-                }
+                tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
+                return;
             }
 
-            // Create a token provider for Outlook (3‑argument overload)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken");
-
-            // Initialize the Graph client (disposable)
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, ""))
+            // Create Graph client.
+            IGraphClient client;
+            try
             {
-                // Define a new OneNote notebook
-                Notebook notebook = new Notebook
+                client = GraphClient.GetClient(tokenProvider, tenantId);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create Graph client: {ex.Message}");
+                return;
+            }
+
+            using (client)
+            {
+                // Path to the MSG file.
+                string msgPath = "sample.msg";
+
+                // Verify the MSG file exists.
+                if (!File.Exists(msgPath))
                 {
-                    DisplayName = "ImportedNotebook"
-                };
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
 
-                // Create the notebook in the user's OneNote library
-                Notebook createdNotebook = client.CreateNotebook(notebook);
+                    Console.Error.WriteLine($"Input file not found: {msgPath}");
+                    return;
+                }
 
-                // Output the identifier of the created notebook
-                Console.WriteLine($"Notebook created with ID: {createdNotebook.Id}");
+                // Load the MSG file into a MapiMessage.
+                MapiMessage mapMessage;
+                try
+                {
+                    mapMessage = MapiMessage.Load(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                    return;
+                }
+
+                using (mapMessage)
+                {
+                    // Create a Notebook object using the message subject as the notebook name.
+                    Notebook newNotebook = new Notebook
+                    {
+                        DisplayName = mapMessage.Subject ?? "Untitled Notebook"
+                    };
+
+                    // Create the notebook via Graph client.
+                    Notebook createdNotebook;
+                    try
+                    {
+                        createdNotebook = client.CreateNotebook(newNotebook);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create notebook: {ex.Message}");
+                        return;
+                    }
+
+                    // Output the created notebook details.
+                    Console.WriteLine($"Notebook created successfully. ID: {createdNotebook.Id}, Name: {createdNotebook.DisplayName}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
