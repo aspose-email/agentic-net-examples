@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 695,
+  "total_examples": 697,
   "total_categories": 14,
-  "last_updated": "2026-04-01",
+  "last_updated": "2026-04-04",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -637,7 +637,7 @@
     },
     {
       "name": "working-with-exchange-webdav-client",
-      "file_count": 41,
+      "file_count": 42,
       "files": [
         "access-and-retrieve-messages-from-a-different-user-s-mailbox-programmatically-handling-authentication-and-permissions.cs",
         "apply-a-filter-that-selects-email-items-whose-message-id-header-matches-the-specified-identifier.cs",
@@ -662,6 +662,7 @@
         "implement-functionality-to-serialize-email-messages-into-msg-files-preserving-all-headers-attachments-and-properties.cs",
         "implement-message-filtering-through-webdav-to-retrieve-only-emails-that-satisfy-defined-search-criteria-and-properties.cs",
         "load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-updated-data-to-msg-format.cs",
+        "manipulate-exchange-server-calendar-items-via-webdav-operations-for-creation-retrieval-update-and-deletion.cs",
         "move-email-messages-between-folders-or-mailboxes-programmatically-preserving-all-message-properties-and-metadata-integrity.cs",
         "obtain-the-size-of-an-email-message-in-advance-without-downloading-its-full-content.cs",
         "perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-webdav-protocol-for-communication.cs",
@@ -684,11 +685,11 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 41
+          "count": 42
         },
         {
           "name": "Aspose.Email",
-          "count": 39
+          "count": 40
         },
         {
           "name": "Aspose.Email.Clients.Exchange.Dav",
@@ -700,7 +701,7 @@
         },
         {
           "name": "System.Net",
-          "count": 10
+          "count": 11
         },
         {
           "name": "Aspose.Email.Tools.Search",
@@ -712,7 +713,7 @@
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 4
+          "count": 5
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
@@ -728,6 +729,10 @@
         },
         {
           "name": "Aspose.Email.Calendar.Recurrences",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
           "count": 1
         }
       ],
@@ -1217,7 +1222,7 @@
     },
     {
       "name": "working-with-outlook-storage-files",
-      "file_count": 61,
+      "file_count": 62,
       "files": [
         "add-email-messages-to-an-existing-outlook-pst-storage-file-ensuring-proper-pst-format-compliance.cs",
         "add-files-into-an-outlook-pst-storage-file-programmatically-using-the-pst-file-format.cs",
@@ -1255,6 +1260,7 @@
         "load-email-messages-from-local-storage-into-a-pst-file-using-the-outlook-storage-file-format.cs",
         "manipulate-outlook-pst-storage-to-create-modify-and-delete-distribution-lists-within-pst-files.cs",
         "manipulate-outlook-storage-files-programmatically-by-accessing-and-editing-messages-within-pst-file-structures.cs",
+        "manipulate-outlook-storage-files-to-create-retrieve-modify-and-delete-calendar-items-within-pst-format-archives.cs",
         "manipulate-outlook-storage-files-to-retrieve-modify-and-organize-messages-within-pst-format-containers.cs",
         "modify-custom-properties-within-outlook-pst-storage-files-by-utilizing-the-pst-file-format.cs",
         "modify-distribution-lists-within-pst-storage-files-by-programmatically-updating-outlook-data-structures-efficiently.cs",
@@ -1284,23 +1290,23 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 61
+          "count": 62
         },
         {
           "name": "System.IO",
-          "count": 61
+          "count": 62
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 61
+          "count": 62
         },
         {
           "name": "Aspose.Email",
-          "count": 53
+          "count": 54
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 37
+          "count": 38
         },
         {
           "name": "System.Collections.Generic",
@@ -1316,6 +1322,10 @@
         },
         {
           "name": "System.Linq",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Calendar",
           "count": 1
         },
         {
