@@ -10,46 +10,43 @@ class Program
     {
         try
         {
-            // File path for the MSG message
-            string msgPath = "sample.msg";
+            // Placeholder credentials – replace with real values.
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
+            string tenantId = "your-tenant-id";
 
-            // Verify the MSG file exists
-            if (!File.Exists(msgPath))
+            // Skip execution if placeholder credentials are detected.
+            if (clientId.Contains("your-") || clientSecret.Contains("your-") || refreshToken.Contains("your-"))
             {
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph operations.");
                 return;
             }
 
-            // Load the MSG message
-            using (MailMessage message = MailMessage.Load(msgPath))
+            // Create the Outlook token provider.
+            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, tenantId);
+
+            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
             {
-                // Extract the sender address
-                MailAddress sender = message.From;
-
-                // Create a classification override (e.g., classify as Focused)
-                ClassificationOverride classificationOverride = new ClassificationOverride(sender, ClassificationType.Focused);
-
-                // Prepare token provider (replace placeholders with real values)
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-                // Tenant identifier (replace with actual tenant ID)
-                string tenantId = "tenantId";
-
-                // Initialize Graph client
-                using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
+                try
                 {
-                    // Create or update the override
-                    ClassificationOverride result = client.CreateOrUpdateOverride(classificationOverride);
-                    Console.WriteLine($"Override created/updated. ID: {result.Id}");
+                    // Define the sender address and desired classification.
+                    MailAddress sender = new MailAddress("sender@example.com");
+                    ClassificationType classification = ClassificationType.Focused; // Example classification.
+
+                    // Create or update the classification override for the sender.
+                    client.CreateOrUpdateOverride(sender, classification);
+                    Console.WriteLine("Classification override created or updated successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Graph operation failed: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -30,12 +30,13 @@ jobs:
           sudo apt-get install -y \
             libfontconfig1 \
             libfreetype6 \
-            libjpeg62-turbo \
             libpng16-16 \
             libx11-6 \
             libxext6 \
             libxrender1 \
             libglib2.0-0
+          # Ubuntu 24.04 uses libjpeg-turbo8; older runners may still use libjpeg62-turbo.
+          sudo apt-get install -y libjpeg-turbo8 || sudo apt-get install -y libjpeg62-turbo
 
       - name: Find changed example files
         id: files
