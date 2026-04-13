@@ -18,27 +18,28 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (170 file(s))
-- `using Aspose.Email;` (155 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (136 file(s))
-- `using System.Net;` (94 file(s))
-- `using Aspose.Email.Clients.Exchange;` (89 file(s))
-- `using System.IO;` (26 file(s))
-- `using Aspose.Email.Tools.Search;` (16 file(s))
-- `using System.Collections.Generic;` (12 file(s))
+- `using System;` (177 file(s))
+- `using Aspose.Email;` (162 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (142 file(s))
+- `using System.Net;` (98 file(s))
+- `using Aspose.Email.Clients.Exchange;` (94 file(s))
+- `using System.IO;` (27 file(s))
+- `using Aspose.Email.Tools.Search;` (17 file(s))
+- `using System.Collections.Generic;` (13 file(s))
 - `using Aspose.Email.PersonalInfo;` (11 file(s))
 - `using Aspose.Email.Calendar;` (9 file(s))
-- `using Aspose.Email.Clients;` (7 file(s))
+- `using Aspose.Email.Clients;` (8 file(s))
 - `using Aspose.Email.Clients.Google;` (7 file(s))
+- `using Aspose.Email.Storage.Pst;` (7 file(s))
+- `using Aspose.Email.Mapi;` (7 file(s))
 - `using System.Threading.Tasks;` (7 file(s))
-- `using Aspose.Email.Mapi;` (6 file(s))
+- `using System.Text;` (6 file(s))
 - `using System.Threading;` (6 file(s))
-- `using Aspose.Email.Storage.Pst;` (6 file(s))
-- `using System.Text;` (5 file(s))
 - `using Aspose.Email.Clients.Imap;` (3 file(s))
 - `using System.Text.Json;` (2 file(s))
 - `using System.IO.Compression;` (1 file(s))
 - `using Aspose.Email.Clients.Smtp;` (1 file(s))
+- `using Aspose.Email.Clients.Base;` (1 file(s))
 - `using System.Diagnostics;` (1 file(s))
 - `using System.ComponentModel;` (1 file(s))
 - `using System.Runtime.InteropServices;` (1 file(s))
@@ -51,6 +52,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 |------|-------------|
 | [acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs](./acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs) | acquire an oauth access token for authenticating api requests using the appropriate authorization flow |
 | [activate-comprehensive-logging-to-capture-detailed-diagnostic-information-for-troubleshooting-and-performance-analysis-within-t.cs](./activate-comprehensive-logging-to-capture-detailed-diagnostic-information-for-troubleshooting-and-performance-analysis-within-t.cs) | activate comprehensive logging to capture detailed diagnostic information for troubleshooting and performance analysis within t |
+| [add-a-custom-property-to-a-folder-to-store-metadata-about-its-archival-status-for-later-processing.cs](./add-a-custom-property-to-a-folder-to-store-metadata-about-its-archival-status-for-later-processing.cs) | add a custom property to a folder to store metadata about its archival status for later processing |
 | [add-contacts-to-an-existing-distribution-list-by-specifying-member-identifiers-and-updating-the-list-accordingly.cs](./add-contacts-to-an-existing-distribution-list-by-specifying-member-identifiers-and-updating-the-list-accordingly.cs) | add contacts to an existing distribution list by specifying member identifiers and updating the list accordingly |
 | [add-custom-metadata-properties-to-the-target-object-to-enable-extended-attribute-storage-for-downstream-processing.cs](./add-custom-metadata-properties-to-the-target-object-to-enable-extended-attribute-storage-for-downstream-processing.cs) | add custom metadata properties to the target object to enable extended attribute storage for downstream processing |
 | [add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs](./add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs) | add the required email library package to the project using the nuget package manager |
@@ -62,6 +64,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [archive-exchange-email-messages-via-the-ews-api-ensuring-they-are-stored-securely-and-indexed-appropriately.cs](./archive-exchange-email-messages-via-the-ews-api-ensuring-they-are-stored-securely-and-indexed-appropriately.cs) | archive exchange email messages via the ews api ensuring they are stored securely and indexed appropriately |
 | [assign-the-obtained-oauth-token-to-the-exchangeservice-credentials-property-to-enable-authenticated-operations-for-subsequent.cs](./assign-the-obtained-oauth-token-to-the-exchangeservice-credentials-property-to-enable-authenticated-operations-for-subsequent.cs) | assign the obtained oauth token to the exchangeservice credentials property to enable authenticated operations for subsequent |
 | [authenticate-exchangeservice-operations-by-supplying-an-oauth-token-for-authorization-in-api-requests-during-integration.cs](./authenticate-exchangeservice-operations-by-supplying-an-oauth-token-for-authorization-in-api-requests-during-integration.cs) | authenticate exchangeservice operations by supplying an oauth token for authorization in api requests during integration |
+| [batch-delete-messages-older-than-a-specified-date-across-multiple-folders-using-a-single-ews-request.cs](./batch-delete-messages-older-than-a-specified-date-across-multiple-folders-using-a-single-ews-request.cs) | batch delete messages older than a specified date across multiple folders using a single ews request |
 | [configure-and-apply-a-custom-email-header-to-outgoing-messages-using-the-provided-api.cs](./configure-and-apply-a-custom-email-header-to-outgoing-messages-using-the-provided-api.cs) | configure and apply a custom email header to outgoing messages using the provided api |
 | [configure-asynchronous-operations-for-email-processing-tasks-to-enable-non-blocking-execution-of-i-o-actions.cs](./configure-asynchronous-operations-for-email-processing-tasks-to-enable-non-blocking-execution-of-i-o-actions.cs) | configure asynchronous operations for email processing tasks to enable non blocking execution of i o actions |
 | [configure-authentication-by-assigning-a-networkcredential-instance-containing-the-required-username-password-and-domain.cs](./configure-authentication-by-assigning-a-networkcredential-instance-containing-the-required-username-password-and-domain.cs) | configure authentication by assigning a networkcredential instance containing the required username password and domain |
@@ -70,6 +73,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [configure-retrieve-and-update-user-mail-settings-and-preferences-on-an-exchange-server-programmatically.cs](./configure-retrieve-and-update-user-mail-settings-and-preferences-on-an-exchange-server-programmatically.cs) | configure retrieve and update user mail settings and preferences on an exchange server programmatically |
 | [configure-the-email-client-to-automatically-locate-service-endpoints-via-the-autodiscover-protocol-during-initialization.cs](./configure-the-email-client-to-automatically-locate-service-endpoints-via-the-autodiscover-protocol-during-initialization.cs) | configure the email client to automatically locate service endpoints via the autodiscover protocol during initialization |
 | [configure-the-ews-client-in-c-to-record-activity-logs-for-debugging-and-monitoring-purposes.cs](./configure-the-ews-client-in-c-to-record-activity-logs-for-debugging-and-monitoring-purposes.cs) | configure the ews client in c to record activity logs for debugging and monitoring purposes |
+| [configure-the-ews-client-to-use-a-specific-tls-version-to-comply-with-security-standards.cs](./configure-the-ews-client-to-use-a-specific-tls-version-to-comply-with-security-standards.cs) | configure the ews client to use a specific tls version to comply with security standards |
 | [configure-the-exchange-server-endpoint-by-providing-its-url-correctly-in-the-client-settings.cs](./configure-the-exchange-server-endpoint-by-providing-its-url-correctly-in-the-client-settings.cs) | configure the exchange server endpoint by providing its url correctly in the client settings |
 | [configure-the-exchange-web-services-ews-endpoint-url-manually-or-enable-automatic-discovery-at-runtime.cs](./configure-the-exchange-web-services-ews-endpoint-url-manually-or-enable-automatic-discovery-at-runtime.cs) | configure the exchange web services ews endpoint url manually or enable automatic discovery at runtime |
 | [configure-the-exchangeservice-object-with-appropriate-authentication-credentials-to-enable-authorized-connections-for-mailbox.cs](./configure-the-exchangeservice-object-with-appropriate-authentication-credentials-to-enable-authorized-connections-for-mailbox.cs) | configure the exchangeservice object with appropriate authentication credentials to enable authorized connections for mailbox |
@@ -104,6 +108,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [enable-diagnostic-tracing-for-the-service-at-runtime-by-assigning-true-to-its-traceenabled-property.cs](./enable-diagnostic-tracing-for-the-service-at-runtime-by-assigning-true-to-its-traceenabled-property.cs) | enable diagnostic tracing for the service at runtime by assigning true to its traceenabled property |
 | [enable-optional-impersonation-settings-to-execute-mail-server-operations-under-alternative-user-credentials-when-needed.cs](./enable-optional-impersonation-settings-to-execute-mail-server-operations-under-alternative-user-credentials-when-needed.cs) | enable optional impersonation settings to execute mail server operations under alternative user credentials when needed |
 | [enable-runtime-tracing-for-the-exchange-service-by-programmatically-setting-the-traceenabled-property-to-true.cs](./enable-runtime-tracing-for-the-exchange-service-by-programmatically-setting-the-traceenabled-property-to-true.cs) | enable runtime tracing for the exchange service by programmatically setting the traceenabled property to true |
+| [enable-ssl-tls-encryption-for-the-ews-client-connection-to-ensure-secure-communication-with-the-server.cs](./enable-ssl-tls-encryption-for-the-ews-client-connection-to-ensure-secure-communication-with-the-server.cs) | enable ssl tls encryption for the ews client connection to ensure secure communication with the server |
 | [ensure-required-permissions-proper-authentication-and-appropriate-mailbox-delegation-settings-are-configured-before-accessing.cs](./ensure-required-permissions-proper-authentication-and-appropriate-mailbox-delegation-settings-are-configured-before-accessing.cs) | ensure required permissions proper authentication and appropriate mailbox delegation settings are configured before accessing |
 | [establish-a-programmatic-connection-to-an-exchange-server-to-access-mailbox-and-communication-services.cs](./establish-a-programmatic-connection-to-an-exchange-server-to-access-mailbox-and-communication-services.cs) | establish a programmatic connection to an exchange server to access mailbox and communication services |
 | [establish-a-secure-session-to-an-exchange-server-using-the-net-client-api-with-appropriate-credentials.cs](./establish-a-secure-session-to-an-exchange-server-using-the-net-client-api-with-appropriate-credentials.cs) | establish a secure session to an exchange server using the net client api with appropriate credentials |
@@ -111,6 +116,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [explain-the-advanced-query-syntax-aqs-features-and-usage-for-constructing-complex-email-search-expressions.cs](./explain-the-advanced-query-syntax-aqs-features-and-usage-for-constructing-complex-email-search-expressions.cs) | explain the advanced query syntax aqs features and usage for constructing complex email search expressions |
 | [fetch-all-items-belonging-to-a-specific-conversation-while-maintaining-their-chronological-order-and-metadata.cs](./fetch-all-items-belonging-to-a-specific-conversation-while-maintaining-their-chronological-order-and-metadata.cs) | fetch all items belonging to a specific conversation while maintaining their chronological order and metadata |
 | [fetch-all-messages-from-a-user-s-inbox-programmatically-handling-authentication-and-optional-filtering-criteria.cs](./fetch-all-messages-from-a-user-s-inbox-programmatically-handling-authentication-and-optional-filtering-criteria.cs) | fetch all messages from a user s inbox programmatically handling authentication and optional filtering criteria |
+| [fetch-only-the-headers-of-imap-messages-to-reduce-data-transfer-when-scanning-large-mailboxes.cs](./fetch-only-the-headers-of-imap-messages-to-reduce-data-transfer-when-scanning-large-mailboxes.cs) | fetch only the headers of imap messages to reduce data transfer when scanning large mailboxes |
 | [fetch-the-complete-set-of-inbox-rules-using-the-getinboxrules-method-on-the-service-object.cs](./fetch-the-complete-set-of-inbox-rules-using-the-getinboxrules-method-on-the-service-object.cs) | fetch the complete set of inbox rules using the getinboxrules method on the service object |
 | [filter-email-messages-to-retrieve-those-with-timestamps-earlier-than-the-specified-cutoff-date.cs](./filter-email-messages-to-retrieve-those-with-timestamps-earlier-than-the-specified-cutoff-date.cs) | filter email messages to retrieve those with timestamps earlier than the specified cutoff date |
 | [generate-a-follow-up-task-based-on-the-current-item-to-track-subsequent-actions-within-the-application-workflow.cs](./generate-a-follow-up-task-based-on-the-current-item-to-track-subsequent-actions-within-the-application-workflow.cs) | generate a follow up task based on the current item to track subsequent actions within the application workflow |
@@ -159,6 +165,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [invoke-the-service-s-deleteitem-operation-to-permanently-remove-the-specified-list-from-the-collection.cs](./invoke-the-service-s-deleteitem-operation-to-permanently-remove-the-specified-list-from-the-collection.cs) | invoke the service s deleteitem operation to permanently remove the specified list from the collection |
 | [invoke-the-service-updateitem-method-to-update-all-relevant-fields-of-an-existing-calendar-event.cs](./invoke-the-service-updateitem-method-to-update-all-relevant-fields-of-an-existing-calendar-event.cs) | invoke the service updateitem method to update all relevant fields of an existing calendar event |
 | [iterate-through-each-mailmessage-instance-executing-the-necessary-processing-operations-according-to-application-requirements.cs](./iterate-through-each-mailmessage-instance-executing-the-necessary-processing-operations-according-to-application-requirements.cs) | iterate through each mailmessage instance executing the necessary processing operations according to application requirements |
+| [list-imap-messages-in-the-inbox-and-compare-their-uids-with-ews-message-uris-for-consistency.cs](./list-imap-messages-in-the-inbox-and-compare-their-uids-with-ews-message-uris-for-consistency.cs) | list imap messages in the inbox and compare their uids with ews message uris for consistency |
 | [loop-over-the-entire-collection-applying-the-designated-processing-logic-to-each-individual-item.cs](./loop-over-the-entire-collection-applying-the-designated-processing-logic-to-each-individual-item.cs) | loop over the entire collection applying the designated processing logic to each individual item |
 | [manipulate-custom-extended-properties-of-email-messages-via-exchange-web-services-ews-api.cs](./manipulate-custom-extended-properties-of-email-messages-via-exchange-web-services-ews-api.cs) | manipulate custom extended properties of email messages via exchange web services ews api |
 | [modify-and-persist-configuration-data-within-the-application-using-appropriate-api-calls-and-data-validation.cs](./modify-and-persist-configuration-data-within-the-application-using-appropriate-api-calls-and-data-validation.cs) | modify and persist configuration data within the application using appropriate api calls and data validation |
@@ -214,6 +221,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [transfer-a-directory-to-a-new-location-using-the-service-movefolder-method-handling-any-required-permissions.cs](./transfer-a-directory-to-a-new-location-using-the-service-movefolder-method-handling-any-required-permissions.cs) | transfer a directory to a new location using the service movefolder method handling any required permissions |
 | [transfer-mailbox-messages-to-an-archival-folder-while-maintaining-original-metadata-and-folder-hierarchy.cs](./transfer-mailbox-messages-to-an-archival-folder-while-maintaining-original-metadata-and-folder-hierarchy.cs) | transfer mailbox messages to an archival folder while maintaining original metadata and folder hierarchy |
 | [traverse-the-collection-of-returned-objects-and-retrieve-each-object-properties-for-further-processing.cs](./traverse-the-collection-of-returned-objects-and-retrieve-each-object-properties-for-further-processing.cs) | traverse the collection of returned objects and retrieve each object properties for further processing |
+| [update-a-distribution-list-to-include-a-new-custom-property-for-compliance-tracking.cs](./update-a-distribution-list-to-include-a-new-custom-property-for-compliance-tracking.cs) | update a distribution list to include a new custom property for compliance tracking |
 | [update-or-customize-predefined-validation-rules-within-the-library-s-rule-engine-to-meet-specific-requirements.cs](./update-or-customize-predefined-validation-rules-within-the-library-s-rule-engine-to-meet-specific-requirements.cs) | update or customize predefined validation rules within the library s rule engine to meet specific requirements |
 | [use-the-addmember-method-to-insert-new-members-into-the-collection-ensuring-proper-initialization-and-validation.cs](./use-the-addmember-method-to-insert-new-members-into-the-collection-ensuring-proper-initialization-and-validation.cs) | use the addmember method to insert new members into the collection ensuring proper initialization and validation |
 | [use-the-ews-api-to-fetch-email-messages-from-a-shared-mailbox-handling-authentication-and-folder-access.cs](./use-the-ews-api-to-fetch-email-messages-from-a-shared-mailbox-handling-authentication-and-folder-access.cs) | use the ews api to fetch email messages from a shared mailbox handling authentication and folder access |
@@ -221,7 +229,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [utilize-the-service-createitem-method-to-programmatically-instantiate-a-new-list-on-the-server-side-repository.cs](./utilize-the-service-createitem-method-to-programmatically-instantiate-a-new-list-on-the-server-side-repository.cs) | utilize the service createitem method to programmatically instantiate a new list on the server side repository |
 
 ## Category Statistics
-- Total examples: 170
+- Total examples: 177
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -230,5 +238,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-04-01 | `20260401_045820` | [examples/batch-20260401_045820](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260401_045820) |
+| 2026-04-13 | `20260413_152458` | [examples/batch-20260413_152458](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260413_152458) |
 <!-- AUTOGENERATED:END -->
