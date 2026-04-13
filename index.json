@@ -3,7 +3,7 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 1474,
+  "total_examples": 1460,
   "total_categories": 15,
   "last_updated": "2026-04-13",
   "categories": [
@@ -350,22 +350,8 @@
     },
     {
       "name": "working-with-exchange-ews-client",
-      "file_count": 540,
+      "file_count": 526,
       "files": [
-        "12910.cs",
-        "31326.cs",
-        "31327.cs",
-        "31333.cs",
-        "31334.cs",
-        "31337.cs",
-        "31393.cs",
-        "31407.cs",
-        "31564.cs",
-        "31601.cs",
-        "31605.cs",
-        "31641.cs",
-        "31655.cs",
-        "31681.cs",
         "access-another-user-mailbox-by-providing-their-email-address-to-iewsclient-getmailboxinfo-overload.cs",
         "acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs",
         "activate-comprehensive-logging-to-capture-detailed-diagnostic-information-for-troubleshooting-and-performance-analysis-within-t.cs",
@@ -896,23 +882,23 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 540
+          "count": 526
         },
         {
           "name": "Aspose.Email",
-          "count": 501
+          "count": 488
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 473
+          "count": 460
         },
         {
           "name": "System.Net",
-          "count": 307
+          "count": 299
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 266
+          "count": 256
         },
         {
           "name": "Aspose.Email.Calendar",
@@ -920,23 +906,23 @@
         },
         {
           "name": "System.IO",
-          "count": 95
+          "count": 92
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 57
-        },
-        {
-          "name": "Aspose.Email.Storage.Pst",
-          "count": 51
+          "count": 55
         },
         {
           "name": "System.Collections.Generic",
-          "count": 49
+          "count": 47
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 46
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 38
+          "count": 37
         },
         {
           "name": "Aspose.Email.PersonalInfo",
@@ -947,12 +933,12 @@
           "count": 22
         },
         {
-          "name": "System.Threading",
+          "name": "System.Threading.Tasks",
           "count": 17
         },
         {
-          "name": "System.Threading.Tasks",
-          "count": 17
+          "name": "System.Threading",
+          "count": 16
         },
         {
           "name": "Aspose.Email.Clients",
@@ -963,12 +949,12 @@
           "count": 8
         },
         {
-          "name": "System.Linq",
+          "name": "Aspose.Email.Clients.Google",
           "count": 7
         },
         {
-          "name": "Aspose.Email.Clients.Google",
-          "count": 7
+          "name": "System.Linq",
+          "count": 6
         },
         {
           "name": "System.Text.Json",
