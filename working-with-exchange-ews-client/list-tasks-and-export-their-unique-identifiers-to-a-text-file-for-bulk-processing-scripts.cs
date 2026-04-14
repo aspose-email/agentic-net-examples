@@ -44,7 +44,7 @@ class Program
                     {
                         using (StreamWriter writer = new StreamWriter(outputPath))
                         {
-                            foreach (Task task in tasks)
+                            foreach (Aspose.Email.Calendar.Task task in tasks)
                             {
                                 writer.WriteLine(task.UniqueId);
                             }

@@ -32,7 +32,7 @@ class Program
                 TaskCollection tasks = client.ListTasks();
 
                 // Display subject and due date for each task
-                foreach (Task task in tasks)
+                foreach (Aspose.Email.Calendar.Task task in tasks)
                 {
                     Console.WriteLine("Subject: " + task.Subject);
                     string dueDateText = task.DueDate != DateTime.MinValue

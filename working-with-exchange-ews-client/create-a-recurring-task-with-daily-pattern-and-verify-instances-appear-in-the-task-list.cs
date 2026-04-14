@@ -60,7 +60,7 @@ class Program
                 {
                     TaskCollection tasks = client.ListTasks();
                     Console.WriteLine("Tasks in the default task folder:");
-                    foreach (Task t in tasks)
+                    foreach (Aspose.Email.Calendar.Task t in tasks)
                     {
                         Console.WriteLine($"- Subject: {t.Subject}, Start: {t.StartDate:d}, Due: {t.DueDate:d}");
                     }
