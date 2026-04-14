@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 702,
+  "total_examples": 703,
   "total_categories": 14,
-  "last_updated": "2026-04-13",
+  "last_updated": "2026-04-14",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -350,7 +350,7 @@
     },
     {
       "name": "working-with-exchange-ews-client",
-      "file_count": 177,
+      "file_count": 178,
       "files": [
         "acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs",
         "activate-comprehensive-logging-to-capture-detailed-diagnostic-information-for-troubleshooting-and-performance-analysis-within-t.cs",
@@ -515,6 +515,7 @@
         "retrieve-email-messages-from-a-shared-mailbox-using-appropriate-api-calls-and-handle-authentication.cs",
         "retrieve-the-shared-mailbox-s-inbox-folder-reference-to-enable-further-email-processing-and-folder-management-tasks.cs",
         "review-and-evaluate-the-available-archiving-configurations-to-determine-optimal-storage-and-retrieval-strategies.cs",
+        "set-the-preferred-tls-protocol-version-on-iewsclient-before-establishing-a-secure-connection.cs",
         "set-the-service-s-impersonateduserid-property-to-the-shared-mailbox-s-smtp-address-to-enable-impersonation.cs",
         "set-up-and-customize-logging-parameters-to-control-output-verbosity-format-and-destination-for-email-operations.cs",
         "specify-the-file-system-location-where-the-application-will-write-its-log-output-during-execution.cs",
@@ -533,7 +534,7 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 177
+          "count": 178
         },
         {
           "name": "Aspose.Email",
@@ -541,11 +542,11 @@
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 142
+          "count": 143
         },
         {
           "name": "System.Net",
-          "count": 98
+          "count": 99
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
