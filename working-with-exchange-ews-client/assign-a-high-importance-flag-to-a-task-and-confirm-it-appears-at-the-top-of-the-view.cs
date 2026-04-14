@@ -49,7 +49,7 @@ class Program
                     var orderedTasks = tasks.OrderByDescending(t => t.Priority);
 
                     Console.WriteLine("\nTasks (high priority first):");
-                    foreach (Task t in orderedTasks)
+                    foreach (Aspose.Email.Calendar.Task t in orderedTasks)
                     {
                         Console.WriteLine($"- Subject: {t.Subject}, Priority: {t.Priority}");
                     }
