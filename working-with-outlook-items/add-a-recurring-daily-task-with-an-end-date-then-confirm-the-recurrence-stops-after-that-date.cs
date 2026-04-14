@@ -27,7 +27,7 @@ class Program
                 // Confirm the recurrence end date
                 if (task.RecurrencePattern is DailyRecurrencePattern dailyPattern)
                 {
-                    Console.WriteLine($"Task will recur daily until {dailyPattern.EndDate:yyyy-MM-dd}");
+                    Console.WriteLine($"Aspose.Email.Calendar.Task will recur daily until {dailyPattern.EndDate:yyyy-MM-dd}");
                 }
 
                 // Save the task to a MSG file (file I/O guarded)
@@ -46,7 +46,7 @@ class Program
                     }
 
                     task.Save(outputPath);
-                    Console.WriteLine($"Task saved to {outputPath}");
+                    Console.WriteLine($"Aspose.Email.Calendar.Task saved to {outputPath}");
                 }
                 catch (Exception ex)
                 {

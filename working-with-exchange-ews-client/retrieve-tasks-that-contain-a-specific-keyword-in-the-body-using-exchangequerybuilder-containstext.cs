@@ -31,7 +31,7 @@ class Program
                 TaskCollection tasks = client.ListTasks("tasks", query);
                 foreach (ExchangeTask task in tasks)
                 {
-                    Console.WriteLine($"Task Subject: {task.Subject}");
+                    Console.WriteLine($"Aspose.Email.Calendar.Task Subject: {task.Subject}");
                 }
             }
         }

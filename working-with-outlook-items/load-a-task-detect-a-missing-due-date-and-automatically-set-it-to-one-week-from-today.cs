@@ -17,7 +17,7 @@ class Program
             {
                 try
                 {
-                    using (Task placeholderTask = new Task())
+                    using (Aspose.Email.Calendar.Task placeholderTask = new Aspose.Email.Calendar.Task())
                     {
                         placeholderTask.Subject = "Placeholder Task";
                         placeholderTask.StartDate = DateTime.Now;
@@ -33,10 +33,10 @@ class Program
             }
 
             // Load the task from file.
-            Task loadedTask;
+            Aspose.Email.Calendar.Task loadedTask;
             try
             {
-                loadedTask = Task.Load(inputPath);
+                loadedTask = Aspose.Email.Calendar.Task.Load(inputPath);
             }
             catch (Exception ex)
             {

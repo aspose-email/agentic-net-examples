@@ -42,12 +42,12 @@ class Program
                         string dueDateHeader = message.Headers["DueDate"];
                         if (!string.IsNullOrEmpty(dueDateHeader) && DateTime.TryParse(dueDateHeader, out DateTime dueDate))
                         {
-                            Console.WriteLine($"Task Subject: {exchangeTask.Subject}");
+                            Console.WriteLine($"Aspose.Email.Calendar.Task Subject: {exchangeTask.Subject}");
                             Console.WriteLine($"Due Date (from header): {dueDate}");
                         }
                         else
                         {
-                            Console.WriteLine($"Task Subject: {exchangeTask.Subject}");
+                            Console.WriteLine($"Aspose.Email.Calendar.Task Subject: {exchangeTask.Subject}");
                             Console.WriteLine("Due Date header not found or invalid.");
                         }
                     }

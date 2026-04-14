@@ -25,7 +25,7 @@ class Program
                 ExchangeTask task = client.FetchTask(taskId);
                 if (task == null)
                 {
-                    Console.Error.WriteLine("Task not found.");
+                    Console.Error.WriteLine("Aspose.Email.Calendar.Task not found.");
                     return;
                 }
 
@@ -47,7 +47,7 @@ class Program
                 // Save the changes back to the server
                 client.UpdateTask(task);
 
-                Console.WriteLine("Task body updated successfully.");
+                Console.WriteLine("Aspose.Email.Calendar.Task body updated successfully.");
             }
         }
         catch (Exception ex)

@@ -44,7 +44,7 @@ class Program
 
                 // Create a task that includes a calendar invitation (start and due dates)
                 ExchangeTask task = new ExchangeTask();
-                task.Subject = "Project Task with Meeting";
+                task.Subject = "Project Aspose.Email.Calendar.Task with Meeting";
                 task.Body = "Please complete the task and attend the meeting.";
                 task.StartDate = DateTime.Now.AddDays(1);
                 task.DueDate = DateTime.Now.AddDays(2);
@@ -54,7 +54,7 @@ class Program
                 try
                 {
                     string taskUri = client.CreateTask(task);
-                    Console.WriteLine($"Task request created. URI: {taskUri}");
+                    Console.WriteLine($"Aspose.Email.Calendar.Task request created. URI: {taskUri}");
                 }
                 catch (Exception ex)
                 {

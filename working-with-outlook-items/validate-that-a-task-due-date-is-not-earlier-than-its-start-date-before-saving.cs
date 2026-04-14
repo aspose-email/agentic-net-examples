@@ -11,7 +11,7 @@ class Program
         try
         {
             // Create a task instance
-            using (Task task = new Task())
+            using (Aspose.Email.Calendar.Task task = new Aspose.Email.Calendar.Task())
             {
                 task.Subject = "Sample Task";
                 task.StartDate = new DateTime(2023, 10, 10);
@@ -37,7 +37,7 @@ class Program
                 {
                     // Save the task in MSG format
                     task.Save(outputPath, TaskSaveFormat.Msg);
-                    Console.WriteLine($"Task saved successfully to '{outputPath}'.");
+                    Console.WriteLine($"Aspose.Email.Calendar.Task saved successfully to '{outputPath}'.");
                 }
                 catch (Exception ex)
                 {

@@ -89,7 +89,7 @@ class Program
                 try
                 {
                     mail.Save(mhtPath, mhtOptions);
-                    Console.WriteLine($"Task preview saved to MHT at: {Path.GetFullPath(mhtPath)}");
+                    Console.WriteLine($"Aspose.Email.Calendar.Task preview saved to MHT at: {Path.GetFullPath(mhtPath)}");
                 }
                 catch (Exception ex)
                 {

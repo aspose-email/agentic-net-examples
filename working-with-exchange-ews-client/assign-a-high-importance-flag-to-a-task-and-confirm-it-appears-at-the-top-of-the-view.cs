@@ -40,7 +40,7 @@ class Program
 
                     // Save the task to the default task folder.
                     string taskUri = client.CreateTask(task);
-                    Console.WriteLine($"Task created with URI: {taskUri}");
+                    Console.WriteLine($"Aspose.Email.Calendar.Task created with URI: {taskUri}");
 
                     // Retrieve all tasks.
                     TaskCollection tasks = client.ListTasks();

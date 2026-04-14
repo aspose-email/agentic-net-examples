@@ -15,12 +15,12 @@ class Program
             task.Body = "This is a sample task created with Aspose.Email.";
             task.PercentComplete = 0;
 
-            Console.WriteLine($"Task created. Subject: {task.Subject}, PercentComplete: {task.PercentComplete}%");
+            Console.WriteLine($"Aspose.Email.Calendar.Task created. Subject: {task.Subject}, PercentComplete: {task.PercentComplete}%");
 
             // Update the task to 100% completion
             task.PercentComplete = 100;
 
-            Console.WriteLine($"Task updated. Subject: {task.Subject}, PercentComplete: {task.PercentComplete}%");
+            Console.WriteLine($"Aspose.Email.Calendar.Task updated. Subject: {task.Subject}, PercentComplete: {task.PercentComplete}%");
         }
         catch (Exception ex)
         {

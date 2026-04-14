@@ -62,7 +62,7 @@ namespace AsposeEmailEwsTaskExample
                     try
                     {
                         string taskUri = client.CreateTask(task);
-                        Console.WriteLine("Task created successfully. URI: " + taskUri);
+                        Console.WriteLine("Aspose.Email.Calendar.Task created successfully. URI: " + taskUri);
                     }
                     catch (Exception ex)
                     {

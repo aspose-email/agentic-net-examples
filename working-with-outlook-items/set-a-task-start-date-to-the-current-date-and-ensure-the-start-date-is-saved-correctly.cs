@@ -27,8 +27,8 @@ class Program
                 }
             }
 
-            // Create a new Task and set its start date to the current date and time
-            using (Task task = new Task())
+            // Create a new Aspose.Email.Calendar.Task and set its start date to the current date and time
+            using (Aspose.Email.Calendar.Task task = new Aspose.Email.Calendar.Task())
             {
                 task.Subject = "Sample Task";
                 task.StartDate = DateTime.Now;
@@ -39,7 +39,7 @@ class Program
                 try
                 {
                     task.Save(outputPath);
-                    Console.WriteLine($"Task saved successfully to '{outputPath}'.");
+                    Console.WriteLine($"Aspose.Email.Calendar.Task saved successfully to '{outputPath}'.");
                 }
                 catch (Exception saveEx)
                 {

@@ -23,7 +23,7 @@ class Program
             task.RecurrencePattern = recurrence;
 
             // Output task details to verify creation
-            Console.WriteLine("Task Subject: " + task.Subject);
+            Console.WriteLine("Aspose.Email.Calendar.Task Subject: " + task.Subject);
             Console.WriteLine("Start Date: " + task.StartDate);
             Console.WriteLine("Due Date: " + task.DueDate);
             Console.WriteLine("Reminder Date: " + task.ReminderDate);

@@ -40,7 +40,7 @@ namespace AsposeEmailTaskAudit
                             // ExchangeTask does not expose a direct ModifiedDate property.
                             // As a fallback, we log all task UniqueIds.
                             // In a real scenario, you would filter using a suitable property.
-                            Console.WriteLine($"Task ID: {task.UniqueId}");
+                            Console.WriteLine($"Aspose.Email.Calendar.Task ID: {task.UniqueId}");
                         }
                     }
                     catch (Exception ex)

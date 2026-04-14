@@ -47,7 +47,7 @@ class Program
                 try
                 {
                     string taskUri = client.CreateTask(task);
-                    Console.WriteLine($"Task created. URI: {taskUri}");
+                    Console.WriteLine($"Aspose.Email.Calendar.Task created. URI: {taskUri}");
                 }
                 catch (Exception ex)
                 {

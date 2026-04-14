@@ -10,22 +10,22 @@ class Program
         try
         {
             // Prepare a collection of tasks for validation
-            List<Task> tasks = new List<Task>();
+            List<Aspose.Email.Calendar.Task> tasks = new List<Aspose.Email.Calendar.Task>();
 
             // Example task with a future due date
-            Task futureTask = new Task();
+            Aspose.Email.Calendar.Task futureTask = new Aspose.Email.Calendar.Task();
             futureTask.Subject = "Future Task";
             futureTask.DueDate = DateTime.Now.AddDays(5);
             tasks.Add(futureTask);
 
             // Example task with a past due date
-            Task pastTask = new Task();
+            Aspose.Email.Calendar.Task pastTask = new Aspose.Email.Calendar.Task();
             pastTask.Subject = "Past Task";
             pastTask.DueDate = DateTime.Now.AddDays(-2);
             tasks.Add(pastTask);
 
             // Validate each task's due date
-            foreach (Task task in tasks)
+            foreach (Aspose.Email.Calendar.Task task in tasks)
             {
                 using (task)
                 {
