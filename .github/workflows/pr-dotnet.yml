@@ -1,4 +1,4 @@
-name: pr-dotnet
+name: dotnet-pr-check
 
 on:
   pull_request:
@@ -7,11 +7,9 @@ on:
 jobs:
   build-and-run-examples:
     runs-on: ubuntu-latest
-
     defaults:
       run:
         shell: bash
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,108 +21,78 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install native Linux dependencies
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y \
-            libfontconfig1 \
-            libfreetype6 \
-            libjpeg62-turbo \
-            libpng16-16 \
-            libx11-6 \
-            libxext6 \
-            libxrender1 \
-            libglib2.0-0
-
       - name: Find changed example files
         id: files
         run: |
-          set -euo pipefail
-
-          BASE="${{ github.base_ref }}"
-          HEAD="${{ github.sha }}"
-          FILE_LIST="$RUNNER_TEMP/files.txt"
-
-          git diff --name-only --diff-filter=ACMRT "origin/$BASE...$HEAD" -- '*.cs' > "$FILE_LIST"
-
-          if [ ! -s "$FILE_LIST" ]; then
+          BASE=${{ github.base_ref }}
+          HEAD=${{ github.sha }}
+          MAP=$(git diff --name-only --diff-filter=ACMRT origin/"$BASE"...$HEAD -- '*.cs' | tr '\n' ' ')
+          if [ -z "$MAP" ]; then
             echo "found=false" >> "$GITHUB_OUTPUT"
-            echo "No changed .cs files" >> "$GITHUB_STEP_SUMMARY"
+            echo "No changed .cs examples found." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-
-          COUNT=$(wc -l < "$FILE_LIST")
           echo "found=true" >> "$GITHUB_OUTPUT"
-          echo "file_list=$FILE_LIST" >> "$GITHUB_OUTPUT"
+          echo "files=$MAP" >> "$GITHUB_OUTPUT"
+          echo "Changed examples to test:" >> "$GITHUB_STEP_SUMMARY"
+          printf "%s\n" $MAP >> "$GITHUB_STEP_SUMMARY"
 
-          echo "### Changed files ($COUNT)" >> "$GITHUB_STEP_SUMMARY"
-          sed 's/^/- /' "$FILE_LIST" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Test each example using harness
+      - name: Test each example (temp project)
         if: steps.files.outputs.found == 'true'
         run: |
           set -euo pipefail
 
-          FILE_LIST="${{ steps.files.outputs.file_list }}"
+          PKG_VERSION=26.1.0
+          WORDS_PKG_VERSION=26.1.0
 
-          TOTAL=$(wc -l < "$FILE_LIST")
-          CURRENT=0
-          PASSED=0
-
-          while IFS= read -r f || [ -n "$f" ]; do
-            CURRENT=$((CURRENT+1))
-
+          for f in ${{ steps.files.outputs.files }}; do
             echo ""
-            echo "=============================="
-            echo "[$CURRENT/$TOTAL] $f"
-            echo "=============================="
+            echo "=== Testing $f ==="
+            echo "### Testing \`$f\`" >> "$GITHUB_STEP_SUMMARY"
 
             workdir=$(mktemp -d)
+            dotnet new console --framework net8.0 --no-restore --output "$workdir" >/dev/null
+            rm "$workdir/Program.cs"
 
-            # Copy harness project
-            cp -R .github/dotnet-example-runner/* "$workdir/"
+            if [ ! -f "$f" ]; then
+              echo "Skipping deleted file: $f"
+              echo "- Skipped: file not found" >> "$GITHUB_STEP_SUMMARY"
+              rm -rf "$workdir"
+              continue
+            fi
 
-            # Replace Program.cs
             cp "$f" "$workdir/Program.cs"
-
             pushd "$workdir" >/dev/null
 
+            echo "Adding packages..."
+            dotnet add package Aspose.Email --version "$PKG_VERSION"
+            dotnet add package Aspose.Words --version "$WORDS_PKG_VERSION"
+            dotnet add package System.Security.Cryptography.Pkcs
+            dotnet add package HtmlAgilityPack
+
             echo "Restoring..."
-            dotnet restore -r linux-x64
+            if ! dotnet restore; then
+              echo "::error file=$f::dotnet restore failed"
+              echo "- Restore failed" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
 
-            echo "Publishing..."
-            dotnet publish -c Release -r linux-x64 --self-contained false -o publish
-
-            echo "Checking Skia native library..."
-            find publish -name "*Skia*" || true
-
-            DLL=$(find publish -maxdepth 1 -name '*.dll' \
-              ! -name 'Aspose.*.dll' \
-              ! -name 'System.*.dll' \
-              ! -name 'Microsoft.*.dll' \
-              ! -name 'SkiaSharp*.dll' | head -n 1)
-
-            if [ -z "$DLL" ]; then
-              echo "::error file=$f::No runnable DLL found"
+            echo "Building..."
+            if ! dotnet build -c Release; then
+              echo "::error file=$f::dotnet build failed"
+              echo "- Build failed" >> "$GITHUB_STEP_SUMMARY"
               exit 1
             fi
 
             echo "Running..."
-            if ! dotnet "$DLL"; then
-              echo "::error file=$f::Execution failed"
+            if ! dotnet run -c Release --no-build; then
+              echo "::error file=$f::dotnet run failed"
+              echo "- Run failed" >> "$GITHUB_STEP_SUMMARY"
               exit 1
             fi
 
             popd >/dev/null
             rm -rf "$workdir"
 
-            PASSED=$((PASSED+1))
-
-            echo "PASSED: $f"
-            echo "- ✅ $f" >> "$GITHUB_STEP_SUMMARY"
-
-          done < "$FILE_LIST"
-
-          echo ""
-          echo "Completed: $PASSED / $TOTAL passed"
+            echo "- Passed" >> "$GITHUB_STEP_SUMMARY"
+          done
