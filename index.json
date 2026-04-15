@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 1469,
+  "total_examples": 1483,
   "total_categories": 15,
-  "last_updated": "2026-04-14",
+  "last_updated": "2026-04-15",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -350,12 +350,13 @@
     },
     {
       "name": "working-with-exchange-ews-client",
-      "file_count": 535,
+      "file_count": 549,
       "files": [
         "access-another-user-mailbox-by-providing-their-email-address-to-iewsclient-getmailboxinfo-overload.cs",
         "acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs",
         "activate-comprehensive-logging-to-capture-detailed-diagnostic-information-for-troubleshooting-and-performance-analysis-within-t.cs",
         "add-a-category-label-to-selected-emails-and-verify-that-the-label-appears-in-outlook-client-view.cs",
+        "add-a-custom-disclaimer-to-the-footer-of-every-email-sent-from-a-specific-shared-mailbox.cs",
         "add-a-custom-header-to-outgoing-messages-to-embed-correlation-identifiers-for-downstream-processing.cs",
         "add-a-custom-property-to-a-folder-to-store-metadata-about-its-archival-status-for-later-processing.cs",
         "add-a-custom-x-anchormailbox-http-header-to-iewsclient-to-target-specific-user-mailboxes.cs",
@@ -399,6 +400,7 @@
         "assign-a-high-importance-flag-to-a-task-and-confirm-it-appears-at-the-top-of-the-view.cs",
         "assign-the-obtained-oauth-token-to-the-exchangeservice-credentials-property-to-enable-authenticated-operations-for-subsequent.cs",
         "attach-a-custom-file-to-a-task-request-message-before-sending-it-through-the-exchange-service.cs",
+        "attach-multiple-files-to-a-mailmessage-and-verify-attachment-integrity-after-sending-through-exchange.cs",
         "authenticate-exchangeservice-operations-by-supplying-an-oauth-token-for-authorization-in-api-requests-during-integration.cs",
         "authenticate-imap-client-using-oauth-token-obtained-from-azure-ad-and-confirm-access-to-mailbox.cs",
         "authenticate-to-exchange-using-oauth-token-and-enumerate-folders-via-iewsclient.cs",
@@ -456,6 +458,7 @@
         "copy-items-between-public-folders-and-a-user-mailbox-handling-permission-errors-gracefully.cs",
         "copy-items-while-preserving-original-folder-hierarchy-by-specifying-the-preservehierarchy-option-in-copyitemsasync.cs",
         "copy-selected-conversation-threads-from-the-inbox-to-the-archive-folder-preserving-read-status.cs",
+        "create-a-batch-of-ten-different-mailquery-filters-and-execute-them-sequentially-to-gather-results.cs",
         "create-a-custom-extended-property-definition-of-type-string-with-a-unique-tag.cs",
         "create-a-distribution-list-add-members-from-an-ldap-query-and-save-it-to-the-exchange-address-book.cs",
         "create-a-distribution-list-and-assign-it-a-custom-attribute-for-department-identification.cs",
@@ -464,6 +467,7 @@
         "create-a-distribution-list-on-exchange-server-with-descriptive-display-name.cs",
         "create-a-distribution-list-that-includes-both-mail-contacts-and-external-email-addresses.cs",
         "create-a-distribution-list-with-hidden-membership-and-verify-members-not-visible.cs",
+        "create-a-draft-email-save-it-to-the-drafts-folder-then-send-it-using-iewsclient-send.cs",
         "create-a-high-priority-task-assign-it-to-a-team-member-and-set-a-reminder-one-day-before-due.cs",
         "create-a-meeting-request-that-includes-a-poll-for-selecting-the-most-convenient-meeting-time.cs",
         "create-a-meeting-request-with-a-custom-form-attached-to-collect-additional-participant-information.cs",
@@ -487,8 +491,10 @@
         "create-a-new-contact-with-multiple-email-addresses-phone-numbers-and-a-custom-note-field-for-crm-integration.cs",
         "create-a-new-directory-within-the-file-system-ensuring-proper-path-handling-and-comprehensive-error-checking.cs",
         "create-a-new-distribution-list-and-programmatically-add-specified-recipients-for-bulk-email-sending.cs",
+        "create-a-new-email-rule-that-moves-messages-with-attachments-larger-than-five-megabytes-to-a-large-files-folder.cs",
         "create-a-new-exchange-task-with-subject-and-due-date-using-iewsclient-createtask.cs",
         "create-a-new-instance-of-the-distributionlist-class-for-managing-email-distribution-groups-within-your-application.cs",
+        "create-a-new-mailbox-folder-hierarchy-programmatically-and-assign-appropriate-permissions-to-a-security-group.cs",
         "create-a-new-mailbox-rule-that-forwards-messages-with-a-specific-subject-prefix-to-an-external-address.cs",
         "create-a-new-public-folder-assign-read-write-permissions-to-a-group-and-publish-it-for-organization-wide-access.cs",
         "create-a-new-public-folder-hierarchy-for-project-documentation-and-assign-read-permissions-to-all-employees.cs",
@@ -532,6 +538,7 @@
         "delete-all-appointments-that-have-been-cancelled-and-are-older-than-six-months-from-a-calendar.cs",
         "delete-all-completed-tasks-from-a-designated-folder-by-iterating-deletetask-calls-in-a-batch-loop.cs",
         "delete-all-conversation-threads-older-than-one-year-from-the-junk-email-folder-in-bulk.cs",
+        "delete-all-items-older-than-ninety-days-from-the-deleted-items-folder-to-maintain-mailbox-hygiene.cs",
         "delete-an-unwanted-extended-property-from-a-message-to-clean-up-metadata.cs",
         "delete-conversation-threads-matching-a-specific-subject-pattern-from-the-sent-items-folder.cs",
         "delete-email-items-that-contain-a-specific-keyword-in-the-subject-line-using-a-filtered-deleteitemsasync-call.cs",
@@ -569,6 +576,7 @@
         "export-all-calendar-events-for-a-user-within-a-date-range-to-an-icalendar-file-for-external-sharing.cs",
         "export-all-contacts-from-a-public-folder-to-a-csv-file-while-preserving-group-membership-information.cs",
         "export-all-contacts-from-a-user-address-book-to-a-csv-file-while-preserving-phone-number-fields.cs",
+        "export-all-email-messages-from-a-folder-to-a-pst-file-while-preserving-folder-hierarchy-and-metadata.cs",
         "export-calendar-items-fetched-with-a-specific-organizer-to-a-csv-file.cs",
         "export-distribution-list-members-and-their-email-addresses-to-an-excel-spreadsheet.cs",
         "export-the-body-of-fetched-emails-to-plain-text-files-for-archival-and-analysis-purposes.cs",
@@ -659,6 +667,7 @@
         "invoke-the-service-updateitem-method-to-update-all-relevant-fields-of-an-existing-calendar-event.cs",
         "iterate-through-each-mailmessage-instance-executing-the-necessary-processing-operations-according-to-application-requirements.cs",
         "iterate-through-messages-in-a-folder-and-archive-each-one-using-the-appropriate-overload.cs",
+        "list-all-email-messages-in-a-shared-mailbox-and-filter-results-to-unread-items-using-linq.cs",
         "list-all-messages-in-the-inbox-folder-to-obtain-overview.cs",
         "list-all-messages-in-the-inbox-folder-using-iewsclient-listmessages-and-iterate-over-the-collection.cs",
         "list-all-tasks-in-the-default-tasks-folder-and-display-their-subjects-and-due-dates.cs",
@@ -673,6 +682,7 @@
         "log-the-uri-of-each-copied-message-to-a-database-for-audit-trail-generation.cs",
         "loop-over-the-entire-collection-applying-the-designated-processing-logic-to-each-individual-item.cs",
         "manipulate-custom-extended-properties-of-email-messages-via-exchange-web-services-ews-api.cs",
+        "mark-a-collection-of-messages-as-read-after-processing-them-to-update-their-read-status-on-the-server.cs",
         "mark-imap-messages-as-read-after-processing-to-prevent-duplicate-handling-in-subsequent-runs.cs",
         "measure-round-trip-latency-of-sending-and-receiving-a-test-email-through-iewsclient-for-performance-tuning.cs",
         "modify-and-persist-configuration-data-within-the-application-using-appropriate-api-calls-and-data-validation.cs",
@@ -682,6 +692,7 @@
         "modify-the-task-s-properties-by-invoking-the-service-updateitem-method-with-the-required-parameters-in-code.cs",
         "move-a-meeting-request-from-the-inbox-to-the-calendar-folder-after-acceptance-using-ewsclient.cs",
         "move-a-selected-email-to-a-custom-folder-using-the-moveitem-method-before-archiving.cs",
+        "move-an-email-from-the-inbox-to-a-custom-folder-using-iewsclient-movemessage-with-destination-uri.cs",
         "move-conversation-threads-older-than-thirty-days-from-drafts-to-deleted-items-folder.cs",
         "move-conversation-threads-that-contain-flagged-messages-to-a-follow-up-folder-for-review.cs",
         "move-messages-that-match-a-specific-sender-address-to-a-quarantine-folder-for-further-review.cs",
@@ -759,6 +770,7 @@
         "retrieve-messages-sorted-by-sender-email-alphabetically-using-mailquery-sorting-options-for-organized-output.cs",
         "retrieve-messages-within-a-custom-date-range-by-constructing-a-mailquery-with-start-and-end-dates.cs",
         "retrieve-only-email-headers-by-specifying-a-minimal-property-set-in-the-listitems-request.cs",
+        "retrieve-only-message-headers-using-iewsclient-fetchmessage-with-a-lightweight-option-to-reduce-bandwidth.cs",
         "retrieve-only-the-first-ten-messages-matching-a-sender-filter-by-limiting-result-count-in-listmessages.cs",
         "retrieve-only-the-messageid-property-of-each-email-by-selecting-it-after-listmessages-execution.cs",
         "retrieve-only-unread-messages-by-constructing-a-mailquery-with-the-unread-flag-set.cs",
@@ -797,6 +809,7 @@
         "save-an-imap-message-to-disk-in-eml-format-after-retrieving-it-by-sequence-number.cs",
         "save-tasks-to-msg-files-with-filenames-generated-from-task-subjects-and-timestamps-for-uniqueness.cs",
         "search-for-calendar-events-containing-a-specific-keyword-in-the-location-field-across-multiple-calendars.cs",
+        "search-for-conversation-threads-containing-a-specific-keyword-in-the-subject-line-across-all-folders.cs",
         "search-for-conversation-threads-that-contain-attachments-larger-than-ten-megabytes-and-log-their-ids.cs",
         "search-for-messages-with-attachments-larger-than-ten-megabytes-and-move-them-to-a-large-attachments-folder.cs",
         "search-the-inbox-for-messages-containing-a-specific-keyword-using-iewsclient-listmessages-with-a-query-filter.cs",
@@ -845,6 +858,7 @@
         "sort-retrieved-messages-by-received-date-in-descending-order-by-adding-sorting-parameters-to-the-mailquery.cs",
         "specify-the-file-system-location-where-the-application-will-write-its-log-output-during-execution.cs",
         "specify-the-file-system-location-where-the-library-writes-its-log-files-for-troubleshooting-and-diagnostics.cs",
+        "synchronize-a-local-folder-with-an-exchange-mailbox-by-periodically-listing-and-downloading-new-messages.cs",
         "synchronize-calendar-events-between-two-separate-exchange-mailboxes-to-maintain-consistent-schedules.cs",
         "test-connection-to-exchange-using-imap-client-as-fallback-when-ews-endpoint-is-unavailable.cs",
         "transfer-a-directory-and-its-contents-to-a-new-location-updating-all-internal-file-references-accordingly.cs",
@@ -891,23 +905,23 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 535
+          "count": 549
         },
         {
           "name": "Aspose.Email",
-          "count": 496
+          "count": 509
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 468
+          "count": 481
         },
         {
           "name": "System.Net",
-          "count": 305
+          "count": 313
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 263
+          "count": 274
         },
         {
           "name": "Aspose.Email.Calendar",
@@ -915,23 +929,23 @@
         },
         {
           "name": "System.IO",
-          "count": 93
+          "count": 96
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 56
-        },
-        {
-          "name": "System.Collections.Generic",
-          "count": 48
+          "count": 58
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 47
+          "count": 52
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 49
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 38
+          "count": 39
         },
         {
           "name": "Aspose.Email.PersonalInfo",
@@ -942,15 +956,15 @@
           "count": 23
         },
         {
+          "name": "System.Threading",
+          "count": 17
+        },
+        {
           "name": "System.Threading.Tasks",
           "count": 17
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 16
-        },
-        {
-          "name": "System.Threading",
           "count": 16
         },
         {
@@ -963,7 +977,7 @@
         },
         {
           "name": "System.Linq",
-          "count": 6
+          "count": 7
         },
         {
           "name": "System.Text.Json",
