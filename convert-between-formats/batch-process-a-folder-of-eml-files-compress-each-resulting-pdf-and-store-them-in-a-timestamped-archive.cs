@@ -61,7 +61,7 @@ class Program
                             }
 
                             // Add PDF to zip archive
-                            archive.CreateEntryFromFile(pdfPath, Path.GetFileName(pdfPath), CompressionLevel.Optimal);
+                            archive.CreateEntryFromFile(pdfPath, Path.GetFileName(pdfPath), System.IO.Compression.CompressionLevel.Optimal);
 
                             // Clean up temporary files
                             File.Delete(htmlPath);
