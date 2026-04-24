@@ -44,6 +44,7 @@ jobs:
 
           PKG_VERSION=26.1.0
           WORDS_PKG_VERSION=26.1.0
+          SKIA_VERSION=2.88.6
 
           for f in ${{ steps.files.outputs.files }}; do
             echo ""
@@ -69,6 +70,11 @@ jobs:
             dotnet add package Aspose.Words --version "$WORDS_PKG_VERSION"
             dotnet add package System.Security.Cryptography.Pkcs
             dotnet add package HtmlAgilityPack
+            # Aspose.Words uses SkiaSharp for some render/export paths (e.g., XPS/image output).
+            # On linux runners, SkiaSharp managed assembly can be present without native assets,
+            # causing runtime failures unless we include native assets explicitly.
+            dotnet add package SkiaSharp --version "$SKIA_VERSION"
+            dotnet add package SkiaSharp.NativeAssets.Linux --version "$SKIA_VERSION"
 
             echo "Restoring..."
             if ! dotnet restore; then
