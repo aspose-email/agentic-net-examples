@@ -70,8 +70,8 @@ class Program
                             ImageSaveOptions options = new ImageSaveOptions(SaveFormat.Png)
                             {
                                 Resolution = dpi,
-                                PageIndex = i,
-                                PageCount = 1
+                                // Aspose.Words uses PageSet to select which pages to render.
+                                PageSet = new PageSet(i)
                             };
                             doc.Save(outputPath, options);
                         }
