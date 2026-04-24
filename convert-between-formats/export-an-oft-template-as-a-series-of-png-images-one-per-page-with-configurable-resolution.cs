@@ -21,23 +21,19 @@ class Program
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
+                    // Create a valid OFT template so this sample can run in CI.
+                    using MailMessage placeholder = new MailMessage(
                         "from@example.com",
                         "to@example.com",
                         "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(oftPath);
-                    }
+                        "Placeholder body.");
+                    placeholder.Save(oftPath, SaveOptions.DefaultOft);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder OFT: {ex.Message}");
                     return;
                 }
-
-                Console.Error.WriteLine($"Input OFT file not found: {oftPath}");
-                return;
             }
 
             try
@@ -67,19 +63,17 @@ class Program
 
                         // Load MHTML into Aspose.Words Document
                         Document doc = new Document(mhtmlStream);
-            {
-                            int pageCount = doc.PageCount;
-                            for (int i = 0; i < pageCount; i++)
+                        int pageCount = doc.PageCount;
+                        for (int i = 0; i < pageCount; i++)
+                        {
+                            string outputPath = Path.Combine(outputFolder, $"page_{i + 1}.png");
+                            ImageSaveOptions options = new ImageSaveOptions(SaveFormat.Png)
                             {
-                                string outputPath = Path.Combine(outputFolder, $"page_{i + 1}.png");
-                                ImageSaveOptions options = new ImageSaveOptions(SaveFormat.Png)
-                                {
-                                    Resolution = dpi,
-                                    PageIndex = i,
-                                    PageCount = 1
-                                };
-                                doc.Save(outputPath, options);
-                            }
+                                Resolution = dpi,
+                                PageIndex = i,
+                                PageCount = 1
+                            };
+                            doc.Save(outputPath, options);
                         }
                     }
                 }
