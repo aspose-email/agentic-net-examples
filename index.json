@@ -3,22 +3,88 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 1483,
-  "total_categories": 15,
-  "last_updated": "2026-04-15",
+  "total_examples": 2305,
+  "total_categories": 17,
+  "last_updated": "2026-04-23",
   "categories": [
     {
       "name": "convert-between-formats",
-      "file_count": 40,
+      "file_count": 135,
       "files": [
+        "batch-convert-a-collection-of-mhtml-files-to-eml-preserving-original-file-timestamps-in-metadata.cs",
+        "batch-convert-a-collection-of-oft-files-to-pdf-adding-a-watermark-text-indicating-confidential-status.cs",
+        "batch-convert-all-mhtml-files-in-a-folder-to-pst-creating-a-folder-hierarchy-based-on-filenames.cs",
+        "batch-convert-all-pst-subfolders-to-individual-eml-files-maintaining-the-original-folder-hierarchy-on-disk.cs",
+        "batch-convert-msg-files-to-html-applying-a-user-defined-template-that-adds-a-company-header-to-each-page.cs",
+        "batch-convert-multiple-mbox-files-to-vcf-grouping-contacts-by-organization-and-creating-separate-files-per-group.cs",
+        "batch-process-a-directory-of-ics-files-converting-each-to-eml-with-standardized-subject-prefixes.cs",
+        "batch-process-a-folder-of-eml-files-compress-each-resulting-pdf-and-store-them-in-a-timestamped-archive.cs",
+        "batch-process-a-folder-of-mhtml-files-converting-each-to-both-eml-and-msg-formats-simultaneously.cs",
+        "batch-process-mbox-files-converting-each-to-a-separate-pst-file-named-after-the-original-mailbox.cs",
         "configure-an-htmlsaveoptions-object-with-custom-rendering-and-resource-settings-to-convert-an-eml-file-to-html.cs",
+        "convert-a-batch-of-eml-files-in-a-directory-to-pdf-documents-with-inline-attachment-rendering.cs",
+        "convert-a-collection-of-msg-files-to-pdf-while-embedding-original-attachments-as-clickable-icons-within-the-document.cs",
+        "convert-a-meeting-request-from-an-msg-file-to-an-icalendar-file-preserving-attendees-and-time-zone-information.cs",
+        "convert-a-set-of-msg-files-to-pdf-with-ocr-applied-to-scanned-image-attachments-for-searchable-text.cs",
+        "convert-a-signed-s-mime-email-to-pdf-while-preserving-the-visual-representation-of-the-digital-signature.cs",
+        "convert-an-email-containing-a-calendar-invitation-to-a-pdf-that-includes-both-message-body-and-calendar-details.cs",
+        "convert-an-email-with-embedded-images-to-plain-text-replacing-images-with-descriptive-alt-text-placeholders.cs",
         "convert-an-eml-file-to-html-format-while-retaining-the-original-message-date-by-setting-preserveoriginaldate-to-true.cs",
         "convert-an-eml-file-to-html-while-saving-attachments-by-setting-saveattachments-true.cs",
+        "convert-an-html-email-to-jpeg-format-applying-compression-quality-settings-to-balance-file-size-and-clarity.cs",
+        "convert-an-html-email-to-mhtml-embedding-all-external-resources-to-create-a-single-self-contained-file.cs",
+        "convert-an-html-message-to-eml-format-ensuring-all-embedded-images-are-retained-as-attachments.cs",
+        "convert-an-mhtml-document-to-html-with-custom-css-using-htmlformatoptions-before-saving.cs",
+        "convert-an-mhtml-email-containing-embedded-images-to-emlx-while-embedding-images-as-separate-attachments.cs",
+        "convert-an-mhtml-email-to-emlx-format-while-preserving-the-original-character-encoding.cs",
+        "convert-an-mhtml-email-to-vcf-by-extracting-contact-information-from-the-signature-block.cs",
+        "convert-an-mhtml-file-to-oft-template-format-for-use-in-outlook-mail-merge-operations.cs",
         "convert-an-msg-message-to-an-ics-calendar-file-using-enhanced-conversion-capabilities-including-loading-and-saving-operations.cs",
+        "convert-an-oft-file-to-mhtml-embedding-all-linked-resources-to-produce-a-single-portable-email-file.cs",
+        "convert-an-oft-file-to-plain-text-stripping-all-formatting-while-retaining-attachment-filenames-for-reference.cs",
+        "convert-an-oft-file-to-xps-format-preserving-page-layout-and-vector-graphics-for-high-quality-printing.cs",
+        "convert-an-oft-template-to-pdf-flattening-form-fields-while-retaining-visual-appearance-of-interactive-elements.cs",
         "convert-html-content-into-an-mbox-file-by-loading-the-html-and-exporting-it-as-mbox.cs",
+        "convert-html-email-to-pdf-customizing-metadata-fields-such-as-author-title-and-subject-during-export.cs",
+        "convert-html-email-to-pdf-preserving-hyperlink-functionality-so-links-remain-clickable-in-the-resulting-document.cs",
+        "convert-html-email-to-pdf-with-accessibility-tags-enabling-screen-readers-to-interpret-document-structure.cs",
+        "convert-html-email-to-plain-text-stripping-all-html-tags-while-preserving-line-breaks-and-spacing.cs",
+        "convert-html-emails-to-pdf-while-embedding-a-custom-footer-containing-page-numbers-and-generation-date.cs",
+        "convert-html-to-pdf-applying-compression-settings-to-reduce-file-size-while-maintaining-visual-quality.cs",
+        "convert-html-to-pdf-applying-css-media-query-handling-to-adjust-layout-for-print-media.cs",
+        "convert-html-to-pdf-embedding-fonts-to-ensure-consistent-rendering-across-different-operating-systems.cs",
+        "convert-mbox-messages-to-emlx-format-and-organize-output-files-into-subfolders-by-sender-domain.cs",
+        "convert-mbox-messages-to-high-resolution-tiff-images-preserving-original-email-layout-and-fonts.cs",
+        "convert-mbox-messages-to-html-and-embed-each-email-original-timestamp-as-a-visible-header.cs",
+        "convert-multiple-html-emails-to-eml-in-parallel-utilizing-asynchronous-api-calls-to-improve-performance.cs",
+        "create-a-custom-htmlformatoptions-instance-to-embed-css-inline-before-converting-mhtml-to-html.cs",
+        "create-a-custom-saveoptions-for-eml-conversion-that-forces-utf-8-encoding-for-all-output-files.cs",
+        "create-a-custom-saveoptions-instance-to-set-email-priority-when-converting-mhtml-to-msg.cs",
         "create-a-message-from-raw-html-content-insert-it-into-an-ost-file-and-persist-the-updated-ost.cs",
+        "create-a-new-ost-storage-and-add-an-mhtml-message-to-a-specific-folder-using-addmessage.cs",
+        "export-an-oft-template-as-a-series-of-png-images-one-per-page-with-configurable-resolution.cs",
+        "export-the-body-of-an-email-to-a-markdown-file-converting-html-elements-to-appropriate-markdown-syntax.cs",
+        "extract-all-attachments-from-a-msg-file-and-store-them-in-a-zip-archive-preserving-original-filenames.cs",
+        "extract-calendar-event-data-from-an-mhtml-file-and-save-it-as-an-ics-file.cs",
+        "extract-calendar-events-from-a-pst-file-and-export-them-to-separate-icalendar-files-named-by-event-title.cs",
+        "extract-contact-cards-from-mbox-messages-and-save-each-as-an-individual-vcf-file.cs",
+        "extract-embedded-vcard-data-from-an-mhtml-file-and-write-it-to-a-vcf-file.cs",
+        "extract-the-email-body-strip-all-html-tags-and-write-the-result-to-a-txt-file.cs",
+        "generate-a-pdf-a-1b-document-from-html-content-applying-archival-compliance-settings-for-long-term-storage.cs",
+        "generate-a-pdf-a-2b-document-from-an-oft-file-ensuring-compliance-with-electronic-records-regulations.cs",
+        "generate-a-pdf-report-summarizing-email-metadata-such-as-subject-sender-and-received-date-for-each-msg-file.cs",
+        "generate-pdf-from-html-applying-a-color-profile-to-ensure-accurate-color-reproduction-on-professional-printers.cs",
+        "generate-pdf-from-html-with-custom-page-size-and-orientation-supporting-landscape-and-portrait-layouts.cs",
+        "load-a-batch-of-html-files-from-a-directory-and-convert-each-to-pdf-with-uniform-page-margins.cs",
+        "load-a-collection-of-msg-files-filter-messages-by-sender-domain-and-export-matching-items-to-html.cs",
         "load-a-msg-file-and-export-its-contents-to-an-html-document-while-preserving-formatting-and-attachments.cs",
         "load-a-msg-file-and-serialize-it-directly-to-an-eml-format-preserving-all-message-properties.cs",
+        "load-an-email-apply-a-css-stylesheet-to-its-html-body-and-save-the-styled-output-as-mhtml.cs",
+        "load-an-email-apply-a-custom-header-transformation-and-save-the-modified-message-as-an-emlx-file.cs",
+        "load-an-email-from-a-stream-convert-to-html-and-write-the-result-into-a-memory-buffer.cs",
+        "load-an-email-remove-all-inline-images-and-save-the-cleaned-message-as-an-eml-file.cs",
+        "load-an-email-with-an-embedded-video-convert-to-pdf-and-replace-the-video-with-a-thumbnail-image.cs",
+        "load-an-email-with-unicode-characters-ensure-proper-utf-8-encoding-and-save-it-as-an-emlx-file.cs",
         "load-an-eml-email-message-then-serialize-and-save-its-content-as-an-mhtml-file.cs",
         "load-an-eml-message-and-convert-it-into-an-mbox-file-preserving-all-message-headers.cs",
         "load-an-eml-message-and-export-its-contents-as-an-html-file-preserving-formatting-and-attachments.cs",
@@ -37,68 +103,430 @@
         "load-an-html-document-parse-its-contact-data-and-generate-an-equivalent-vcf-vcard-file.cs",
         "load-an-html-document-then-export-it-as-mhtml-with-saveallheaders-set-to-false-to-retain-all-headers.cs",
         "load-an-html-document-using-htmlloadoptions-and-export-it-directly-to-mhtml-format-preserving-content-fidelity.cs",
+        "load-an-html-email-file-and-convert-it-to-pdf-while-preserving-original-layout.cs",
         "load-an-html-file-and-convert-its-contents-into-an-icalendar-ics-file-format.cs",
         "load-an-html-file-and-export-it-directly-to-the-target-format-such-as-pdf-docx-or-xlsx.cs",
         "load-an-html-file-and-serialize-it-to-an-eml-message-preserving-the-original-email-structure.cs",
         "load-an-html-file-into-memory-and-serialize-it-directly-to-an-mhtml-document-preserving-all-resources.cs",
         "load-an-html-message-and-save-it-as-an-emlx-file-using-the-appropriate-api-methods.cs",
+        "load-an-ics-file-modify-the-appointment-location-and-save-the-updated-event-as-msg.cs",
+        "load-an-mhtml-file-and-save-it-as-eml-using-saveoptions-defaulteml-while-preserving-attachments.cs",
+        "load-an-mhtml-file-convert-inline-images-to-base64-and-save-as-html-for-web-embedding.cs",
+        "load-an-mhtml-file-detect-embedded-calendar-invites-and-export-them-as-separate-vcf-contacts.cs",
+        "load-an-mhtml-file-remove-all-script-tags-and-save-the-cleaned-content-as-html.cs",
+        "load-an-mhtml-file-replace-all-font-families-with-arial-and-save-the-result-as-msg.cs",
+        "load-an-mhtml-file-replace-all-image-sources-with-placeholder-urls-and-save-as-html.cs",
+        "load-an-mhtml-file-replace-all-inline-css-with-external-stylesheet-references-then-save-as-html.cs",
+        "load-an-mhtml-file-strip-all-html-comments-and-save-the-cleaned-version-as-html.cs",
         "load-an-msg-email-file-and-save-its-contents-as-an-oft-template-while-preserving-all-message-properties.cs",
         "load-an-msg-file-and-export-its-contents-as-an-ics-calendar-file-while-preserving-event-data.cs",
         "load-an-msg-file-and-export-its-contents-to-html-using-advanced-conversion-capabilities.cs",
         "load-an-msg-message-file-and-serialize-it-as-an-emlx-file-preserving-all-message-properties.cs",
         "load-an-msg-message-file-and-serialize-it-as-an-mht-mhtml-document-preserving-all-content.cs",
+        "load-an-oft-template-and-convert-it-to-msg-injecting-custom-sender-and-recipient-fields-programmatically.cs",
+        "load-an-outlook-msg-file-and-save-it-as-an-eml-message-preserving-all-headers.cs",
         "load-html-content-create-a-message-containing-it-add-the-message-to-a-pst-file-and-save-the-pst.cs",
         "load-msg-email-files-in-c-and-save-them-to-the-desired-target-formats-such-as-pdf-docx-or-eml.cs",
         "load-msg-files-and-convert-them-to-mbox-format-utilizing-advanced-conversion-options-while-preserving-metadata.cs",
-        "read-a-msg-email-file-and-serialize-its-contents-into-an-mbox-mailbox-format.cs"
+        "process-a-folder-of-oft-templates-converting-each-to-msg-while-applying-a-common-email-signature.cs",
+        "read-a-msg-email-file-and-serialize-its-contents-into-an-mbox-mailbox-format.cs",
+        "read-a-pst-archive-extract-each-email-and-export-them-individually-to-mhtml-format-preserving-formatting.cs",
+        "read-a-pst-file-via-streaming-convert-each-message-to-pdf-and-write-output-to-a-network-share.cs",
+        "read-an-email-from-a-database-blob-convert-to-html-and-update-the-record-with-the-new-markup.cs",
+        "read-an-encrypted-eml-message-using-a-password-decrypt-it-and-save-the-clear-text-version-as-msg.cs",
+        "render-an-html-email-as-a-high-resolution-png-image-configuring-dpi-and-background-color-options.cs",
+        "render-html-email-as-pdf-a-3-embedding-original-attachments-within-the-pdf-for-archival-purposes.cs",
+        "save-a-loaded-emlx-email-as-a-pdf-a-1b-document-ensuring-font-embedding-for-long-term-preservation.cs",
+        "transform-a-calendar-item-from-an-msg-file-into-an-icalendar-ics-file-while-retaining-recurrence-rules.cs",
+        "transform-a-multi-part-mime-message-into-a-single-pdf-document-merging-all-text-and-attachment-contents.cs",
+        "transform-an-html-email-into-msg-format-preserving-custom-headers-and-message-flags-during-conversion.cs",
+        "transform-an-oft-file-into-eml-format-preserving-all-embedded-attachments-and-preserving-original-timestamps.cs",
+        "transform-an-oft-template-into-rtf-document-preserving-text-styling-and-embedded-objects-during-conversion.cs",
+        "transform-html-content-to-pdf-configuring-image-scaling-to-prevent-oversized-graphics-from-breaking-page-layout.cs",
+        "transform-html-email-to-pdf-extracting-and-listing-all-urls-in-a-separate-appendix-page-for-reference.cs",
+        "transform-html-email-to-pdf-inserting-a-table-of-contents-based-on-heading-hierarchy-for-navigation.cs",
+        "transform-html-messages-to-pdf-with-ocr-layer-enabling-searchable-text-extraction-from-embedded-images.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 40
+          "count": 135
         },
         {
           "name": "System.IO",
-          "count": 40
+          "count": 135
         },
         {
           "name": "Aspose.Email",
-          "count": 40
+          "count": 135
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 15
-        },
-        {
-          "name": "Aspose.Email.Storage.Pst",
-          "count": 5
-        },
-        {
-          "name": "Aspose.Email.Storage",
-          "count": 4
-        },
-        {
-          "name": "Aspose.Email.Storage.Mbox",
-          "count": 3
-        },
-        {
-          "name": "System.Text",
-          "count": 2
-        },
-        {
-          "name": "Aspose.Email.Calendar",
-          "count": 2
+          "count": 46
         },
         {
           "name": "Aspose.Words",
-          "count": 2
+          "count": 37
+        },
+        {
+          "name": "Aspose.Words.Saving",
+          "count": 25
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 13
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 11
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 9
+        },
+        {
+          "name": "Aspose.Email.Storage.Mbox",
+          "count": 8
+        },
+        {
+          "name": "System.Text",
+          "count": 8
+        },
+        {
+          "name": "System.Text.RegularExpressions",
+          "count": 8
+        },
+        {
+          "name": "Aspose.Email.Storage",
+          "count": 7
         },
         {
           "name": "Aspose.Email.PersonalInfo",
-          "count": 1
+          "count": 3
+        },
+        {
+          "name": "System.IO.Compression",
+          "count": 2
         },
         {
           "name": "HtmlAgilityPack",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Words.Drawing",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Words.Tables",
+          "count": 1
+        },
+        {
+          "name": "System.Threading.Tasks",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Tools",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Calendar.Recurrences",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "convert-thunderbird-mbox-files",
+      "file_count": 180,
+      "files": [
+        "add-a-feature-to-embed-a-custom-comment-in-the-pst-file-properties-for-identification.cs",
+        "add-a-feature-to-encrypt-the-resulting-pst-file-using-a-user-provided-password.cs",
+        "add-a-feature-to-generate-a-checksum-for-the-resulting-pst-file-for-integrity-verification.cs",
+        "add-a-unit-test-confirming-the-custom-prefix-appears-at-the-beginning-of-each-file-name.cs",
+        "add-converted-mailmessage-objects-to-the-root-folder-of-the-newly-created-pst-storage.cs",
+        "add-logging-of-elapsed-time-for-each-split-chunk-to-analyze-performance-bottlenecks.cs",
+        "add-logging-of-mboxreader-disposal-to-confirm-resources-are-released-after-processing.cs",
+        "add-support-for-converting-messages-with-embedded-calendar-invites-while-retaining-event-details.cs",
+        "add-support-for-converting-only-messages-that-contain-attachments-skipping-plain-text-only-emails.cs",
+        "add-support-for-logging-split-progress-to-a-csv-file-for-external-monitoring-tools.cs",
+        "add-support-for-preserving-calendar-items-embedded-in-email-messages-during-pst-conversion.cs",
+        "add-support-for-preserving-custom-x-mail-headers-by-copying-them-into-pst-message-properties.cs",
+        "add-support-for-preserving-mime-boundary-information-as-custom-metadata-in-pst-messages.cs",
+        "add-support-for-preserving-read-receipt-requests-as-custom-properties-in-the-pst-messages.cs",
+        "add-unit-tests-for-conversion-options-that-enable-or-disable-attachment-compression.cs",
+        "add-unit-tests-for-conversion-options-that-toggle-signature-removal-on-and-off.cs",
+        "add-unit-tests-that-verify-correct-handling-of-messages-with-missing-subject-headers.cs",
+        "allow-users-to-specify-a-custom-pst-file-password-during-creation-for-added-security.cs",
+        "apply-a-custom-filter-to-exclude-messages-older-than-a-specific-date-before-pst-conversion.cs",
+        "apply-a-mailquery-to-exclude-messages-containing-a-specific-keyword-in-the-body.cs",
+        "apply-a-mailquery-to-filter-messages-by-subject-containing-specific-keyword.cs",
+        "apply-a-mailquery-to-filter-messages-sent-after-a-given-date.cs",
+        "benchmark-conversion-speed-when-using-ssd-storage-versus-traditional-hdd-for-pst-output.cs",
+        "benchmark-memory-usage-when-converting-large-mbox-archives-with-and-without-batch-processing.cs",
+        "call-the-asynchronous-splitinto-overload-within-an-async-method-and-await-its-completion.cs",
+        "choose-the-appropriate-splitinto-overload-based-on-net-version-and-cancellation-token-requirements.cs",
+        "close-the-mboxrdstoragereader-to-release-file-handles-after-processing-completes.cs",
+        "close-the-mboxreader-instance-once-all-messages-have-been-transferred-to-the-pst-archive.cs",
+        "combine-pagination-and-mailquery-to-retrieve-filtered-messages-page-by-page.cs",
+        "compress-the-resulting-pst-file-using-built-in-pst-compression-options-to-reduce-disk-usage.cs",
+        "compute-total-number-of-unique-senders-by-iterating-over-message-metadata.cs",
+        "configure-mboxloadoptions-to-ignore-malformed-mime-parts-while-loading-the-archive-entirely.cs",
+        "configure-mboxloadoptions-to-set-a-custom-line-delimiter-for-non-standard-mbox-files.cs",
+        "configure-mboxloadoptions-to-specify-utf-8-encoding-before-reading-a-multilingual-mbox-archive.cs",
+        "configure-mboxstoragereaderoptions-to-set-utf-8-encoding-before-creating-the-reader.cs",
+        "configure-mboxtopstconversionoptions-to-limit-the-maximum-number-of-messages-per-pst-folder.cs",
+        "configure-mboxtopstconversionoptions-to-map-custom-email-categories-to-pst-folder-hierarchy-appropriately.cs",
+        "configure-mboxtopstconversionoptions-to-preserve-original-message-flags-such-as-read-unread-status-accurately.cs",
+        "configure-the-chunk-size-parameter-to-define-the-maximum-size-of-each-split-part.cs",
+        "configure-the-reader-to-ignore-corrupted-messages-and-continue-processing-remaining-emails-in-the-archive.cs",
+        "create-a-batch-processing-script-that-converts-multiple-mbox-files-in-a-directory-to-separate-psts.cs",
+        "create-a-command-line-tool-that-takes-input-mbox-path-and-output-pst-path-as-arguments.cs",
+        "create-a-configuration-file-that-defines-mapping-rules-from-mbox-folder-names-to-pst-folder-paths.cs",
+        "create-a-console-option-to-display-a-summary-of-conversion-results-without-generating-a-pst-file.cs",
+        "create-a-diagnostic-mode-that-outputs-detailed-mboxreader-parsing-steps-to-the-console.cs",
+        "create-a-diagnostic-mode-that-outputs-memory-allocation-details-for-each-conversion-step.cs",
+        "create-a-diagnostic-mode-that-records-each-mboxreader-exception-message-to-a-separate-error-log.cs",
+        "create-a-diagnostic-report-summarizing-memory-usage-conversion-time-and-any-warnings-after-each-run.cs",
+        "create-a-diagnostic-report-that-includes-memory-peak-usage-conversion-duration-and-any-warnings.cs",
+        "create-a-helper-utility-that-validates-mbox-file-structure-before-initiating-conversion.cs",
+        "create-a-manifest-file-listing-all-generated-part-files-and-their-checksums-for-verification.cs",
+        "create-a-new-outlook-pst-file-using-personalstorage-create-with-fileformat-pst-and-a-target-path.cs",
+        "create-a-powershell-script-that-invokes-the-net-conversion-library-with-specified-parameters.cs",
+        "create-a-progress-report-listing-each-part-file-name-size-and-creation-timestamp-after-splitting.cs",
+        "create-a-sample-console-application-demonstrating-end-to-end-mbox-to-pst-conversion-with-configurable-options.cs",
+        "create-a-sample-script-that-automates-batch-conversion-of-all-mbox-files-in-a-given-directory.cs",
+        "create-a-scheduled-azure-function-that-processes-incoming-mbox-blobs-and-stores-pst-results-in-blob-storage.cs",
+        "create-a-unit-test-that-verifies-conversion-of-messages-with-multiple-attachments-preserves-order.cs",
+        "create-a-unit-test-verifying-getmessagecount-returns-the-expected-number-of-messages.cs",
+        "create-a-wrapper-class-that-abstracts-mbox-loading-and-pst-saving-for-reuse-in-other-projects.cs",
+        "create-subfolders-in-pst-based-on-original-mbox-folder-hierarchy-to-maintain-organization.cs",
+        "create-unit-tests-that-simulate-conversion-of-messages-with-large-base64-encoded-attachments.cs",
+        "create-unit-tests-that-verify-the-correct-number-of-output-files-for-a-given-chunk-size.cs",
+        "detect-and-skip-duplicate-email-messages-based-on-message-id-header-during-conversion.cs",
+        "detect-the-net-runtime-version-at-runtime-and-select-the-appropriate-splitinto-overload.cs",
+        "develop-a-console-application-accepting-mbox-path-chunk-size-and-prefix-arguments-for-flexible-splitting.cs",
+        "develop-a-console-application-that-prompts-for-mbox-path-and-displays-total-message-count.cs",
+        "develop-a-gui-wizard-that-guides-users-through-selecting-mbox-source-pst-destination-and-options.cs",
+        "disable-automatic-charset-detection-and-enforce-iso-8859-1-encoding-via-mboxstoragereaderoptions.cs",
+        "document-how-to-set-mboxloadoptions-isunicode-to-true-for-unicode-only-mbox-files-properly.cs",
+        "enable-multi-threaded-processing-of-mbox-chunks-to-accelerate-conversion-on-multi-core-systems.cs",
+        "enumerate-a-batch-of-messages-with-enumeratemessages-for-pagination-starting-at-a-given-index.cs",
+        "enumerate-only-message-metadata-using-enumeratemessageinfo-for-fast-scanning-without-loading-full-mailmessage-object.cs",
+        "export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs",
+        "expose-a-rest-api-endpoint-that-accepts-an-uploaded-mbox-file-and-returns-the-generated-pst-stream.cs",
+        "expose-an-api-endpoint-that-triggers-asynchronous-mbox-splitting-with-optional-cancellation-token.cs",
+        "extract-a-single-message-by-its-entryid-using-extractmessage-method.cs",
+        "extract-and-preserve-email-headers-such-as-from-to-and-date-when-transferring-to-pst.cs",
+        "extract-messages-with-specific-priority-level-and-store-their-bodies-in-separate-text-files.cs",
+        "extract-raw-mime-content-of-a-message-by-entryid-for-forensic-analysis.cs",
+        "filter-messages-with-attachments-larger-than-5-mb-and-save-those-attachments-to-a-designated-folder.cs",
+        "generate-a-csv-report-with-entryid-subject-and-date-using-enumeratemessageinfo-data.cs",
+        "generate-a-summary-report-listing-total-messages-converted-skipped-and-any-errors-encountered.cs",
+        "handle-operationcanceledexception-to-gracefully-stop-the-process-and-clean-up-partial-files.cs",
+        "implement-a-check-that-aborts-conversion-if-the-source-mbox-file-size-exceeds-a-defined-limit.cs",
+        "implement-a-cleanup-routine-that-deletes-temporary-pst-files-if-conversion-fails-unexpectedly.cs",
+        "implement-a-cleanup-routine-that-removes-temporary-files-older-than-a-configurable-retention-period.cs",
+        "implement-a-fallback-mechanism-that-writes-failed-messages-to-a-separate-error-mbox-for-later-review.cs",
+        "implement-a-feature-that-adds-a-custom-pst-property-indicating-the-original-mbox-file-name.cs",
+        "implement-a-feature-that-automatically-retries-failed-message-conversions-up-to-two-attempts.cs",
+        "implement-a-feature-that-logs-the-total-number-of-messages-processed-per-pst-folder-after-conversion.cs",
+        "implement-a-feature-that-records-conversion-start-and-end-timestamps-in-the-pst-custom-properties.cs",
+        "implement-a-feature-that-skips-empty-messages-during-splitting-to-reduce-unnecessary-part-files.cs",
+        "implement-a-feature-that-strips-html-tags-from-email-bodies-before-storing-them-in-pst.cs",
+        "implement-a-feature-that-tags-each-pst-message-with-the-original-mbox-file-creation-date.cs",
+        "implement-a-feature-that-truncates-email-bodies-exceeding-a-specified-length-during-pst-conversion.cs",
+        "implement-a-feature-that-writes-a-completion-flag-file-after-successful-pst-generation-for-downstream-processes.cs",
+        "implement-a-feature-to-compress-each-split-part-into-a-zip-archive-for-storage-efficiency.cs",
+        "implement-a-feature-to-pause-and-resume-conversion-processing-based-on-external-signals.cs",
+        "implement-a-feature-to-preserve-original-message-ids-as-custom-properties-in-pst-entries.cs",
+        "implement-a-feature-to-rename-pst-folders-based-on-a-user-defined-naming-convention-during-conversion.cs",
+        "implement-a-method-to-export-conversion-statistics-time-count-size-to-a-csv-file.cs",
+        "implement-a-method-to-resume-splitting-from-a-specific-part-index-after-an-unexpected-interruption.cs",
+        "implement-a-method-to-retrieve-and-log-the-total-number-of-attachments-processed-per-pst-folder.cs",
+        "implement-a-progress-bar-in-a-wpf-application-that-reflects-real-time-conversion-status.cs",
+        "implement-a-progress-event-that-can-be-subscribed-to-by-external-monitoring-tools.cs",
+        "implement-a-progress-indicator-that-writes-percentage-completed-to-a-log-file-every-5-increment.cs",
+        "implement-a-retry-loop-that-reopens-the-mbox-file-if-initial-read-fails-due-to-file-lock.cs",
+        "implement-a-retry-mechanism-for-splitinto-when-transient-i-o-errors-occur-during-processing.cs",
+        "implement-a-retry-mechanism-for-transient-i-o-errors-during-pst-file-creation.cs",
+        "implement-a-retry-policy-that-attempts-to-read-a-locked-mbox-file-up-to-three-times.cs",
+        "implement-a-watchdog-timer-that-aborts-conversion-if-processing-exceeds-a-predefined-time-limit.cs",
+        "implement-an-async-foreach-loop-over-enumeratemessagesasync-for-processing-large-archives-efficiently-without-blocki.cs",
+        "implement-cancellation-token-support-for-asynchronous-mbox-reading-to-allow-user-initiated-aborts.cs",
+        "implement-error-handling-for-file-access-exceptions-when-the-source-mbox-file-is-locked.cs",
+        "implement-error-handling-for-invalid-entryid-during-message-extraction-to-prevent-crashes-and-log-the-issue.cs",
+        "implement-error-handling-to-catch-mboxreader-exceptions-when-encountering-corrupted-mbox-entries.cs",
+        "implement-progress-callbacks-that-report-percentage-completion-to-a-ui-progress-bar.cs",
+        "implement-retry-logic-for-transient-i-o-errors-when-opening-the-mbox-file-stream.cs",
+        "implement-unit-tests-that-verify-conversion-of-messages-with-embedded-images-preserves-image-data.cs",
+        "initialize-mboxtopstconversionoptions-and-set-removesignature-to-true-for-signature-free-conversion-of-all-messages.cs",
+        "instantiate-mboxrdstoragereader-synchronously-to-read-mbox-messages-efficiently-from-the-stream.cs",
+        "integrate-the-conversion-routine-into-a-windows-service-that-monitors-a-folder-for-new-mbox-files.cs",
+        "integrate-the-splitting-functionality-into-a-windows-service-that-processes-incoming-mbox-files-nightly.cs",
+        "invoke-the-synchronous-splitinto-method-to-split-the-mbox-file-into-defined-chunks.cs",
+        "iterate-over-mboxmessageinfo-objects-to-log-sender-and-timestamp-without-loading-full-content.cs",
+        "iterate-through-each-mboxreader-message-and-convert-it-to-pst-using-the-configured-conversion-options.cs",
+        "load-a-large-thunderbird-mbox-file-using-mboxstoragereader-before-initiating-the-split-operation.cs",
+        "load-an-mbox-file-using-a-filestream-within-a-using-statement.cs",
+        "load-an-mbox-file-using-mboxreader-createreader-with-default-mboxloadoptions-and-enumerate-messages.cs",
+        "log-conversion-progress-including-message-subject-and-index-to-a-text-file-for-audit-purposes.cs",
+        "log-each-part-file-creation-with-timestamps-to-facilitate-audit-trails-and-debugging.cs",
+        "log-the-size-of-each-pst-folder-after-adding-converted-messages-for-storage-analysis.cs",
+        "measure-conversion-time-for-a-500-mb-mbox-file-and-log-the-duration-in-seconds.cs",
+        "measure-cpu-utilization-during-conversion-to-ensure-the-process-does-not-exceed-allocated-thresholds.cs",
+        "measure-disk-i-o-throughput-during-conversion-to-identify-potential-bottlenecks-on-slow-storage.cs",
+        "measure-memory-usage-before-and-after-splitting-to-assess-performance-improvements.cs",
+        "measure-network-latency-impact-when-reading-mbox-files-from-a-remote-share-during-conversion.cs",
+        "measure-performance-of-synchronous-versus-asynchronous-reading-for-the-same-mbox-file.cs",
+        "monitor-the-cancellationtoken-iscancellationrequested-flag-periodically-to-update-progress-or-stop-splitting.cs",
+        "obtain-size-of-a-specific-message-using-getmessagesize-in-bytes-for-performance-analysis.cs",
+        "provide-a-cancellationtokensource-to-the-splitinto-method-to-enable-user-initiated-abort.cs",
+        "provide-a-command-line-switch-to-enable-or-disable-compression-of-split-parts-during-processing.cs",
+        "provide-a-command-line-switch-to-enable-verbose-logging-of-each-conversion-step.cs",
+        "provide-a-configuration-file-allowing-users-to-set-default-chunk-size-and-output-directory.cs",
+        "provide-a-configuration-flag-to-disable-automatic-creation-of-pst-subfolders-during-conversion.cs",
+        "provide-a-powershell-cmdlet-that-wraps-the-conversion-library-and-returns-the-pst-file-path.cs",
+        "provide-a-sample-configuration-json-that-demonstrates-setting-batch-size-signature-removal-and-output-path.cs",
+        "provide-an-option-to-embed-original-mbox-file-metadata-as-custom-properties-within-pst-messages.cs",
+        "provide-an-option-to-exclude-messages-with-empty-bodies-from-pst-during-conversion.cs",
+        "provide-an-option-to-skip-messages-that-exceed-a-maximum-size-threshold-during-conversion.cs",
+        "provide-documentation-examples-showing-how-to-convert-encrypted-mbox-files-with-password-protection.cs",
+        "read-mbox-messages-in-chunks-of-2000-items-to-avoid-excessive-memory-consumption.cs",
+        "remove-digital-signatures-from-messages-by-setting-removesignature-flag-ensuring-clean-pst-content.cs",
+        "save-changes-to-the-pst-file-after-processing-a-batch-of-one-thousand-messages-to-manage-memory.cs",
+        "schedule-a-background-task-that-monitors-a-directory-and-processes-new-mbox-files-nightly.cs",
+        "schedule-automatic-mbox-splitting-using-windows-task-scheduler-to-run-during-off-peak-hours.cs",
+        "serialize-extracted-mailmessage-to-json-for-api-integration-and-store-it-in-a-file.cs",
+        "specify-a-custom-part-file-name-prefix-to-organize-output-files-logically.cs",
+        "test-conversion-of-encrypted-mbox-files-by-providing-appropriate-decryption-passwords-in-load-options.cs",
+        "test-conversion-of-messages-containing-nested-multipart-alternative-bodies-to-ensure-correct-part-selection.cs",
+        "test-conversion-of-messages-with-extremely-long-subject-lines-to-ensure-pst-truncation-rules-are-applied.cs",
+        "use-a-buffered-stream-to-reduce-memory-consumption-while-reading-large-mbox-files.cs",
+        "use-a-try-finally-block-to-ensure-the-mboxstoragereader-is-disposed-after-splitting.cs",
+        "use-asynchronous-programming-to-read-mbox-messages-while-writing-pst-entries-concurrently-for-performance.cs",
+        "use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-arc.cs",
+        "use-linq-to-filter-messages-containing-specific-keywords-before-adding-them-to-the-pst-file.cs",
+        "use-parallel-foreach-to-process-multiple-mbox-files-concurrently-each-invoking-its-own-splitinto-operation.cs",
+        "use-reflection-to-dynamically-discover-available-mboxloadoptions-properties-for-advanced-user-configuration.cs",
+        "validate-pst-file-integrity-by-opening-it-with-personalstorage-and-enumerating-its-folder-hierarchy.cs",
+        "validate-that-all-email-body-formats-plain-html-rich-text-are-preserved-correctly-in-pst.cs",
+        "validate-that-converted-pst-messages-retain-original-timestamps-for-sent-and-received-dates.cs",
+        "validate-that-each-pst-message-retains-original-attachment-filenames-after-conversion-properly.cs",
+        "validate-that-pst-file-can-be-opened-in-outlook-after-conversion-without-errors.cs",
+        "validate-that-the-destination-directory-exists-and-create-it-if-necessary-prior-to-splitting.cs",
+        "validate-that-the-pst-file-complies-with-outlook-2016-format-specifications-after-conversion.cs",
+        "validate-that-the-pst-file-size-does-not-exceed-a-user-specified-maximum-after-conversion.cs",
+        "verify-that-each-generated-part-file-can-be-opened-by-mboxstoragereader-to-ensure-integrity.cs",
+        "write-each-message-subject-line-to-a-log-file-during-asynchronous-reading-for-audit-purposes.cs",
+        "write-integration-tests-that-verify-end-to-end-conversion-from-a-sample-mbox-to-a-valid-pst-file.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 180
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 173
+        },
+        {
+          "name": "System.IO",
+          "count": 172
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 113
+        },
+        {
+          "name": "Aspose.Email.Storage",
+          "count": 74
+        },
+        {
+          "name": "Aspose.Email.Storage.Mbox",
+          "count": 61
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 44
+        },
+        {
+          "name": "System.Text",
+          "count": 19
+        },
+        {
+          "name": "System.Threading",
+          "count": 19
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 16
+        },
+        {
+          "name": "System.Threading.Tasks",
+          "count": 12
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 11
+        },
+        {
+          "name": "System.Text.Json",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.Dav",
+          "count": 3
+        },
+        {
+          "name": "System.Security.Cryptography",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Pop3",
+          "count": 2
+        },
+        {
+          "name": "System.Linq",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange",
+          "count": 1
+        },
+        {
+          "name": "System.Runtime.InteropServices",
+          "count": 1
+        },
+        {
+          "name": "System.Text.RegularExpressions",
+          "count": 1
+        },
+        {
+          "name": "System.IO.Compression",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 1
+        },
+        {
+          "name": "System.Reflection",
           "count": 1
         }
       ],
@@ -106,9 +534,33 @@
     },
     {
       "name": "programming-email-verification",
-      "file_count": 12,
+      "file_count": 39,
       "files": [
+        "add-support-for-validating-internationalized-email-addresses-using-unicode-domain-handling-in-emailvalidator.cs",
+        "configure-emailvalidator-timeout-settings-to-limit-mail-server-connection-attempts-to-five-seconds.cs",
+        "configure-emailvalidator-to-use-a-custom-dns-server-for-domain-verification-in-restricted-networks.cs",
+        "create-a-console-application-that-validates-a-single-email-address-using-emailvalidator-validate-method.cs",
+        "create-a-diagnostic-mode-that-logs-detailed-dns-query-responses-during-domain-validation.cs",
+        "create-a-restful-endpoint-that-accepts-a-json-array-of-emails-and-returns-validation-results-per-address.cs",
         "create-a-sample-net-application-that-validates-email-addresses-using-standard-verification-techniques-and-reports-results.cs",
+        "create-a-scheduled-azure-function-that-validates-email-addresses-from-a-queue-and-stores-results-in-table-storage.cs",
+        "create-a-test-harness-that-measures-performance-of-bulk-email-validation-for-ten-thousand-addresses.cs",
+        "create-a-unit-test-suite-that-verifies-syntactic-checks-for-valid-and-invalid-email-patterns.cs",
+        "design-a-configuration-file-schema-that-defines-validation-rules-timeout-values-and-logging-preferences.cs",
+        "develop-a-batch-processor-that-reads-email-addresses-from-a-text-file-and-validates-each-entry.cs",
+        "develop-a-blazor-component-that-validates-user-entered-email-addresses-in-real-time-on-the-client-side.cs",
+        "develop-a-monitoring-dashboard-that-visualizes-real-time-email-validation-success-rates-and-error-trends.cs",
+        "display-user-friendly-validation-messages-in-a-wpf-application-based-on-emailvalidator-boolean-results.cs",
+        "handle-validation-exceptions-by-catching-specific-aspose-email-verifications-exceptions-and-logging-error-details.cs",
+        "implement-a-class-library-method-that-checks-email-domain-dns-records-with-emailvalidator-validatedomain.cs",
+        "implement-a-custom-validation-rule-that-rejects-disposable-email-domains-by-checking-against-a-predefined-list.cs",
+        "implement-a-fallback-mechanism-that-uses-a-secondary-dns-resolver-if-primary-domain-validation-fails.cs",
+        "implement-a-feature-that-caches-successful-domain-validation-results-to-reduce-repeated-dns-lookups.cs",
+        "implement-asynchronous-email-validation-using-task-run-to-avoid-blocking-ui-threads-in-winforms.cs",
+        "implement-retry-logic-for-mail-server-connectivity-checks-when-emailvalidator-validatemailserver-fails-intermittentl.cs",
+        "integrate-email-address-validation-into-an-asp-net-core-web-api-endpoint-returning-json-response.cs",
+        "integrate-email-verification-into-a-background-worker-service-that-processes-user-registration-queues.cs",
+        "log-validation-results-to-a-csv-file-including-email-address-boolean-status-and-timestamp.cs",
         "validate-a-domain-name-s-existence-and-format-using-the-net-verifications-component-s-validation-method.cs",
         "validate-a-mail-server-s-configuration-authentication-and-connectivity-using-the-verifications-library-to-ensure-reliability.cs",
         "validate-an-email-address-by-establishing-a-connection-to-the-mail-server-and-performing-mailserver-verification.cs",
@@ -117,29 +569,60 @@
         "validate-domain-names-by-invoking-the-email-verification-methods-provided-in-the-library-s-verification-module.cs",
         "validate-email-address-strings-against-standard-formats-using-the-provided-examples-and-ensure-conformity.cs",
         "validate-email-addresses-by-utilizing-the-verifications-library-to-assess-format-and-domain-authenticity.cs",
+        "validate-email-addresses-extracted-from-incoming-smtp-messages-using-emailvalidator-before-processing-them.cs",
         "validate-email-addresses-programmatically-employing-basic-syntax-checks-to-ensure-format-compliance-and-reject-malformed.cs",
         "validate-email-addresses-programmatically-employing-the-specified-verification-algorithm-and-handling-validation-outcomes.cs",
-        "validate-mail-server-connectivity-by-performing-server-verification-operations-through-the-provided-verification-api.cs"
+        "validate-mail-server-connectivity-by-performing-server-verification-operations-through-the-provided-verification-api.cs",
+        "write-a-powershell-script-that-invokes-a-net-assembly-to-validate-a-list-of-emails.cs",
+        "write-documentation-examples-demonstrating-how-to-capture-emailvalidator-result-messages-for-ui-display.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 12
+          "count": 39
         },
         {
           "name": "Aspose.Email.Tools.Verifications",
-          "count": 12
+          "count": 38
         },
         {
           "name": "Aspose.Email",
+          "count": 37
+        },
+        {
+          "name": "System.Collections.Generic",
           "count": 10
         },
         {
-          "name": "Aspose.Email.Clients",
-          "count": 1
+          "name": "System.IO",
+          "count": 8
+        },
+        {
+          "name": "System.Text.Json",
+          "count": 3
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
+          "count": 2
+        },
+        {
+          "name": "System.Net",
+          "count": 1
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 1
+        },
+        {
+          "name": "System.Threading.Tasks",
+          "count": 1
+        },
+        {
+          "name": "System.Threading",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients",
           "count": 1
         }
       ],
@@ -147,35 +630,94 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 48,
+      "file_count": 142,
       "files": [
         "access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs",
+        "add-a-custom-label-to-all-gmail-messages-received-from-a-specific-domain-using-igmailclient.cs",
         "add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs",
         "add-a-new-calendar-appointment-to-the-schedule-using-the-library-s-appointment-insertion-api.cs",
+        "add-a-new-label-to-gmail-messages-that-contain-attachments-and-move-them-to-a-designated-folder.cs",
+        "append-a-newly-created-mailmessage-with-html-body-to-the-gmail-drafts-folder-via-imapclient.cs",
+        "apply-a-filter-to-list-only-calendars-with-read-write-access-using-igmailclient-listcalendars-access-parameter.cs",
+        "authenticate-to-gmail-smtp-using-oauth2-and-send-a-plain-text-email-to-multiple-recipients.cs",
+        "authenticate-with-oauth2-refresh-token-and-send-a-calendar-invitation-email-via-gmail-smtp-with-icalendar-attachment.cs",
+        "batch-delete-gmail-messages-older-than-one-year-using-imap-and-verify-removal-through-folder-count.cs",
+        "batch-update-labels-of-multiple-gmail-messages-by-adding-a-reviewed-tag-using-igmailclient.cs",
+        "cache-calendar-ids-locally-to-reduce-api-calls-during-frequent-appointment-lookups.cs",
         "capture-the-user-s-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs",
+        "configure-gmail-smtp-client-to-use-oauth-2-0-access-token-instead-of-password-authentication.cs",
+        "configure-igmailclient-to-use-a-specific-http-proxy-by-setting-its-proxy-property.cs",
+        "configure-oauth-2-0-credentials-to-authenticate-a-gmail-client-for-sending-messages-via-smtp.cs",
+        "connect-to-gmail-imap-with-ssl-select-the-sent-folder-and-retrieve-the-latest-ten-messages.cs",
         "convert-an-mbox-archive-to-pst-format-providing-the-option-to-strip-or-retain-email-signatures-as-required.cs",
         "convert-an-mbox-archive-to-pst-format-while-stripping-any-email-signatures-from-the-messages.cs",
         "convert-an-mbox-mailbox-file-to-pst-format-optionally-retaining-or-stripping-message-signatures.cs",
+        "convert-gmail-message-plain-text-bodies-to-utf-8-encoding-and-save-the-converted-files.cs",
+        "copy-a-batch-of-messages-from-the-inbox-to-the-archive-folder-using-imapclient-while-preserving-flags.cs",
+        "create-a-custom-mime-email-with-multipart-alternative-sections-for-html-and-plain-text-then-send-via-gmail.cs",
+        "create-a-draft-gmail-message-add-custom-headers-and-save-it-using-the-api.cs",
+        "create-a-google-contact-with-name-email-and-organization-fields-using-the-api.cs",
+        "create-a-nested-folder-structure-projects-2024-alpha-in-gmail-using-imapclient-and-verify-existence.cs",
+        "create-a-new-calendar-with-specified-summary-and-time-zone-via-igmailclient-createcalendar.cs",
+        "create-a-new-gmail-label-named-projectx-using-imap-and-move-matching-inbox-messages.cs",
+        "create-a-new-google-contact-with-name-email-and-organization-fields-using-the-api.cs",
         "create-and-insert-calendar-events-into-a-google-calendar-account-using-the-appropriate-api-calls.cs",
         "create-and-manipulate-outlook-items-convert-ics-files-to-msg-handle-outlook-storage-files-and-process-smtp-communication.cs",
         "create-and-manipulate-outlook-items-converting-ics-calendar-files-to-msg-email-format-programmatically.cs",
+        "create-googleuser-instance-using-client-credentials-and-stored-refresh-token-for-silent-authentication.cs",
         "create-retrieve-and-modify-gmail-calendar-events-programmatically-using-the-provided-api-endpoints-directly.cs",
         "create-update-retrieve-and-delete-google-calendar-appointments-programmatically-using-the-provided-api-endpoints.cs",
+        "delete-a-calendar-permanently-by-providing-its-identifier-to-igmailclient-deletecalendar.cs",
+        "delete-a-specific-gmail-message-by-id-using-igmailclient-from-the-mailbox.cs",
+        "deserialize-encrypted-json-back-into-a-googleuser-object-to-re-establish-authenticated-session.cs",
+        "detect-and-resolve-conflicting-appointments-by-checking-overlapping-time-ranges-before-creation.cs",
         "develop-programmatic-integrations-with-thunderbird-using-its-apis-for-email-composition-retrieval-and-management.cs",
+        "download-all-unread-gmail-messages-mark-them-as-read-and-store-attachments-in-a-local-directory.cs",
+        "exchange-authorization-code-for-access-and-refresh-tokens-via-googleoauthhelper-token-request.cs",
         "exchange-the-provided-authorization-code-for-a-refresh-token-using-the-oauth2-authentication-endpoint.cs",
+        "export-a-list-of-google-contacts-to-a-csv-file-including-name-email-and-phone-columns.cs",
+        "export-gmail-folder-hierarchy-to-an-xml-document-preserving-parent-child-relationships-for-each-label.cs",
+        "export-google-contacts-to-csv-including-name-email-and-phone-columns.cs",
+        "extract-all-urls-from-gmail-message-html-bodies-and-store-them-in-a-csv-file.cs",
+        "extract-calendar-event-attachments-from-gmail-messages-and-convert-them-from-ical-to-outlook-msg-format.cs",
+        "fetch-a-specific-gmail-message-by-id-using-igmailclient-and-display-its-plain-text-body.cs",
         "fetch-existing-google-calendar-events-and-modify-their-properties-programmatically-using-the-appropriate-api-calls.cs",
+        "fetch-gmail-messages-from-the-last-seven-days-using-imap-and-filter-them-by-sender-domain.cs",
+        "fetch-gmail-messages-with-amp-html-content-and-render-them-to-plain-text-for-analysis.cs",
+        "fetch-gmail-messages-with-specific-labels-extract-their-plain-text-bodies-and-store-them-in-elasticsearch.cs",
+        "fetch-raw-mime-source-of-a-gmail-message-and-save-it-as-an-eml-file-for-archiving.cs",
+        "generate-a-report-summarizing-gmail-inbox-statistics-including-total-messages-unread-count-and-size-per-label.cs",
         "generate-and-write-email-messages-to-an-mbox-file-adhering-to-the-standard-mailbox-format.cs",
+        "generate-oauth-2-0-authorization-url-using-googleoauthhelper-with-client-id-and-scopes.cs",
         "implement-a-c-solution-to-convert-thunderbird-email-files-into-compatible-formats-while-preserving-message-integrity.cs",
         "implement-a-googleuser-class-that-handles-oauth-2-0-authentication-flows-and-token-management-including-token-acquisition-refre.cs",
+        "implement-a-health-check-that-verifies-igmailclient-can-list-calendars-using-the-current-access-token.cs",
+        "implement-a-retry-mechanism-that-re-authenticates-oauth-token-upon-expiration-during-gmail-operations.cs",
+        "implement-a-scheduled-job-that-checks-gmail-inbox-every-fifteen-minutes-and-processes-new-emails.cs",
+        "implement-a-webhook-listener-to-receive-gmail-push-notifications-for-new-incoming-messages.cs",
         "implement-email-file-conversion-in-a-thunderbird-based-application-using-the-c-api-covering-zimbra-integration-overview.cs",
+        "implement-exponential-backoff-retry-logic-for-transient-network-errors-when-calling-igmailclient-methods.cs",
+        "implement-exponential-backoff-retry-strategy-for-gmail-api-calls-that-encounter-transient-network-errors.cs",
         "implement-functionality-to-programmatically-create-modify-and-remove-gmail-calendar-entries-via-the-api.cs",
         "implement-functionality-to-relocate-and-remove-calendar-events-within-a-google-calendar-using-the-api.cs",
         "implement-functionality-to-split-an-mbox-storage-file-into-separate-messages-and-provide-the-ability-to-abort-the-splitting.cs",
         "implement-handling-of-calendar-client-configuration-and-associated-color-metadata-properly-within-the-application.cs",
         "implement-oauth-2-0-authentication-flow-utilizing-the-googleoauthhelper-class-to-obtain-valid-access-tokens.cs",
+        "implement-pagination-when-listing-calendars-using-igmailclient-listcalendars-with-page-token.cs",
         "implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs",
         "implement-secure-google-oauth-2-0-authentication-flow-ensuring-token-handling-and-data-transmission-meet-industry-standards.cs",
         "initialize-a-new-cloud-console-project-by-configuring-the-required-settings-and-enabling-necessary-apis.cs",
+        "initialize-igmailclient-with-authenticated-googleuser-to-access-gmail-calendar-apis.cs",
+        "list-access-control-rules-for-a-specific-calendar-using-igmailclient-listaccessrules.cs",
+        "list-all-calendars-for-the-authenticated-user-using-igmailclient-listcalendars-method.cs",
+        "list-all-gmail-folders-using-imapclient-and-output-their-names.cs",
+        "list-gmailmessageinfo-objects-for-the-last-24-hours-and-log-each-sender-address.cs",
+        "log-all-igmailclient-operations-with-timestamps-and-results-for-audit-purposes.cs",
+        "log-detailed-smtp-transaction-steps-including-server-responses-for-troubleshooting-email-delivery-issues.cs",
+        "mark-a-gmail-message-as-read-using-imapclient-after-downloading-its-content.cs",
+        "mark-retrieved-gmail-messages-as-read-after-successful-processing-to-prevent-duplicate-handling.cs",
+        "modify-an-accesscontrolrule-to-grant-read-permission-and-save-via-igmailclient-updateaccessrule.cs",
+        "move-an-appointment-to-another-calendar-by-providing-source-and-destination-ids-to-igmailclient-moveappointment.cs",
         "navigate-to-https-cloud-google-com-console-project-and-authenticate-with-your-gmail-account-credentials-to-access-the-console.cs",
         "navigate-to-the-given-url-complete-all-required-actions-and-retrieve-the-resulting-authorization-code.cs",
         "obtain-the-color-attributes-embedded-within-an-email-s-content-for-processing-or-analysis-programmatically.cs",
@@ -187,44 +729,95 @@
         "programmatically-retrieve-the-total-count-of-email-messages-stored-in-an-mbox-file-using-the-api.cs",
         "prompt-the-user-to-input-the-otp-received-via-mobile-sms-for-authentication-verification.cs",
         "provision-a-new-google-developer-console-project-to-enable-authorized-api-access-for-the-application.cs",
+        "refresh-an-expired-access-token-by-invoking-googleoauthhelper-refreshaccesstoken-with-stored-refresh-token.cs",
         "register-to-receive-product-update-notifications-via-the-provided-subscription-service-to-stay-informed-about-new-releases.cs",
         "remove-designated-google-calendar-instances-programmatically-ensuring-only-the-targeted-calendars-are-permanently-deleted.cs",
+        "rename-an-existing-gmail-folder-from-temp-to-processed-using-imapclient-and-confirm-the-change.cs",
+        "retrieve-a-gmail-message-parse-its-mime-parts-and-display-each-part-content-type.cs",
         "retrieve-and-modify-the-client-configuration-settings-programmatically-within-the-net-library-for-authentication-and-behavior.cs",
+        "retrieve-appointments-within-a-date-range-from-a-calendar-using-igmailclient-getappointments.cs",
+        "retrieve-calendar-metadata-such-as-id-summary-and-time-zone-using-igmailclient-getcalendarinfo.cs",
+        "retrieve-gmail-client-color-palette-by-calling-igmailclient-getcolors-method-directly.cs",
+        "retrieve-gmail-client-settings-including-language-and-time-format-via-igmailclient-getclientsettings.cs",
+        "retrieve-gmail-messages-containing-xlsx-attachments-and-list-their-sender-email-addresses.cs",
+        "retrieve-gmail-messages-via-imap-decrypt-s-mime-encrypted-parts-and-save-plaintext-content.cs",
+        "retrieve-gmail-messages-via-pop3-parse-their-mime-parts-and-log-subject-lines-to-a-text-file.cs",
+        "retrieve-gmail-messages-with-a-specific-label-extract-html-bodies-and-save-them-as-html-files.cs",
+        "retrieve-gmail-pop3-messages-save-each-as-an-eml-file-and-delete-them-from-the-server.cs",
+        "retrieve-google-contacts-in-pages-of-fifty-entries-and-log-each-page-processing-time.cs",
+        "retrieve-mailbox-statistics-from-gmail-imap-including-total-message-count-and-size-output-as-json.cs",
         "retrieve-specific-email-messages-from-an-mbox-archive-by-their-unique-identifiers-for-processing.cs",
         "retrieve-the-current-email-message-s-size-in-bytes-enabling-size-based-processing-and-conditional-handling.cs",
+        "search-for-gmail-messages-with-attachments-larger-than-5-mb-using-igmailclient-and-list-their-ids.cs",
+        "search-gmail-inbox-using-imap-with-complex-criteria-combining-date-range-and-keyword-in-body.cs",
+        "securely-store-tokenresponse-data-to-enable-future-token-refresh-without-reauthorization.cs",
         "select-i-have-read-and-agree-to-all-terms-of-service-for-the-google-cloud-platform-products-checkbox-click-create.cs",
+        "send-a-gmail-email-with-a-custom-message-id-header-to-ensure-unique-tracking-across-systems.cs",
+        "send-a-gmail-email-with-embedded-inline-images-using-cid-references-in-the-html-body.cs",
+        "send-a-gmail-message-with-high-priority-flag-by-specifying-the-x-priority-header.cs",
+        "send-a-personalized-bulk-email-to-multiple-recipients-by-iterating-over-a-csv-list-of-addresses.cs",
+        "send-an-email-with-a-pdf-and-an-image-attachment-through-gmail-smtp-using-starttls.cs",
+        "send-an-email-with-embedded-inline-images-using-cid-references-through-gmail-smtp-service.cs",
+        "send-an-email-with-multiple-attachments-including-pdf-and-image-files-through-gmail-smtp-server.cs",
+        "set-default-reminder-settings-for-a-calendar-via-igmailclient-updatecalendar-defaultreminders-collection.cs",
         "set-up-oauth-2-0-authentication-to-authorize-api-calls-to-google-services-within-your-net-application.cs",
         "specify-load-options-to-control-how-messages-are-read-from-an-mbox-file-during-the-import-process.cs",
         "specify-the-desired-text-encoding-to-use-when-loading-mbox-files-for-reading-operations.cs",
-        "transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs"
+        "synchronize-deleted-gmail-messages-with-a-local-archive-by-moving-them-to-a-deleted-folder-before-removal.cs",
+        "synchronize-google-contacts-with-an-internal-crm-system-by-comparing-email-fields-and-updating-differences.cs",
+        "transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs",
+        "update-an-existing-calendar-description-or-color-using-igmailclient-updatecalendar-method.cs",
+        "update-gmail-client-settings-such-as-default-time-format-using-igmailclient-updateclientsettings.cs",
+        "update-google-contact-phone-number-identified-by-its-unique-resource-identifier.cs",
+        "update-the-phone-number-of-a-google-contact-identified-by-its-unique-resource-identifier.cs",
+        "use-igmailclient-to-list-unread-message-summaries-and-export-them-to-a-csv-file.cs",
+        "use-microsoft-graph-client-to-fetch-gmail-messages-and-compare-them-with-imap-retrieved-results.cs",
+        "validate-email-addresses-in-google-contacts-using-regex-and-flag-invalid-entries-for-review.cs",
+        "validate-gmail-smtp-server-certificate-chain-and-enforce-tls-1-2-encryption-for-secure-transmission.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 48
+          "count": 142
         },
         {
           "name": "Aspose.Email",
-          "count": 44
-        },
-        {
-          "name": "Aspose.Email.Clients",
-          "count": 28
+          "count": 138
         },
         {
           "name": "Aspose.Email.Clients.Google",
-          "count": 27
+          "count": 100
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 52
         },
         {
           "name": "System.IO",
-          "count": 16
+          "count": 40
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 36
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 13
+          "count": 20
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 16
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 9
         },
         {
           "name": "Aspose.Email.Storage.Mbox",
+          "count": 9
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
           "count": 9
         },
         {
@@ -232,19 +825,63 @@
           "count": 7
         },
         {
-          "name": "System.Collections.Generic",
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 7
+        },
+        {
+          "name": "System.Text",
           "count": 6
         },
         {
-          "name": "Aspose.Email.Storage.Pst",
+          "name": "Aspose.Email.Mapi",
           "count": 5
         },
         {
-          "name": "Aspose.Email.Mapi",
+          "name": "System.Threading",
           "count": 4
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap.Models",
+          "count": 3
+        },
+        {
+          "name": "System.Net",
+          "count": 3
+        },
+        {
+          "name": "System.Net.Mime",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Base",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Pop3",
+          "count": 3
+        },
+        {
+          "name": "System.Text.Json",
+          "count": 2
+        },
+        {
+          "name": "System.Text.RegularExpressions",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 2
+        },
+        {
+          "name": "System.Linq",
+          "count": 2
+        },
+        {
+          "name": "System.Security.Cryptography.X509Certificates",
           "count": 2
         },
         {
@@ -252,23 +889,134 @@
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients.Smtp",
+          "name": "System.Xml",
           "count": 1
+        },
+        {
+          "name": "Aspose.Email.Amp",
+          "count": 1
+        },
+        {
+          "name": "System.Net.Http",
+          "count": 1
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 1
+        },
+        {
+          "name": "System.Net.Security",
+          "count": 1
+        }
+      ],
+      "key_apis": []
+    },
+    {
+      "name": "read-and-export-zimbra-tgz-files",
+      "file_count": 30,
+      "files": [
+        "apply-a-naming-convention-that-prefixes-exported-filenames-with-their-folder-hierarchy-for-clarity.cs",
+        "call-gettotalitemscount-on-the-tgzreader-instance-to-retrieve-total-email-item-count.cs",
+        "configure-tgzreader-with-a-custom-buffer-size-to-improve-performance-on-large-tgz-files.cs",
+        "create-a-logging-mechanism-that-records-start-and-end-timestamps-for-each-folder-processed.cs",
+        "create-a-unit-test-verifying-gettotalitemscount-returns-expected-number-for-a-sample-tgz.cs",
+        "create-a-wrapper-class-that-abstracts-common-tgzreader-operations-for-simplified-usage.cs",
+        "detect-and-skip-duplicate-messages-during-export-by-comparing-message-ids-stored-in-a-hash-set.cs",
+        "develop-a-console-application-that-accepts-tgz-file-path-and-destination-folder-as-arguments.cs",
+        "dispose-the-tgzreader-instance-in-a-finally-block-to-release-resources-properly.cs",
+        "export-all-messages-to-a-target-directory-using-exportto-while-preserving-folder-structure.cs",
+        "extract-and-save-email-attachments-to-a-separate-folder-while-preserving-original-email-folder-hierarchy.cs",
+        "extract-and-store-each-message-folder-path-to-preserve-original-mailbox-hierarchy.cs",
+        "generate-a-csv-report-listing-each-email-subject-folder-and-export-path-after-processing.cs",
+        "handle-ioexception-and-other-exceptions-that-may-occur-while-reading-or-exporting-tgz-files.cs",
+        "implement-a-retry-policy-that-attempts-to-re-export-a-message-up-to-three-times-on-transient-failures.cs",
+        "implement-cancellation-support-using-cancellationtoken-to-abort-export-operation-on-user-request.cs",
+        "implement-error-handling-that-continues-processing-remaining-messages-when-a-single-export-fails.cs",
+        "integrate-tgzreader-into-an-email-migration-workflow-moving-messages-from-zimbra-backup-to-target-system.cs",
+        "iterate-through-all-messages-using-the-tgzreader-iterator-to-process-each-email.cs",
+        "load-a-zimbra-tgz-backup-file-with-tgzreader-and-confirm-successful-initialization.cs",
+        "log-each-message-subject-property-during-iteration-for-auditing-purposes.cs",
+        "log-original-folder-path-and-new-file-path-for-each-exported-email-to-ensure-traceability.cs",
+        "measure-and-output-total-execution-time-for-reading-and-exporting-the-tgz-archive.cs",
+        "provide-an-option-to-compress-exported-emails-into-a-new-tgz-archive-after-extraction-completes.cs",
+        "read-only-email-headers-skipping-bodies-to-quickly-generate-a-summary-of-the-tgz-archive.cs",
+        "use-async-await-pattern-to-read-tgz-archive-and-export-messages-without-blocking-the-ui-thread.cs",
+        "use-linq-to-filter-messages-whose-subject-contains-a-keyword-before-exporting-them.cs",
+        "validate-that-exported-email-files-retain-original-timestamps-by-comparing-with-source-metadata.cs",
+        "validate-that-the-number-of-exported-files-matches-the-total-item-count-reported-by-gettotalitemscount.cs",
+        "write-a-script-to-process-multiple-tgz-files-in-a-directory-exporting-each-to-its-own-subfolder.cs"
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 30
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 30
+        },
+        {
+          "name": "System.IO",
+          "count": 27
+        },
+        {
+          "name": "Aspose.Email.Storage.Zimbra",
+          "count": 19
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange",
+          "count": 8
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.Dav",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 3
+        },
+        {
+          "name": "System.Net",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
+          "count": 2
+        },
+        {
+          "name": "System.IO.Compression",
+          "count": 2
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 2
         },
         {
           "name": "System.Threading",
-          "count": 1
+          "count": 2
         },
         {
-          "name": "Aspose.Email.Clients.Imap",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Clients.Pop3",
-          "count": 1
+          "name": "System.Threading.Tasks",
+          "count": 2
         },
         {
           "name": "System.Text",
+          "count": 1
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 1
+        },
+        {
+          "name": "System.Linq",
           "count": 1
         }
       ],
@@ -276,50 +1024,100 @@
     },
     {
       "name": "working-with-amp-html-emails",
-      "file_count": 17,
+      "file_count": 43,
       "files": [
+        "add-a-new-ampform-component-with-additional-input-fields-to-the-loaded-message.cs",
+        "add-a-second-ampimage-component-with-a-different-source-url-to-demonstrate-multiple-images.cs",
+        "apply-a-tracking-pixel-ampimage-component-with-a-click-through-url-to-the-message-body.cs",
         "assign-values-to-standard-email-fields-such-as-from-to-subject-and-others-when-generating-an-msg-file.cs",
+        "build-an-ampcarousel-component-containing-three-slides-each-with-an-image-and-caption-and-attach-it-to-ampmessage.cs",
+        "combine-ampimage-ampcarousel-ampaccordion-and-ampform-components-within-a-single-ampmessage-to-create-mixed-content.cs",
+        "configure-the-smtp-client-with-authentication-credentials-before-sending-the-amp-email.cs",
+        "create-a-second-ampmessage-add-an-ampimage-component-and-serialize-it-to-a-string.cs",
+        "create-an-ampimage-component-specify-source-url-alt-text-and-dimensions-then-add-it-to-the-message.cs",
+        "delete-an-ampaccordion-section-from-the-message-to-test-component-removal.cs",
         "during-msg-file-parsing-examine-each-alternateview-for-mime-type-text-x-amp-html-to-extract-the-amp-content.cs",
         "embed-amp-html-content-into-an-msg-email-message-to-enable-dynamic-interactive-email-rendering.cs",
         "enumerate-all-supported-capabilities-and-functionalities-available-for-handling-the-msg-file-format-within-the-library.cs",
         "examine-the-principles-for-handling-amp-html-email-content-stored-in-msg-files-using-the-available-api.cs",
+        "extract-all-image-urls-from-ampimage-components-within-the-message-for-external-caching-purposes.cs",
         "extract-and-parse-the-amp-body-from-an-msg-email-file-to-retrieve-its-dynamic-content.cs",
         "generate-an-alternateview-containing-amp-content-and-assign-the-mime-type-text-x-amp-html-for-msg-files.cs",
         "generate-an-amp-html-string-and-embed-it-within-a-standard-msg-file-representation-for-email-messages.cs",
         "include-an-optional-plain-text-or-html-alternateview-to-ensure-fallback-rendering-when-generating-msg-files.cs",
         "insert-an-alternateview-of-msg-format-into-the-mailmessage-alternateviews-collection-to-ensure-proper-multipart-rendering.cs",
         "instantiate-a-mailmessage-object-and-serialize-it-to-the-msg-file-format-for-email-storage.cs",
+        "instantiate-an-ampmessage-object-and-set-its-subject-and-sender-details-programmatically.cs",
+        "load-an-existing-amp-email-from-a-eml-file-path-and-deserialize-it-into-an-ampmessage-instance.cs",
+        "load-each-saved-eml-file-validate-its-structure-and-log-any-validation-issues-found.cs",
+        "log-the-total-number-of-components-in-the-ampmessage-before-serialization-for-monitoring.cs",
+        "modify-the-caption-text-of-a-specific-slide-in-the-ampcarousel-component.cs",
         "parse-an-amp-email-contained-in-an-msg-file-to-access-its-structured-content.cs",
         "programmatically-generate-an-amp-email-message-and-serialize-it-into-an-msg-file-for-outlook-compatibility.cs",
         "provide-a-comprehensive-list-of-all-amp-components-supported-for-processing-email-messages-saved-in-msg-format.cs",
+        "re-serialize-the-modified-ampmessage-to-a-string-after-component-updates.cs",
+        "remove-a-particular-ampcarousel-slide-by-its-index-from-the-ampmessage.cs",
+        "retrieve-the-list-of-all-components-contained-in-the-ampmessage-and-log-each-component-type.cs",
+        "save-each-generated-amp-email-to-a-separate-eml-file-in-a-designated-output-folder.cs",
+        "save-the-constructed-ampmessage-to-a-eml-file-on-disk-for-later-retrieval.cs",
+        "send-the-serialized-amp-email-using-the-smtp-client-with-tls-encryption-and-authentication.cs",
+        "serialize-the-final-ampmessage-to-a-string-suitable-for-smtp-transmission-with-appropriate-headers.cs",
+        "set-the-amp-html-body-of-the-message-using-a-custom-template-string-containing-placeholders.cs",
         "transmit-an-amp-email-message-saved-as-an-msg-file-using-the-library-s-messaging-api.cs",
         "transmit-an-amp-formatted-email-as-a-msg-file-using-the-smtpclient-class-with-appropriate-authentication.cs",
-        "utilize-smtpclient-to-transmit-an-email-message-saved-in-msg-format-via-the-configured-smtp-server.cs"
+        "update-the-source-url-and-dimensions-of-an-existing-ampimage-component-inside-the-loaded-ampmessage.cs",
+        "update-the-subject-line-of-the-loaded-ampmessage-to-reflect-a-new-campaign.cs",
+        "utilize-smtpclient-to-transmit-an-email-message-saved-in-msg-format-via-the-configured-smtp-server.cs",
+        "validate-the-amp-email-structure-against-the-official-amp-specification-and-capture-any-validation-errors.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 17
+          "count": 43
         },
         {
           "name": "Aspose.Email",
-          "count": 17
+          "count": 43
         },
         {
           "name": "System.IO",
-          "count": 16
+          "count": 35
         },
         {
           "name": "Aspose.Email.Amp",
-          "count": 10
+          "count": 33
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 5
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 4
         },
         {
           "name": "Aspose.Email.Mapi",
           "count": 4
         },
         {
-          "name": "Aspose.Email.Clients.Smtp",
+          "name": "Aspose.Email.Clients",
           "count": 3
+        },
+        {
+          "name": "System.Text.RegularExpressions",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Tools.Verifications",
+          "count": 2
+        },
+        {
+          "name": "System.Reflection",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp.Models",
+          "count": 1
         },
         {
           "name": "System.Text",
@@ -338,11 +1136,7 @@
           "count": 1
         },
         {
-          "name": "System.Reflection",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Clients",
+          "name": "System.Collections",
           "count": 1
         }
       ],
@@ -1064,97 +1858,253 @@
     },
     {
       "name": "working-with-exchange-webdav-client",
-      "file_count": 41,
+      "file_count": 149,
       "files": [
         "access-and-retrieve-messages-from-a-different-user-s-mailbox-programmatically-handling-authentication-and-permissions.cs",
+        "add-an-attachment-created-from-an-in-memory-byte-array-to-a-mailmessage-before-sending-via-exchangeclient.cs",
+        "add-custom-x-custom-header-values-to-the-mailmessage-before-sending-to-provide-application-specific-metadata.cs",
+        "add-optional-attendees-to-the-appointment-by-populating-the-optionalattendees-collection-with-additional-email.cs",
+        "add-required-attendees-to-the-appointment-by-inserting-their-email-addresses-into-the-requiredattendees-collect.cs",
+        "after-connecting-retrieve-the-exchange-server-version-string-to-verify-compatibility-with-supported-webdav-feat.cs",
         "apply-a-filter-that-selects-email-items-whose-message-id-header-matches-the-specified-identifier.cs",
         "apply-a-filter-that-selects-messages-originating-from-a-designated-sender-s-email-address-during-processing.cs",
         "apply-a-filter-that-selects-records-where-the-date-field-equals-the-current-system-date.cs",
         "apply-a-filter-to-retrieve-only-items-addressed-to-a-specified-recipient-within-the-collection.cs",
+        "apply-a-regular-expression-to-filter-subjects-containing-numeric-codes-via-mailquery-subjectregex-property-effe.cs",
+        "apply-a-webdav-filter-to-listmessages-that-selects-only-unread-messages-based-on-the-isread-property-value.cs",
+        "apply-mailquery-or-to-fetch-messages-that-satisfy-either-a-date-range-or-a-recipient-domain-condition.cs",
         "apply-message-filtering-criteria-to-retrieve-or-exclude-specific-email-items-based-on-defined-parameters.cs",
         "apply-specified-criteria-to-filter-email-messages-returning-only-those-that-meet-the-defined-conditions.cs",
+        "assign-a-low-importance-level-to-the-email-to-indicate-that-the-message-is-not-time-critical-for-recipients.cs",
+        "attach-a-file-stream-to-mailmessage-attachments-to-include-a-custom-attachment-with-the-meeting-request-it.cs",
+        "attach-a-local-file-to-an-email-by-loading-it-into-a-filestream-and-adding-it.cs",
+        "authenticate-to-the-exchange-server-using-webdav-with-ntlm-credentials-and-confirm-successful-login.cs",
+        "combine-a-read-receipt-request-with-high-priority-flag-on-the-email-to-emphasize-importance-and-track-opening.cs",
         "combine-multiple-query-criteria-using-the-logical-and-operator-to-retrieve-records-that-satisfy-all-conditions.cs",
         "combine-multiple-search-criteria-using-the-logical-or-operator-to-retrieve-messages-matching-any-condition.cs",
+        "combine-subject-and-sender-filters-using-mailquery-and-to-retrieve-messages-that-match-both-conditions.cs",
+        "combine-unread-status-and-specific-subject-keyword-filters-in-a-single-webdav-query-to-narrow-down-target-email.cs",
         "compose-and-send-email-messages-programmatically-managing-recipients-subject-line-message-body-and-file-attachments.cs",
+        "compute-a-sha-256-hash-of-the-entire-email-content-after-download-to-verify-data-integrity-against-the-source.cs",
+        "configure-exchangeclient-to-route-all-webdav-traffic-through-a-specified-http-proxy-server-for-corporate-networ.cs",
+        "construct-a-webdav-query-string-to-list-messages-whose-subject-contains-the-word-invoice-and-execute-it.cs",
         "construct-advanced-query-expressions-to-retrieve-messages-based-on-multiple-criteria-and-logical-operators-efficiently.cs",
+        "create-a-mailquery-object-to-filter-messages-where-the-subject-contains-specific-keywords.cs",
+        "create-a-new-calendar-appointment-with-attendees-and-send-meeting-invitations-via-webdav-post-request.cs",
+        "create-a-new-contact-in-a-specified-folder-using-webdav-post-and-include-required-properties.cs",
+        "create-a-recurring-weekly-appointment-by-configuring-the-recurrence-property-on-the-appointment-object-it.cs",
+        "create-an-appointment-object-and-define-its-location-start-time-end-time-and-subject-details.cs",
+        "create-an-email-with-an-html-body-that-references-external-css-stylesheets-ensuring-proper-rendering-in-outlook.cs",
         "create-and-dispatch-meeting-request-messages-programmatically-ensuring-proper-icalendar-format-and-comprehensive-attendee.cs",
         "create-and-edit-outlook-items-from-an-ics-file-then-convert-and-save-as-msg-via-outlook-storage-and-smtp.cs",
+        "delete-a-contact-from-the-exchange-server-by-issuing-a-webdav-delete-request-with-appropriate-headers.cs",
+        "delete-a-single-email-from-a-folder-by-providing-its-unique-message-identifier-to-the-deletemessage-method.cs",
+        "delete-all-messages-older-than-thirty-days-by-iterating-through-mailbox-items-and-invoking-deletemessage-on-eac.cs",
+        "delete-an-empty-mail-folder-from-the-exchange-server-using-webdav-delete-and-verify-removal.cs",
+        "dispatch-an-email-requesting-a-read-receipt-to-notify-the-sender-when-the-recipient-opens-the-message.cs",
+        "dispose-the-exchangeclient-instance-after-operations-to-release-network-resources-and-prevent-memory-leaks-effe.cs",
+        "download-a-large-attachment-using-a-streaming-approach-to-avoid-loading-the-entire-file-into-memory-during-tran.cs",
+        "download-all-embedded-images-from-an-email-and-save-each-image-file-to-a-local-directory-for-reuse.cs",
+        "download-an-email-by-id-and-extract-only-its-plain-text-body-for-subsequent-text-analysis-operations.cs",
+        "download-an-email-message-with-attachments-saving-each-attachment-to-a-local-directory-preserving-filenames.cs",
+        "embed-an-image-in-the-email-html-body-using-a-content-id-reference-and-attach-it-as-a-part.cs",
+        "embed-the-appointment-into-a-mailmessage-appointment-property-to-compose-a-meeting-request-email-message.cs",
+        "enable-case-sensitive-filtering-by-setting-the-mailquery-casesensitive-flag-before-executing-the-query.cs",
         "enable-detailed-logging-for-the-webdav-client-to-capture-request-and-response-information-for-troubleshooting.cs",
+        "enable-detailed-logging-of-raw-webdav-request-and-response-xml-to-assist-in-troubleshooting-communication-issue.cs",
+        "enable-server-side-logging-for-webdav-operations-and-write-logs-to-a-configurable-file-path.cs",
         "establish-a-webdav-connection-to-an-exchange-server-to-retrieve-and-manage-mailbox-items-programmatically.cs",
+        "establish-a-webdav-connection-to-the-exchange-server-using-explicit-username-and-password-credentials.cs",
+        "export-a-summary-of-message-subjects-and-received-dates-to-a-csv-file-by-iterating-through-listmessages.cs",
+        "export-retrieved-calendar-items-to-an-icalendar-ics-file-for-sharing-with-external-calendar-applications.cs",
+        "fetch-a-complete-email-using-its-message-id-and-save-the-retrieved-content-as-an-eml-file-on-disk.cs",
+        "fetch-an-email-and-extract-embedded-contact-vcard-data-for-import-into-the-user-address-book.cs",
+        "fetch-an-email-and-parse-its-mime-parts-to-separate-attachments-from-the-main-body-for-individual-processing.cs",
+        "fetch-the-uri-of-a-custom-mailbox-folder-by-providing-its-full-path-relative-to-the-mailbox-root.cs",
+        "filter-messages-addressed-to-a-specific-domain-by-assigning-the-target-domain-to-mailquery-recipientdomain-fiel.cs",
+        "filter-messages-by-sender-domain-example-com-using-a-webdav-query-to-isolate-internal-corporate-communications.cs",
+        "filter-messages-sent-on-today-date-by-assigning-the-current-date-to-mailquery-date-property.cs",
+        "filter-messages-where-the-body-contains-a-specific-phrase-by-setting-mailquery-bodycontains-criteria-parameter.cs",
+        "flag-an-email-for-follow-up-by-setting-the-flagstatus-property-to-the-desired-value-via-exchangeclient.cs",
+        "generate-a-json-report-containing-each-email-subject-sender-address-and-size-by-processing-the-messages-list.cs",
         "implement-a-date-range-filter-criterion-to-retrieve-records-occurring-between-specified-start-and-end-dates.cs",
         "implement-a-filter-that-selects-all-mail-delivery-notification-messages-from-the-incoming-mailbox.cs",
+        "implement-a-server-certificate-validation-callback-that-automatically-trusts-self-signed-certificates-for-devel.cs",
         "implement-case-sensitive-filtering-of-email-messages-based-on-specified-criteria-to-match-exact-character-cases.cs",
         "implement-domain-specific-filtering-logic-to-select-items-that-meet-the-defined-criteria-within-the-application-s-data-set.cs",
+        "implement-exponential-backoff-retry-logic-for-transient-network-errors-during-webdav-calls.cs",
         "implement-functionality-to-persist-email-messages-to-a-storage-medium-supporting-various-output-formats-such-as-eml-msg-and.cs",
         "implement-functionality-to-serialize-email-messages-into-msg-files-preserving-all-headers-attachments-and-properties.cs",
         "implement-message-filtering-through-webdav-to-retrieve-only-emails-that-satisfy-defined-search-criteria-and-properties.cs",
+        "import-contacts-from-a-csv-source-into-a-folder-mapping-columns-to-webdav-contact-properties.cs",
+        "instantiate-an-exchangeclient-using-the-webdav-server-url-username-and-password-credentials.cs",
+        "list-all-subfolders-under-the-root-mailbox-using-webdav-propfind-and-display-hierarchical-structure.cs",
+        "list-messages-in-the-drafts-folder-specifying-a-custom-page-size-of-fifty-items-per-request.cs",
+        "list-unread-messages-by-applying-the-isread-false-filter-enabling-prioritization-of-pending-email-items.cs",
         "load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-updated-data-to-msg-format.cs",
+        "log-the-unique-identifier-returned-by-the-server-for-each-sent-meeting-request-for-traceability.cs",
+        "manually-set-the-message-id-header-on-the-outgoing-email-to-enable-external-correlation-of-the-message.cs",
+        "mark-an-email-as-read-by-updating-its-isread-property-through-the-appropriate-exchangeclient-method.cs",
+        "mark-an-email-as-read-by-updating-its-read-flag-property-through-a-webdav-proppatch-call.cs",
+        "move-a-contact-between-folders-using-webdav-move-operation-with-destination-url-and-verify-transfer.cs",
+        "move-a-processed-email-to-another-folder-using-exchangeclient-movemessage-after-successful-handling-completion.cs",
+        "move-an-email-from-inbox-to-archive-using-its-message-id-and-destination-folder-uri.cs",
         "move-email-messages-between-folders-or-mailboxes-programmatically-preserving-all-message-properties-and-metadata-integrity.cs",
+        "obtain-another-user-mailbox-details-by-calling-getmailboxinfo-with-the-target-email-address-as-a-parameter.cs",
         "obtain-the-size-of-an-email-message-in-advance-without-downloading-its-full-content.cs",
+        "obtain-the-uri-of-the-sent-items-folder-so-subsequent-operations-can-target-that-specific-location.cs",
+        "perform-a-lightweight-connection-test-using-exchangeclient-connect-to-validate-user-credentials-before-executin.cs",
         "perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-webdav-protocol-for-communication.cs",
         "programmatically-retrieve-all-email-messages-from-a-specified-exchange-server-mailbox-handling-authentication-and-pagination.cs",
+        "provide-a-custom-remotecertificatevalidationcallback-to-exchangeclient-for-validating-the-server-certificate-du.cs",
         "register-for-release-notifications-to-receive-automatic-updates-about-new-library-features-and-enhancements.cs",
         "remove-email-messages-from-a-mailbox-programmatically-ensuring-permanent-deletion-and-appropriate-synchronization-across.cs",
         "remove-email-messages-from-an-exchange-server-using-appropriate-api-calls-while-managing-authentication-and-error-handling.cs",
+        "remove-multiple-emails-in-one-operation-by-supplying-a-collection-of-message-ids-to-the-deletemessage-batch-ove.cs",
+        "rename-an-existing-exchange-folder-by-sending-a-webdav-proppatch-request-with-the-new-display-name.cs",
         "retrieve-a-collection-of-email-messages-from-the-store-by-supplying-their-unique-identifier-values.cs",
         "retrieve-a-collection-of-plain-text-email-messages-and-present-them-as-a-simple-list.cs",
+        "retrieve-an-email-and-count-its-attachments-without-downloading-the-attachment-data.cs",
+        "retrieve-an-email-and-extract-any-embedded-calendar-invite-components-to-allow-automatic-scheduling-in-client-a.cs",
+        "retrieve-an-email-html-body-using-fetchmessage-and-write-the-markup-to-a-separate-html-file.cs",
         "retrieve-and-enumerate-email-messages-across-multiple-mailbox-folders-preserving-folder-hierarchy-and-message-metadata.cs",
         "retrieve-and-enumerate-email-messages-from-a-store-returning-their-metadata-and-content-as-needed.cs",
         "retrieve-and-filter-exchange-mailbox-messages-via-webdav-based-on-specified-criteria-such-as-date-sender-or-subject.cs",
         "retrieve-comprehensive-mailbox-metadata-through-webdav-calls-to-query-folder-properties-and-message-counts.cs",
+        "retrieve-default-mailbox-information-including-inboxuri-draftsuri-sentitemsuri-and-other-folder-uris-for-the-cu.cs",
+        "retrieve-folder-statistics-such-as-item-count-and-size-via-webdav-propfind-on-the-folder-resource.cs",
+        "retrieve-messages-from-a-particular-sender-by-setting-the-mailquery-sender-property-to-the-email-address.cs",
+        "retrieve-only-header-information-for-messages-without-downloading-full-bodies-by-specifying-appropriate-propert.cs",
+        "retrieve-only-high-importance-messages-by-adding-mailquery-importance-filter-before-listing-messages-operations.cs",
+        "retrieve-only-messages-that-contain-one-or-more-attachments-by-specifying-the-hasattachment-filter-in-the-query.cs",
+        "retrieve-the-full-folder-hierarchy-of-the-mailbox-to-build-a-navigation-tree-for-client-applications.cs",
         "save-email-messages-to-the-eml-format-while-preserving-all-header-and-body-information.cs",
+        "save-the-plain-text-body-of-a-retrieved-email-to-a-txt-file-to-facilitate-text-based-indexing-processes.cs",
+        "schedule-a-meeting-in-a-different-time-zone-by-assigning-datetimeoffset-value-to-appointment-starttime-property.cs",
+        "schedule-delayed-delivery-of-an-email-by-setting-the-deferreddeliverytime-property-to-tomorrow-morning-at-9-am.cs",
+        "search-contacts-containing-a-specific-domain-using-webdav-query-filters-and-return-matching-entries.cs",
+        "search-for-a-unique-message-using-its-messageid-by-populating-mailquery-messageid-with-the-identifier.cs",
+        "search-mail-items-in-a-folder-containing-a-keyword-in-the-subject-using-webdav-search-request.cs",
+        "send-a-simple-mailmessage-through-exchangeclient-to-a-single-recipient-with-subject-and-plain-text-body.cs",
+        "send-an-email-and-capture-the-server-generated-item-identifier-returned-by-exchangeclient-for-later-reference-o.cs",
+        "send-an-email-to-multiple-primary-recipients-including-additional-cc-and-bcc-addresses-for-broader-distribution.cs",
         "send-email-messages-through-an-exchange-server-using-the-appropriate-client-apis-and-authentication-mechanisms.cs",
+        "send-fifty-personalized-emails-in-a-batch-by-looping-through-recipient-data-and-invoking-exchangeclient-send-fo.cs",
+        "send-the-meeting-request-using-exchangeclient-send-and-verify-the-server-response-status-for-success-indication.cs",
         "serialize-email-messages-into-a-memory-stream-for-efficient-in-memory-processing-manipulation-and-transmission.cs",
+        "set-a-custom-html-body-for-the-meeting-request-by-assigning-content-to-mailmessage-htmlbody-field.cs",
+        "set-a-custom-request-timeout-of-ninety-seconds-on-exchangeclient-to-accommodate-slower-network-conditions-durin.cs",
+        "set-delivery-notification-options-on-the-email-to-receive-alerts-when-the-message-fails-to-deliver.cs",
+        "set-exchangeclient-timeout-to-a-higher-value-to-accommodate-long-running-mailbox-queries-without-premature-term.cs",
+        "set-mailmessage-priority-to-high-for-urgent-meeting-invitations-requiring-immediate-attention-recipients.cs",
+        "set-reminder-minutes-on-the-appointment-to-trigger-an-alert-ten-minutes-before-the-start-time.cs",
+        "set-the-appointment-isallday-flag-to-true-for-creating-all-day-events-on-the-exchange-calendar-system.cs",
+        "specify-a-distinct-reply-to-address-in-the-mailmessage-header-that-differs-from-the-sender-primary-email-addres.cs",
+        "specify-mailquery-startdate-and-mailquery-enddate-to-obtain-messages-within-a-custom-date-interval-specified.cs",
         "transfer-email-messages-programmatically-from-one-mailbox-folder-to-another-while-preserving-their-metadata.cs",
-        "transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-source-and-saving-the-result.cs"
+        "transfer-several-messages-to-a-folder-named-projectx-by-iterating-over-their-ids-and-invoking-movemessage.cs",
+        "transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-source-and-saving-the-result.cs",
+        "transmit-an-email-with-the-high-priority-flag-set-to-indicate-urgent-attention-by-recipients.cs",
+        "update-the-location-of-an-existing-calendar-event-by-modifying-its-property-through-webdav-proppatch.cs",
+        "validate-required-webdav-headers-before-each-request-to-prevent-authentication-and-syntax-errors.cs",
+        "validate-that-the-exchange-server-supports-webdav-by-inspecting-response-headers-before-initializing-the-client.cs",
+        "write-the-html-body-of-a-fetched-email-to-a-html-file-preserving-original-markup-and-styling.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 41
+          "count": 149
         },
         {
           "name": "Aspose.Email",
-          "count": 39
+          "count": 141
         },
         {
           "name": "Aspose.Email.Clients.Exchange.Dav",
-          "count": 32
+          "count": 106
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 30
+          "count": 75
         },
         {
           "name": "System.Net",
-          "count": 10
-        },
-        {
-          "name": "Aspose.Email.Tools.Search",
-          "count": 8
+          "count": 40
         },
         {
           "name": "System.IO",
-          "count": 8
+          "count": 34
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 28
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 4
-        },
-        {
-          "name": "Aspose.Email.Clients.Smtp",
-          "count": 3
-        },
-        {
-          "name": "Aspose.Email.Mapi",
-          "count": 3
+          "count": 19
         },
         {
           "name": "Aspose.Email.Storage.Pst",
+          "count": 11
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 9
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp",
+          "count": 8
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
+          "count": 4
+        },
+        {
+          "name": "System.Collections.Generic",
           "count": 3
         },
         {
+          "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
           "name": "Aspose.Email.Calendar.Recurrences",
+          "count": 2
+        },
+        {
+          "name": "System.Net.Security",
+          "count": 2
+        },
+        {
+          "name": "System.Security.Cryptography.X509Certificates",
+          "count": 2
+        },
+        {
+          "name": "System.Text",
+          "count": 1
+        },
+        {
+          "name": "System.Security.Cryptography",
+          "count": 1
+        },
+        {
+          "name": "System.Net.Mime",
+          "count": 1
+        },
+        {
+          "name": "System.Text.Json",
+          "count": 1
+        },
+        {
+          "name": "System.Threading",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
           "count": 1
         }
       ],
@@ -1162,21 +2112,43 @@
     },
     {
       "name": "working-with-ibm-notes",
-      "file_count": 30,
+      "file_count": 62,
       "files": [
         "add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs",
+        "call-enumeratemessages-to-obtain-an-iterator-over-all-messages-in-the-nsf-file.cs",
+        "check-the-notes-version-of-the-nsf-file-to-ensure-compatibility-with-version-7-or-higher.cs",
+        "combine-extracted-message-data-into-custom-net-objects-for-further-processing.cs",
         "configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs",
         "construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs",
+        "create-a-reusable-library-method-that-returns-a-list-of-message-objects-from-an-nsf-file.cs",
         "design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs",
+        "detect-lz1-compression-in-the-nsf-file-and-log-a-warning-if-unsupported.cs",
+        "detect-whether-a-given-file-is-in-nsf-format-before-opening-it.cs",
+        "develop-a-command-line-tool-that-accepts-an-nsf-file-path-and-outputs-message-summaries.cs",
+        "dispose-notesstoragefacility-resources-after-processing-to-prevent-memory-leaks-in-the-application.cs",
+        "document-the-limitations-of-handling-nsf-files-created-with-notes-versions-older-than-seven.cs",
+        "encrypt-extracted-attachment-files-using-aes-before-writing-them-to-disk-for-security.cs",
         "extract-a-contact-from-an-msg-file-and-save-it-as-a-vcf-vcard.cs",
+        "extract-all-attachments-from-a-message-and-save-them-to-a-specified-output-directory.cs",
+        "filter-enumerated-messages-by-sender-email-address-to-extract-only-relevant-communications.cs",
+        "filter-messages-by-subject-keyword-to-isolate-emails-containing-specific-terms-for-analysis.cs",
         "generate-a-calendar-event-using-the-contents-of-an-input-msg-file-as-the-entry-source.cs",
+        "generate-a-csv-file-containing-message-ids-subjects-and-sender-addresses-for-quick-review.cs",
         "generate-a-new-ibm-notes-database-using-an-msg-file-as-the-source-input.cs",
         "generate-a-new-notes-document-using-an-msg-file-as-input-preserving-the-message-content-and-metadata.cs",
         "generate-a-new-task-object-based-on-the-provided-input-message-msg-for-subsequent-processing.cs",
         "generate-a-rich-text-rtf-file-from-an-input-msg-email-message-while-preserving-formatting.cs",
+        "handle-messages-that-cannot-be-read-by-catching-exceptions-and-recording-error-details.cs",
+        "implement-a-progress-reporter-that-updates-after-each-message-is-processed-in-the-console.cs",
         "implement-a-user-interface-view-that-accepts-msg-files-as-input-for-processing-and-display.cs",
         "implement-an-agent-that-accepts-a-msg-object-as-input-and-processes-it-according-to-defined-business-logic.cs",
+        "implement-asynchronous-enumeration-of-nsf-messages-to-improve-application-responsiveness-during-long-operations.cs",
+        "implement-cancellation-support-to-abort-nsf-processing-when-a-user-requests-termination.cs",
+        "implement-retry-logic-when-opening-an-nsf-file-that-may-be-temporarily-locked.cs",
+        "instantiate-notesstoragefacility-with-the-nsf-file-path-to-prepare-for-enumeration.cs",
         "instantiate-the-notesdocument-class-and-populate-its-fields-with-the-input-msg-to-create-a-new-notes-document.cs",
+        "integrate-the-nsf-processing-module-into-an-existing-email-migration-pipeline-for-seamless-data-transfer.cs",
+        "iterate-through-each-message-reading-its-subject-sender-address-and-received-date.cs",
         "load-a-calendar-entry-from-an-msg-file-into-memory-for-further-processing-programmatically.cs",
         "load-a-notes-document-by-its-unid-employing-the-notesdocument-class-to-read-the-provided-msg-file.cs",
         "load-a-notes-document-from-an-msg-file-using-its-unid-identifier-ensuring-accurate-retrieval-of-content.cs",
@@ -1184,40 +2156,86 @@
         "load-an-existing-ibm-notes-database-from-an-msg-file-into-application-memory-for-processing.cs",
         "load-an-msg-file-into-a-view-object-enabling-programmatic-access-to-its-contents-and-properties.cs",
         "load-and-parse-an-msg-attachment-to-access-its-message-properties-and-content-programmatically.cs",
+        "log-detailed-information-about-messages-that-fail-to-read-due-to-lz1-compression-issues.cs",
+        "log-the-total-number-of-messages-processed-from-each-nsf-file-for-reporting-purposes.cs",
+        "open-the-nsf-storage-in-read-only-mode-to-safely-access-message-data.cs",
         "parse-the-msg-file-to-programmatically-extract-its-rich-text-body-content-for-subsequent-processing.cs",
         "persist-modifications-to-the-database-and-generate-an-msg-file-containing-the-updated-information.cs",
         "process-and-modify-rich-text-content-in-ibm-notes-msg-files-utilizing-the-notesrichtext-class.cs",
         "programmatically-add-a-new-attachment-to-an-email-message-using-an-input-msg-file.cs",
+        "provide-an-option-to-limit-the-maximum-number-of-messages-processed-per-nsf-file.cs",
         "read-a-contact-from-an-msg-file-into-an-object-model-for-subsequent-processing.cs",
         "read-and-parse-an-input-msg-file-to-instantiate-the-corresponding-task-object-in-memory.cs",
         "read-and-parse-an-msg-file-to-access-its-form-data-within-the-application.cs",
         "read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs",
         "read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs",
+        "read-the-body-content-of-each-message-and-store-it-in-a-string-variable.cs",
+        "serialize-extracted-message-objects-to-json-for-integration-with-external-services.cs",
+        "use-a-using-statement-to-automatically-close-the-notesstoragefacility-after-processing.cs",
+        "use-parallel-processing-to-handle-multiple-nsf-files-concurrently-while-respecting-thread-safety.cs",
+        "validate-that-each-extracted-attachment-file-size-does-not-exceed-a-predefined-limit.cs",
+        "validate-that-the-extracted-email-body-does-not-contain-prohibited-html-tags-before-saving.cs",
         "when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 30
-        },
-        {
-          "name": "System.IO",
-          "count": 30
+          "count": 62
         },
         {
           "name": "Aspose.Email",
-          "count": 30
+          "count": 62
+        },
+        {
+          "name": "System.IO",
+          "count": 61
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 30
+          "count": 41
+        },
+        {
+          "name": "Aspose.Email.Storage.Nsf",
+          "count": 19
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 7
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 4
+        },
+        {
+          "name": "System.Threading.Tasks",
+          "count": 3
+        },
+        {
+          "name": "System.Linq",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 2
         },
         {
           "name": "Aspose.Email.Calendar",
           "count": 2
         },
         {
-          "name": "System.Linq",
+          "name": "System.Threading",
+          "count": 2
+        },
+        {
+          "name": "System.Reflection",
+          "count": 1
+        },
+        {
+          "name": "System.Security.Cryptography",
           "count": 1
         },
         {
@@ -1225,7 +2243,11 @@
           "count": 1
         },
         {
-          "name": "Aspose.Email.Storage.Nsf",
+          "name": "Aspose.Email.Tools.Search",
+          "count": 1
+        },
+        {
+          "name": "CancellationTokenSource cts = new CancellationTokenSource()",
           "count": 1
         },
         {
@@ -1233,7 +2255,7 @@
           "count": 1
         },
         {
-          "name": "System.Collections.Generic",
+          "name": "System.Text.Json",
           "count": 1
         }
       ],
@@ -1241,22 +2263,112 @@
     },
     {
       "name": "working-with-imap-client",
-      "file_count": 59,
+      "file_count": 289,
       "files": [
         "activate-client-side-logging-by-setting-the-loggingenabled-boolean-property-to-true-on-the-client-instance.cs",
         "activate-detailed-imap-activity-logging-to-capture-all-client-server-interactions-for-diagnostics-and-auditing.cs",
+        "add-a-custom-imap-flag-to-messages-matching-a-subject-pattern-asynchronously-for-later-categorization.cs",
+        "add-custom-flag-important-to-a-message-identified-by-its-unique-id-using-addmessageflags.cs",
+        "add-custom-flag-to-all-messages-returned-by-a-mailquery-that-matches-particular-subject-pattern.cs",
+        "add-multiple-custom-flags-projecta-and-urgent-to-a-message-using-addmessageflags-array-parameter.cs",
+        "adjust-imapclient-timeout-to-define-maximum-operation-duration-for-slow-networks.cs",
+        "append-a-draft-email-to-the-drafts-folder-asynchronously-preserving-its-original-flags.cs",
+        "append-a-newly-composed-email-to-the-sent-folder-asynchronously-without-blocking-the-ui-thread.cs",
+        "append-system-generated-notifications-to-a-dedicated-notifications-folder-asynchronously-for-monitoring.cs",
+        "apply-a-custom-date-range-filter-in-mailquery-asynchronously-to-retrieve-messages-sent-between-two-dates.cs",
+        "apply-a-custom-flag-to-messages-after-processing-by-using-imapclient-store-to-set-the-flagged-attribute.cs",
+        "apply-a-custom-header-asynchronously-to-outgoing-messages-before-sending-them-via-iasyncimapclient.cs",
+        "apply-a-custom-header-filter-to-retrieve-only-messages-containing-a-specific-x-header-value.cs",
+        "apply-a-custom-retention-policy-asynchronously-by-moving-messages-older-than-a-threshold-to-an-archive-folder.cs",
+        "apply-a-custom-spam-detection-rule-asynchronously-moving-flagged-messages-to-the-spam-folder.cs",
+        "apply-a-date-range-filter-using-listmessages-and-searchquery-to-select-messages-received-between-two-dates.cs",
+        "apply-addmessageflags-to-assign-both-todo-and-review-custom-flags-to-batch-of-messages-identified-by-uids.cs",
+        "apply-an-async-filter-to-select-only-messages-with-a-specific-x-priority-header-value-for-priority-handling.cs",
+        "apply-changemessageflags-with-deleted-operation-to-mark-selected-messages-for-removal-without-immediate-expunge.cs",
         "apply-search-query-parameters-to-retrieve-and-filter-messages-based-on-specified-criteria-within-the-system.cs",
+        "apply-sentiment-analysis-to-email-bodies-asynchronously-to-prioritize-customer-support-tickets.cs",
         "apply-specified-status-flags-to-an-email-message-to-modify-its-read-answered-or-importance-properties.cs",
         "apply-the-seen-flag-to-a-specific-email-message-by-invoking-client-addmessageflags-with-imapmessageflags-seen.cs",
+        "archive-asynchronously-fetched-messages-into-a-zip-file-preserving-original-eml-filenames-for-reference.cs",
+        "archive-messages-asynchronously-to-cloud-storage-as-encrypted-blobs-for-secure-long-term-retention.cs",
+        "assign-authenticationtype-crammd5-to-imapclient-for-cram-md5-authentication-during-the-initial-connection-process.cs",
+        "authenticate-the-asynchronous-imap-client-with-username-and-password-before-any-mailbox-operation.cs",
+        "authenticate-using-the-xoauth2-mechanism-asynchronously-to-comply-with-modern-email-security-standards.cs",
+        "back-up-all-messages-from-the-sent-folder-to-local-msg-files-while-preserving-original-timestamps.cs",
+        "backup-all-messages-from-the-selected-folder-to-a-local-pst-file-using-imapclient-backup-method.cs",
+        "backup-messages-in-batches-of-500-to-limit-memory-consumption-during-large-mailbox-processing.cs",
+        "backup-messages-to-a-memory-stream-instead-of-a-file-for-in-memory-processing.cs",
+        "backup-messages-to-a-network-share-path-ensuring-proper-unc-formatting-and-access-permissions.cs",
+        "backup-messages-while-preserving-original-folder-hierarchy-by-creating-subfolders-in-backup-location-matching-server-struc.cs",
+        "build-a-mailquerybuilder-combining-sender-address-and-subject-keyword-using-and-method.cs",
+        "calculate-the-distribution-of-email-domains-among-senders-asynchronously-for-statistical-reporting.cs",
+        "calculate-the-time-difference-between-received-and-sent-dates-for-each-message-asynchronously-for-latency-analysis.cs",
+        "call-listmessages-to-obtain-an-imapmessageinfocollection-containing-basic-message-data.cs",
+        "change-answered-flag-to-true-for-messages-containing-keyword-support-in-body-using-changemessageflags.cs",
+        "change-seen-flag-to-true-for-all-messages-returned-by-a-date-range-mailquery.cs",
         "change-the-name-of-a-specified-directory-on-the-file-system-to-a-new-identifier.cs",
+        "classify-emails-asynchronously-using-a-machine-learning-model-into-predefined-categories.cs",
+        "combine-backup-and-delete-operations-by-archiving-messages-then-removing-them-from-the-server-in-a-single-workflow.cs",
+        "combine-recipient-domain-filter-with-custom-flag-condition-using-mailquerybuilder-or-method.cs",
+        "configure-a-custom-ssl-protocol-version-by-setting-imapclient-sslprotocols-before-connecting.cs",
+        "configure-imapclient-to-use-tls-1-2-by-setting-securityprotocol-before-establishing-the-connection.cs",
+        "configure-imapclient-to-use-tls-1-2-protocol-for-secure-communication.cs",
+        "configure-the-client-to-ignore-certificate-errors-for-testing-environments-only.cs",
+        "configure-the-client-to-maintain-a-persistent-connection-using-the-keepalive-option.cs",
+        "configure-the-client-to-use-a-proxy-server-for-all-network-communication.cs",
         "configure-the-client-to-write-log-output-to-a-specified-file-by-assigning-the-desired-path-to-logfilepath.cs",
+        "configure-the-imap-client-to-use-a-custom-port-number-for-non-standard-server-configurations.cs",
+        "connect-securely-to-the-imap-server-using-ssl-tls-after-authentication.cs",
+        "construct-mailquerybuilder-programmatically-with-three-statements-combined-using-or-and-and-operators.cs",
+        "convert-retrieved-email-messages-to-eml-format-for-archiving-in-standard-email-format.cs",
+        "convert-retrieved-email-messages-to-msg-format-for-compatibility-with-microsoft-outlook.cs",
         "create-a-backup-of-mailboxes-to-preserve-all-messages-and-metadata-for-recovery-purposes.cs",
+        "create-a-custom-mailquery-that-selects-messages-containing-specific-keywords-in-the-body-asynchronously.cs",
+        "create-a-mailquery-filtering-messages-received-after-january-first-2023-and-pass-to-listmessages.cs",
+        "create-a-mailquery-filtering-messages-sent-from-a-specific-domain-and-received-within-last-seven-days.cs",
+        "create-a-mailquery-filtering-messages-where-recipient-address-ends-with-example-com-and-execute-it.cs",
+        "create-a-monitoring-dashboard-that-displays-the-hourly-count-of-unread-messages-retrieved-via-imapclient.cs",
+        "create-a-unit-test-asserting-validatecredentials-returns-true-for-known-good-credentials.cs",
+        "create-a-unit-test-asserting-validatecredentialsasync-throws-exception-for-invalid-password.cs",
+        "create-an-iasyncimapclient-instance-asynchronously-using-imapclient-createasync-with-default-settings.cs",
+        "create-an-imapclient-instance-with-host-username-and-password-to-connect.cs",
+        "create-an-imapmessageinfocollection-from-search-results-and-delete-those-messages-with-deletemessages.cs",
         "create-rename-delete-and-list-imap-server-folders-programmatically-using-the-provided-api-methods.cs",
+        "create-thumbnail-images-of-attached-pdfs-asynchronously-for-quick-visual-reference.cs",
         "define-search-filters-programmatically-for-example-using-subject-contains-invoice-or-date-greaterthan-somedate-expressions-to.cs",
         "delete-a-batch-of-email-messages-by-invoking-the-deletemessages-method-with-a-message-collection.cs",
+        "delete-a-single-email-by-its-unique-identifier-uid-using-deletemessage-function.cs",
         "delete-a-specific-email-message-by-invoking-client-deletemessage-with-the-target-message-object-instance.cs",
+        "delete-a-specified-imap-folder-asynchronously-and-ensure-it-no-longer-appears-in-folder-listings.cs",
+        "delete-all-messages-flagged-as-deleted-after-confirming-they-are-older-than-thirty-days-using-a-cleanup-job.cs",
+        "delete-all-messages-flagged-as-junk-by-iterating-through-imapmessageinfocollection-and-invoking-deletemessages.cs",
+        "delete-messages-flagged-as-seen-for-over-90-days-to-clean-up-old-read-mail.cs",
+        "delete-messages-from-a-list-of-spam-sender-addresses-loaded-from-a-csv-file-using-batch-uid-deletion.cs",
+        "delete-messages-marked-as-answered-and-older-than-six-months-to-clean-up-resolved-threads.cs",
+        "delete-messages-older-than-a-given-date-range-from-the-server-to-free-up-storage-space.cs",
+        "delete-messages-older-than-one-year-by-calculating-date-threshold-and-passing-matching-uids-to-deletemessages.cs",
+        "delete-messages-that-contain-attachments-larger-than-10-mb-by-inspecting-size-property-in-imapmessageinfo-before-deletion.cs",
+        "delete-messages-that-contain-specific-keywords-in-the-body-by-scanning-minimal-content-and-then-calling-deletemessages.cs",
+        "delete-messages-that-exceed-a-specified-size-threshold-e-g-5-mb-by-filtering-getmessageinfo-results-before-calling-deletem.cs",
+        "delete-messages-that-fail-spf-validation-by-scanning-headers-and-removing-those-with-fail-results.cs",
+        "delete-messages-that-have-been-marked-as-flagged-for-more-than-60-days-to-clean-up-pending-items.cs",
+        "delete-messages-that-match-a-list-of-prohibited-domains-by-extracting-sender-addresses-and-comparing-against-a-blacklist.cs",
+        "delete-messages-that-match-a-regular-expression-pattern-in-the-subject-line-by-building-a-uid-list-first.cs",
+        "delete-several-emails-using-an-array-of-uids-passed-to-deletemessages-to-target-specific-messages.cs",
+        "detect-and-handle-server-initiated-mailbox-quota-exceeded-errors-during-message-retrieval.cs",
+        "detect-duplicate-message-id-values-asynchronously-during-bulk-import-and-skip-processing-duplicates.cs",
+        "download-headers-of-recent-emails-from-a-specific-folder-without-fetching-full-message-bodies.cs",
         "enable-and-disable-client-side-logging-by-invoking-client-startlogging-to-begin-and-client-stoplogging-to-end.cs",
+        "enable-case-sensitive-search-on-subject-field-by-setting-casesensitive-property-in-mailquerybuilder.cs",
+        "enable-compression-on-the-asynchronous-imap-connection-to-reduce-data-transfer-size.cs",
+        "enable-detailed-imap-activity-logging-to-capture-protocol-exchanges-for-troubleshooting-connection-issues.cs",
+        "enable-imap-activity-logging-to-a-rotating-file-system-to-avoid-unlimited-log-growth.cs",
+        "enable-logging-on-imapclient-to-capture-detailed-protocol-communication-for-debugging-flag-manipulation-issues.cs",
+        "enable-multiconnection-option-on-imapclient-and-list-messages-in-parallel-to-improve-performance.cs",
+        "enable-server-side-sorting-of-messages-asynchronously-using-the-sort-extension-for-ordered-retrieval.cs",
+        "enable-utf-8-query-encoding-and-perform-case-sensitive-search-for-phrase-project-update-in-bodies.cs",
         "establish-a-secure-connection-to-an-imap-server-utilizing-the-imapclient-class-with-appropriate-credentials.cs",
+        "establish-a-secure-imap-connection-using-ssl-tls-and-verify-certificate-validation-during-login.cs",
         "establish-an-asynchronous-connection-by-invoking-the-connectasync-method-on-the-client-object-instance.cs",
         "establish-an-asynchronous-connection-to-an-imap-server-handling-authentication-and-network-latency-efficiently.cs",
         "establish-an-imap-connection-using-the-imapclient-class-by-implementing-the-steps-demonstrated-in-the-example.cs",
@@ -1264,112 +2376,328 @@
         "execute-a-search-query-through-client-search-query-to-obtain-all-messages-that-satisfy-the-specified-criteria.cs",
         "execute-asynchronous-message-deletion-by-calling-client-deletemessageasync-message-and-awaiting-the-resulting-task.cs",
         "execute-imap-commands-asynchronously-to-enable-non-blocking-email-retrieval-and-manipulation-within-net-applications.cs",
+        "expunge-the-mailbox-asynchronously-after-flagging-messages-for-deletion-to-permanently-remove-them.cs",
+        "extract-attachment-streams-from-imapmessageinfo-attachments-and-write-them-to-a-temporary-folder.cs",
+        "extract-calendar-events-from-icalendar-attachments-and-save-them-as-separate-ics-files.cs",
+        "extract-plain-text-and-html-bodies-asynchronously-from-a-multipart-message-into-separate-files.cs",
+        "fetch-and-save-attachments-from-unread-messages-to-a-local-directory-for-further-processing.cs",
+        "fetch-message-bodies-asynchronously-in-plain-text-format-only-ignoring-html-parts.cs",
+        "fetch-message-flags-asynchronously-for-each-email-and-update-a-status-column-in-an-external-system.cs",
+        "fetch-message-headers-asynchronously-and-extract-the-message-id-to-detect-duplicate-emails.cs",
+        "fetch-messages-asynchronously-and-download-all-attachments-preserving-original-filenames-in-a-local-directory.cs",
+        "fetch-messages-asynchronously-and-encrypt-their-attachments-before-saving-them-to-local-storage-for-compliance.cs",
+        "fetch-messages-asynchronously-using-the-idle-command-simulation-to-receive-real-time-new-mail-notifications.cs",
+        "fetch-messages-internally-stored-after-a-specific-imap-internal-date-using-mailquery-internaldate-criteria.cs",
+        "fetch-server-capabilities-asynchronously-and-adjust-client-features-such-as-compression-and-idle-support.cs",
+        "fetchmessages-with-selected-imapmessageinfo-objects-to-download-complete-mailmessage-instances.cs",
+        "filter-messages-asynchronously-by-attachment-presence-then-download-those-attachments-to-cloud-storage.cs",
+        "generate-a-csv-report-asynchronously-summarizing-sender-subject-and-received-date-for-each-email.cs",
+        "generate-a-diagnostic-report-listing-the-server-supported-authentication-mechanisms-retrieved-via-imapclient-capabilities.cs",
         "generate-a-pst-backup-of-the-mailbox-by-invoking-client-backupmailbox-with-the-specified-file-path.cs",
+        "generate-pdf-summaries-of-each-email-asynchronously-for-offline-review.cs",
+        "handle-imapexception-after-each-operation-to-ensure-reliable-execution-and-log-error-details.cs",
+        "handle-transient-network-failures-by-retrying-asynchronous-imap-operations-up-to-three-times-with-exponential-backoff.cs",
+        "implement-a-background-async-task-that-periodically-cleans-up-messages-marked-for-deletion-older-than-thirty-days.cs",
+        "implement-a-background-service-that-continuously-calls-imapclient-idle-and-logs-new-message-identifiers-as-they-arrive.cs",
+        "implement-a-background-service-that-continuously-polls-the-imap-server-asynchronously-for-new-messages-every-minute.cs",
+        "implement-a-background-service-that-periodically-validates-imap-credentials-and-alerts-on-failures.cs",
+        "implement-a-cancellation-strategy-that-aborts-all-pending-asynchronous-imap-tasks-when-network-connectivity-is-lost.cs",
+        "implement-a-cancellationtokensource-with-a-five-second-delay-to-abort-long-running-queries.cs",
+        "implement-a-retry-loop-that-reconnects-imapclient-up-to-three-times-when-a-timeout-exception-occurs.cs",
+        "implement-a-retry-mechanism-for-credential-validation-when-transient-network-errors-occur.cs",
+        "implement-a-retry-mechanism-that-re-issues-an-asynchronous-fetch-when-a-cancellationtoken-is-not-yet-signaled.cs",
+        "implement-a-retry-mechanism-that-reissues-fetchmessages-when-a-network-interruption-exception-is-caught.cs",
+        "implement-a-retry-policy-that-respects-the-cancellationtoken-during-asynchronous-imap-calls.cs",
+        "implement-a-throttling-mechanism-that-limits-concurrent-asynchronous-fetch-operations-to-avoid-server-overload.cs",
+        "implement-a-watchdog-timer-that-cancels-asynchronous-imap-operations-exceeding-a-configurable-duration.cs",
+        "implement-an-event-handler-that-updates-a-ui-progress-bar-when-an-asynchronous-message-fetch-completes.cs",
+        "implement-async-error-handling-that-retries-only-on-transient-imap-errors-not-on-authentication-failures.cs",
+        "implement-asynchronous-pagination-with-continuation-tokens-to-efficiently-process-mailboxes-containing-thousands-of-messag.cs",
         "implement-asynchronous-retrieval-of-email-messages-using-non-blocking-operations-to-improve-application-responsiveness.cs",
         "implement-functionality-to-back-up-and-restore-mailboxes-using-imap-protocols-ensuring-data-integrity-and-consistency.cs",
         "implement-functionality-to-filter-email-messages-by-date-range-supporting-inclusive-and-exclusive-boundaries.cs",
         "implement-functionality-to-retrieve-email-messages-that-match-a-specified-subject-line-filter-criteria.cs",
         "implement-functionality-to-set-clear-and-retrieve-imap-message-flags-on-the-server-using-appropriate-protocols.cs",
+        "implement-graceful-shutdown-by-cancelling-all-pending-asynchronous-imap-tasks-upon-receiving-a-termination-signal.cs",
         "implement-imap-server-querying-to-retrieve-messages-matching-specific-criteria-while-efficiently-handling-server-responses.cs",
+        "implement-pagination-by-retrieving-messages-in-batches-of-one-hundred-using-listmessages-start-index-and-count-parameters.cs",
+        "implement-pagination-when-fetching-large-mailboxes-to-limit-memory-consumption.cs",
         "instantiate-a-directory-at-the-specified-path-to-organize-subsequent-files-and-resources-within-the-project.cs",
         "instantiate-an-imapquerybuilder-object-to-programmatically-construct-complex-imap-search-queries-for-mailbox-operations.cs",
+        "instantiate-imapclient-enable-ssl-and-authenticate-using-user-credentials-securely.cs",
+        "instantiate-imapclient-with-server-address-username-and-password-then-connect-to-the-imap-server.cs",
+        "integrate-imap-credential-validation-into-a-ci-pipeline-to-prevent-deployment-with-incorrect-settings.cs",
         "invoke-client-createfolder-newfolder-to-programmatically-generate-a-new-folder-within-the-current-mailbox-hierarchy-on-the.cs",
         "invoke-client-deletefolder-with-the-target-folder-name-to-permanently-remove-the-specified-directory-from-storage.cs",
         "invoke-client-renamefolder-with-the-existing-folder-name-and-desired-new-name-to-rename-the-directory.cs",
+        "invoke-imapclient-idle-with-a-timeout-interval-to-receive-real-time-new-mail-notifications.cs",
         "invoke-the-validatecredentials-method-to-programmatically-confirm-the-supplied-username-and-password-against-the-server.cs",
+        "iterate-the-imapmessageinfocollection-and-log-each-message-sequencenumber-and-uniqueid.cs",
+        "list-all-mailboxes-asynchronously-and-filter-out-system-folders-before-presenting-to-the-user.cs",
+        "list-all-unread-messages-asynchronously-by-constructing-a-mailquery-filtering-on-the-unseen-flag.cs",
+        "list-available-mail-folders-after-successful-credential-validation-to-confirm-access-permissions.cs",
+        "list-unread-messages-only-by-applying-the-unseen-flag-filter-in-listmessages.cs",
+        "log-detailed-imap-command-and-response-strings-for-each-asynchronous-call-to-aid-troubleshooting.cs",
+        "log-each-asynchronous-imap-command-with-timestamps-to-a-structured-json-file-for-audit-trails.cs",
+        "log-each-server-response-code-after-executing-an-imap-command-to-assist-debugging-communication-issues.cs",
+        "log-the-duration-of-each-asynchronous-imap-call-using-a-stopwatch-and-write-results-to-diagnostics.cs",
+        "log-the-size-of-each-fetched-mailmessage-in-kilobytes-to-monitor-bandwidth-usage.cs",
+        "mark-a-set-of-messages-as-seen-asynchronously-after-successful-processing-to-prevent-re-processing.cs",
+        "mark-selected-messages-as-read-after-confirming-successful-retrieval-of-their-unique-identifiers.cs",
+        "measure-round-trip-time-for-listmessages-calls-and-record-latency-for-server-responsiveness-evaluation.cs",
+        "monitor-progress-of-asynchronous-folder-enumeration-and-log-each-folder-name-as-it-becomes-available.cs",
+        "move-a-batch-of-messages-from-the-inbox-to-a-custom-folder-asynchronously-using-a-mailquery-filter.cs",
+        "move-messages-matching-a-subject-filter-to-a-designated-archive-folder-using-imap-commands.cs",
+        "move-processed-messages-from-the-inbox-folder-to-a-custom-archive-folder-using-imapclient-movemessage.cs",
         "obtain-a-collection-of-email-messages-from-the-server-by-invoking-the-client-listmessages-method.cs",
         "obtain-the-current-flag-status-of-a-specific-email-message-by-invoking-the-client-getmessageflags-message-method.cs",
+        "parse-mime-parts-of-a-complex-email-to-separate-inline-images-from-attachments.cs",
+        "perform-a-health-check-after-each-operation-by-calling-imapclient-noop-to-ensure-server-responsiveness.cs",
+        "perform-a-health-check-that-asynchronously-verifies-the-imap-connection-and-reports-status.cs",
         "perform-an-asynchronous-operation-to-permanently-delete-a-specified-message-from-the-mail-store.cs",
+        "perform-an-asynchronous-search-for-messages-with-subject-matching-a-regular-expression-and-flag-them.cs",
+        "perform-an-imap-backup-by-exporting-all-messages-from-selected-folders-to-local-eml-files.cs",
+        "perform-case-insensitive-search-for-keyword-invoice-in-subject-across-entire-mailbox.cs",
         "perform-crud-operations-on-messages-stored-on-an-imap-server-including-retrieval-deletion-and-flag-updates.cs",
+        "perform-parallel-fetching-by-dividing-imapmessageinfocollection-into-chunks-and-processing-each-chunk-on-separate-threads.cs",
         "process-and-interpret-validation-results-to-determine-compliance-and-manage-any-reported-errors-accordingly.cs",
         "programmatically-delete-all-flag-attributes-from-email-messages-to-clear-status-indicators-and-reset-processing-state.cs",
         "programmatically-transfer-the-specified-email-message-to-a-target-folder-by-invoking-client-movemessage-message.cs",
+        "read-email-messages-from-the-sent-folder-and-export-them-to-csv-for-reporting-purposes.cs",
         "recover-mailbox-data-from-backups-into-the-mail-system-while-preserving-all-folder-hierarchy-and-metadata.cs",
         "remove-a-specific-email-message-by-invoking-the-client-object-s-deletemessage-method-with-the-target-message.cs",
         "remove-a-specific-email-message-from-the-mailbox-programmatically-using-the-provided-api-call.cs",
+        "remove-both-seen-and-flagged-standard-flags-from-a-message-by-calling-removemessageflags-with-combined-enumeration.cs",
+        "remove-custom-flag-archived-from-messages-older-than-one-year-using-date-based-mailquery.cs",
+        "remove-deleted-flag-from-a-specific-message-using-removemessageflags-with-appropriate-enumeration.cs",
         "remove-multiple-email-messages-simultaneously-from-a-mailbox-using-bulk-deletion-functionality-to-improve-processing-efficiency.cs",
+        "remove-multiple-messages-by-providing-an-array-of-sequence-numbers-to-deletemessages-for-batch-deletion.cs",
         "remove-selected-email-messages-from-an-imap-server-using-appropriate-protocol-commands-and-ensure-server-synchronization.cs",
+        "remove-the-deleted-flag-from-messages-asynchronously-to-restore-them-to-the-visible-mailbox.cs",
         "remove-the-flagged-flag-from-a-message-by-calling-client-removemessageflags-message-imapmessageflags-flagged.cs",
         "remove-the-specified-directory-from-the-file-system-ensuring-all-contained-files-are-permanently-deleted.cs",
+        "rename-an-existing-imap-folder-asynchronously-then-confirm-the-rename-by-fetching-the-updated-list.cs",
+        "restore-messages-from-a-memory-stream-directly-into-the-mailbox-without-intermediate-files.cs",
+        "restore-messages-in-batches-while-preserving-original-folder-hierarchy-using-imapclient-createfolder-as-needed.cs",
+        "restore-previously-backed-up-messages-from-a-pst-file-into-the-target-mailbox-using-imapclient-restore.cs",
+        "retrieve-a-message-by-its-sequence-number-after-modifying-flags-to-verify-persistence.cs",
+        "retrieve-a-single-email-message-asynchronously-by-its-unique-identifier-and-save-as-eml.cs",
+        "retrieve-all-mailbox-messages-by-calling-listmessages-without-parameters-and-store-them-in-a-collection.cs",
         "retrieve-and-display-imap-server-activity-logs-for-monitoring-connection-and-command-events-including-authentication.cs",
         "retrieve-and-interpret-flag-properties-of-email-messages-using-the-api-to-determine-each-message-s-status.cs",
         "retrieve-email-messages-asynchronously-by-invoking-the-client-fetchmessagesasync-method-handling-the-returned-task-appropriatel.cs",
         "retrieve-email-messages-from-an-imap-server-using-appropriate-authentication-and-mailbox-selection-parameters.cs",
+        "retrieve-message-body-previews-asynchronously-limiting-each-preview-to-the-first-200-characters.cs",
+        "retrieve-message-envelope-information-asynchronously-to-obtain-sender-recipients-and-subject.cs",
+        "retrieve-message-uid-values-asynchronously-and-store-them-in-a-local-database-for-synchronization.cs",
+        "retrieve-message-unique-identifiers-after-flag-updates-by-calling-listmessages-with-fetchuid-option.cs",
+        "retrieve-messages-addressed-to-a-specific-recipient-asynchronously-using-mailquery-to-filter-the-to-header.cs",
+        "retrieve-messages-asynchronously-and-apply-a-regex-to-extract-order-numbers-from-the-email-body.cs",
+        "retrieve-messages-asynchronously-in-batches-of-fifty-processing-each-batch-sequentially-for-pagination.cs",
+        "retrieve-only-message-headers-by-accessing-imapmessageinfo-header-fields-without-downloading-full-bodies.cs",
+        "retrieve-only-messages-larger-than-five-megabytes-asynchronously-to-identify-potential-large-attachments.cs",
+        "retrieve-only-messages-that-contain-image-jpeg-attachments-asynchronously-using-a-custom-mailquery.cs",
+        "retrieve-only-unseen-messages-by-creating-mailquery-with-unseen-flag-criterion-and-executing-listmessages.cs",
+        "retrieve-the-mime-messageid-property-from-imapmessageinfo-to-correlate-messages-without-full-download.cs",
+        "retrieve-total-message-count-from-the-inbox-folder-to-assess-mailbox-size.cs",
+        "save-each-fetched-mailmessage-to-msg-format-using-the-save-method-with-a-unique-filename.cs",
+        "search-for-emails-containing-specific-keywords-in-the-body-using-imap-server-side-search.cs",
+        "search-for-messages-asynchronously-using-a-mailquery-that-filters-by-sender-address-and-date-range.cs",
+        "send-a-webhook-asynchronously-after-each-message-download-with-subject-and-sender-metadata.cs",
+        "send-an-email-message-asynchronously-through-iasyncimapclient-specifying-recipient-subject-and-html-body.cs",
+        "set-a-custom-thirty-second-timeout-for-each-asynchronous-imap-operation.cs",
+        "set-authenticationtype-to-ntlm-for-environments-requiring-windows-integrated-authentication.cs",
+        "set-imapclient-port-property-to-993-for-secure-imap-over-ssl-before-authentication.cs",
+        "set-imapclient-port-to-993-and-enable-ssl-for-secure-communication.cs",
+        "set-imapclient-readonly-to-true-to-prevent-mailbox-modifications-during-enumeration.cs",
+        "set-imapclient-timeout-property-to-sixty-seconds-before-large-batch-retrieval.cs",
+        "set-the-deleted-flag-on-messages-older-than-one-year-asynchronously-then-expunge-them.cs",
+        "set-the-maxconnections-property-to-limit-simultaneous-server-connections-during-bulk-processing.cs",
         "set-up-imap-protocol-logging-to-capture-client-server-communication-details-and-enable-diagnostic-analysis.cs",
+        "specify-utf-8-encoding-for-query-strings-to-correctly-handle-non-ascii-characters.cs",
+        "stop-asynchronous-pagination-when-a-mailquery-returns-no-more-results-to-avoid-infinite-loops.cs",
+        "store-email-metadata-such-as-message-id-date-and-size-asynchronously-into-a-nosql-database-for-analytics.cs",
+        "store-raw-mime-content-in-a-blob-storage-service-asynchronously-for-archival-purposes.cs",
+        "stream-large-email-bodies-directly-to-a-file-asynchronously-without-loading-the-entire-content-into-memory.cs",
+        "stream-message-bodies-directly-to-a-network-socket-asynchronously-for-real-time-forwarding.cs",
+        "synchronize-local-email-cache-asynchronously-by-fetching-incremental-uid-ranges-and-updating-stored-records.cs",
+        "synchronize-local-folder-hierarchy-asynchronously-by-creating-missing-server-folders-to-match-configuration.cs",
+        "temporarily-set-readonly-to-false-delete-messages-older-than-thirty-days-then-restore-read-only-mode.cs",
         "transfer-email-messages-between-imap-folders-programmatically-ensuring-proper-synchronization-state-updates-and-efficient.cs",
+        "trigger-a-webhook-asynchronously-after-each-message-is-successfully-downloaded-sending-subject-and-sender-metadata.cs",
+        "update-a-grafana-dashboard-asynchronously-with-real-time-counts-of-unread-emails-per-folder.cs",
+        "update-a-redis-cache-asynchronously-with-the-latest-email-identifiers-for-quick-lookup.cs",
+        "update-a-sharepoint-list-asynchronously-with-email-subject-and-link-to-stored-eml-file.cs",
+        "update-external-systems-with-message-flags-asynchronously-to-ensure-mailbox-flag-consistency.cs",
+        "use-async-disposal-pattern-to-close-the-iasyncimapclient-connection-and-release-resources-without-blocking.cs",
+        "use-async-enumeration-to-iterate-over-messages-returned-by-a-mailquery-without-loading-the-entire-result-set.cs",
+        "use-async-methods-to-retrieve-the-list-of-subscribed-folders-and-compare-with-predefined-configuration.cs",
+        "use-async-methods-to-search-for-messages-containing-a-specific-x-header-value-asynchronously.cs",
+        "use-async-methods-to-set-the-seen-flag-on-messages-after-they-have-been-processed-and-archived.cs",
+        "use-async-validation-within-an-asp-net-core-controller-to-authenticate-user-email-accounts.cs",
         "use-client-restoremailbox-with-the-specified-pst-file-to-recover-a-mailbox-from-backup-operation.cs",
+        "use-imapclient-store-to-add-a-custom-x-processed-header-to-messages-after-successful-content-extraction.cs",
+        "use-listmessages-with-a-subject-filter-to-retrieve-only-messages-containing-a-specific-keyword.cs",
+        "use-mailquerybuilder-to-construct-query-selecting-messages-with-subject-containing-report-or-flag-reviewed.cs",
+        "use-mailquerybuilder-to-filter-messages-where-sender-display-name-matches-john-doe-case-sensitively.cs",
+        "use-oauth2-authentication-tokens-with-iasyncimapclient-to-connect-securely-without-storing-plain-passwords.cs",
+        "use-the-imap-client-to-synchronize-local-cache-with-remote-folder-changes-in-real-time.cs",
+        "validate-credentials-against-a-gmail-imap-server-using-oauth2-token-authentication.cs",
+        "validate-credentials-against-a-yahoo-mail-imap-server-with-two-factor-authentication-enabled.cs",
+        "validate-dkim-signatures-of-fetched-emails-asynchronously-and-log-verification-results.cs",
+        "validate-imap-server-credentials-asynchronously-with-validatecredentialsasync-to-ensure-non-blocking-authentication.cs",
+        "validate-imap-server-credentials-synchronously-using-validatecredentials-before-any-mailbox-operations.cs",
+        "validate-server-certificates-during-ssl-connection-by-assigning-a-remotecertificatevalidationcallback-that-checks-issuer-t.cs",
+        "validate-server-ssl-certificates-asynchronously-by-providing-a-custom-remotecertificatevalidationcallback.cs",
         "validate-user-credentials-by-evaluating-the-boolean-result-returned-from-the-authentication-api-method.cs",
         "validate-user-credentials-by-invoking-the-client-validatecredentials-method-with-the-provided-username-and-password.cs",
         "verify-all-required-prerequisites-are-satisfied-prior-to-initiating-a-connection-with-the-imap-server.cs",
+        "verify-that-the-selected-folder-exists-using-imapclient-folderexists-before-backup-or-delete-actions.cs",
         "verify-the-correctness-of-imap-server-authentication-parameters-by-attempting-a-login-and-handling-potential-failures.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 59
+          "count": 289
         },
         {
           "name": "Aspose.Email",
-          "count": 55
+          "count": 267
         },
         {
           "name": "Aspose.Email.Clients.Imap",
-          "count": 52
+          "count": 252
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 51
-        },
-        {
-          "name": "Aspose.Email.Tools.Search",
-          "count": 21
-        },
-        {
-          "name": "System.IO",
-          "count": 13
-        },
-        {
-          "name": "System.Collections.Generic",
-          "count": 10
-        },
-        {
-          "name": "Aspose.Email.Storage.Pst",
-          "count": 6
+          "count": 188
         },
         {
           "name": "System.Threading.Tasks",
-          "count": 6
+          "count": 98
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 81
         },
         {
           "name": "System.Threading",
-          "count": 6
+          "count": 77
+        },
+        {
+          "name": "System.IO",
+          "count": 66
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 58
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
+          "count": 33
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap.Models",
+          "count": 27
         },
         {
           "name": "System.Linq",
-          "count": 3
+          "count": 19
+        },
+        {
+          "name": "System.Text",
+          "count": 7
         },
         {
           "name": "System.Net",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Clients.Base",
+          "count": 4
+        },
+        {
+          "name": "System.Net.Security",
+          "count": 4
+        },
+        {
+          "name": "System.Security.Cryptography.X509Certificates",
+          "count": 4
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 3
+        },
+        {
+          "name": "System.Text.RegularExpressions",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Google",
+          "count": 3
+        },
+        {
+          "name": "System.Security.Cryptography",
           "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.Dav",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 2
+        },
+        {
+          "name": "System.Text.Json",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.Activity",
+          "count": 2
+        },
+        {
+          "name": "System.Net.Http",
+          "count": 2
+        },
+        {
+          "name": "System.IO.Compression",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Words",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Words.Saving",
+          "count": 1
         },
         {
           "name": "Aspose.Email.Clients.Pop3",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients.Imap.Models",
+          "name": "Aspose.Email.Tools",
           "count": 1
         },
         {
-          "name": "System.Text",
+          "name": "System.Net.Sockets",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Email.Clients.Google",
+          "name": "Aspose.Email.Clients.Exchange.WebService.Models",
           "count": 1
         }
       ],

@@ -13,7 +13,8 @@
     <PackageReference Include="Aspose.Words" Version="26.1.0" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.5" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-    <PackageReference Include="SkiaSharp" Version="2.88.6" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
+    <!-- Keep native assets present on linux to prevent runtime libSkiaSharp issues.
+         Don't pin a SkiaSharp version here to avoid NU1605 downgrades when Aspose.Words bumps its minimum. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
   </ItemGroup>
 </Project>

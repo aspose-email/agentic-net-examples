@@ -7,14 +7,16 @@ This repository provides working code examples demonstrating Aspose.Email for .N
 
 ## Repository Structure
 Examples are organized by feature category:
-- `convert-between-formats/` - 40 example(s)
-- `programming-email-verification/` - 12 example(s)
-- `programming-with-gmail/` - 48 example(s)
-- `working-with-amp-html-emails/` - 17 example(s)
+- `convert-between-formats/` - 135 example(s)
+- `convert-thunderbird-mbox-files/` - 180 example(s)
+- `programming-email-verification/` - 39 example(s)
+- `programming-with-gmail/` - 142 example(s)
+- `read-and-export-zimbra-tgz-files/` - 30 example(s)
+- `working-with-amp-html-emails/` - 43 example(s)
 - `working-with-exchange-ews-client/` - 549 example(s)
-- `working-with-exchange-webdav-client/` - 41 example(s)
-- `working-with-ibm-notes/` - 30 example(s)
-- `working-with-imap-client/` - 59 example(s)
+- `working-with-exchange-webdav-client/` - 149 example(s)
+- `working-with-ibm-notes/` - 62 example(s)
+- `working-with-imap-client/` - 289 example(s)
 - `working-with-microsoft-graph-client/` - 32 example(s)
 - `working-with-mime-messages/` - 121 example(s)
 - `working-with-outlook-items/` - 409 example(s)
