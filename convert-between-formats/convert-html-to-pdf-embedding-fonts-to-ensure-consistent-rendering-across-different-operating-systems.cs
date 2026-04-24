@@ -41,8 +41,8 @@ class Program
                 Document doc = new Document(mhtmlStream);
                 Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions()
                 {
-                    EmbedFullFonts = true,
-                    EmbedStandardWindowsFonts = true
+                    // EmbedFullFonts is supported; EmbedStandardWindowsFonts is not available in recent Aspose.Words versions.
+                    EmbedFullFonts = true
                 };
                 doc.Save(pdfPath, pdfOptions);
             }
