@@ -27,7 +27,7 @@ class Program
                         "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body.");
-                    placeholder.Save(oftPath, SaveOptions.DefaultOft);
+                    placeholder.Save(oftPath, Aspose.Email.SaveOptions.DefaultOft);
                 }
                 catch (Exception ex)
                 {
