@@ -3,6 +3,13 @@ name: dotnet-pr-check
 on:
   pull_request:
     branches: [ main ]
+  push:
+    branches:
+      - "examples/*"
+    paths:
+      - "**/*.cs"
+      - ".github/workflows/pr-dotnet.yml"
+  workflow_dispatch:
 
 jobs:
   build-and-run-examples:
@@ -24,9 +31,23 @@ jobs:
       - name: Find changed example files
         id: files
         run: |
-          BASE=${{ github.base_ref }}
-          HEAD=${{ github.sha }}
-          MAP=$(git diff --name-only --diff-filter=ACMRT origin/"$BASE"...$HEAD -- '*.cs' | tr '\n' ' ')
+          EVENT="${{ github.event_name }}"
+          HEAD="${{ github.sha }}"
+
+          if [ "$EVENT" = "pull_request" ]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+            RANGE="$BASE_REF...$HEAD"
+          else
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              # Manual dispatch or initial push: best-effort diff vs previous commit.
+              RANGE="$HEAD~1...$HEAD"
+            else
+              RANGE="$BEFORE...$HEAD"
+            fi
+          fi
+
+          MAP=$(git diff --name-only --diff-filter=ACMRT $RANGE -- '*.cs' | tr '\n' ' ')
           if [ -z "$MAP" ]; then
             echo "found=false" >> "$GITHUB_OUTPUT"
             echo "No changed .cs examples found." >> "$GITHUB_STEP_SUMMARY"
