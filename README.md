@@ -2,6 +2,11 @@
 
 AI-friendly repository containing validated C# examples for Aspose.Email for .NET API.
 
+## About
+Agent-generated C# examples for Aspose.Email for .NET — compiled, executed, and validated by an agentic pipeline. Includes an [agents.md](./agents.md) guide for AI coding agents.
+
+[products.aspose.com/email/net/](https://products.aspose.com/email/net/)
+
 ## Overview
 This repository provides working code examples demonstrating Aspose.Email for .NET capabilities. All examples are automatically generated, compiled, and validated using the Aspose.Email Examples Generator.
 
