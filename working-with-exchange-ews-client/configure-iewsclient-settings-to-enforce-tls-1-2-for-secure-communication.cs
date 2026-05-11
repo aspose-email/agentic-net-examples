@@ -1,8 +1,9 @@
 using Aspose.Email.Clients.Base;
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -11,47 +12,42 @@ class Program
     {
         try
         {
-            // Define connection parameters
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
+            // Define mailbox URI and credentials
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
 
             // Skip external calls when placeholder credentials are used
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+            if (mailboxUri.Contains("example.com"))
             {
                 Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create credentials
-            NetworkCredential credentials = new NetworkCredential(username, password);
+            NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            // Initialize the EWS client
+            // Create EWS client
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
                 try
                 {
-                    // Enforce TLS 1.2 for the underlying EmailClient
-                    EmailClient emailClient = client as EmailClient;
-                    if (emailClient != null)
-                    {
-                        emailClient.SupportedEncryption = EncryptionProtocols.Tls12;
-                    }
+                    // Enforce TLS 1.2 for secure communication
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-                    // Example operation: retrieve server version
-                    string versionInfo = client.GetVersionInfo();
-                    Console.WriteLine("Exchange Server version: " + versionInfo);
+                    Console.WriteLine("TLS 1.2 has been enforced for the EWS client.");
+
+                    // Optional: verify connection by retrieving mailbox info
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                    Console.WriteLine($"Connected to mailbox: {mailboxInfo.MailboxUri}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("EWS operation failed: " + ex.Message);
+                    Console.Error.WriteLine($"EWS client operation failed: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Failed to initialize EWS client: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,54 +1,63 @@
-using Aspose.Email.Tools.Search;
-using System;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Tools.Search;
+using System;
+using System.Net;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // EWS connection parameters
-            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
-            string username   = "user@example.com";
-            string password   = "password";
-
-
-            // Skip external calls when placeholder credentials are used
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+            // Initialize the Exchange client
+            IEWSClient client = null;
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                // Replace with actual server URL and credentials
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+
+                // Skip external calls when placeholder credentials are used
+                if (serviceUrl.Contains("example.com"))
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                ICredentials credentials = new NetworkCredential("username", "password");
+                client = EWSClient.GetEWSClient(serviceUrl, credentials);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
                 return;
             }
 
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            using (client as IDisposable)
             {
                 // Build a query to filter messages from a specific sender
-                ExchangeQueryBuilder queryBuilder = new ExchangeQueryBuilder();
-                queryBuilder.From.Contains("sender@example.com");
-                MailQuery query = queryBuilder.GetQuery();
+                var queryBuilder = new MailQueryBuilder();
+                MailQuery senderQuery = queryBuilder.From.Equals("sender@example.com");
 
-                // Folder URI for the Inbox
-                string inboxFolderUri = client.MailboxInfo.InboxUri;
+                // Retrieve the first 10 messages from the Inbox that match the sender filter
+                ExchangeMessageInfoCollection messages = client.ListMessages(
+                    client.MailboxInfo.InboxUri,
+                    10,
+                    senderQuery);
 
-                // Retrieve the first 10 messages that match the sender filter
-                ExchangeMessageInfoCollection messages = client.ListMessages(inboxFolderUri, 10, query);
-
-                // Display basic information about each retrieved message
+                // Display basic information for each retrieved message
                 foreach (ExchangeMessageInfo info in messages)
                 {
                     Console.WriteLine($"Subject: {info.Subject}");
-                    Console.WriteLine($"From   : {info.From}");
+                    Console.WriteLine($"Received: {info.InternalDate}");
                     Console.WriteLine(new string('-', 40));
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

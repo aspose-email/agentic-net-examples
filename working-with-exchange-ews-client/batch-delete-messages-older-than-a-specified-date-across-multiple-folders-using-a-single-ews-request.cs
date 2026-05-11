@@ -1,86 +1,85 @@
 using Aspose.Email.Tools.Search;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
+
 class Program
 {
     static void Main()
     {
         try
         {
-            // Initialize EWS client (replace with actual server URL and credentials)
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
+            // Define the EWS service URL and credentials.
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
 
             // Skip external calls when placeholder credentials are used
-            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            if (serviceUrl.Contains("example.com"))
             {
                 Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password));
-            try
+            var credentials = new System.Net.NetworkCredential("username", "password");
+
+            // Create the EWS client inside a using block to ensure proper disposal.
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
             {
-                // Define the cutoff date (messages older than this date will be deleted)
+                // List of folder URIs to process. Adjust as needed.
+                string[] folderUris = { "Inbox", "SentItems", "Archive" };
+
+                // Define the cutoff date; messages older than this will be deleted.
                 DateTime cutoffDate = new DateTime(2023, 1, 1);
 
-                // Build a MailQuery to filter messages by internal date
-                MailQueryBuilder queryBuilder = new MailQueryBuilder();
-                queryBuilder.InternalDate.BeforeOrEqual(cutoffDate);
-                MailQuery dateQuery = queryBuilder.GetQuery();
+                // Build the mail query to find messages with InternalDate before the cutoff.
+                MailQuery query = new MailQueryBuilder().InternalDate.Before(cutoffDate);
 
-                // List of folder URIs to process (Inbox and Sent Items as examples)
-                List<string> folderUris = new List<string>();
-                folderUris.Add(client.MailboxInfo.InboxUri);
-                folderUris.Add(client.MailboxInfo.SentItemsUri);
+                // Collect the unique URIs of messages that match the criteria.
+                List<string> messagesToDelete = new List<string>();
 
-                // Collect URIs of messages that match the date criteria
-                List<string> messageUrisToDelete = new List<string>();
                 foreach (string folderUri in folderUris)
                 {
-                    // Retrieve messages in the folder that satisfy the date query
-                    ExchangeMessageInfoCollection messages = client.ListMessages(folderUri, dateQuery);
-                    foreach (ExchangeMessageInfo messageInfo in messages)
+                    try
                     {
-                        // Use UniqueUri for deletion operations
-                        if (!string.IsNullOrEmpty(messageInfo.UniqueUri))
+                        // Retrieve messages from the current folder that satisfy the query.
+                        ExchangeMessageInfoCollection messages = client.ListMessages(folderUri, query);
+
+                        foreach (ExchangeMessageInfo messageInfo in messages)
                         {
-                            messageUrisToDelete.Add(messageInfo.UniqueUri);
+                            // UniqueUri is the identifier required for DeleteItems.
+                            messagesToDelete.Add(messageInfo.UniqueUri);
                         }
+                    }
+                    catch (Exception exFolder)
+                    {
+                        Console.Error.WriteLine($"Error processing folder '{folderUri}': {exFolder.Message}");
                     }
                 }
 
-                // Perform batch deletion if there are messages to delete
-                if (messageUrisToDelete.Count > 0)
+                // Perform batch deletion if any messages were found.
+                if (messagesToDelete.Count > 0)
                 {
-                    DeletionOptions deleteOptions = new DeletionOptions(DeletionType.MoveToDeletedItems);
-                    client.DeleteItems(messageUrisToDelete, deleteOptions);
-                    Console.WriteLine("Deleted {0} messages older than {1}.", messageUrisToDelete.Count, cutoffDate.ToShortDateString());
+                    try
+                    {
+                        DeletionOptions deleteOptions = new DeletionOptions(DeletionType.MoveToDeletedItems);
+                        client.DeleteItems(messagesToDelete, deleteOptions);
+                        Console.WriteLine($"Deleted {messagesToDelete.Count} messages older than {cutoffDate:d}.");
+                    }
+                    catch (Exception exDelete)
+                    {
+                        Console.Error.WriteLine($"Error deleting messages: {exDelete.Message}");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("No messages found older than the specified date.");
-                }
-            }
-            finally
-            {
-                // Ensure the client is disposed
-                if (client != null)
-                {
-                    client.Dispose();
+                    Console.WriteLine("No messages found matching the criteria.");
                 }
             }
         }
         catch (Exception ex)
         {
-            // Gracefully handle any unexpected errors
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

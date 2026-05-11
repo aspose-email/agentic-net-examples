@@ -1,7 +1,6 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
-using System.Text;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -11,10 +10,12 @@ class Program
     {
         try
         {
-            // Replace with your Exchange server details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Configuration
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
+            string cancellationId = "unique-cancellation-id"; // Unique identifier of the cancellation message
+            string outputFilePath = "cancellation.eml";
 
 
             // Skip external calls when placeholder credentials are used
@@ -24,45 +25,74 @@ class Program
                 return;
             }
 
-            // Create the EWS client inside a using block to ensure proper disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Ensure output directory exists
+            try
             {
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
-
-                foreach (ExchangeMessageInfo info in messages)
+                string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputFilePath));
+                if (!Directory.Exists(outputDir))
                 {
-                    // Filter for meeting cancellation messages
-                    if (info.MessageClass != null && info.MessageClass.Equals("IPM.Schedule.Meeting.Canceled", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // Fetch the full MailMessage
-                        MailMessage mailMessage = client.FetchMessage(info.UniqueUri);
+                    Directory.CreateDirectory(outputDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                return;
+            }
 
-                        // Retrieve the raw MIME content into a memory stream
-                        using (MemoryStream mimeStream = new MemoryStream())
-                        {
-                            client.SaveMessage(info.UniqueUri, mimeStream);
-                            string mimeContent = Encoding.UTF8.GetString(mimeStream.ToArray());
+            // Create EWS client
+            IEWSClient client = null;
+            try
+            {
+                client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password));
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
+                return;
+            }
 
-                            // Log the MIME content (for demonstration, write to console)
-                            Console.WriteLine("=== Meeting Cancellation MIME Content ===");
-                            Console.WriteLine(mimeContent);
-                            Console.WriteLine("=== End of MIME Content ===");
+            using (client)
+            {
+                // Save the MIME content of the cancellation message to a file
+                try
+                {
+                    client.SaveMessage(cancellationId, outputFilePath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save MIME content: {ex.Message}");
+                    return;
+                }
 
-                            // Extract and log the cancellation reason (using the message body as a simple example)
-                            string cancellationReason = mailMessage.Body ?? string.Empty;
-                            Console.WriteLine("Cancellation Reason:");
-                            Console.WriteLine(cancellationReason);
-                            Console.WriteLine("----------------------------------------");
-                        }
-                    }
+                // Fetch the message to extract the cancellation reason (body)
+                MailMessage cancellationMessage = null;
+                try
+                {
+                    cancellationMessage = client.FetchMessage(cancellationId);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to fetch cancellation message: {ex.Message}");
+                    return;
+                }
+
+                // Log the cancellation reason for audit
+                try
+                {
+                    string reason = cancellationMessage.Body;
+                    Console.WriteLine("Cancellation Reason:");
+                    Console.WriteLine(reason);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to read cancellation reason: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            // Friendly error handling
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

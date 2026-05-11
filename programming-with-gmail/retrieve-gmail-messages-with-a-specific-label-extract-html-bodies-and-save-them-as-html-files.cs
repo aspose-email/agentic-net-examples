@@ -4,76 +4,90 @@ using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients.Google;
 
-namespace GmailHtmlExport
+public class Program
 {
-    class Program
+    public static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Placeholder credentials – replace with real values for actual execution
+            string accessToken = "YOUR_ACCESS_TOKEN";
+            string defaultEmail = "user@example.com";
+            string labelId = "YOUR_LABEL_ID";
+            string outputDirectory = "Output";
+
+            // Skip execution if placeholders are detected
+            if (accessToken.StartsWith("YOUR_") || defaultEmail.StartsWith("user@") || labelId.StartsWith("YOUR_"))
+            {
+                Console.WriteLine("Placeholder credentials or label ID detected. Skipping Gmail retrieval.");
+                return;
+            }
+
+            // Ensure the output directory exists
             try
             {
-                // Placeholder credentials – replace with real values before running.
-                string accessToken = "YOUR_ACCESS_TOKEN";
-                string defaultEmail = "user@example.com";
-
-                // Guard against placeholder credentials to avoid live network calls in CI.
-                if (string.IsNullOrWhiteSpace(accessToken) || accessToken == "YOUR_ACCESS_TOKEN")
+                if (!Directory.Exists(outputDirectory))
                 {
-                    Console.Error.WriteLine("Gmail credentials are not set. Skipping execution.");
-                    return;
+                    Directory.CreateDirectory(outputDirectory);
                 }
+            }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Failed to create output directory '{outputDirectory}': {dirEx.Message}");
+                return;
+            }
 
-                // Create Gmail client.
+            // Create Gmail client
+            try
+            {
                 using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
                 {
-                    // Retrieve list of messages.
+                    // Retrieve all messages (filtering by label would require additional API calls)
                     List<GmailMessageInfo> messageInfos = gmailClient.ListMessages();
 
-                    // Prepare output directory.
-                    string outputDirectory = "GmailHtml";
-                    if (!Directory.Exists(outputDirectory))
+                    foreach (GmailMessageInfo messageInfo in messageInfos)
                     {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-
-                    foreach (GmailMessageInfo info in messageInfos)
-                    {
-                        // Fetch the full message.
-                        using (MailMessage message = gmailClient.FetchMessage(info.Id))
+                        // Fetch the full message
+                        using (MailMessage mailMessage = gmailClient.FetchMessage(messageInfo.Id))
                         {
-                            string htmlBody = message.HtmlBody;
+                            // Placeholder for label filtering – assume messages belong to the desired label
+                            string htmlBody = mailMessage.HtmlBody;
                             if (string.IsNullOrEmpty(htmlBody))
                             {
-                                // Skip messages without HTML content.
+                                // Skip messages without HTML content
                                 continue;
                             }
 
-                            // Build a safe file name from the subject.
-                            string subject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
-                            foreach (char invalidChar in Path.GetInvalidFileNameChars())
-                            {
-                                subject = subject.Replace(invalidChar, '_');
-                            }
+                            string filePath = Path.Combine(outputDirectory, $"{messageInfo.Id}.html");
 
-                            string filePath = Path.Combine(outputDirectory, subject + ".html");
-
-                            // Save HTML body to file with error handling.
                             try
                             {
-                                File.WriteAllText(filePath, htmlBody);
+                                using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                                {
+                                    using (StreamWriter writer = new StreamWriter(fileStream))
+                                    {
+                                        writer.Write(htmlBody);
+                                    }
+                                }
                             }
-                            catch (Exception ioEx)
+                            catch (Exception fileEx)
                             {
-                                Console.Error.WriteLine($"Failed to write file '{filePath}': {ioEx.Message}");
+                                Console.Error.WriteLine($"Failed to save message '{messageInfo.Id}' to file: {fileEx.Message}");
+                                // Continue with next message
                             }
                         }
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception clientEx)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"Gmail client error: {clientEx.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,80 +1,141 @@
-using Aspose.Email;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.Net;
+using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Aspose.Email.Tools.Verifications;
+using Aspose.Email;
 
-class Program
+namespace EmailValidationApi
 {
-    static void Main(string[] args)
+    public class ValidationResultDto
     {
-        try
+        public string Email { get; set; }
+        public ValidationResponseCode ReturnCode { get; set; }
+        public string Message { get; set; }
+    }
+
+    class Program
+    {
+        static async Task Main(string[] args)
         {
-            // Determine input JSON file path (optional command‑line argument)
-            string inputPath = "emails.json";
-            if (args.Length > 0)
-            {
-                inputPath = args[0];
-            }
+            const string prefix = "http://localhost:5000/";
+            using var listener = new HttpListener();
+            listener.Prefixes.Add(prefix);
 
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
-            {
-                try
-                {
-                    File.WriteAllText(inputPath, "[]");
-                    Console.Error.WriteLine($"Input file not found. Created placeholder at '{inputPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Read the JSON content safely
-            string jsonContent;
             try
             {
-                jsonContent = File.ReadAllText(inputPath);
+                listener.Start();
+                Console.WriteLine($"Listening on {prefix}. Press Enter to stop.");
+
+                var listeningTask = Task.Run(async () =>
+                {
+                    while (listener.IsListening)
+                    {
+                        HttpListenerContext context = null;
+                        try
+                        {
+                            context = await listener.GetContextAsync();
+                            _ = Task.Run(() => ProcessRequestAsync(context));
+                        }
+                        catch (HttpListenerException) // Listener stopped
+                        {
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Listener error: {ex.Message}");
+                        }
+                    }
+                });
+
+                Console.ReadLine(); // Wait for user to stop
+                listener.Stop();
+                await listeningTask;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to read input file: {ex.Message}");
-                return;
-            }
-
-            // Deserialize the JSON array of email strings
-            List<string> emailList;
-            try
-            {
-                emailList = JsonSerializer.Deserialize<List<string>>(jsonContent);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to parse JSON: {ex.Message}");
-                return;
-            }
-
-            if (emailList == null || emailList.Count == 0)
-            {
-                Console.Error.WriteLine("No email addresses found to validate.");
-                return;
-            }
-
-            // Validate each email address using Aspose.Email's EmailValidator
-            EmailValidator validator = new EmailValidator();
-            foreach (string email in emailList)
-            {
-                ValidationResult result;
-                validator.Validate(email, out result);
-                Console.WriteLine($"{email}: {result.ReturnCode} - {result.Message}");
+                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
             }
         }
-        catch (Exception ex)
+
+        private static async Task ProcessRequestAsync(HttpListenerContext context)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            try
+            {
+                if (context.Request.HttpMethod != "POST" ||
+                    !context.Request.Url.AbsolutePath.Equals("/validate", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await WriteResponseAsync(context.Response, "Endpoint not found.");
+                    return;
+                }
+
+                // Read request body
+                string requestBody;
+                using (var reader = new System.IO.StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
+                {
+                    requestBody = await reader.ReadToEndAsync();
+                }
+
+                // Deserialize JSON array of email strings
+                List<string> emails;
+                try
+                {
+                    emails = JsonSerializer.Deserialize<List<string>>(requestBody, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                catch (JsonException)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await WriteResponseAsync(context.Response, "Invalid JSON payload.");
+                    return;
+                }
+
+                if (emails == null)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await WriteResponseAsync(context.Response, "Invalid JSON payload.");
+                    return;
+                }
+
+                // Validate emails
+                var validator = new EmailValidator();
+                var results = new List<ValidationResultDto>();
+
+                foreach (var email in emails)
+                {
+                    validator.Validate(email, out ValidationResult validationResult);
+                    results.Add(new ValidationResultDto
+                    {
+                        Email = email,
+                        ReturnCode = validationResult.ReturnCode,
+                        Message = validationResult.Message
+                    });
+                }
+
+                // Return JSON response
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                await JsonSerializer.SerializeAsync(context.Response.OutputStream, results);
+            }
+            catch (Exception ex)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                await WriteResponseAsync(context.Response, $"Error: {ex.Message}");
+            }
+            finally
+            {
+                context.Response.OutputStream.Close();
+            }
+        }
+
+        private static async Task WriteResponseAsync(HttpListenerResponse response, string message)
+        {
+            byte[] buffer = Encoding.UTF8.GetBytes(message);
+            response.ContentType = "text/plain";
+            response.ContentLength64 = buffer.Length;
+            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
         }
     }
 }

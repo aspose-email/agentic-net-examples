@@ -1,8 +1,7 @@
-using Aspose.Email.Clients.Base;
+using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -11,11 +10,10 @@ class Program
     {
         try
         {
-            // Define connection parameters
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Mailbox URI and credentials
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
-
 
             // Skip external calls when placeholder credentials are used
             if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
@@ -24,32 +22,31 @@ class Program
                 return;
             }
 
-            // Create EWS client inside a using block to ensure disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                // Cast to EmailClient to access TLS settings
-                EmailClient emailClient = client as EmailClient;
-                if (emailClient != null)
-                {
-                    // Configure the client to use TLS 1.2 only
-                    emailClient.SupportedEncryption = EncryptionProtocols.Tls12;
-                }
+            // Set the supported TLS protocol (e.g., TLS 1.2) before any network activity
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-                // Example operation: retrieve server version info
+            NetworkCredential credentials = new NetworkCredential(username, password);
+
+            // Create EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            {
+                // Optional: validate the connection by listing messages in the Inbox
                 try
                 {
-                    string versionInfo = client.GetVersionInfo();
-                    Console.WriteLine("Exchange Server Version: " + versionInfo);
+                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                    Console.WriteLine($"Retrieved {messages.Count} messages from Inbox.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Failed to get version info: " + ex.Message);
+                    Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
                 }
+
+                Console.WriteLine("EWS client configured with TLS 1.2.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

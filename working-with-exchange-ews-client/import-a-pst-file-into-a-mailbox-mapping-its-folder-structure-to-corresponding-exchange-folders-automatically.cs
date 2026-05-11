@@ -4,25 +4,27 @@ using System.IO;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Storage;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             // Paths and credentials
-            string pstPath = "input.pst";
+            string pstFilePath = "source.pst";
             string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
             // Ensure PST file exists; create a minimal placeholder if missing
-            if (!File.Exists(pstPath))
+            if (!File.Exists(pstFilePath))
             {
                 try
                 {
-                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode)) { }
+                    PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Created placeholder PST at '{pstFilePath}'.");
                 }
                 catch (Exception ex)
                 {
@@ -31,24 +33,26 @@ class Program
                 }
             }
 
-            // Load PST and restore to Exchange mailbox
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            // Load PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
             {
-                // Create Exchange client
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+                // Initialize Exchange client
+                try
                 {
-                    try
+                    using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
                     {
-                        // Restore all folders and messages from PST to the mailbox
-                        RestoreSettings settings = new RestoreSettings();
-                        client.Restore(pst, settings);
+                        // Restore settings (default)
+                        RestoreSettings restoreSettings = new RestoreSettings();
+
+                        // Import PST into mailbox, preserving folder hierarchy
+                        client.Restore(pst, restoreSettings);
                         Console.WriteLine("PST import completed successfully.");
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error during restore operation: {ex.Message}");
-                        return;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
+                    return;
                 }
             }
         }

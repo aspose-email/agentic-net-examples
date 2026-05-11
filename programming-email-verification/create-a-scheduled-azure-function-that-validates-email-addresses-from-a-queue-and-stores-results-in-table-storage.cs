@@ -1,98 +1,154 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Tools.Verifications;
 
-namespace EmailValidationFunction
+namespace EmailValidationConsoleApp
 {
-    class Program
+    // Dummy Azure Function attributes
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class FunctionNameAttribute : Attribute
     {
-        static void Main(string[] args)
+        public FunctionNameAttribute(string name) { }
+    }
+
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public sealed class QueueTriggerAttribute : Attribute
+    {
+        public QueueTriggerAttribute(string queueName) { }
+        public string Connection { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public sealed class TableAttribute : Attribute
+    {
+        public TableAttribute(string tableName) { }
+        public string Connection { get; set; }
+    }
+
+    // Dummy logger interface
+    public interface ILogger
+    {
+        void LogInformation(string message);
+        void LogWarning(string message);
+        void LogError(Exception exception, string message);
+    }
+
+    public class ConsoleLogger : ILogger
+    {
+        public void LogInformation(string message) => Console.WriteLine($"[Info] {message}");
+        public void LogWarning(string message) => Console.WriteLine($"[Warn] {message}");
+        public void LogError(Exception exception, string message) => Console.WriteLine($"[Error] {message} - {exception}");
+    }
+
+    // Dummy Table storage types
+    public struct ETag { }
+
+    public interface ITableEntity
+    {
+        string PartitionKey { get; set; }
+        string RowKey { get; set; }
+        DateTimeOffset? Timestamp { get; set; }
+        ETag ETag { get; set; }
+    }
+
+    public class TableClient
+    {
+        private readonly List<ITableEntity> _store = new List<ITableEntity>();
+
+        public Task CreateIfNotExistsAsync() => Task.CompletedTask;
+
+        public Task UpsertEntityAsync(ITableEntity entity)
+        {
+            _store.Add(entity);
+            return Task.CompletedTask;
+        }
+
+        // For demonstration purposes
+        public IEnumerable<ITableEntity> GetAllEntities() => _store;
+    }
+
+    public class EmailValidationEntity : ITableEntity
+    {
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
+
+        public string Email { get; set; }
+        public bool IsValid { get; set; }
+        public string Message { get; set; }
+    }
+
+    public static class EmailValidationFunction
+    {
+        [FunctionName("ValidateEmailFromQueue")]
+        public static async Task Run(
+            [QueueTrigger("emailqueue", Connection = "AzureWebJobsStorage")] string email,
+            ILogger log,
+            [Table("EmailValidationResults", Connection = "AzureWebJobsStorage")] TableClient tableClient)
         {
             try
             {
-                // Simulated queue of email addresses
-                List<string> emailQueue = new List<string>
+                if (string.IsNullOrWhiteSpace(email))
                 {
-                    "valid.user@example.com",
-                    "invalid-email",
-                    "another.valid@domain.org"
+                    log.LogWarning("Received empty email address from queue.");
+                    return;
+                }
+
+                await tableClient.CreateIfNotExistsAsync();
+
+                // Validate the email address using Aspose.Email
+                var emailValidator = new EmailValidator();
+                emailValidator.Validate(email, out ValidationResult validationResult);
+
+                bool isValid = validationResult.ReturnCode == ValidationResponseCode.ValidationSuccess;
+                string message = validationResult.Message ?? string.Empty;
+
+                var entity = new EmailValidationEntity
+                {
+                    PartitionKey = "EmailValidation",
+                    RowKey = Guid.NewGuid().ToString(),
+                    Email = email,
+                    IsValid = isValid,
+                    Message = message
                 };
 
-                // Output CSV file path for storing validation results
-                string outputPath = "validation_results.csv";
-
-                // Ensure the output directory exists
-                string outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-                if (!Directory.Exists(outputDirectory))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create directory '{outputDirectory}': {dirEx.Message}");
-                        return;
-                    }
-                }
-
-                // Create the CSV file with header if it does not exist
-                if (!File.Exists(outputPath))
-                {
-                    try
-                    {
-                        using (StreamWriter headerWriter = new StreamWriter(outputPath, false))
-                        {
-                            headerWriter.WriteLine("EmailAddress,ReturnCode,Message");
-                        }
-                    }
-                    catch (Exception createEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create file '{outputPath}': {createEx.Message}");
-                        return;
-                    }
-                }
-
-                // Initialize the email validator
-                EmailValidator validator = new EmailValidator();
-
-                // Process each email address from the queue
-                foreach (string emailAddress in emailQueue)
-                {
-                    try
-                    {
-                        // Validate the email address using default policy (syntax + domain)
-                        validator.Validate(emailAddress, out ValidationResult validationResult);
-
-                        // Prepare CSV line with the result
-                        string csvLine = $"{emailAddress},{validationResult.ReturnCode},{validationResult.Message}";
-
-                        // Append the result to the CSV file
-                        try
-                        {
-                            using (StreamWriter writer = new StreamWriter(outputPath, true))
-                            {
-                                writer.WriteLine(csvLine);
-                            }
-                        }
-                        catch (Exception writeEx)
-                        {
-                            Console.Error.WriteLine($"Failed to write result for '{emailAddress}': {writeEx.Message}");
-                        }
-                    }
-                    catch (Exception validateEx)
-                    {
-                        Console.Error.WriteLine($"Validation error for '{emailAddress}': {validateEx.Message}");
-                    }
-                }
-
-                Console.WriteLine("Email validation processing completed.");
+                await tableClient.UpsertEntityAsync(entity);
+                log.LogInformation($"Email '{email}' validation result stored. IsValid: {isValid}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                log.LogError(ex, $"Error processing email '{email}'.");
+            }
+        }
+    }
+
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            // Sample email list simulating a queue
+            var emailQueue = new Queue<string>();
+            emailQueue.Enqueue("valid.email@example.com");
+            emailQueue.Enqueue("invalid-email");
+            emailQueue.Enqueue(""); // empty entry
+
+            var logger = new ConsoleLogger();
+            var tableClient = new TableClient();
+
+            while (emailQueue.Count > 0)
+            {
+                var email = emailQueue.Dequeue();
+                await EmailValidationFunction.Run(email, logger, tableClient);
+            }
+
+            // Display stored results
+            Console.WriteLine("\nStored validation results:");
+            foreach (EmailValidationEntity entity in tableClient.GetAllEntities())
+            {
+                Console.WriteLine($"- Email: {entity.Email}, IsValid: {entity.IsValid}, Message: {entity.Message}");
             }
         }
     }

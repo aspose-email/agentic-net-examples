@@ -1,81 +1,105 @@
 using Aspose.Email.PersonalInfo;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailEwsForwardingExport
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Connection parameters – replace with actual values
+            // ----- Configuration (replace with real values) -----
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Create EWS client with safety guard
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Guard: skip real network calls when placeholders are detected.
+            if (mailboxUri.Contains("example.com") ||
+                username.Contains("example.com") ||
+                password == "password")
             {
-                // Retrieve all mailboxes (contacts) from the GAL
-                Contact[] contacts = client.GetMailboxes();
+                Console.WriteLine("Placeholder credentials detected. Skipping EWS connection.");
+                Console.WriteLine("Export would be performed here if real credentials were provided.");
+                return;
+            }
 
-                // Prepare CSV output path
-                string csvPath = "forwarding_addresses.csv";
-
-                // Skip external calls when placeholder credentials are used
-                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+            try
+            {
+                // Create and connect the EWS client.
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
-                    return;
-                }
+                    // Retrieve all mailboxes from the Exchange server.
+                    // The return type may vary between library versions (MailboxInfo[] or Contact[]),
+                    // so we treat it as an object array and use reflection to access needed properties.
+                    var mailboxes = client.GetMailboxes();
 
-                string directory = Path.GetDirectoryName(csvPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                // Write forwarding information to CSV
-                using (StreamWriter writer = new StreamWriter(csvPath, false))
-                {
-                    writer.WriteLine("Mailbox,ForwardingAddress");
-
-                    foreach (Contact contact in contacts)
+                    // Prepare CSV lines.
+                    List<string> csvLines = new List<string>
                     {
-                        // Get primary SMTP address of the mailbox
-                        string mailboxAddress = string.Empty;
-                        if (contact.EmailAddresses != null && contact.EmailAddresses.Count > 0)
-                        {
-                            mailboxAddress = contact.EmailAddresses[0].Address;
-                        }
+                        "DisplayName,PrimarySmtpAddress,ForwardingAddress" // Header
+                    };
 
-                        // Attempt to read the forwarding address via reflection
-                        // (the exact member name may vary between SDK versions)
-                        string forwardingAddress = string.Empty;
-                        PropertyInfo forwardingProp = contact.GetType().GetProperty("ForwardingAddress");
-                        if (forwardingProp != null)
-                        {
-                            forwardingAddress = forwardingProp.GetValue(contact) as string;
-                        }
+                    foreach (var mb in mailboxes)
+                    {
+                        string displayName = GetStringProperty(mb, "DisplayName");
+                        string primarySmtp = GetStringProperty(mb, "PrimarySmtpAddress");
+                        string forwarding = GetStringProperty(mb, "ForwardingAddress");
 
-                        // Export only mailboxes that have forwarding configured
-                        if (!string.IsNullOrEmpty(forwardingAddress))
+                        if (string.IsNullOrEmpty(forwarding))
+                            forwarding = GetStringProperty(mb, "ForwardingSmtpAddress");
+
+                        if (!string.IsNullOrEmpty(forwarding))
                         {
-                            writer.WriteLine($"{mailboxAddress},{forwardingAddress}");
+                            string line = string.Format("{0},{1},{2}",
+                                EscapeCsv(displayName),
+                                EscapeCsv(primarySmtp),
+                                EscapeCsv(forwarding));
+                            csvLines.Add(line);
                         }
                     }
-                }
 
-                Console.WriteLine("Forwarding addresses exported to " + csvPath);
+                    // Write CSV to file.
+                    string outputPath = Path.Combine(Environment.CurrentDirectory, "forwarding_addresses.csv");
+                    Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                    File.WriteAllLines(outputPath, csvLines);
+                    Console.WriteLine("Export completed: " + outputPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Error: " + ex.Message);
             }
         }
-        catch (Exception ex)
+
+        // Helper to safely retrieve string properties via reflection.
+        private static string GetStringProperty(object obj, string propertyName)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            if (obj == null) return string.Empty;
+            PropertyInfo prop = obj.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            if (prop != null && prop.PropertyType == typeof(string))
+            {
+                return prop.GetValue(obj) as string ?? string.Empty;
+            }
+            return string.Empty;
+        }
+
+        // Helper to escape commas and quotes for CSV fields.
+        private static string EscapeCsv(string field)
+        {
+            if (string.IsNullOrEmpty(field))
+                return string.Empty;
+
+            if (field.Contains(",") || field.Contains("\"") || field.Contains("\n"))
+            {
+                string escaped = field.Replace("\"", "\"\"");
+                return $"\"{escaped}\"";
+            }
+            return field;
         }
     }
 }

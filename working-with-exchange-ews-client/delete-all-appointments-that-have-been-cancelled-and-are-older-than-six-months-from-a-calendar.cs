@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Clients.Exchange.WebService;
@@ -12,39 +11,34 @@ class Program
         {
             // Initialize EWS client
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
             // Skip external calls when placeholder credentials are used
-            if (mailboxUri.Contains("example.com"))
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
             {
                 Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            NetworkCredential credentials = new NetworkCredential("username", "password");
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Get the default calendar folder URI
-                string calendarFolderUri = client.CurrentCalendarFolderUri;
-
-                // Retrieve all appointments from the calendar
-                Appointment[] appointments = client.ListAppointments(calendarFolderUri, true);
+                // Retrieve all appointments from the default calendar folder
+                Appointment[] appointments = client.ListAppointments();
 
                 DateTime cutoffDate = DateTime.Now.AddMonths(-6);
 
                 foreach (Appointment appointment in appointments)
                 {
                     // Check if the appointment is cancelled and older than six months
-                    if (appointment.Status == AppointmentStatus.Cancelled && appointment.StartDate < cutoffDate)
+                    bool isCancelled = appointment.Status == AppointmentStatus.Cancelled;
+                    bool isOld = appointment.StartDate < cutoffDate;
+
+                    if (isCancelled && isOld)
                     {
-                        try
-                        {
-                            // Delete the cancelled appointment
-                            client.DeleteItem(appointment.UniqueId, new DeletionOptions(DeletionType.MoveToDeletedItems));
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to delete appointment {appointment.UniqueId}: {ex.Message}");
-                        }
+                        // Cancel the appointment on the server
+                        client.CancelAppointment(appointment);
+                        Console.WriteLine($"Cancelled appointment: {appointment.Summary} (Start: {appointment.StartDate})");
                     }
                 }
             }

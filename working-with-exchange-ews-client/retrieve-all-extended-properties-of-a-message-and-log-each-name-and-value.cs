@@ -1,48 +1,55 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define connection parameters (replace with actual values)
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            // Connection parameters (replace with real values)
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
             // Create EWS client
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // URI of the message to retrieve (replace with actual message URI)
-                string messageUri = "https://example.com/EWS/MessageId";
-
-
-                // Skip external calls when placeholder credentials are used
-                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password" || messageUri.Contains("example.com"))
+                try
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
-                    return;
+                    // Message URI to fetch (replace with a real message URI)
+                    string messageUri = "https://exchange.example.com/EWS/MessageId";
+
+
+                    // Skip external calls when placeholder credentials are used
+                    if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password" || messageUri.Contains("example.com"))
+                    {
+                        Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                        return;
+                    }
+
+                    // Fetch the message; extended properties are available via Headers collection
+                    MailMessage message = client.FetchMessage(messageUri);
+
+                    Console.WriteLine("Extended properties of the message:");
+                    foreach (string headerName in message.Headers.Keys)
+                    {
+                        string headerValue = message.Headers[headerName];
+                        Console.WriteLine($"{headerName}: {headerValue}");
+                    }
                 }
-
-                // Fetch the message (extended properties are available via Headers)
-                MailMessage mailMessage = client.FetchMessage(messageUri);
-
-                // Log each header (standard and custom extended properties)
-                foreach (string headerName in mailMessage.Headers.Keys)
+                catch (Exception ex)
                 {
-                    string headerValue = mailMessage.Headers[headerName];
-                    Console.WriteLine($"{headerName}: {headerValue}");
+                    Console.Error.WriteLine($"Error fetching message: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

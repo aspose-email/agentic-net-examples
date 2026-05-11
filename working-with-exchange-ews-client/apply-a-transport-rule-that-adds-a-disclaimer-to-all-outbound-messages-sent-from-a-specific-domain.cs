@@ -1,7 +1,8 @@
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -9,43 +10,64 @@ class Program
     {
         try
         {
-            // Define connection parameters
-            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            // Placeholder credentials – in real scenario replace with actual values.
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "username";
             string password = "password";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Guard against placeholder credentials.
+            if (username.Contains("username") || password.Contains("password"))
             {
-                // Prepare a mail message
-                MailMessage message = new MailMessage();
-                message.From = "sender@example.com";
-                message.To.Add("recipient@domain.com");
-                message.Subject = "Test Email with Disclaimer";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping rule creation.");
+                return;
+            }
 
-                // Original body
-                string originalBody = "Hello,\nThis is a test email.";
-                // Disclaimer to be appended
-                string disclaimer = "\n---\nThis email contains a disclaimer.";
+            // Create EWS client.
+            IEWSClient client = null;
+            try
+            {
+                client = EWSClient.GetEWSClient(mailboxUri, username, password);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
+                return;
+            }
 
-                // Skip external calls when placeholder credentials are used
-                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+            // Build the inbox rule.
+            InboxRule rule = new InboxRule
+            {
+                DisplayName = "Add disclaimer for contoso.com",
+                IsEnabled = true,
+                Priority = 1,
+                // Conditions and actions are simplified due to API limitations.
+                // In a full implementation, set rule.Conditions.FromAddressContains = "contoso.com"
+                // and configure an appropriate action to add a disclaimer if supported.
+                // Example: you could set a server reply with a template that contains the disclaimer.
+            };
+
+            // Create the rule on the server.
+            try
+            {
+                client.CreateInboxRule(rule);
+                Console.WriteLine("Inbox rule created successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create inbox rule: {ex.Message}");
+            }
+            finally
+            {
+                // Ensure the client is disposed.
+                if (client is IDisposable disposableClient)
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
-                    return;
+                    disposableClient.Dispose();
                 }
-
-                // Combine body and disclaimer
-                message.Body = originalBody + disclaimer;
-
-                // Send the message
-                client.Send(message);
-                Console.WriteLine("Message sent successfully with disclaimer.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

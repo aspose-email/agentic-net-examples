@@ -2,6 +2,7 @@ using Aspose.Email;
 using System;
 using System.Net;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -9,6 +10,7 @@ class Program
     {
         try
         {
+            // Exchange server URL and user credentials
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
@@ -21,23 +23,25 @@ class Program
                 return;
             }
 
-            try
+            // Initialize the IEWSClient instance
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                // Verify the connection by retrieving mailbox information
+                try
                 {
-                    Console.WriteLine("EWS client initialized successfully.");
-                    // Perform further operations with 'client' here.
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                    Console.WriteLine($"Connected to mailbox: {mailboxInfo.MailboxUri}");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to initialize EWS client: {ex.Message}");
-                return;
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to retrieve mailbox info: {ex.Message}");
+                    return;
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

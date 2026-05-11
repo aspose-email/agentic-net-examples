@@ -2,6 +2,7 @@ using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -9,36 +10,34 @@ class Program
     {
         try
         {
-            // Replace with your actual Exchange Web Services URL and credentials
+            // Initialize Exchange client (EWS)
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            string username = "username";
             string password = "password";
 
-            // Create the EWS client
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
+
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Folder to search – using the standard Inbox name
-                string inboxFolder = "Inbox";
+                // Build a query to filter unread messages
+                ExchangeQueryBuilder queryBuilder = new ExchangeQueryBuilder();
+                MailQuery unreadQuery = queryBuilder.HasNoFlags(ExchangeMessageFlag.IsRead);
 
+                // Specify the folder (e.g., Inbox)
+                string folderUri = client.MailboxInfo.InboxUri;
 
-                // Skip external calls when placeholder credentials are used
-                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+                // List unread messages in the folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(folderUri, unreadQuery);
+
+                Console.WriteLine($"Unread messages count: {messages.Count}");
+                foreach (ExchangeMessageInfo msgInfo in messages)
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
-                    return;
-                }
-
-                // Retrieve all messages in the folder
-                ExchangeMessageInfoCollection allMessages = client.ListMessages(inboxFolder);
-
-                Console.WriteLine("Unread messages in the Inbox:");
-                foreach (ExchangeMessageInfo messageInfo in allMessages)
-                {
-                    // Filter only unread messages
-                    if (!messageInfo.IsRead)
-                    {
-                        Console.WriteLine($"Subject: {messageInfo.Subject}");
-                    }
+                    Console.WriteLine($"Subject: {msgInfo.Subject}");
                 }
             }
         }

@@ -1,8 +1,9 @@
-using Aspose.Email.PersonalInfo;
 using System;
-using System.Text.RegularExpressions;
 using Aspose.Email;
 using Aspose.Email.Clients.Google;
+using Aspose.Email.PersonalInfo;
+using Aspose.Email.Tools.Verifications;
+using System.Collections.Generic;
 
 class Program
 {
@@ -10,44 +11,89 @@ class Program
     {
         try
         {
-            // Placeholder credentials – replace with real values for actual execution.
+            // Placeholder credentials – replace with real values.
             string accessToken = "YOUR_ACCESS_TOKEN";
-            string defaultEmail = "user@example.com";
+            string defaultEmail = "YOUR_EMAIL@example.com";
 
-            // Skip external calls when placeholders are detected.
-            if (accessToken.StartsWith("YOUR_"))
+            // Skip execution if placeholders are not replaced.
+            if (accessToken.StartsWith("YOUR_") || defaultEmail.StartsWith("YOUR_"))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping Gmail operations.");
+                Console.Error.WriteLine("Please provide valid Gmail OAuth credentials before running the sample.");
                 return;
             }
 
             // Create Gmail client.
-            using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
+            IGmailClient gmailClient = null;
+            try
             {
-                try
+                gmailClient = GmailClient.GetInstance(accessToken, defaultEmail);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                return;
+            }
+
+            // Fetch all contacts.
+            Contact[] contacts;
+            try
+            {
+                contacts = gmailClient.GetAllContacts();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to retrieve contacts: {ex.Message}");
+                return;
+            }
+
+            // Prepare validator.
+            EmailValidator validator = new EmailValidator();
+
+            // List to hold invalid email entries.
+            List<string> invalidEmails = new List<string>();
+
+            // Iterate contacts and validate each email address.
+            foreach (Contact contact in contacts)
+            {
+                if (contact == null) continue;
+
+                // EmailAddressList may contain multiple entries.
+                EmailAddressList emailList = contact.EmailAddresses;
+                if (emailList == null) continue;
+
+                foreach (EmailAddress emailAddr in emailList)
                 {
-                    // Retrieve all contacts.
-                    Contact[] contacts = gmailClient.GetAllContacts();
+                    if (emailAddr == null) continue;
 
-                    // Simple regex for email validation.
-                    Regex emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
-
-                    foreach (Contact contact in contacts)
+                    ValidationResult result;
+                    try
                     {
-                        // Iterate through each email address of the contact.
-                        foreach (var emailAddr in contact.EmailAddresses)
-                        {
-                            string address = emailAddr.Address;
-                            if (!emailRegex.IsMatch(address))
-                            {
-                                Console.WriteLine($"Invalid email address in contact '{contact.DisplayName}': {address}");
-                            }
-                        }
+                        validator.Validate(emailAddr.Address, out result);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Validation error for '{emailAddr.Address}': {ex.Message}");
+                        continue;
+                    }
+
+                    if (result.ReturnCode != ValidationResponseCode.ValidationSuccess)
+                    {
+                        invalidEmails.Add($"{contact.DisplayName ?? "(no name)"}: {emailAddr.Address} – {result.Message}");
                     }
                 }
-                catch (Exception ex)
+            }
+
+            // Output results.
+            if (invalidEmails.Count == 0)
+            {
+                Console.WriteLine("All contact email addresses are valid.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid email addresses found:");
+                foreach (string entry in invalidEmails)
                 {
-                    Console.Error.WriteLine($"Error processing contacts: {ex.Message}");
+                    Console.WriteLine(entry);
                 }
             }
         }

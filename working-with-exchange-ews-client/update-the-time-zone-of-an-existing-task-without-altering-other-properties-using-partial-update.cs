@@ -1,63 +1,53 @@
-using Aspose.Email;
 using System;
+using System.Net;
+using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-namespace UpdateTaskTimeZoneSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // EWS connection parameters
-                string serviceUrl = "https://example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
+            // Initialize EWS client (replace with actual server, username, and password)
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-                // Unique identifier (URI) of the task to be updated
-                string taskUri = "https://example.com/EWS/Tasks/UniqueTaskId";
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+            {
+                // The unique URI of the task to be updated
+                string taskUri = "https://exchange.example.com/EWS/Tasks/12345";
 
 
                 // Skip external calls when placeholder credentials are used
-                if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password" || taskUri.Contains("example.com"))
+                if (mailboxUri.Contains("example.com") || username == "username" || password == "password" || taskUri.Contains("example.com"))
                 {
                     Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
 
-                // Create and connect the EWS client
-                try
+                // Fetch the existing task
+                ExchangeTask task = client.FetchTask(taskUri);
+                if (task == null)
                 {
-                    using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
-                    {
-                        // Fetch the existing task
-                        ExchangeTask task = client.FetchTask(taskUri);
-                        if (task == null)
-                        {
-                            Console.Error.WriteLine("Task not found.");
-                            return;
-                        }
-
-                        // Update only the start date (time zone handling can be done via DateTimeKind)
-                        // Here we set the start date to 9:00 AM UTC on 1 Oct 2023
-                        task.StartDate = new DateTime(2023, 10, 1, 9, 0, 0, DateTimeKind.Utc);
-
-                        // Perform the partial update (only the modified property is sent)
-                        client.UpdateTask(task);
-                        Console.WriteLine("Task time zone (start date) updated successfully.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
+                    Console.Error.WriteLine("Task not found.");
                     return;
                 }
+
+                // Update only the time zone related property (e.g., set StartDate as UTC)
+                // This demonstrates a partial update; other properties remain unchanged.
+                task.StartDate = new DateTime(2026, 5, 10, 9, 0, 0, DateTimeKind.Utc);
+
+                // Apply the update
+                client.UpdateTask(task);
+
+                Console.WriteLine("Task time zone (StartDate) updated successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

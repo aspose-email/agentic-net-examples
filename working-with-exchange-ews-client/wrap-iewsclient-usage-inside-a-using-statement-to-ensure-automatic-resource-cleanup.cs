@@ -1,17 +1,18 @@
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
     static void Main()
     {
+        // Top‑level exception guard
         try
         {
-            // Define the EWS endpoint and user credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Replace with your actual EWS endpoint and credentials
+            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
@@ -23,23 +24,28 @@ class Program
                 return;
             }
 
-            // Create the EWS client inside a using block for automatic disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                // Retrieve mailbox information
-                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+            NetworkCredential credentials = new NetworkCredential(username, password);
 
-                // Display some useful folder URIs
-                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
-                Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
-                Console.WriteLine("Drafts URI: " + mailboxInfo.DraftsUri);
-                Console.WriteLine("Deleted Items URI: " + mailboxInfo.DeletedItemsUri);
+            // IEWSClient is wrapped in a using statement for automatic disposal
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            {
+                // Client connection safety guard
+                try
+                {
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+
+                    // ExchangeMailboxInfo does not have EmailAddress; use MailboxUri or other available properties
+                    Console.WriteLine("Mailbox URI: " + mailboxInfo.MailboxUri);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Failed to retrieve mailbox info: " + ex.Message);
+                }
             }
         }
         catch (Exception ex)
         {
-            // Write any errors to the error stream
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }

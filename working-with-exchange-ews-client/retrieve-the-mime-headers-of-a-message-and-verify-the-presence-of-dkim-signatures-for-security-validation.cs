@@ -4,14 +4,12 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Path to the EML file
-            string emlPath = "sample.eml";
+            string emlPath = "message.eml";
 
-            // Verify that the file exists before attempting to load it
             if (!File.Exists(emlPath))
             {
                 try
@@ -31,51 +29,24 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"EML file not found: {emlPath}");
+                Console.Error.WriteLine($"File not found: {emlPath}");
                 return;
             }
 
-            // Load the message inside a using block to ensure proper disposal
             using (MailMessage mailMessage = MailMessage.Load(emlPath))
             {
-                // Display all MIME headers
-                Console.WriteLine("MIME Headers:");
-                foreach (string headerName in mailMessage.Headers.Keys)
-                {
-                    string headerValue = mailMessage.Headers[headerName];
-                    Console.WriteLine($"{headerName}: {headerValue}");
-                }
+                bool dkimSignatureFound = false;
 
-                // Check for the presence of a DKIM signature header
-                bool hasDkimSignature = false;
                 foreach (string headerName in mailMessage.Headers.Keys)
                 {
-                    if (headerName.Equals("DKIM-Signature", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(headerName, "DKIM-Signature", StringComparison.OrdinalIgnoreCase))
                     {
-                        hasDkimSignature = true;
+                        dkimSignatureFound = true;
                         break;
                     }
                 }
 
-                // Output verification result
-                if (hasDkimSignature)
-                {
-                    Console.WriteLine("DKIM signature header is present.");
-                }
-                else
-                {
-                    Console.WriteLine("DKIM signature header is NOT present.");
-                }
-
-                // Additional check using the IsSigned property (general signature detection)
-                if (mailMessage.IsSigned)
-                {
-                    Console.WriteLine("The message is signed (any signature).");
-                }
-                else
-                {
-                    Console.WriteLine("The message is not signed.");
-                }
+                Console.WriteLine($"DKIM signature present: {dkimSignatureFound}");
             }
         }
         catch (Exception ex)

@@ -1,9 +1,8 @@
 using Aspose.Email.Storage.Pst;
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -12,51 +11,43 @@ class Program
         try
         {
             // Initialize EWS client
-            IEWSClient client = null;
-            try
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
             {
-                string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
-                string username = "username";
-                string password = "password";
-
-
-                // Skip external calls when placeholder credentials are used
-                if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
-                {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
-                    return;
-                }
-
-                client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password));
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to connect to EWS: {ex.Message}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
+            IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password);
+
             using (client)
             {
-                // Define permission for all employees (default user) – read only (Reviewer)
+                // Prepare permission for all employees (default user) with read access
+                ExchangeFolderUserInfo defaultUser = ExchangeFolderUserInfo.DefaultUser;
+                ExchangeFolderPermission permission = new ExchangeFolderPermission(defaultUser)
+                {
+                    ReadItems = ExchangeFolderPermissionReadAccess.FullDetails,
+                    IsFolderVisible = true
+                };
+
                 ExchangeFolderPermissionCollection permissions = new ExchangeFolderPermissionCollection();
-                ExchangeFolderPermission defaultPermission = new ExchangeFolderPermission(ExchangeFolderUserInfo.DefaultUser);
-                defaultPermission.PermissionLevel = ExchangeFolderPermissionLevel.Reviewer;
-                permissions.Add(defaultPermission);
+                permissions.Add(permission);
 
                 // Create root public folder for project documentation
-                ExchangeFolderInfo rootFolderInfo = client.CreatePublicFolder("ProjectDocumentation", permissions);
+                ExchangeFolderInfo rootFolder = client.CreatePublicFolder("ProjectDocumentation", permissions);
 
-                // Create subfolders under the root folder
-                string parentUri = rootFolderInfo.Uri;
-
-                client.CreatePublicFolder(parentUri, "Specs", permissions);
-                client.CreatePublicFolder(parentUri, "Designs", permissions);
-                client.CreatePublicFolder(parentUri, "Resources", permissions);
+                // Create subfolders under the root public folder
+                client.CreateFolder(rootFolder.Uri, "Specs");
+                client.CreateFolder(rootFolder.Uri, "Designs");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

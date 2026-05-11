@@ -10,67 +10,57 @@ class Program
     {
         try
         {
-            // Placeholder values – replace with real credentials or skip when placeholders are used
+            // Exchange server connection details
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
+            string username = "user@example.com";
             string password = "password";
 
-            // Guard against placeholder credentials
-            if (mailboxUri.Contains("example") || username == "username" || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
             // Create EWS client
-            IEWSClient client = null;
-            try
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                client = EWSClient.GetEWSClient(mailboxUri, username, password);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
-                return;
-            }
+                // Required attendees
+                MailAddressCollection requiredAttendees = new MailAddressCollection();
+                requiredAttendees.Add(new MailAddress("required1@example.com"));
+                requiredAttendees.Add(new MailAddress("required2@example.com"));
 
-            // Build the meeting request
-            DateTime start = DateTime.Now.AddDays(1);
-            DateTime end = start.AddHours(2);
-            MailAddress organizer = new MailAddress("organizer@domain.com");
-            MailAddressCollection requiredAttendees = new MailAddressCollection();
-            requiredAttendees.Add(new MailAddress("required1@domain.com"));
-            requiredAttendees.Add(new MailAddress("required2@domain.com"));
+                // Optional attendees
+                MailAddressCollection optionalAttendees = new MailAddressCollection();
+                optionalAttendees.Add(new MailAddress("optional1@example.com"));
+                optionalAttendees.Add(new MailAddress("optional2@example.com"));
 
-            Appointment meeting = new Appointment("Conference Room", start, end, organizer, requiredAttendees);
-            meeting.Summary = "Project Kickoff";
-            meeting.Description = "Discuss project goals and timeline.";
+                // Create the appointment
+                Appointment appointment = new Appointment(
+                    "Conference Room",
+                    "Project Kickoff",
+                    "Discuss project scope. Please respond within 48 hours.",
+                    DateTime.Now.AddDays(1).AddHours(9),
+                    DateTime.Now.AddDays(1).AddHours(10),
+                    new MailAddress(username),
+                    requiredAttendees);
 
-            // Optional attendees
-            meeting.OptionalAttendees.Add(new MailAddress("optional1@domain.com"));
-            meeting.OptionalAttendees.Add(new MailAddress("optional2@domain.com"));
+                                appointment.Summary = "Meeting Summary";
+// Add optional attendees
+                foreach (MailAddress opt in optionalAttendees)
+                {
+                    appointment.OptionalAttendees.Add(opt);
+                }
 
-            // Request responses – Aspose.Email includes a default response deadline (48 hours) when responses are requested.
-            // The API does not expose a direct property for the deadline, so we rely on the default behavior.
-
-            // Create the meeting on the server
-            try
-            {
-                string appointmentId = client.CreateAppointment(meeting);
-                Console.WriteLine($"Meeting created with ID: {appointmentId}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create appointment: {ex.Message}");
-            }
-            finally
-            {
-                client?.Dispose();
+                // Create the appointment on the server (invitations are sent automatically)
+                string uid = client.CreateAppointment(appointment);
+                Console.WriteLine("Appointment created with UID: " + uid);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

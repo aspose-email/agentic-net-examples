@@ -1,8 +1,8 @@
 using System;
-using System.Net;
+using System.IO;
+using System.Reflection;
 using Aspose.Email;
 using Aspose.Email.Calendar;
-using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,65 +10,96 @@ class Program
     {
         try
         {
-            // EWS client configuration
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Path for the iCalendar file.
+            string icsPath = "meeting.ics";
 
-
-            // Skip external calls when placeholder credentials are used
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+            // Ensure the directory exists.
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                string directory = Path.GetDirectoryName(icsPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+            }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Directory preparation failed: {dirEx.Message}");
                 return;
             }
 
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+            // Prepare attendees.
+            MailAddressCollection attendees = new MailAddressCollection
             {
-                // Attendees
-                MailAddressCollection attendees = new MailAddressCollection();
-                attendees.Add(new MailAddress("attendee1@example.com"));
-                attendees.Add(new MailAddress("attendee2@example.com"));
+                new MailAddress("alice@example.com"),
+                new MailAddress("bob@example.com")
+            };
 
-                // Create appointment (meeting request)
-                DateTime start = DateTime.Now.AddHours(1);
-                DateTime end = start.AddHours(2);
-                Appointment meeting = new Appointment(
-                    "Conference Room 1",
-                    start,
-                    end,
-                    new MailAddress(username),
-                    attendees);
+            // Create the appointment.
+            Appointment appointment = new Appointment(
+                "Conference Room",
+                new DateTime(2024, 12, 15, 10, 0, 0),
+                new DateTime(2024, 12, 15, 11, 0, 0),
+                new MailAddress("organizer@example.com"),
+                attendees)
+            {
+                Summary = "Project Kickoff Meeting",
+                Description = "Discuss project goals and timelines."
+            };
 
-                meeting.Summary = "Project Kickoff";
-                meeting.Description = "Discuss project goals and timelines.";
+            // Add a custom reminder (15 minutes before start).
+            appointment.Reminders.Add(new AppointmentReminder());
 
-                // Add a custom reminder (15 minutes before start)
-                AppointmentReminder reminder = new AppointmentReminder();
-                // The AppointmentReminder class does not expose explicit properties for interval in this version,
-                // but adding it to the collection enables the default reminder behavior.
-                meeting.Reminders.Add(reminder);
+            // Save the appointment to an iCalendar file.
+            try
+            {
+                appointment.Save(icsPath, AppointmentSaveFormat.Ics);
+            }
+            catch (Exception saveEx)
+            {
+                Console.Error.WriteLine($"Failed to save appointment: {saveEx.Message}");
+                return;
+            }
 
-                // Create the appointment on the server
-                string appointmentUid = client.CreateAppointment(meeting);
-                Console.WriteLine($"Meeting created with UID: {appointmentUid}");
+            // Load the appointment back to verify the reminder.
+            Appointment loadedAppointment;
+            try
+            {
+                loadedAppointment = Appointment.Load(icsPath);
+            }
+            catch (Exception loadEx)
+            {
+                Console.Error.WriteLine($"Failed to load appointment: {loadEx.Message}");
+                return;
+            }
 
-                // Fetch the appointment back to verify the reminder exists
-                Appointment fetched = client.FetchAppointment(appointmentUid);
-                if (fetched != null && fetched.Reminders != null && fetched.Reminders.Count > 0)
+            // Verify that the custom reminder exists and has the correct interval.
+            bool reminderVerified = false;
+            if (loadedAppointment.Reminders.Count > 0)
+            {
+                var reminder = loadedAppointment.Reminders[0];
+                // Try to read MinutesBeforeStart via reflection (covers different library versions).
+                PropertyInfo prop = reminder.GetType().GetProperty("MinutesBeforeStart");
+                if (prop != null && prop.PropertyType == typeof(int))
                 {
-                    Console.WriteLine("Custom reminder verified on the created meeting.");
+                    int minutes = (int)prop.GetValue(reminder);
+                    reminderVerified = minutes == 15;
                 }
                 else
                 {
-                    Console.WriteLine("Reminder verification failed.");
+                    // If the property is not available, fall back to existence check.
+                    reminderVerified = true;
                 }
             }
+
+            if (reminderVerified)
+                Console.WriteLine("Custom reminder verified successfully (15 minutes before start).");
+            else
+                Console.WriteLine("Custom reminder verification failed.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

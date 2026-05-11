@@ -1,9 +1,8 @@
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Clients.Exchange;
-using System;
-using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email;
+using System;
+using System.Collections.Generic;
+using System.Net;
 
 class Program
 {
@@ -11,78 +10,78 @@ class Program
     {
         try
         {
-            // Initialize EWS client (replace with real server and credentials)
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "username";
+            // Connection parameters (replace with actual values)
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
+            // Folder URIs (replace with actual values)
+            string sourceFolderUri = "https://exchange.example.com/EWS/Inbox";
+            string destinationFolderUri = "https://exchange.example.com/EWS/Archive";
 
             // Skip external calls when placeholder credentials are used
-            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            if (mailboxUri.Contains("example.com") ||
+                username.Contains("example.com") ||
+                password == "password" ||
+                sourceFolderUri.Contains("example.com") ||
+                destinationFolderUri.Contains("example.com"))
             {
                 Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
+            // Sample item URIs to process (replace with actual item URIs)
+            List<string> itemUris = new List<string>
+            {
+                "https://exchange.example.com/EWS/Message/1",
+                "https://exchange.example.com/EWS/Message/2",
+                "https://exchange.example.com/EWS/Message/3"
+            };
+
+            int archivedCount = 0;
+            int movedCount = 0;
+            int failedCount = 0;
+
+            // Create and use the Exchange client
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
             {
-                // Get Inbox folder information
-                ExchangeFolderInfo inboxInfo = client.GetFolderInfo(KnownFolders.Inbox.ToString());
-
-                // Retrieve messages from Inbox
-                ExchangeMessageInfoCollection messages = client.ListMessages(inboxInfo.Uri);
-
-                int archivedCount = 0;
-                int movedCount = 0;
-                int failedCount = 0;
-
-                // Destination folder for moved items (Deleted Items used as example)
-                ExchangeFolderInfo deletedItemsInfo = client.GetFolderInfo(KnownFolders.DeletedItems.ToString());
-
-                foreach (ExchangeMessageInfo messageInfo in messages)
+                foreach (string itemUri in itemUris)
                 {
-                    // Unique identifier required for EWS operations
-                    string itemUri = messageInfo.UniqueUri;
-
                     try
                     {
-                        // Simple routing based on subject keywords
-                        if (!string.IsNullOrEmpty(messageInfo.Subject) && messageInfo.Subject.Contains("Archive"))
-                        {
-                            // Archive the item (uses the overload that accepts a unique ID)
-                            client.ArchiveItem(inboxInfo.Uri, itemUri);
-                            archivedCount++;
-                        }
-                        else if (!string.IsNullOrEmpty(messageInfo.Subject) && messageInfo.Subject.Contains("Move"))
-                        {
-                            // Move the item to Deleted Items folder
-                            client.MoveItem(itemUri, deletedItemsInfo.Uri);
-                            movedCount++;
-                        }
-                        else
-                        {
-                            // Delete the item (move to Deleted Items)
-                            client.DeleteItem(itemUri, new DeletionOptions(DeletionType.MoveToDeletedItems));
-                        }
+                        // Archive the item
+                        client.ArchiveItem(sourceFolderUri, itemUri);
+                        archivedCount++;
                     }
                     catch (Exception ex)
                     {
-                        // Log the error and count as failed
-                        Console.Error.WriteLine($"Operation failed for item {itemUri}: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to archive item '{itemUri}': {ex.Message}");
+                        failedCount++;
+                        continue; // Skip moving if archiving failed
+                    }
+
+                    try
+                    {
+                        // Move the item to the destination folder
+                        client.MoveItem(destinationFolderUri, itemUri);
+                        movedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to move item '{itemUri}': {ex.Message}");
                         failedCount++;
                     }
                 }
-
-                // Output summary report
-                Console.WriteLine("Processing Summary:");
-                Console.WriteLine($"Archived items: {archivedCount}");
-                Console.WriteLine($"Moved items:    {movedCount}");
-                Console.WriteLine($"Failed items:   {failedCount}");
             }
+
+            // Output summary report
+            Console.WriteLine("Processing Summary:");
+            Console.WriteLine($"Archived items: {archivedCount}");
+            Console.WriteLine($"Moved items: {movedCount}");
+            Console.WriteLine($"Failed items: {failedCount}");
         }
         catch (Exception ex)
         {
-            // Top‑level exception handling
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }

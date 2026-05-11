@@ -9,21 +9,24 @@ class Program
     {
         try
         {
-            // Path to the Outlook MSG file.
             string messagePath = "message.msg";
 
-            // Ensure the file exists. If not, create a minimal placeholder MSG file.
+            // Ensure the file exists; create a minimal placeholder if it does not.
             if (!File.Exists(messagePath))
             {
                 try
                 {
-                    // Create a simple message and save it as a placeholder.
-                    MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
                         "Placeholder Subject",
-                        "Placeholder body.");
-                    placeholder.Save(messagePath);
+                        "Placeholder body"))
+                    {
+                        placeholder.Save(messagePath);
+                    }
+
+                    Console.WriteLine("Placeholder message created at: " + messagePath);
+                    return;
                 }
                 catch (Exception ex)
                 {
@@ -32,39 +35,45 @@ class Program
                 }
             }
 
-            // Load the existing message.
-            using (MapiMessage message = MapiMessage.Load(messagePath))
+            // Load the existing message and remove the unwanted extended property.
+            try
             {
-                // Tag of the unwanted extended property (example tag).
-                // Replace this with the actual property tag you need to remove.
-                long unwantedPropertyTag = 0x12345678L;
+                using (MapiMessage message = MapiMessage.Load(messagePath))
+                {
+                    // Example: remove a custom property named "MyCustomProp" if it exists.
+                    MapiPropertyCollection customProps = message.GetCustomProperties();
 
-                // Remove the property from the message.
-                try
-                {
-                    message.RemoveProperty(unwantedPropertyTag);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to remove property: " + ex.Message);
-                    // Continue; the message will be saved without the removal if it fails.
-                }
+                    foreach (var entry in customProps)
+                    {
+                        // entry is KeyValuePair<long, MapiProperty>
+                        MapiProperty prop = entry.Value;
+                        if (prop.Name == "MyCustomProp")
+                        {
+                            // Remove the property by its tag.
+                            message.RemoveProperty(prop.Tag);
+                            Console.WriteLine("Removed custom property: " + prop.Name);
+                            break;
+                        }
+                    }
 
-                // Save the updated message back to the same file.
-                try
-                {
+                    // Alternatively, remove a known extended property (e.g., DeleteAfterSubmit) directly.
+                    // long deleteAfterSubmitTag = KnownPropertyList.DeleteAfterSubmit.Tag;
+                    // message.RemoveProperty(deleteAfterSubmitTag);
+
+                    // Save the updated message back to the same file.
                     message.Save(messagePath);
+                    Console.WriteLine("Message saved after property removal.");
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to save updated message: " + ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Error processing the message: " + ex.Message);
+                return;
             }
         }
         catch (Exception ex)
         {
-            // Top‑level exception guard.
-            Console.Error.WriteLine("An error occurred: " + ex.Message);
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }

@@ -9,47 +9,74 @@ class Program
     {
         try
         {
-            // Placeholder credentials - replace with real values.
-            string accessToken = "YOUR_ACCESS_TOKEN";
+            // Placeholder credentials – replace with real values.
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
             string defaultEmail = "user@example.com";
 
-            // Guard against placeholder credentials to avoid runtime failures.
-            if (string.IsNullOrWhiteSpace(accessToken) || accessToken == "YOUR_ACCESS_TOKEN")
+            // Skip execution if placeholder credentials are detected.
+            if (string.IsNullOrWhiteSpace(clientId) ||
+                clientId.Contains("YOUR_") ||
+                string.IsNullOrWhiteSpace(clientSecret) ||
+                clientSecret.Contains("YOUR_") ||
+                string.IsNullOrWhiteSpace(refreshToken) ||
+                refreshToken.Contains("YOUR_") ||
+                string.IsNullOrWhiteSpace(defaultEmail) ||
+                defaultEmail.Contains("YOUR_"))
             {
-                Console.Error.WriteLine("Access token is not set. Skipping Gmail operations.");
+                Console.Error.WriteLine("Gmail client credentials are not set. Skipping label update.");
                 return;
             }
 
             // Create Gmail client instance.
-            using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
+            IGmailClient gmailClient = null;
+            try
             {
-                // Retrieve all messages in the mailbox.
-                List<GmailMessageInfo> messages = gmailClient.ListMessages();
+                gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                return;
+            }
 
-                // Prepare a list to hold IDs of messages that were processed.
-                List<string> processedIds = new List<string>();
+            if (gmailClient == null)
+            {
+                Console.Error.WriteLine("Gmail client initialization returned null.");
+                return;
+            }
 
-                foreach (GmailMessageInfo info in messages)
+            using (gmailClient as IDisposable)
+            {
+                List<GmailMessageInfo> messages;
+                try
+                {
+                    // Retrieve all messages in the mailbox.
+                    messages = gmailClient.ListMessages();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to list Gmail messages: {ex.Message}");
+                    return;
+                }
+
+                foreach (GmailMessageInfo messageInfo in messages)
                 {
                     try
                     {
                         // Fetch the full message.
-                        MailMessage message = gmailClient.FetchMessage(info.Id);
+                        MailMessage mailMessage = gmailClient.FetchMessage(messageInfo.Id);
 
-                        // Append the same message back with the "Reviewed" label.
-                        // This creates a new copy of the message with the label applied.
-                        string newMessageId = gmailClient.AppendMessage(message, "Reviewed");
-
-                        processedIds.Add(newMessageId);
+                        // Append the "Reviewed" label to the message.
+                        gmailClient.AppendMessage(mailMessage, "Reviewed");
                     }
                     catch (Exception ex)
                     {
-                        // Log any errors for individual messages but continue processing.
-                        Console.Error.WriteLine($"Failed to process message ID {info.Id}: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to add label to message ID {messageInfo.Id}: {ex.Message}");
+                        // Continue processing remaining messages.
                     }
                 }
-
-                Console.WriteLine($"Processed {processedIds.Count} messages and added the \"Reviewed\" label.");
             }
         }
         catch (Exception ex)

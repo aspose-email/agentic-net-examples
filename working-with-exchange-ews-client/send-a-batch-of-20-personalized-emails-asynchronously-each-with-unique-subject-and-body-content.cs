@@ -1,67 +1,72 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    static async Task Main(string[] args)
     {
         try
         {
-            // EWS client configuration
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Placeholder credentials – replace with real values or skip execution.
+            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            // Skip external calls when placeholder credentials are used
-            if (mailboxUri.Contains("example.com"))
+            if (username == "username" || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping email send.");
                 return;
             }
 
-            ICredentials credentials = new NetworkCredential("username", "password");
-
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Create EWS client.
+            IEWSClient client;
+            try
             {
-                // Prepare a batch of personalized messages
-                List<MailMessage> messages = new List<MailMessage>();
+                client = EWSClient.GetEWSClient(mailboxUri, username, password);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
+                return;
+            }
+
+            using (client as IDisposable)
+            {
+                // Prepare 20 personalized messages.
+                var messages = new List<MailMessage>();
                 for (int i = 1; i <= 20; i++)
                 {
-                    MailMessage message = new MailMessage();
-                    message.From = "sender@example.com";
-                    message.To.Add("recipient@example.com");
-                    message.Subject = $"Personalized Subject #{i}";
-                    message.Body = $"Hello,\n\nThis is a personalized email number {i}.\nBest regards.";
-                    messages.Add(message);
-                }
-
-                // Send messages concurrently using Task.Run (EWS async API is prohibited)
-                List<Task> sendTasks = new List<Task>();
-                foreach (MailMessage msg in messages)
-                {
-                    sendTasks.Add(Task.Run(() =>
+                    var msg = new MailMessage
                     {
-                        try
-                        {
-                            client.Send(msg);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to send message '{msg.Subject}': {ex.Message}");
-                        }
-                    }));
+                        From = "sender@example.com",
+                        Subject = $"Personalized Subject #{i}",
+                        Body = $"Hello,\n\nThis is personalized email number {i}.\nBest regards."
+                    };
+                    msg.To.Add("recipient@example.com");
+                    messages.Add(msg);
                 }
 
-                // Wait for all send operations to complete
-                Task.WaitAll(sendTasks.ToArray());
+                // Send messages asynchronously, one by one.
+                try
+                {
+                    foreach (var msg in messages)
+                    {
+                        await Task.Run(() => client.Send(msg));
+                    }
+                    Console.WriteLine("All messages sent successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error sending messages: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
