@@ -9,7 +9,7 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            string msgPath = "message.msg";
 
             if (!File.Exists(msgPath))
             {
@@ -36,10 +36,10 @@ class Program
 
             try
             {
-                using (MapiMessage message = MapiMessage.Load(msgPath))
+                using (MapiMessage msg = MapiMessage.Load(msgPath))
                 {
                     Console.WriteLine("Message Body:");
-                    Console.WriteLine(message.Body);
+                    Console.WriteLine(msg.Body);
                 }
             }
             catch (Exception ex)
