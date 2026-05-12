@@ -3,20 +3,16 @@ using System;
 using System.IO;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Path to the MSG file.
-                string msgPath = "sample.msg";
+            string filePath = "sample.msg";
 
-                // Ensure the file exists before loading.
-                if (!File.Exists(msgPath))
-                {
+            if (!File.Exists(filePath))
+            {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -25,7 +21,7 @@ namespace AsposeEmailExample
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath);
+                        placeholder.Save(filePath);
                     }
                 }
                 catch (Exception ex)
@@ -34,20 +30,19 @@ namespace AsposeEmailExample
                     return;
                 }
 
-                    Console.Error.WriteLine($"File not found: {msgPath}");
-                    return;
-                }
+                Console.Error.WriteLine($"File not found: {filePath}");
+                return;
+            }
 
-                // Load the MSG file and read its subject.
-                using (MapiMessage message = MapiMessage.Load(msgPath))
-                {
-                    Console.WriteLine("Subject: " + message.Subject);
-                }
-            }
-            catch (Exception ex)
+            using (Aspose.Email.Mapi.MapiMessage msg = Aspose.Email.Mapi.MapiMessage.Load(filePath))
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                string subject = msg.Subject;
+                Console.WriteLine("Subject: " + subject);
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
