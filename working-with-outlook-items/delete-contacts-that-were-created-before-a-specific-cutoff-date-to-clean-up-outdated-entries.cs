@@ -1,8 +1,8 @@
-using System;
-using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
-using Aspose.Email.Mapi;
+using Aspose.Email.PersonalInfo;
+using System;
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -11,55 +11,64 @@ class Program
         try
         {
             // Placeholder connection details – replace with real values.
-            string exchangeUri = "https://exchange.example.com/ews/Exchange.asmx";
-            string username = "username";
+            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
-            // Skip execution when placeholders are detected to avoid external calls during CI.
-            if (exchangeUri.Contains("example.com") || username == "username" || password == "password")
+            // Skip execution when placeholder credentials are detected.
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping contact cleanup.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
                 return;
             }
 
-            // Define the cutoff date. Contacts created before this date will be deleted.
+            // Define the cutoff date for outdated contacts.
             DateTime cutoffDate = new DateTime(2022, 1, 1);
 
-            // Create and use the Exchange client.
-            try
+            // Create and connect the Exchange client.
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
             {
-                using (ExchangeClient client = new ExchangeClient(exchangeUri, new NetworkCredential(username, password)))
+                try
                 {
-                    // Retrieve contacts from the default contacts folder (use appropriate folder URI if known).
-                    MapiContact[] contacts = client.ListContacts("contacts");
+                    // Retrieve the URI of the contacts folder.
+                    string contactsFolderUri = client.MailboxInfo.ContactsUri;
 
-                    // MAPI property tag for PR_CREATION_TIME (PT_SYSTIME).
-                    const long CreationTimeTag = 0x30070040;
+                    // List all contacts in the contacts folder.
+                    Contact[] contacts = client.GetContacts(contactsFolderUri);
 
-                    foreach (MapiContact contact in contacts)
+                    foreach (Contact contact in contacts)
                     {
-                        DateTime creationTime = DateTime.MinValue;
-                        bool hasCreationTime = contact.TryGetPropertyDateTime(CreationTimeTag, ref creationTime);
+                        // Attempt to obtain a creation date via reflection (property may not exist in all versions).
+                        DateTime? creationDate = null;
+                        var propInfo = contact.GetType().GetProperty("CreationDate");
+                        if (propInfo != null && propInfo.PropertyType == typeof(DateTime))
+                        {
+                            creationDate = (DateTime)propInfo.GetValue(contact);
+                        }
 
-                        if (hasCreationTime && creationTime < cutoffDate)
+                        // If we couldn't get a creation date, skip this contact.
+                        if (!creationDate.HasValue)
+                            continue;
+
+                        // Delete contacts created before the cutoff date.
+                        if (creationDate.Value < cutoffDate)
                         {
                             try
                             {
                                 client.DeleteContact(contact);
-                                Console.WriteLine($"Deleted contact: {contact.NameInfo.DisplayName} (Created: {creationTime})");
+                                Console.WriteLine($"Deleted contact: {contact.DisplayName}");
                             }
                             catch (Exception ex)
                             {
-                                Console.Error.WriteLine($"Failed to delete contact '{contact.NameInfo.DisplayName}': {ex.Message}");
+                                Console.Error.WriteLine($"Failed to delete contact '{contact.DisplayName}': {ex.Message}");
                             }
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Exchange client error: {ex.Message}");
-                return;
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error accessing contacts: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
