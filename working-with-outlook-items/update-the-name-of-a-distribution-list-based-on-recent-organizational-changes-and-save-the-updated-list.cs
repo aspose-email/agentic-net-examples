@@ -1,7 +1,8 @@
+using Aspose.Email.Clients.Exchange;
 using System;
-using System.IO;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -9,52 +10,47 @@ class Program
     {
         try
         {
-            string msgPath = "distributionList.msg";
+            // Placeholder credentials and server URI
+            string serverUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Guard file existence
-            if (!File.Exists(msgPath))
+            // Guard against placeholder credentials to avoid real network calls
+            if (serverUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine($"Input file '{msgPath}' does not exist.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping network operation.");
                 return;
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // ID of the distribution list to be renamed (placeholder)
+            string oldDistributionListId = "old-list-id";
+
+            // New display name for the distribution list
+            string newDisplayName = "New Distribution List Name";
+
+            // Create and configure the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serverUri, new NetworkCredential(username, password)))
             {
-                // Ensure the message is a distribution list
-                if (msg.SupportedType == MapiItemType.DistList)
+                // Prepare the existing distribution list object with its Id
+                ExchangeDistributionList oldList = new ExchangeDistributionList
                 {
-                    // Convert to MapiDistributionList
-                    MapiDistributionList distList = (MapiDistributionList)msg.ToMapiMessageItem();
+                    Id = oldDistributionListId
+                };
 
-                    // Update the display name
-                    distList.DisplayName = "New Distribution List Name";
+                // Fetch current members of the distribution list
+                MailAddressCollection members = client.FetchDistributionList(oldList);
 
-                    // Save the updated distribution list back to the file
-                    distList.Save(msgPath);
-                    Console.WriteLine("Distribution list name updated successfully.");
-                }
-                else
+                // Delete the old distribution list permanently
+                client.DeleteDistributionList(oldList, true);
+
+                // Create a new distribution list with the new display name and same members
+                ExchangeDistributionList newList = new ExchangeDistributionList
                 {
-                    Console.Error.WriteLine("The provided MSG file is not a distribution list.");
-                }
+                    DisplayName = newDisplayName
+                };
+
+                string newListId = client.CreateDistributionList(newList, members);
+                Console.WriteLine($"Distribution list renamed. New Id: {newListId}");
             }
         }
         catch (Exception ex)
