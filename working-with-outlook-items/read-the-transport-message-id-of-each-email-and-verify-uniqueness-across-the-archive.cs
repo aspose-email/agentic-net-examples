@@ -1,9 +1,9 @@
-using Aspose.Email.Mapi;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -13,14 +13,14 @@ class Program
         {
             string pstPath = "archive.pst";
 
-            // Ensure PST file exists; create a minimal placeholder if missing
+            // Ensure the PST file exists; create a minimal placeholder if missing
             if (!File.Exists(pstPath))
             {
                 try
                 {
                     using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                     {
-                        // Placeholder PST created
+                        // Empty PST created
                     }
                 }
                 catch (Exception ex)
@@ -31,69 +31,71 @@ class Program
             }
 
             // Open the PST file
-            try
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                HashSet<string> messageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                bool duplicateFound = false;
+
+                // Process messages in the root folder
+                foreach (MessageInfo msgInfo in pst.RootFolder.EnumerateMessages())
                 {
-                    // Use the root folder for traversal
-                    FolderInfo rootFolder = pst.RootFolder;
-
-                    // HashSet to track unique Transport Message IDs
-                    HashSet<string> messageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    bool duplicateFound = false;
-
-                    // Recursive traversal of folders
-                    void ProcessFolder(FolderInfo folder)
-                    {
-                        foreach (MessageInfo msgInfo in folder.EnumerateMessages())
-                        {
-                            try
-                            {
-                                using (MapiMessage mapiMsg = pst.ExtractMessage(msgInfo))
-                                {
-                                    string transportId = mapiMsg.InternetMessageId;
-                                    if (string.IsNullOrEmpty(transportId))
-                                    {
-                                        transportId = "(no ID)";
-                                    }
-
-                                    if (!messageIds.Add(transportId))
-                                    {
-                                        Console.WriteLine($"Duplicate Transport Message ID detected: {transportId}");
-                                        duplicateFound = true;
-                                    }
-                                }
-                            }
-                            catch (Exception exMsg)
-                            {
-                                Console.Error.WriteLine($"Error processing message: {exMsg.Message}");
-                            }
-                        }
-
-                        // Process subfolders recursively
-                        foreach (FolderInfo subFolder in folder.GetSubFolders())
-                        {
-                            ProcessFolder(subFolder);
-                        }
-                    }
-
-                    ProcessFolder(rootFolder);
-
-                    if (!duplicateFound)
-                    {
-                        Console.WriteLine("All transport message IDs are unique.");
-                    }
+                    ProcessMessage(pst, msgInfo, messageIds, ref duplicateFound);
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error accessing PST file: {ex.Message}");
-                return;
+
+                // Recursively process subfolders
+                ProcessSubFolders(pst.RootFolder, pst, messageIds, ref duplicateFound);
+
+                if (!duplicateFound)
+                {
+                    Console.WriteLine("All transport message IDs are unique.");
+                }
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    private static void ProcessMessage(PersonalStorage pst, MessageInfo msgInfo, HashSet<string> ids, ref bool duplicateFound)
+    {
+        try
+        {
+            using (MapiMessage mapiMsg = pst.ExtractMessage(msgInfo))
+            {
+                string transportId = mapiMsg.InternetMessageId ?? string.Empty;
+
+                if (string.IsNullOrEmpty(transportId))
+                {
+                    Console.WriteLine("Message without Transport Message ID encountered.");
+                    return;
+                }
+
+                if (!ids.Add(transportId))
+                {
+                    Console.WriteLine($"Duplicate Transport Message ID detected: {transportId}");
+                    duplicateFound = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error processing a message: {ex.Message}");
+        }
+    }
+
+    // Recursively process subfolders
+    private static void ProcessSubFolders(FolderInfo folder, PersonalStorage pst, HashSet<string> ids, ref bool duplicateFound)
+    {
+        foreach (FolderInfo subFolder in folder.GetSubFolders())
+        {
+            foreach (MessageInfo msgInfo in subFolder.EnumerateMessages())
+            {
+                ProcessMessage(pst, msgInfo, ids, ref duplicateFound);
+            }
+
+            // Recurse into deeper subfolders
+            ProcessSubFolders(subFolder, pst, ids, ref duplicateFound);
         }
     }
 }
