@@ -11,26 +11,56 @@ class Program
         {
             string icsPath = "sample.ics";
 
-            // Guard file existence
+            // Ensure the file exists; create a minimal placeholder if missing
             if (!File.Exists(icsPath))
             {
-                Console.Error.WriteLine($"File not found: {icsPath}");
+                try
+                {
+                    using (StreamWriter writer = new StreamWriter(icsPath))
+                    {
+                        writer.WriteLine("BEGIN:VCALENDAR");
+                        writer.WriteLine("VERSION:2.0");
+                        writer.WriteLine("END:VCALENDAR");
+                    }
+                    Console.WriteLine($"Placeholder ICS file created at '{icsPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the appointment from the .ics file
+            Appointment appointment;
+            try
+            {
+                appointment = Appointment.Load(icsPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load ICS file: {ex.Message}");
                 return;
             }
 
-            // Load the iCalendar file
-            Appointment appointment = Appointment.Load(icsPath);
-
-            // Prepare save options without a product identifier
+            // Configure save options to remove the product identifier
             AppointmentIcsSaveOptions saveOptions = new AppointmentIcsSaveOptions();
-            saveOptions.ProductId = null; // Remove product identifier
+            saveOptions.ProductId = null; // clear product identifier
 
-            // Save the modified calendar back to the same file
-            appointment.Save(icsPath, saveOptions);
+            // Save the modified appointment back to the same file
+            try
+            {
+                appointment.Save(icsPath, saveOptions);
+                Console.WriteLine("Product identifier removed and file saved.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save modified ICS file: {ex.Message}");
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
