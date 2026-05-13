@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Calendar;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,38 +10,40 @@ class Program
     {
         try
         {
-            // Create a task instance
-            using (Aspose.Email.Calendar.Task task = new Aspose.Email.Calendar.Task())
-            {
-                task.Subject = "Sample Task";
-                task.StartDate = new DateTime(2023, 10, 10);
-                task.DueDate = new DateTime(2023, 10, 5); // Example of an invalid due date
+            // Define output file path
+            string outputPath = "Task.msg";
 
-                // Validate that the due date is not earlier than the start date
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Create a new ExchangeTask
+            using (ExchangeTask task = new ExchangeTask())
+            {
+                task.Subject = "Project Plan";
+                task.Body = "Complete the project milestones.";
+                task.StartDate = new DateTime(2024, 12, 1, 9, 0, 0);
+                task.DueDate = new DateTime(2024, 12, 15, 17, 0, 0);
+
+                // Validate that DueDate is not earlier than StartDate
                 if (task.DueDate < task.StartDate)
                 {
-                    Console.Error.WriteLine("Due date cannot be earlier than start date.");
+                    Console.Error.WriteLine("Error: DueDate cannot be earlier than StartDate.");
                     return;
                 }
 
-                string outputPath = "task.msg";
-
-                // Ensure the target directory exists
-                string directory = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
+                // Save the task to a MSG file
                 try
                 {
-                    // Save the task in MSG format
-                    task.Save(outputPath, TaskSaveFormat.Msg);
+                    task.Save(outputPath);
                     Console.WriteLine($"Aspose.Email.Calendar.Task saved successfully to '{outputPath}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error saving task: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save task: {ex.Message}");
                 }
             }
         }
