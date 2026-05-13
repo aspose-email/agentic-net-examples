@@ -1,9 +1,9 @@
+using Aspose.Email.PersonalInfo;
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using Aspose.Email;
-using Aspose.Email.PersonalInfo;
+using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
@@ -11,81 +11,84 @@ class Program
     {
         try
         {
-            // Define input and output file paths
-            string outputCsvPath = "filtered_contacts.csv";
+            // Configuration
+            string exchangeUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+            string contactsFolder = "Contacts";
+            string companyFilter = "Contoso";
+            string outputCsv = "filtered_contacts.csv";
 
-            // Prepare sample contacts (replace with real source in production)
-            List<Contact> contacts = new List<Contact>();
-
-            Contact contact1 = new Contact();
-            contact1.GivenName = "John";
-            contact1.Surname = "Doe";
-            contact1.CompanyName = "Acme Corp";
-            contacts.Add(contact1);
-
-            Contact contact2 = new Contact();
-            contact2.GivenName = "Jane";
-            contact2.Surname = "Smith";
-            contact2.CompanyName = "Globex Inc";
-            contacts.Add(contact2);
-
-            Contact contact3 = new Contact();
-            contact3.GivenName = "Alice";
-            contact3.Surname = "Brown";
-            contact3.CompanyName = "Acme Corp";
-            contacts.Add(contact3);
-
-            // Filter contacts by company name
-            List<Contact> filteredContacts = contacts
-                .Where(c => string.Equals(c.CompanyName, "Acme Corp", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputCsvPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Skip external call if placeholder credentials are detected
+            if (exchangeUri.Contains("example.com") || username == "username" || password == "password")
             {
-                Directory.CreateDirectory(outputDirectory);
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
+                return;
             }
 
-            // Write filtered contacts to CSV
-            using (StreamWriter writer = new StreamWriter(outputCsvPath, false))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputCsv);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Write CSV header
-                writer.WriteLine("GivenName,Surname,CompanyName");
-
-                // Write each filtered contact
-                foreach (Contact filteredContact in filteredContacts)
+                try
                 {
-                    string line = string.Format("{0},{1},{2}",
-                        EscapeCsv(filteredContact.GivenName),
-                        EscapeCsv(filteredContact.Surname),
-                        EscapeCsv(filteredContact.CompanyName));
-                    writer.WriteLine(line);
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create directory '{outputDir}': {ex.Message}");
+                    return;
                 }
             }
 
-            Console.WriteLine("Filtered contacts have been saved to: " + outputCsvPath);
+            // Connect to Exchange and retrieve contacts
+            try
+            {
+                using (ExchangeClient client = new ExchangeClient(exchangeUri, username, password))
+                {
+                    Contact[] allContacts = client.GetContacts(contactsFolder);
+                    List<Contact> filtered = new List<Contact>();
+                    foreach (Contact contact in allContacts)
+                    {
+                        if (contact.CompanyName != null && contact.CompanyName.Equals(companyFilter, StringComparison.OrdinalIgnoreCase))
+                        {
+                            filtered.Add(contact);
+                        }
+                    }
+
+                    // Write filtered contacts to CSV
+                    try
+                    {
+                        using (StreamWriter writer = new StreamWriter(outputCsv, false))
+                        {
+                            // Header
+                            writer.WriteLine("DisplayName,EmailAddress,CompanyName");
+                            foreach (Contact contact in filtered)
+                            {
+                                string displayName = contact.DisplayName?.Replace(",", " ");
+                                string email = contact.EmailAddresses?.Count > 0 ? contact.EmailAddresses[0].Address : "";
+                                string company = contact.CompanyName?.Replace(",", " ");
+                                writer.WriteLine($"{displayName},{email},{company}");
+                            }
+                        }
+                        Console.WriteLine($"Filtered contacts saved to '{outputCsv}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error writing CSV file: {ex.Message}");
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
+                return;
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
-        }
-    }
-
-    // Helper method to escape CSV fields
-    private static string EscapeCsv(string field)
-    {
-        if (field == null)
-            return string.Empty;
-
-        if (field.Contains(",") || field.Contains("\"") || field.Contains("\n"))
-        {
-            string escaped = field.Replace("\"", "\"\"");
-            return $"\"{escaped}\"";
-        }
-        else
-        {
-            return field;
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
