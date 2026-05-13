@@ -1,3 +1,4 @@
+using Aspose.Email.Calendar.Recurrences;
 using System;
 using System.IO;
 using Aspose.Email;
@@ -10,67 +11,48 @@ class Program
         try
         {
             string inputPath = "task.msg";
+            string outputPath = "updatedTask.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
+            // Ensure the input file exists; create a minimal placeholder if missing.
             if (!File.Exists(inputPath))
             {
-                try
+                using (MapiTask placeholder = new MapiTask("Sample Task", "Placeholder body", DateTime.Now, DateTime.Now.AddDays(1)))
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    MapiTask placeholderTask = new MapiTask();
-                    placeholderTask.Subject = "Placeholder Task";
-                    placeholderTask.DueDate = DateTime.Now.AddDays(7);
-                    placeholderTask.Save(inputPath, TaskSaveFormat.Msg);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder task file: {ex.Message}");
-                    return;
+                    placeholder.Save(inputPath, TaskSaveFormat.Msg);
                 }
             }
 
-            // Load the existing task message
+            // Load the existing task message.
             using (MapiMessage message = MapiMessage.Load(inputPath))
             {
                 if (message.SupportedType != MapiItemType.Task)
                 {
-                    Console.Error.WriteLine("The specified file does not contain a task.");
+                    Console.Error.WriteLine("The provided file is not a task.");
                     return;
                 }
 
+                // Convert the message to a MapiTask.
                 MapiTask task = (MapiTask)message.ToMapiMessageItem();
 
-                // Create a yearly recurrence on December 25th
-                MapiCalendarYearlyAndMonthlyRecurrencePattern recurrence = new MapiCalendarYearlyAndMonthlyRecurrencePattern();
-                recurrence.Day = 25;
-                recurrence.EndDate = new DateTime(DateTime.Now.Year + 5, 12, 25);
+                // Create a yearly recurrence pattern for December 25th.
+                var yearlyRecurrence = new MapiCalendarYearlyAndMonthlyRecurrencePattern
+                {
+                    Day = 25,
+                    StartDate = new DateTime(DateTime.Now.Year, 12, 25),
+                    EndDate = new DateTime(DateTime.Now.Year + 5, 12, 25),
+                    PatternType = MapiCalendarRecurrencePatternType.Month // Using month pattern to represent yearly on a specific day.
+                };
 
-                task.Recurrence = recurrence;
+                // Assign the recurrence to the task.
+                task.Recurrence = yearlyRecurrence;
 
-                // Save the updated task
-                string outputPath = "updatedTask.msg";
+                // Save the updated task.
                 task.Save(outputPath, TaskSaveFormat.Msg);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
