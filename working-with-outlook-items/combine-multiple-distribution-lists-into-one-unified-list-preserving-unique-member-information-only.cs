@@ -1,8 +1,8 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,118 +10,52 @@ class Program
     {
         try
         {
-            // Paths for the source distribution list files and the output file
-            string list1Path = "list1.msg";
-            string list2Path = "list2.msg";
-            string outputPath = "combined.msg";
+            // Placeholder connection settings
+            string exchangeUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            // Ensure the first input file exists; create a minimal placeholder if missing
-            if (!File.Exists(list1Path))
+            // Guard against placeholder credentials to avoid real network calls
+            if (exchangeUri.Contains("example.com") || username == "username" || password == "password")
             {
-                try
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
+
+            // Create and connect the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(exchangeUri, username, password))
+            {
+                // Retrieve all private distribution lists
+                ExchangeDistributionList[] distributionLists = client.ListDistributionLists();
+
+                // Collection to hold unique members
+                MailAddressCollection combinedMembers = new MailAddressCollection();
+                HashSet<string> seenEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                // Iterate through each distribution list and collect unique members
+                foreach (ExchangeDistributionList list in distributionLists)
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
+                    MailAddressCollection members = client.FetchDistributionList(list);
+                    foreach (MailAddress member in members)
                     {
-                        placeholder.Save(list1Path);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                using (MapiDistributionList placeholder1 = new MapiDistributionList())
-                {
-                    placeholder1.DisplayName = "Placeholder List 1";
-                    placeholder1.Save(list1Path);
-                }
-            }
-
-            // Ensure the second input file exists; create a minimal placeholder if missing
-            if (!File.Exists(list2Path))
-            {
-                using (MapiDistributionList placeholder2 = new MapiDistributionList())
-                {
-                    placeholder2.DisplayName = "Placeholder List 2";
-                    placeholder2.Save(list2Path);
-                }
-            }
-
-            // Load the first distribution list
-            MapiDistributionList distList1;
-            using (MapiMessage msg1 = MapiMessage.Load(list1Path))
-            {
-                if (msg1.SupportedType != MapiItemType.DistList)
-                {
-                    Console.Error.WriteLine("File '{0}' is not a distribution list. Creating an empty placeholder.", list1Path);
-                    distList1 = new MapiDistributionList();
-                }
-                else
-                {
-                    distList1 = (MapiDistributionList)msg1.ToMapiMessageItem();
-                }
-            }
-
-            // Load the second distribution list
-            MapiDistributionList distList2;
-            using (MapiMessage msg2 = MapiMessage.Load(list2Path))
-            {
-                if (msg2.SupportedType != MapiItemType.DistList)
-                {
-                    Console.Error.WriteLine("File '{0}' is not a distribution list. Creating an empty placeholder.", list2Path);
-                    distList2 = new MapiDistributionList();
-                }
-                else
-                {
-                    distList2 = (MapiDistributionList)msg2.ToMapiMessageItem();
-                }
-            }
-
-            // Create a new distribution list to hold the combined unique members
-            using (MapiDistributionList combinedList = new MapiDistributionList())
-            {
-                combinedList.DisplayName = "Combined Distribution List";
-
-                // Use a HashSet to track unique email addresses
-                HashSet<string> uniqueEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                // Helper action to add members from a source list
-                Action<MapiDistributionList> addMembers = sourceList =>
-                {
-                    if (sourceList != null && sourceList.Members != null)
-                    {
-                        foreach (MapiDistributionListMember member in sourceList.Members)
+                        if (member != null && !string.IsNullOrEmpty(member.Address) && seenEmails.Add(member.Address))
                         {
-                            if (member != null && !string.IsNullOrEmpty(member.EmailAddress))
-                            {
-                                if (uniqueEmails.Add(member.EmailAddress))
-                                {
-                                    // Add a copy of the member to the combined list
-                                    MapiDistributionListMember newMember = new MapiDistributionListMember(member.DisplayName, member.EmailAddress);
-                                    combinedList.Members.Add(newMember);
-                                }
-                            }
+                            combinedMembers.Add(member);
                         }
                     }
-                };
+                }
 
-                // Add members from both source lists
-                addMembers(distList1);
-                addMembers(distList2);
+                // Create a new unified distribution list with the combined members
+                ExchangeDistributionList unifiedList = new ExchangeDistributionList();
+                unifiedList.DisplayName = "Unified Distribution List";
 
-                // Save the combined distribution list
-                combinedList.Save(outputPath);
-                Console.WriteLine("Combined distribution list saved to '{0}'.", outputPath);
+                string newListId = client.CreateDistributionList(unifiedList, combinedMembers);
+                Console.WriteLine($"Unified distribution list created with Id: {newListId}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
