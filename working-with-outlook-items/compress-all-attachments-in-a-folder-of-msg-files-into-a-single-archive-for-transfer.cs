@@ -11,31 +11,30 @@ class Program
         try
         {
             // Folder containing MSG files
-            string sourceFolderPath = "MsgFolder";
+            string inputFolder = "MsgFolder";
             // Output ZIP archive path
-            string zipFilePath = "AllAttachments.zip";
+            string outputZipPath = "attachments.zip";
 
-            // Verify source folder exists
-            if (!Directory.Exists(sourceFolderPath))
+            // Verify input folder exists
+            if (!Directory.Exists(inputFolder))
             {
-                Console.Error.WriteLine($"Error: Folder not found – {sourceFolderPath}");
+                Console.Error.WriteLine($"Input folder does not exist: {inputFolder}");
                 return;
             }
 
-            // Create or overwrite the ZIP archive
+            // Create (or overwrite) the ZIP archive
             try
             {
-                using (FileStream zipFileStream = new FileStream(zipFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (FileStream zipFileStream = new FileStream(outputZipPath, FileMode.Create, FileAccess.ReadWrite))
+                using (ZipArchive archive = new ZipArchive(zipFileStream, ZipArchiveMode.Update))
                 {
-                    using (ZipArchive zipArchive = new ZipArchive(zipFileStream, ZipArchiveMode.Update))
+                    // Process each MSG file in the folder
+                    string[] msgFiles = Directory.GetFiles(inputFolder, "*.msg");
+                    foreach (string msgFilePath in msgFiles)
                     {
-                        // Enumerate all MSG files in the folder
-                        string[] msgFiles = Directory.GetFiles(sourceFolderPath, "*.msg");
-                        foreach (string msgFilePath in msgFiles)
+                        // Guard against missing files (should not happen with GetFiles)
+                        if (!File.Exists(msgFilePath))
                         {
-                            // Ensure the MSG file exists (should be true from GetFiles)
-                            if (!File.Exists(msgFilePath))
-                            {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -53,43 +52,45 @@ class Program
                     return;
                 }
 
-                                Console.Error.WriteLine($"Warning: File not found – {msgFilePath}");
-                                continue;
-                            }
+                            Console.Error.WriteLine($"File not found: {msgFilePath}");
+                            continue;
+                        }
 
-                            try
+                        try
+                        {
+                            using (MapiMessage message = MapiMessage.Load(msgFilePath))
                             {
-                                // Load the MSG file
-                                using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+                                foreach (MapiAttachment attachment in message.Attachments)
                                 {
-                                    // Iterate through each attachment in the message
-                                    foreach (MapiAttachment attachment in mapiMessage.Attachments)
+                                    // Load attachment into memory
+                                    using (MemoryStream attachmentStream = new MemoryStream())
                                     {
-                                        // Create a unique entry name to avoid collisions
-                                        string entryName = Path.GetFileNameWithoutExtension(msgFilePath) + "_" + attachment.FileName;
-                                        ZipArchiveEntry zipEntry = zipArchive.CreateEntry(entryName, CompressionLevel.Optimal);
-                                        using (Stream entryStream = zipEntry.Open())
+                                        attachment.Save(attachmentStream);
+                                        attachmentStream.Position = 0;
+
+                                        // Create an entry in the ZIP archive
+                                        string entryName = attachment.FileName;
+                                        ZipArchiveEntry entry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+                                        using (Stream entryStream = entry.Open())
                                         {
-                                            // Save attachment directly into the ZIP entry stream
-                                            attachment.Save(entryStream);
+                                            attachmentStream.CopyTo(entryStream);
                                         }
                                     }
                                 }
                             }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Error processing file '{msgFilePath}': {ex.Message}");
-                                // Continue with next file
-                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Error processing '{msgFilePath}': {ex.Message}");
                         }
                     }
                 }
 
-                Console.WriteLine($"All attachments have been compressed into '{zipFilePath}'.");
+                Console.WriteLine($"All attachments have been compressed into '{outputZipPath}'.");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error creating ZIP archive: {ex.Message}");
+                Console.Error.WriteLine($"Failed to create ZIP archive: {ex.Message}");
                 return;
             }
         }
