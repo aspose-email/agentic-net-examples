@@ -1,9 +1,10 @@
+using Aspose.Email.PersonalInfo;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Aspose.Email;
-using Aspose.Email.PersonalInfo;
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -11,86 +12,126 @@ class Program
     {
         try
         {
-            // Prepare a sample list of contacts.
-            List<Contact> contacts = new List<Contact>
+            // ----- Configuration -----
+            string pstPath = "YOUR_PST_PATH.pst";               // Path to the PST file
+            string outputFolder = "YOUR_OUTPUT_FOLDER";         // Folder where city files will be created
+
+            // Guard against placeholder values
+            if (string.IsNullOrWhiteSpace(pstPath) || pstPath.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(outputFolder) || outputFolder.StartsWith("YOUR_"))
             {
-                new Contact { GivenName = "John", Surname = "Doe", Location = "NewYork", EmailAddresses = { new EmailAddress("john.doe@example.com") } },
-                new Contact { GivenName = "Jane", Surname = "Smith", Location = "London", EmailAddresses = { new EmailAddress("jane.smith@example.co.uk") } },
-                new Contact { GivenName = "Alice", Surname = "Brown", Location = "NewYork", EmailAddresses = { new EmailAddress("alice.brown@example.com") } },
-                new Contact { GivenName = "Bob", Surname = "White", Location = "Paris", EmailAddresses = { new EmailAddress("bob.white@example.fr") } }
-            };
+                Console.Error.WriteLine("Please replace placeholder paths with actual values.");
+                return;
+            }
 
-            // Group contacts by city (Location property).
-            var groups = contacts.GroupBy(c => string.IsNullOrWhiteSpace(c.Location) ? "Unknown" : c.Location);
-
-            // Base output directory.
-            string outputRoot = "OutputContacts";
-
-            // Ensure the base directory exists.
+            // Ensure output directory exists
             try
             {
-                if (!Directory.Exists(outputRoot))
+                if (!Directory.Exists(outputFolder))
+                    Directory.CreateDirectory(outputFolder);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                return;
+            }
+
+            // Ensure PST file exists; if not, create an empty one
+            try
+            {
+                if (!File.Exists(pstPath))
                 {
-                    Directory.CreateDirectory(outputRoot);
+                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode)) { }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to create base output directory '{outputRoot}': {ex.Message}");
+                Console.Error.WriteLine($"Failed to prepare PST file: {ex.Message}");
                 return;
             }
 
-            // Process each city group.
-            foreach (var cityGroup in groups)
+            // ----- Process PST -----
+            try
             {
-                string cityFolder = Path.Combine(outputRoot, cityGroup.Key);
-                try
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    if (!Directory.Exists(cityFolder))
-                    {
-                        Directory.CreateDirectory(cityFolder);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create directory for city '{cityGroup.Key}': {ex.Message}");
-                    continue;
-                }
+                    // Collect contacts grouped by city
+                    var contactsByCity = new Dictionary<string, List<MapiContact>>(StringComparer.OrdinalIgnoreCase);
 
-                foreach (var contact in cityGroup)
-                {
-                    // Build a safe file name.
-                    string fileName = $"{contact.GivenName}_{contact.Surname}.vcf".Replace(Path.GetInvalidFileNameChars(), '_');
-                    string filePath = Path.Combine(cityFolder, fileName);
+                    // Iterate all folders recursively
+                    Queue<FolderInfo> folders = new Queue<FolderInfo>();
+                    folders.Enqueue(pst.RootFolder);
 
-                    try
+                    while (folders.Count > 0)
                     {
-                        // Save the contact as a vCard file.
-                        contact.Save(filePath);
+                        FolderInfo folder = folders.Dequeue();
+
+                        // Enqueue subfolders
+                        foreach (FolderInfo sub in folder.GetSubFolders())
+                            folders.Enqueue(sub);
+
+                        // Enumerate messages in the current folder
+                        foreach (MessageInfo msgInfo in folder.EnumerateMessages())
+                        {
+                            using (MapiMessage msg = pst.ExtractMessage(msgInfo))
+                            {
+                                if (msg.SupportedType != MapiItemType.Contact)
+                                    continue;
+
+                                // Convert to MapiContact
+                                MapiContact contact = (MapiContact)msg.ToMapiMessageItem();
+
+                                // Determine city (prefer Work, then Home, then Other)
+                                string city = contact.PhysicalAddresses?.WorkAddress?.City ??
+                                              contact.PhysicalAddresses?.HomeAddress?.City ??
+                                              contact.PhysicalAddresses?.OtherAddress?.City ??
+                                              "Unknown";
+
+                                if (!contactsByCity.TryGetValue(city, out List<MapiContact> list))
+                                {
+                                    list = new List<MapiContact>();
+                                    contactsByCity[city] = list;
+                                }
+                                list.Add(contact);
+                            }
+                        }
                     }
-                    catch (Exception ex)
+
+                    // ----- Write output files per city -----
+                    foreach (var kvp in contactsByCity)
                     {
-                        Console.Error.WriteLine($"Failed to save contact '{contact.GivenName} {contact.Surname}' to '{filePath}': {ex.Message}");
+                        string cityName = string.IsNullOrWhiteSpace(kvp.Key) ? "Unknown" : kvp.Key;
+                        string safeCityName = string.Concat(cityName.Split(Path.GetInvalidFileNameChars()));
+                        string filePath = Path.Combine(outputFolder, $"{safeCityName}.csv");
+
+                        try
+                        {
+                            using (StreamWriter writer = new StreamWriter(filePath, false))
+                            {
+                                writer.WriteLine("DisplayName,Email");
+                                foreach (MapiContact c in kvp.Value)
+                                {
+                                    string email = c.ElectronicAddresses?.Email1?.EmailAddress ?? "";
+                                    string name = c.NameInfo?.DisplayName ?? "";
+                                    writer.WriteLine($"\"{name}\",\"{email}\"");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to write file for city '{cityName}': {ex.Message}");
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing PST: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
-    }
-}
-
-// Extension method to replace invalid filename characters.
-static class StringExtensions
-{
-    public static string Replace(this string str, char[] chars, char replacement)
-    {
-        foreach (char c in chars)
-        {
-            str = str.Replace(c, replacement);
-        }
-        return str;
     }
 }
