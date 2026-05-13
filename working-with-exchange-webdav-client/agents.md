@@ -18,25 +18,26 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (149 file(s))
-- `using Aspose.Email;` (141 file(s))
-- `using Aspose.Email.Clients.Exchange.Dav;` (106 file(s))
-- `using Aspose.Email.Clients.Exchange;` (75 file(s))
-- `using System.Net;` (40 file(s))
-- `using System.IO;` (34 file(s))
-- `using Aspose.Email.Tools.Search;` (28 file(s))
+- `using System;` (156 file(s))
+- `using Aspose.Email;` (148 file(s))
+- `using Aspose.Email.Clients.Exchange.Dav;` (113 file(s))
+- `using Aspose.Email.Clients.Exchange;` (80 file(s))
+- `using System.Net;` (41 file(s))
+- `using System.IO;` (37 file(s))
+- `using Aspose.Email.Tools.Search;` (29 file(s))
 - `using Aspose.Email.Calendar;` (19 file(s))
 - `using Aspose.Email.Storage.Pst;` (11 file(s))
 - `using Aspose.Email.Mapi;` (9 file(s))
 - `using Aspose.Email.Clients.Smtp;` (8 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService;` (5 file(s))
-- `using Aspose.Email.PersonalInfo;` (4 file(s))
-- `using System.Collections.Generic;` (3 file(s))
+- `using Aspose.Email.PersonalInfo;` (5 file(s))
+- `using System.Collections.Generic;` (4 file(s))
+- `using System.Text;` (2 file(s))
 - `using Aspose.Email.Clients;` (2 file(s))
 - `using Aspose.Email.Calendar.Recurrences;` (2 file(s))
 - `using System.Net.Security;` (2 file(s))
 - `using System.Security.Cryptography.X509Certificates;` (2 file(s))
-- `using System.Text;` (1 file(s))
+- `using System.Linq;` (2 file(s))
 - `using System.Security.Cryptography;` (1 file(s))
 - `using System.Net.Mime;` (1 file(s))
 - `using System.Text.Json;` (1 file(s))
@@ -52,6 +53,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [add-optional-attendees-to-the-appointment-by-populating-the-optionalattendees-collection-with-additional-email.cs](./add-optional-attendees-to-the-appointment-by-populating-the-optionalattendees-collection-with-additional-email.cs) | add optional attendees to the appointment by populating the optionalattendees collection with additional email |
 | [add-required-attendees-to-the-appointment-by-inserting-their-email-addresses-into-the-requiredattendees-collect.cs](./add-required-attendees-to-the-appointment-by-inserting-their-email-addresses-into-the-requiredattendees-collect.cs) | add required attendees to the appointment by inserting their email addresses into the requiredattendees collect |
 | [after-connecting-retrieve-the-exchange-server-version-string-to-verify-compatibility-with-supported-webdav-feat.cs](./after-connecting-retrieve-the-exchange-server-version-string-to-verify-compatibility-with-supported-webdav-feat.cs) | after connecting retrieve the exchange server version string to verify compatibility with supported webdav feat |
+| [apply-a-date-range-filter-to-listmessages-to-retrieve-only-emails-received-within-the-last-thirty-days.cs](./apply-a-date-range-filter-to-listmessages-to-retrieve-only-emails-received-within-the-last-thirty-days.cs) | apply a date range filter to listmessages to retrieve only emails received within the last thirty days |
 | [apply-a-filter-that-selects-email-items-whose-message-id-header-matches-the-specified-identifier.cs](./apply-a-filter-that-selects-email-items-whose-message-id-header-matches-the-specified-identifier.cs) | apply a filter that selects email items whose message id header matches the specified identifier |
 | [apply-a-filter-that-selects-messages-originating-from-a-designated-sender-s-email-address-during-processing.cs](./apply-a-filter-that-selects-messages-originating-from-a-designated-sender-s-email-address-during-processing.cs) | apply a filter that selects messages originating from a designated sender s email address during processing |
 | [apply-a-filter-that-selects-records-where-the-date-field-equals-the-current-system-date.cs](./apply-a-filter-that-selects-records-where-the-date-field-equals-the-current-system-date.cs) | apply a filter that selects records where the date field equals the current system date |
@@ -104,6 +106,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [export-a-summary-of-message-subjects-and-received-dates-to-a-csv-file-by-iterating-through-listmessages.cs](./export-a-summary-of-message-subjects-and-received-dates-to-a-csv-file-by-iterating-through-listmessages.cs) | export a summary of message subjects and received dates to a csv file by iterating through listmessages |
 | [export-retrieved-calendar-items-to-an-icalendar-ics-file-for-sharing-with-external-calendar-applications.cs](./export-retrieved-calendar-items-to-an-icalendar-ics-file-for-sharing-with-external-calendar-applications.cs) | export retrieved calendar items to an icalendar ics file for sharing with external calendar applications |
 | [fetch-a-complete-email-using-its-message-id-and-save-the-retrieved-content-as-an-eml-file-on-disk.cs](./fetch-a-complete-email-using-its-message-id-and-save-the-retrieved-content-as-an-eml-file-on-disk.cs) | fetch a complete email using its message id and save the retrieved content as an eml file on disk |
+| [fetch-an-email-and-download-all-attached-files-storing-each-attachment-in-a-predefined-local-directory.cs](./fetch-an-email-and-download-all-attached-files-storing-each-attachment-in-a-predefined-local-directory.cs) | fetch an email and download all attached files storing each attachment in a predefined local directory |
 | [fetch-an-email-and-extract-embedded-contact-vcard-data-for-import-into-the-user-address-book.cs](./fetch-an-email-and-extract-embedded-contact-vcard-data-for-import-into-the-user-address-book.cs) | fetch an email and extract embedded contact vcard data for import into the user address book |
 | [fetch-an-email-and-parse-its-mime-parts-to-separate-attachments-from-the-main-body-for-individual-processing.cs](./fetch-an-email-and-parse-its-mime-parts-to-separate-attachments-from-the-main-body-for-individual-processing.cs) | fetch an email and parse its mime parts to separate attachments from the main body for individual processing |
 | [fetch-the-uri-of-a-custom-mailbox-folder-by-providing-its-full-path-relative-to-the-mailbox-root.cs](./fetch-the-uri-of-a-custom-mailbox-folder-by-providing-its-full-path-relative-to-the-mailbox-root.cs) | fetch the uri of a custom mailbox folder by providing its full path relative to the mailbox root |
@@ -124,8 +127,10 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [implement-message-filtering-through-webdav-to-retrieve-only-emails-that-satisfy-defined-search-criteria-and-properties.cs](./implement-message-filtering-through-webdav-to-retrieve-only-emails-that-satisfy-defined-search-criteria-and-properties.cs) | implement message filtering through webdav to retrieve only emails that satisfy defined search criteria and properties |
 | [import-contacts-from-a-csv-source-into-a-folder-mapping-columns-to-webdav-contact-properties.cs](./import-contacts-from-a-csv-source-into-a-folder-mapping-columns-to-webdav-contact-properties.cs) | import contacts from a csv source into a folder mapping columns to webdav contact properties |
 | [instantiate-an-exchangeclient-using-the-webdav-server-url-username-and-password-credentials.cs](./instantiate-an-exchangeclient-using-the-webdav-server-url-username-and-password-credentials.cs) | instantiate an exchangeclient using the webdav server url username and password credentials |
+| [list-all-messages-in-the-inbox-folder-using-exchangeclient-listmessages-with-default-pagination-and-no-additional-fil.cs](./list-all-messages-in-the-inbox-folder-using-exchangeclient-listmessages-with-default-pagination-and-no-additional-fil.cs) | list all messages in the inbox folder using exchangeclient listmessages with default pagination and no additional fil |
 | [list-all-subfolders-under-the-root-mailbox-using-webdav-propfind-and-display-hierarchical-structure.cs](./list-all-subfolders-under-the-root-mailbox-using-webdav-propfind-and-display-hierarchical-structure.cs) | list all subfolders under the root mailbox using webdav propfind and display hierarchical structure |
 | [list-messages-in-the-drafts-folder-specifying-a-custom-page-size-of-fifty-items-per-request.cs](./list-messages-in-the-drafts-folder-specifying-a-custom-page-size-of-fifty-items-per-request.cs) | list messages in the drafts folder specifying a custom page size of fifty items per request |
+| [list-messages-with-pagination-by-skipping-the-first-ten-items-and-then-retrieving-the-next-twenty-results.cs](./list-messages-with-pagination-by-skipping-the-first-ten-items-and-then-retrieving-the-next-twenty-results.cs) | list messages with pagination by skipping the first ten items and then retrieving the next twenty results |
 | [list-unread-messages-by-applying-the-isread-false-filter-enabling-prioritization-of-pending-email-items.cs](./list-unread-messages-by-applying-the-isread-false-filter-enabling-prioritization-of-pending-email-items.cs) | list unread messages by applying the isread false filter enabling prioritization of pending email items |
 | [load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-updated-data-to-msg-format.cs](./load-an-icalendar-ics-file-modify-the-outlook-items-as-required-and-export-the-updated-data-to-msg-format.cs) | load an icalendar ics file modify the outlook items as required and export the updated data to msg format |
 | [log-the-unique-identifier-returned-by-the-server-for-each-sent-meeting-request-for-traceability.cs](./log-the-unique-identifier-returned-by-the-server-for-each-sent-meeting-request-for-traceability.cs) | log the unique identifier returned by the server for each sent meeting request for traceability |
@@ -159,7 +164,9 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [retrieve-comprehensive-mailbox-metadata-through-webdav-calls-to-query-folder-properties-and-message-counts.cs](./retrieve-comprehensive-mailbox-metadata-through-webdav-calls-to-query-folder-properties-and-message-counts.cs) | retrieve comprehensive mailbox metadata through webdav calls to query folder properties and message counts |
 | [retrieve-default-mailbox-information-including-inboxuri-draftsuri-sentitemsuri-and-other-folder-uris-for-the-cu.cs](./retrieve-default-mailbox-information-including-inboxuri-draftsuri-sentitemsuri-and-other-folder-uris-for-the-cu.cs) | retrieve default mailbox information including inboxuri draftsuri sentitemsuri and other folder uris for the cu |
 | [retrieve-folder-statistics-such-as-item-count-and-size-via-webdav-propfind-on-the-folder-resource.cs](./retrieve-folder-statistics-such-as-item-count-and-size-via-webdav-propfind-on-the-folder-resource.cs) | retrieve folder statistics such as item count and size via webdav propfind on the folder resource |
+| [retrieve-full-property-set-of-a-contact-including-photo-and-save-the-image-to-disk.cs](./retrieve-full-property-set-of-a-contact-including-photo-and-save-the-image-to-disk.cs) | retrieve full property set of a contact including photo and save the image to disk |
 | [retrieve-messages-from-a-particular-sender-by-setting-the-mailquery-sender-property-to-the-email-address.cs](./retrieve-messages-from-a-particular-sender-by-setting-the-mailquery-sender-property-to-the-email-address.cs) | retrieve messages from a particular sender by setting the mailquery sender property to the email address |
+| [retrieve-messages-sorted-by-received-date-in-descending-order-to-display-the-newest-emails-first-in-the-list.cs](./retrieve-messages-sorted-by-received-date-in-descending-order-to-display-the-newest-emails-first-in-the-list.cs) | retrieve messages sorted by received date in descending order to display the newest emails first in the list |
 | [retrieve-only-header-information-for-messages-without-downloading-full-bodies-by-specifying-appropriate-propert.cs](./retrieve-only-header-information-for-messages-without-downloading-full-bodies-by-specifying-appropriate-propert.cs) | retrieve only header information for messages without downloading full bodies by specifying appropriate propert |
 | [retrieve-only-high-importance-messages-by-adding-mailquery-importance-filter-before-listing-messages-operations.cs](./retrieve-only-high-importance-messages-by-adding-mailquery-importance-filter-before-listing-messages-operations.cs) | retrieve only high importance messages by adding mailquery importance filter before listing messages operations |
 | [retrieve-only-messages-that-contain-one-or-more-attachments-by-specifying-the-hasattachment-filter-in-the-query.cs](./retrieve-only-messages-that-contain-one-or-more-attachments-by-specifying-the-hasattachment-filter-in-the-query.cs) | retrieve only messages that contain one or more attachments by specifying the hasattachment filter in the query |
@@ -192,12 +199,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-source-and-saving-the-result.cs](./transform-an-ics-calendar-file-into-a-msg-outlook-storage-item-loading-the-source-and-saving-the-result.cs) | transform an ics calendar file into a msg outlook storage item loading the source and saving the result |
 | [transmit-an-email-with-the-high-priority-flag-set-to-indicate-urgent-attention-by-recipients.cs](./transmit-an-email-with-the-high-priority-flag-set-to-indicate-urgent-attention-by-recipients.cs) | transmit an email with the high priority flag set to indicate urgent attention by recipients |
 | [update-the-location-of-an-existing-calendar-event-by-modifying-its-property-through-webdav-proppatch.cs](./update-the-location-of-an-existing-calendar-event-by-modifying-its-property-through-webdav-proppatch.cs) | update the location of an existing calendar event by modifying its property through webdav proppatch |
+| [upload-a-new-email-with-embedded-images-to-a-specific-folder-using-webdav-put-and-set-mime-type.cs](./upload-a-new-email-with-embedded-images-to-a-specific-folder-using-webdav-put-and-set-mime-type.cs) | upload a new email with embedded images to a specific folder using webdav put and set mime type |
 | [validate-required-webdav-headers-before-each-request-to-prevent-authentication-and-syntax-errors.cs](./validate-required-webdav-headers-before-each-request-to-prevent-authentication-and-syntax-errors.cs) | validate required webdav headers before each request to prevent authentication and syntax errors |
 | [validate-that-the-exchange-server-supports-webdav-by-inspecting-response-headers-before-initializing-the-client.cs](./validate-that-the-exchange-server-supports-webdav-by-inspecting-response-headers-before-initializing-the-client.cs) | validate that the exchange server supports webdav by inspecting response headers before initializing the client |
 | [write-the-html-body-of-a-fetched-email-to-a-html-file-preserving-original-markup-and-styling.cs](./write-the-html-body-of-a-fetched-email-to-a-html-file-preserving-original-markup-and-styling.cs) | write the html body of a fetched email to a html file preserving original markup and styling |
 
 ## Category Statistics
-- Total examples: 149
+- Total examples: 156
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -206,5 +214,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-04-23 | `20260423_104034` | [examples/batch-20260423_104034](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260423_104034) |
+| 2026-05-12 | `20260512_164607` | [examples/batch-20260512_164607](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260512_164607) |
 <!-- AUTOGENERATED:END -->

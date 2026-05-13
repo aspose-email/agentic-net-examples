@@ -18,13 +18,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (62 file(s))
-- `using Aspose.Email;` (62 file(s))
-- `using System.IO;` (61 file(s))
-- `using Aspose.Email.Mapi;` (41 file(s))
-- `using Aspose.Email.Storage.Nsf;` (19 file(s))
+- `using System;` (64 file(s))
+- `using Aspose.Email;` (64 file(s))
+- `using System.IO;` (63 file(s))
+- `using Aspose.Email.Mapi;` (42 file(s))
+- `using Aspose.Email.Storage.Nsf;` (20 file(s))
 - `using System.Collections.Generic;` (7 file(s))
-- `using Aspose.Email.Storage.Pst;` (4 file(s))
+- `using Aspose.Email.Storage.Pst;` (5 file(s))
 - `using System.Threading.Tasks;` (3 file(s))
 - `using System.Linq;` (2 file(s))
 - `using Aspose.Email.Clients;` (2 file(s))
@@ -48,6 +48,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [combine-extracted-message-data-into-custom-net-objects-for-further-processing.cs](./combine-extracted-message-data-into-custom-net-objects-for-further-processing.cs) | combine extracted message data into custom net objects for further processing |
 | [configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs](./configure-replication-parameters-for-processing-an-input-msg-file-to-ensure-accurate-message-duplication.cs) | configure replication parameters for processing an input msg file to ensure accurate message duplication |
 | [construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs](./construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs) | construct a new email object using the contents of an input msg file preserving all original message properties |
+| [create-a-batch-process-that-scans-a-folder-for-nsf-files-and-processes-each-one.cs](./create-a-batch-process-that-scans-a-folder-for-nsf-files-and-processes-each-one.cs) | create a batch process that scans a folder for nsf files and processes each one |
 | [create-a-reusable-library-method-that-returns-a-list-of-message-objects-from-an-nsf-file.cs](./create-a-reusable-library-method-that-returns-a-list-of-message-objects-from-an-nsf-file.cs) | create a reusable library method that returns a list of message objects from an nsf file |
 | [design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs](./design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs) | design a user interface form that accepts msg files as input directly for processing |
 | [detect-lz1-compression-in-the-nsf-file-and-log-a-warning-if-unsupported.cs](./detect-lz1-compression-in-the-nsf-file-and-log-a-warning-if-unsupported.cs) | detect lz1 compression in the nsf file and log a warning if unsupported |
@@ -98,6 +99,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs](./read-and-parse-an-msg-file-to-instantiate-a-mail-message-object-for-processing.cs) | read and parse an msg file to instantiate a mail message object for processing |
 | [read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs](./read-replication-settings-from-an-msg-file-and-map-them-to-the-appropriate-configuration-objects.cs) | read replication settings from an msg file and map them to the appropriate configuration objects |
 | [read-the-body-content-of-each-message-and-store-it-in-a-string-variable.cs](./read-the-body-content-of-each-message-and-store-it-in-a-string-variable.cs) | read the body content of each message and store it in a string variable |
+| [save-extracted-attachment-metadata-such-as-filename-and-size-into-a-database-table.cs](./save-extracted-attachment-metadata-such-as-filename-and-size-into-a-database-table.cs) | save extracted attachment metadata such as filename and size into a database table |
 | [serialize-extracted-message-objects-to-json-for-integration-with-external-services.cs](./serialize-extracted-message-objects-to-json-for-integration-with-external-services.cs) | serialize extracted message objects to json for integration with external services |
 | [use-a-using-statement-to-automatically-close-the-notesstoragefacility-after-processing.cs](./use-a-using-statement-to-automatically-close-the-notesstoragefacility-after-processing.cs) | use a using statement to automatically close the notesstoragefacility after processing |
 | [use-parallel-processing-to-handle-multiple-nsf-files-concurrently-while-respecting-thread-safety.cs](./use-parallel-processing-to-handle-multiple-nsf-files-concurrently-while-respecting-thread-safety.cs) | use parallel processing to handle multiple nsf files concurrently while respecting thread safety |
@@ -106,7 +108,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs](./when-saving-the-parent-msg-file-attachments-are-automatically-persisted-within-the-resulting-output-message-file.cs) | when saving the parent msg file attachments are automatically persisted within the resulting output message file |
 
 ## Category Statistics
-- Total examples: 62
+- Total examples: 64
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -115,5 +117,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-04-23 | `20260423_104034` | [examples/batch-20260423_104034](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260423_104034) |
+| 2026-05-12 | `20260512_164607` | [examples/batch-20260512_164607](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260512_164607) |
 <!-- AUTOGENERATED:END -->

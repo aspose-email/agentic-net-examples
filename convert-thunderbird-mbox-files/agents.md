@@ -18,16 +18,16 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (180 file(s))
-- `using Aspose.Email;` (173 file(s))
-- `using System.IO;` (172 file(s))
-- `using Aspose.Email.Storage.Pst;` (113 file(s))
-- `using Aspose.Email.Storage;` (74 file(s))
-- `using Aspose.Email.Storage.Mbox;` (61 file(s))
+- `using System;` (182 file(s))
+- `using Aspose.Email;` (175 file(s))
+- `using System.IO;` (174 file(s))
+- `using Aspose.Email.Storage.Pst;` (114 file(s))
+- `using Aspose.Email.Storage;` (75 file(s))
+- `using Aspose.Email.Storage.Mbox;` (62 file(s))
 - `using Aspose.Email.Mapi;` (44 file(s))
 - `using System.Text;` (19 file(s))
 - `using System.Threading;` (19 file(s))
-- `using System.Collections.Generic;` (16 file(s))
+- `using System.Collections.Generic;` (17 file(s))
 - `using System.Threading.Tasks;` (12 file(s))
 - `using System.Diagnostics;` (11 file(s))
 - `using System.Text.Json;` (5 file(s))
@@ -44,6 +44,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - `using System.IO.Compression;` (1 file(s))
 - `using Aspose.Email.Mime;` (1 file(s))
 - `using System.Reflection;` (1 file(s))
+- `using Aspose.Email.Calendar;` (1 file(s))
 
 ## Files in this folder
 | File | Description |
@@ -100,6 +101,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [create-a-helper-utility-that-validates-mbox-file-structure-before-initiating-conversion.cs](./create-a-helper-utility-that-validates-mbox-file-structure-before-initiating-conversion.cs) | create a helper utility that validates mbox file structure before initiating conversion |
 | [create-a-manifest-file-listing-all-generated-part-files-and-their-checksums-for-verification.cs](./create-a-manifest-file-listing-all-generated-part-files-and-their-checksums-for-verification.cs) | create a manifest file listing all generated part files and their checksums for verification |
 | [create-a-new-outlook-pst-file-using-personalstorage-create-with-fileformat-pst-and-a-target-path.cs](./create-a-new-outlook-pst-file-using-personalstorage-create-with-fileformat-pst-and-a-target-path.cs) | create a new outlook pst file using personalstorage create with fileformat pst and a target path |
+| [create-a-powershell-script-that-calls-the-net-library-to-split-mbox-files-in-batch-mode.cs](./create-a-powershell-script-that-calls-the-net-library-to-split-mbox-files-in-batch-mode.cs) | create a powershell script that calls the net library to split mbox files in batch mode |
 | [create-a-powershell-script-that-invokes-the-net-conversion-library-with-specified-parameters.cs](./create-a-powershell-script-that-invokes-the-net-conversion-library-with-specified-parameters.cs) | create a powershell script that invokes the net conversion library with specified parameters |
 | [create-a-progress-report-listing-each-part-file-name-size-and-creation-timestamp-after-splitting.cs](./create-a-progress-report-listing-each-part-file-name-size-and-creation-timestamp-after-splitting.cs) | create a progress report listing each part file name size and creation timestamp after splitting |
 | [create-a-sample-console-application-demonstrating-end-to-end-mbox-to-pst-conversion-with-configurable-options.cs](./create-a-sample-console-application-demonstrating-end-to-end-mbox-to-pst-conversion-with-configurable-options.cs) | create a sample console application demonstrating end to end mbox to pst conversion with configurable options |
@@ -226,11 +228,12 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [validate-that-the-pst-file-complies-with-outlook-2016-format-specifications-after-conversion.cs](./validate-that-the-pst-file-complies-with-outlook-2016-format-specifications-after-conversion.cs) | validate that the pst file complies with outlook 2016 format specifications after conversion |
 | [validate-that-the-pst-file-size-does-not-exceed-a-user-specified-maximum-after-conversion.cs](./validate-that-the-pst-file-size-does-not-exceed-a-user-specified-maximum-after-conversion.cs) | validate that the pst file size does not exceed a user specified maximum after conversion |
 | [verify-that-each-generated-part-file-can-be-opened-by-mboxstoragereader-to-ensure-integrity.cs](./verify-that-each-generated-part-file-can-be-opened-by-mboxstoragereader-to-ensure-integrity.cs) | verify that each generated part file can be opened by mboxstoragereader to ensure integrity |
+| [write-a-helper-method-that-maps-mbox-folder-names-to-pst-folder-objects-automatically.cs](./write-a-helper-method-that-maps-mbox-folder-names-to-pst-folder-objects-automatically.cs) | write a helper method that maps mbox folder names to pst folder objects automatically |
 | [write-each-message-subject-line-to-a-log-file-during-asynchronous-reading-for-audit-purposes.cs](./write-each-message-subject-line-to-a-log-file-during-asynchronous-reading-for-audit-purposes.cs) | write each message subject line to a log file during asynchronous reading for audit purposes |
 | [write-integration-tests-that-verify-end-to-end-conversion-from-a-sample-mbox-to-a-valid-pst-file.cs](./write-integration-tests-that-verify-end-to-end-conversion-from-a-sample-mbox-to-a-valid-pst-file.cs) | write integration tests that verify end to end conversion from a sample mbox to a valid pst file |
 
 ## Category Statistics
-- Total examples: 180
+- Total examples: 182
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -239,5 +242,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-04-23 | `20260423_104034` | [examples/batch-20260423_104034](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260423_104034) |
+| 2026-05-12 | `20260512_164607` | [examples/batch-20260512_164607](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260512_164607) |
 <!-- AUTOGENERATED:END -->
