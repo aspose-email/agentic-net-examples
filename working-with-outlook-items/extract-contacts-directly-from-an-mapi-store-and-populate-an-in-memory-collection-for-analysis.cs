@@ -1,7 +1,7 @@
 using Aspose.Email.PersonalInfo;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 using Aspose.Email.Storage.Pst;
@@ -12,7 +12,7 @@ class Program
     {
         try
         {
-            // Path to the PST file
+            // Path to the PST file that contains contacts
             string pstPath = "contacts.pst";
 
             // Ensure the PST file exists; create a minimal placeholder if missing
@@ -20,12 +20,8 @@ class Program
             {
                 try
                 {
-                    // Create a new Unicode PST file
-                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Create a predefined Contacts folder
-                        createdPst.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
-                    }
+                    // Create an empty Unicode PST file
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
                 }
                 catch (Exception ex)
                 {
@@ -42,28 +38,22 @@ class Program
             {
                 using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    // Get the Contacts folder; if it does not exist, skip extraction
-                    FolderInfo contactsFolder;
-                    try
-                    {
-                        contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
-                    }
-                    catch (Exception)
-                    {
-                        Console.Error.WriteLine("Contacts folder not found in the PST.");
-                        return;
-                    }
+                    // Get the predefined Contacts folder
+                    FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
 
                     // Enumerate all messages in the Contacts folder
                     foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
                     {
+                        // Extract the full MAPI message
                         using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
                         {
-                            // Verify the message is a contact item
+                            // Process only contact items
                             if (mapiMessage.SupportedType == MapiItemType.Contact)
                             {
-                                // Convert to MapiContact
+                                // Convert the MAPI message to a MapiContact
                                 MapiContact contact = (MapiContact)mapiMessage.ToMapiMessageItem();
+
+                                // Add to the in‑memory collection
                                 contacts.Add(contact);
                             }
                         }
@@ -72,23 +62,23 @@ class Program
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
+                Console.Error.WriteLine($"Error while processing PST file: {ex.Message}");
                 return;
             }
 
-            // Output analysis results
+            // Output basic information about the extracted contacts
             Console.WriteLine($"Total contacts extracted: {contacts.Count}");
             foreach (MapiContact contact in contacts)
             {
-                Console.WriteLine($"Name: {contact.NameInfo.DisplayName}");
-                Console.WriteLine($"Email: {contact.ElectronicAddresses.Email1?.EmailAddress}");
-                Console.WriteLine($"Company: {contact.ProfessionalInfo?.CompanyName}");
-                Console.WriteLine("---");
+                // Example: display name and primary email address (if available)
+                string displayName = contact.NameInfo?.DisplayName ?? "(no name)";
+                string email = contact.ElectronicAddresses?.Email1?.EmailAddress ?? "(no email)";
+                Console.WriteLine($"Name: {displayName}, Email: {email}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
