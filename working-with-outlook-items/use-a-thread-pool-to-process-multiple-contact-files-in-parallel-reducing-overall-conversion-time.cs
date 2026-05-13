@@ -4,84 +4,110 @@ using System.Threading;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailThreadPoolExample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Input contact files (VCF). Adjust paths as needed.
-            string[] inputFiles = new string[] { "contact1.vcf", "contact2.vcf", "contact3.vcf" };
-            string outputDirectory = "output";
-
-            // Ensure output directory exists.
-            if (!Directory.Exists(outputDirectory))
+            try
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
+                // Input directory containing .vcf files
+                string inputDirectory = "Contacts";
+                // Output directory for converted .msg files
+                string outputDirectory = "Converted";
 
-            // Prepare a countdown event to wait for all thread‑pool tasks.
-            CountdownEvent countdown = new CountdownEvent(inputFiles.Length);
+                // Ensure input directory exists
+                if (!Directory.Exists(inputDirectory))
+                {
+                    Console.Error.WriteLine($"Input directory does not exist: {inputDirectory}");
+                    return;
+                }
 
-            foreach (string inputFile in inputFiles)
-            {
-                // Guard missing input files: create a minimal placeholder if absent.
-                if (!File.Exists(inputFile))
+                // Create output directory if it does not exist
+                if (!Directory.Exists(outputDirectory))
                 {
                     try
                     {
-                        using (StreamWriter writer = new StreamWriter(inputFile, false))
-                        {
-                            writer.WriteLine("BEGIN:VCARD");
-                            writer.WriteLine("VERSION:2.1");
-                            writer.WriteLine("FN:Placeholder");
-                            writer.WriteLine("END:VCARD");
-                        }
+                        Directory.CreateDirectory(outputDirectory);
                     }
-                    catch (Exception ex)
+                    catch (Exception dirEx)
                     {
-                        Console.Error.WriteLine($"Failed to create placeholder for '{inputFile}': {ex.Message}");
-                        countdown.Signal();
-                        continue;
+                        Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                        return;
                     }
                 }
 
-                // Queue work to the thread pool.
-                ThreadPool.QueueUserWorkItem(state =>
+                // Get all .vcf files in the input directory
+                string[] contactFiles;
+                try
                 {
-                    try
-                    {
-                        string filePath = (string)state;
+                    contactFiles = Directory.GetFiles(inputDirectory, "*.vcf");
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to enumerate files: {ioEx.Message}");
+                    return;
+                }
 
-                        // Load the contact from VCF.
-                        using (MapiContact contact = MapiContact.FromVCard(filePath))
+                if (contactFiles.Length == 0)
+                {
+                    Console.WriteLine("No contact files found to process.");
+                    return;
+                }
+
+                // Use CountdownEvent to wait for all thread‑pool tasks to finish
+                using (CountdownEvent countdown = new CountdownEvent(contactFiles.Length))
+                {
+                    foreach (string contactPath in contactFiles)
+                    {
+                        // Queue each conversion work item to the thread pool
+                        ThreadPool.QueueUserWorkItem(state =>
                         {
-                            string outputPath = Path.Combine(outputDirectory,
-                                Path.GetFileNameWithoutExtension(filePath) + "_processed.vcf");
+                            string inputPath = (string)state;
+                            try
+                            {
+                                // Guard against missing file
+                                if (!File.Exists(inputPath))
+                                {
+                                    Console.Error.WriteLine($"File not found: {inputPath}");
+                                    return;
+                                }
 
-                            // Save the contact (could be transformed or simply copied).
-                            contact.Save(outputPath);
-                            Console.WriteLine($"Processed '{filePath}' -> '{outputPath}'.");
-                        }
+                                // Load the VCard as a MapiContact
+                                using (MapiContact contact = MapiContact.FromVCard(inputPath))
+                                {
+                                    // Prepare output file path
+                                    string fileNameWithoutExt = Path.GetFileNameWithoutExtension(inputPath);
+                                    string outputPath = Path.Combine(outputDirectory, fileNameWithoutExt + ".msg");
+
+                                    // Save the contact as a MSG file
+                                    contact.Save(outputPath);
+                                    Console.WriteLine($"Converted: {inputPath} -> {outputPath}");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Error processing '{inputPath}': {ex.Message}");
+                            }
+                            finally
+                            {
+                                // Signal task completion
+                                countdown.Signal();
+                            }
+                        }, contactPath);
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error processing '{state}': {ex.Message}");
-                    }
-                    finally
-                    {
-                        // Signal task completion.
-                        countdown.Signal();
-                    }
-                }, inputFile);
+
+                    // Wait for all conversions to complete
+                    countdown.Wait();
+                }
+
+                Console.WriteLine("All contacts have been processed.");
             }
-
-            // Wait for all tasks to finish.
-            countdown.Wait();
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Unhandled exception: {e.Message}");
+            }
         }
     }
 }
