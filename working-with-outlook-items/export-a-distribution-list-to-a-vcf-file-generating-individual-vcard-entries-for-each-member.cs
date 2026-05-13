@@ -1,7 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using System.Collections.Generic;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
@@ -10,32 +9,41 @@ class Program
     {
         try
         {
-            // Define the output VCF file path
-            string outputPath = "distributionList.vcf";
-
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string outputDirectory = "output";
+            if (!Directory.Exists(outputDirectory))
             {
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            // Create a new distribution list
+            // Create a distribution list and add members
             using (MapiDistributionList distributionList = new MapiDistributionList())
             {
                 distributionList.DisplayName = "Sample Distribution List";
 
-                // Add members to the distribution list
                 distributionList.Members.Add(new MapiDistributionListMember("John Doe", "john.doe@example.com"));
                 distributionList.Members.Add(new MapiDistributionListMember("Jane Smith", "jane.smith@example.com"));
-                distributionList.Members.Add(new MapiDistributionListMember("Bob Johnson", "bob.johnson@example.com"));
 
-                // Save the distribution list as a VCF file (vCard format)
-                MapiDistributionListSaveOptions saveOptions = new MapiDistributionListSaveOptions(ContactSaveFormat.VCard);
-                distributionList.Save(outputPath, saveOptions);
+                int memberIndex = 1;
+                foreach (MapiDistributionListMember member in distributionList.Members)
+                {
+                    // Build a simple vCard (VERSION 3.0) manually
+                    string vcardContent = $"BEGIN:VCARD\r\nVERSION:3.0\r\nFN:{member.DisplayName}\r\nEMAIL:{member.EmailAddress}\r\nEND:VCARD\r\n";
+
+                    string vcfPath = Path.Combine(outputDirectory, $"member{memberIndex}.vcf");
+                    try
+                    {
+                        File.WriteAllText(vcfPath, vcardContent);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save vCard for {member.DisplayName}: {ex.Message}");
+                    }
+
+                    memberIndex++;
+                }
             }
 
-            Console.WriteLine($"Distribution list exported successfully to '{outputPath}'.");
+            Console.WriteLine("Distribution list exported to individual vCard files.");
         }
         catch (Exception ex)
         {
