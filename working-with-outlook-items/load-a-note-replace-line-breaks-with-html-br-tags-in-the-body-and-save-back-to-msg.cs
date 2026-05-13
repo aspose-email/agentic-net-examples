@@ -12,37 +12,36 @@ class Program
             string inputPath = "note.msg";
             string outputPath = "note_updated.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if it does not.
+            // Guard file existence
             if (!File.Exists(inputPath))
             {
-                MapiMessage placeholder = new MapiMessage(
-                    "placeholder@example.com",
-                    "placeholder@example.com",
-                    "Placeholder",
-                    "This is a placeholder message."
-                );
-
                 try
                 {
-                    placeholder.Save(inputPath);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-                finally
-                {
-                    placeholder.Dispose();
-                }
+
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
             }
 
-            // Load the MSG file.
             try
             {
+                // Load the MSG note
                 using (MapiMessage message = MapiMessage.Load(inputPath))
                 {
-                    // Replace line breaks with HTML <br> tags.
+                    // Replace line breaks with HTML <br> tags
                     string originalBody = message.Body ?? string.Empty;
                     string updatedBody = originalBody
                         .Replace("\r\n", "<br>")
@@ -50,21 +49,14 @@ class Program
                         .Replace("\r", "<br>");
                     message.Body = updatedBody;
 
-                    // Save the updated message.
-                    try
-                    {
-                        message.Save(outputPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save updated MSG: {ex.Message}");
-                        return;
-                    }
+                    // Save the modified message back to MSG
+                    message.Save(outputPath);
+                    Console.WriteLine($"Message saved to {outputPath}");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load MSG: {ex.Message}");
+                Console.Error.WriteLine($"Error processing message: {ex.Message}");
                 return;
             }
         }
