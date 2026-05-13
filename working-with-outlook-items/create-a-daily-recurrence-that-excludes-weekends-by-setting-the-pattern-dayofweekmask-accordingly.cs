@@ -1,5 +1,5 @@
+using Aspose.Email.Calendar.Recurrences;
 using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
@@ -9,54 +9,32 @@ class Program
     {
         try
         {
-            // Output file path
-            string outputPath = "DailyRecurrence.msg";
+            // Create a weekly recurrence pattern that repeats every week
+            // but only on weekdays (Monday through Friday).
+            MapiCalendarWeeklyRecurrencePattern recurrence = new MapiCalendarWeeklyRecurrencePattern();
 
-            // Ensure the output directory exists
-            string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
+            // Set the day-of-week mask to include Monday, Tuesday, Wednesday,
+            // Thursday, and Friday. The enum is flagged, so we combine values.
+            recurrence.DayOfWeek = MapiCalendarDayOfWeek.Monday |
+                                   MapiCalendarDayOfWeek.Tuesday |
+                                   MapiCalendarDayOfWeek.Wednesday |
+                                   MapiCalendarDayOfWeek.Thursday |
+                                   MapiCalendarDayOfWeek.Friday;
 
-            // Create a MAPI calendar item
-            using (MapiCalendar calendar = new MapiCalendar())
-            {
-                calendar.StartDate = DateTime.Today.AddHours(9);
-                calendar.EndDate = DateTime.Today.AddHours(10);
-                calendar.Location = "Conference Room";
-                calendar.Subject = "Daily Standup Meeting";
+            // Define the start and end dates for the recurrence.
+            recurrence.EndDate = new DateTime(2023, 1, 31);
 
-                // Define a daily recurrence pattern that excludes weekends
-                MapiCalendarDailyRecurrencePattern pattern = new MapiCalendarDailyRecurrencePattern();
-                pattern.StartDate = calendar.StartDate;
-                pattern.EndDate = calendar.StartDate.AddMonths(1);
-                pattern.DayOfWeek = MapiCalendarDayOfWeek.Monday |
-                                    MapiCalendarDayOfWeek.Tuesday |
-                                    MapiCalendarDayOfWeek.Wednesday |
-                                    MapiCalendarDayOfWeek.Thursday |
-                                    MapiCalendarDayOfWeek.Friday;
+            // Set the period to 1 week (repeat every week).
+            recurrence.Period = 1;
 
-                // Attach the recurrence pattern to the calendar
-                MapiCalendarEventRecurrence recurrence = new MapiCalendarEventRecurrence();
-                recurrence.RecurrencePattern = pattern;
-                calendar.Recurrence = recurrence;
-
-                // Save the calendar to a MSG file
-                try
-                {
-                    calendar.Save(outputPath);
-                    Console.WriteLine($"Calendar saved to {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save calendar: {ex.Message}");
-                }
-            }
+            Console.WriteLine("Recurrence pattern created:");
+            Console.WriteLine("DayOfWeek mask: " + recurrence.DayOfWeek);
+            Console.WriteLine("StartDate: " + recurrence.StartDate);
+            Console.WriteLine("EndDate: " + recurrence.EndDate);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
