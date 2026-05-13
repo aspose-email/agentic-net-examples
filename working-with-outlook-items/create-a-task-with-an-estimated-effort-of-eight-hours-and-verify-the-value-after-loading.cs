@@ -1,8 +1,8 @@
-using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email;
 using Aspose.Email.Mapi;
+using Aspose.Email.Calendar;
 
 class Program
 {
@@ -10,51 +10,102 @@ class Program
     {
         try
         {
-            // Define the task file path
+            // Define the path for the task message file
             string taskFilePath = "task.msg";
 
-            // Ensure the directory for the task file exists
+            // Ensure the directory exists
             string taskDirectory = Path.GetDirectoryName(taskFilePath);
             if (!string.IsNullOrEmpty(taskDirectory) && !Directory.Exists(taskDirectory))
             {
                 Directory.CreateDirectory(taskDirectory);
             }
 
-            // Create an ExchangeTask with an estimated effort of eight hours (480 minutes)
-            using (ExchangeTask task = new ExchangeTask())
+            // Guard file write operation
+            try
             {
-                task.Subject = "Sample Task";
-                task.ActualWork = 480; // minutes actually worked
-                task.TotalWork = 480;  // minutes expected to work
+                // Create a new MapiTask and set its properties
+                using (MapiTask task = new MapiTask())
+                {
+                    task.Subject = "Sample Task";
+                    task.Body = "This is a sample task with estimated effort.";
+                    task.StartDate = DateTime.Now;
+                    task.DueDate = DateTime.Now.AddDays(2);
+                    // Estimated effort is in minutes (8 hours = 480 minutes)
+                    task.EstimatedEffort = 480;
 
-                // Save the task to a MSG file
-                task.Save(taskFilePath, Aspose.Email.Mapi.TaskSaveFormat.Msg);
+                    // Save the task to a MSG file
+                    task.Save(taskFilePath, TaskSaveFormat.Msg);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error writing task file: {ex.Message}");
+                return;
             }
 
-            // Verify the saved task by loading it as a MapiMessage
-            if (File.Exists(taskFilePath))
+            // Guard file read operation
+            if (!File.Exists(taskFilePath))
             {
-                using (MapiMessage message = MapiMessage.Load(taskFilePath))
+                try
                 {
-                    if (message.SupportedType == Aspose.Email.Mapi.MapiItemType.Task)
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        MapiTask loadedTask = (MapiTask)message.ToMapiMessageItem();
-                        Console.WriteLine($"Verified Estimated Effort (minutes): {loadedTask.EstimatedEffort}");
+                        placeholder.Save(taskFilePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine("Aspose.Email.Calendar.Task file does not exist.");
+                return;
+            }
+
+            try
+            {
+                // Load the MSG file as a MapiMessage
+                using (MapiMessage loadedMessage = MapiMessage.Load(taskFilePath))
+                {
+                    // Verify that the loaded message is a task
+                    if (loadedMessage.SupportedType != MapiItemType.Task)
+                    {
+                        Console.Error.WriteLine("Loaded message is not a task.");
+                        return;
+                    }
+
+                    // Convert the message to a MapiTask
+                    MapiTask loadedTask = (MapiTask)loadedMessage.ToMapiMessageItem();
+
+                    // Verify the EstimatedEffort value
+                    int expectedEffort = 480;
+                    if (loadedTask.EstimatedEffort == expectedEffort)
+                    {
+                        Console.WriteLine($"Estimated effort verified: {loadedTask.EstimatedEffort} minutes.");
                     }
                     else
                     {
-                        Console.Error.WriteLine("The saved file is not a task item.");
+                        Console.WriteLine($"Estimated effort mismatch. Expected: {expectedEffort}, Actual: {loadedTask.EstimatedEffort}");
                     }
+
+                    // Dispose the loaded task explicitly
+                    loadedTask.Dispose();
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Console.Error.WriteLine("Task file was not created.");
+                Console.Error.WriteLine($"Error reading task file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
