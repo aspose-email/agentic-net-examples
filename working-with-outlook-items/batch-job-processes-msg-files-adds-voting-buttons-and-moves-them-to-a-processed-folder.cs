@@ -1,6 +1,8 @@
+using Aspose.Email.Clients;
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients.Imap;
 using Aspose.Email.Mapi;
 
 class Program
@@ -9,45 +11,75 @@ class Program
     {
         try
         {
-            string inputFolder = "InputMsgs";
-            string processedFolder = "Processed";
+            // Placeholder IMAP connection settings
+            string imapHost = "imap.example.com";
+            string imapUsername = "user@example.com";
+            string imapPassword = "password";
 
-            // Ensure input folder exists
-            if (!Directory.Exists(inputFolder))
+            // Skip execution when placeholder credentials are detected
+            if (imapHost.Contains("example.com"))
             {
-                Console.Error.WriteLine($"Error: Input folder not found – {inputFolder}");
+                Console.WriteLine("Placeholder IMAP settings detected. Skipping execution.");
                 return;
             }
 
-            // Ensure processed folder exists or create it
-            if (!Directory.Exists(processedFolder))
+            // Local folder containing MSG files
+            string sourceFolderPath = @"C:\Messages";
+            // Destination folder on the IMAP server
+            string processedFolderName = "Processed";
+
+            // Verify source folder existence
+            if (!Directory.Exists(sourceFolderPath))
             {
-                try
-                {
-                    Directory.CreateDirectory(processedFolder);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error: Could not create processed folder – {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Source folder does not exist: {sourceFolderPath}");
+                return;
             }
 
+            // Get all MSG files in the source folder
             string[] msgFiles;
             try
             {
-                msgFiles = Directory.GetFiles(inputFolder, "*.msg");
+                msgFiles = Directory.GetFiles(sourceFolderPath, "*.msg");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: Unable to enumerate MSG files – {ex.Message}");
+                Console.Error.WriteLine($"Failed to enumerate MSG files: {ex.Message}");
                 return;
             }
 
-            foreach (string msgPath in msgFiles)
+            // Connect to the IMAP server
+            using (ImapClient client = new ImapClient(imapHost, imapUsername, imapPassword, SecurityOptions.Auto))
             {
-                if (!File.Exists(msgPath))
+                try
                 {
+                    client.ValidateCredentials();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"IMAP authentication failed: {ex.Message}");
+                    return;
+                }
+
+                // Ensure the destination folder exists
+                try
+                {
+                    if (!client.ExistFolder(processedFolderName))
+                    {
+                        client.CreateFolder(processedFolderName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to ensure processed folder: {ex.Message}");
+                    return;
+                }
+
+                // Process each MSG file
+                foreach (string msgFilePath in msgFiles)
+                {
+                    // Guard against missing file (should not happen after GetFiles, but safe)
+                    if (!File.Exists(msgFilePath))
+                    {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -56,7 +88,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath);
+                        placeholder.Save(msgFilePath);
                     }
                 }
                 catch (Exception ex)
@@ -65,47 +97,36 @@ class Program
                     return;
                 }
 
-                    Console.Error.WriteLine($"Warning: File not found – {msgPath}");
-                    continue;
-                }
-
-                try
-                {
-                    using (MapiMessage message = MapiMessage.Load(msgPath))
-                    {
-                        // Add voting buttons
-                        FollowUpManager.AddVotingButton(message, "Approve");
-                        FollowUpManager.AddVotingButton(message, "Reject");
-
-                        // Save changes back to the same file
-                        message.Save(msgPath);
+                        Console.Error.WriteLine($"File not found: {msgFilePath}");
+                        continue;
                     }
 
-                    // Move the processed file to the "Processed" folder
-                    string destinationPath = Path.Combine(processedFolder, Path.GetFileName(msgPath));
                     try
                     {
-                        // Overwrite if a file with the same name already exists
-                        if (File.Exists(destinationPath))
+                        // Load the MSG file as a MAPI message
+                        using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
                         {
-                            File.Delete(destinationPath);
+                            // Add a voting button to the message
+                            FollowUpManager.AddVotingButton(mapiMessage, "Approve");
+
+                            // Convert MAPI message to MailMessage for upload
+                            MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions());
+
+                            // Upload the message to the "Processed" folder
+                            client.AppendMessage(processedFolderName, mailMessage);
                         }
-                        File.Move(msgPath, destinationPath);
                     }
-                    catch (Exception moveEx)
+                    catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error: Could not move file '{msgPath}' – {moveEx.Message}");
+                        Console.Error.WriteLine($"Error processing file '{msgFilePath}': {ex.Message}");
+                        // Continue with next file
                     }
-                }
-                catch (Exception fileEx)
-                {
-                    Console.Error.WriteLine($"Error processing file '{msgPath}' – {fileEx.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
