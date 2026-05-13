@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
@@ -7,7 +6,7 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
@@ -15,34 +14,39 @@ class Program
             string emlPath = "appointment.eml";
             string msgPath = "appointment.msg";
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(Path.GetFullPath(emlPath));
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
             // Create attendees list
             MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("person1@example.com"));
-            attendees.Add(new MailAddress("person2@example.com"));
+            attendees.Add(new MailAddress("person1@domain.com"));
+            attendees.Add(new MailAddress("person2@domain.com"));
 
-            // Create appointment with custom HTML body
+            // Create appointment with basic details
+            DateTime start = new DateTime(2024, 12, 1, 10, 0, 0);
+            DateTime end = new DateTime(2024, 12, 1, 11, 0, 0);
             Appointment appointment = new Appointment(
-                "Room 101",
-                new DateTime(2023, 12, 25, 10, 0, 0),
-                new DateTime(2023, 12, 25, 11, 0, 0),
-                new MailAddress("organizer@example.com"),
-                attendees)
-            {
-                Summary = "Christmas Meeting",
-                HtmlDescription = "<html><body><h1>Agenda</h1><p>Discuss holiday plans.</p></body></html>"
-            };
+                "Team Meeting",
+                start,
+                end,
+                new MailAddress("organizer@domain.com"),
+                attendees);
 
-            // Convert appointment to MailMessage and save as EML
-            using (MailMessage emlMessage = appointment.ToMailMessage())
+            // Set custom HTML body
+            appointment.HtmlDescription = "<html><body><h1>Agenda</h1><p>Discuss project milestones.</p></body></html>";
+            appointment.Summary = "Team Meeting";
+            appointment.Description = "Meeting to discuss project milestones.";
+
+            // Convert appointment to MailMessage (EML)
+            using (MailMessage mailMessage = appointment.ToMailMessage())
             {
-                emlMessage.Save(emlPath);
+                try
+                {
+                    mailMessage.Save(emlPath);
+                    Console.WriteLine($"EML file saved to: {emlPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save EML file: {ex.Message}");
+                    return;
+                }
             }
 
             // Verify EML file exists before loading
@@ -69,21 +73,36 @@ class Program
                 return;
             }
 
-            // Load the EML, convert to MapiMessage, and save as MSG preserving HTML
-            using (MailMessage loadedMessage = MailMessage.Load(emlPath))
+            // Load MailMessage from EML
+            MailMessage loadedMessage;
+            try
             {
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(loadedMessage, MapiConversionOptions.UnicodeFormat))
-                {
-                    MsgSaveOptions msgOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                    mapiMessage.Save(msgPath, msgOptions);
-                }
+                loadedMessage = MailMessage.Load(emlPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load EML file: {ex.Message}");
+                return;
             }
 
-            Console.WriteLine("Appointment saved as EML and converted to MSG successfully.");
+            // Convert loaded MailMessage to MapiMessage (MSG)
+            using (loadedMessage)
+            using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(loadedMessage))
+            {
+                try
+                {
+                    mapiMessage.Save(msgPath);
+                    Console.WriteLine($"MSG file saved to: {msgPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                }
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
