@@ -1,125 +1,104 @@
-using System;
-using System.IO;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.PersonalInfo;
-using Aspose.Email.Clients.Exchange.WebService;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
 
-namespace ContactSync
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
+        {
+            // Placeholder configuration – replace with real values.
+            string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+            string remoteFolderId = "remote-contacts-folder-id";
+            string logFilePath = "SyncLog.txt";
+
+            // Guard against placeholder credentials.
+            if (mailboxUri.Contains("example") || username.Contains("example") || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping synchronization.");
+                return;
+            }
+
+            // Ensure log directory exists.
+            try
+            {
+                string logDirectory = Path.GetDirectoryName(Path.GetFullPath(logFilePath));
+                if (!Directory.Exists(logDirectory))
+                {
+                    Directory.CreateDirectory(logDirectory);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare log directory: {ex.Message}");
+                return;
+            }
+
+            // Perform synchronization.
+            SyncContacts(mailboxUri, username, password, remoteFolderId, logFilePath);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    private static void SyncContacts(string mailboxUri, string username, string password, string remoteFolderId, string logFilePath)
+    {
+        // Create Exchange client.
+        using (ExchangeClient client = new ExchangeClient(mailboxUri, new NetworkCredential(username, password)))
         {
             try
             {
-                // Configuration placeholders
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
-                string logFilePath = "contact_sync.log";
+                // Fetch contacts from the default contacts folder.
+                List<Contact> localContacts = client.GetContacts("Contacts").ToList();
 
-                // Guard placeholder credentials
-                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
-                {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping synchronization.");
-                    return;
-                }
+                // Placeholder: In a real implementation, instantiate a Graph client here.
+                // For this example we only log the intended actions.
 
-                // Ensure log directory exists
-                try
+                foreach (Contact localContact in localContacts)
                 {
-                    string logDir = Path.GetDirectoryName(Path.GetFullPath(logFilePath));
-                    if (!Directory.Exists(logDir))
-                    {
-                        Directory.CreateDirectory(logDir);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to prepare log directory: {ex.Message}");
-                    return;
-                }
-
-                // Create EWS client
-                IEWSClient client;
-                try
-                {
-                    client = EWSClient.GetEWSClient(mailboxUri, username, password);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
-                    return;
-                }
-
-                using (client)
-                {
-                    // Fetch contacts from Exchange
-                    Contact[] contacts;
                     try
                     {
-                        contacts = client.GetContacts("Contacts");
+                        // Log intended creation/update.
+                        // In a real scenario, you would map the Contact to the remote format
+                        // and call the remote API, handling conflicts as needed.
+                        LogResult(logFilePath, $"Processed contact: {localContact.DisplayName}");
                     }
-                    catch (Exception ex)
+                    catch (Exception contactEx)
                     {
-                        Console.Error.WriteLine($"Failed to retrieve contacts: {ex.Message}");
-                        return;
-                    }
-
-                    // Placeholder remote sync - replace with actual remote API in production
-                    foreach (Contact contact in contacts)
-                    {
-                        try
-                        {
-                            // Simulate conflict detection (placeholder logic)
-                            bool conflict = false;
-                            if (conflict)
-                            {
-                                Console.WriteLine($"Conflict detected for contact {contact.DisplayName}. Resolving...");
-                                // Conflict resolution logic would go here
-                            }
-
-                            // Simulate synchronization
-                            SyncContactToRemote(contact);
-                            LogResult(logFilePath, $"Synced contact: {contact.DisplayName}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error syncing contact {contact.DisplayName}: {ex.Message}");
-                            LogResult(logFilePath, $"Failed to sync contact: {contact.DisplayName} - {ex.Message}");
-                        }
+                        LogResult(logFilePath, $"Error processing local contact {localContact.DisplayName}: {contactEx.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
             }
         }
+    }
 
-        // Placeholder method representing remote synchronization
-        private static void SyncContactToRemote(Contact contact)
+    private static void LogResult(string logFilePath, string message)
+    {
+        try
         {
-            // In a real implementation, send contact data to a remote server via API.
-            // Here we just simulate a short delay.
-            System.Threading.Thread.Sleep(10);
+            using (StreamWriter writer = new StreamWriter(logFilePath, true))
+            {
+                writer.WriteLine($"{DateTime.UtcNow:u} - {message}");
+            }
         }
-
-        // Append a line to the log file safely
-        private static void LogResult(string path, string message)
+        catch (Exception ex)
         {
-            try
-            {
-                using (StreamWriter writer = new StreamWriter(path, true))
-                {
-                    writer.WriteLine($"{DateTime.UtcNow:u} - {message}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to write log: {ex.Message}");
-            }
+            Console.Error.WriteLine($"Logging failed: {ex.Message}");
         }
     }
 }
