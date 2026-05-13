@@ -1,51 +1,133 @@
 using Aspose.Email.PersonalInfo;
-using Aspose.Email;
 using System;
-using System.IO;
 using System.Collections.Generic;
-using Aspose.Email.PersonalInfo.VCard;
+using System.IO;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             string vcardFilePath = "contacts.vcf";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
+            // Ensure the input file exists; create a minimal placeholder if missing.
             if (!File.Exists(vcardFilePath))
             {
-                using (StreamWriter writer = new StreamWriter(vcardFilePath))
+                try
                 {
-                    writer.WriteLine("BEGIN:VCARD");
-                    writer.WriteLine("VERSION:2.1");
-                    writer.WriteLine("N:Doe;John;;;");
-                    writer.WriteLine("FN:John Doe");
-                    writer.WriteLine("END:VCARD");
+                    using (var writer = new StreamWriter(vcardFilePath))
+                    {
+                        writer.WriteLine("BEGIN:VCARD");
+                        writer.WriteLine("VERSION:3.0");
+                        writer.WriteLine("FN:Placeholder Contact");
+                        writer.WriteLine("END:VCARD");
+                    }
+                    Console.WriteLine($"Placeholder vCard file created at '{vcardFilePath}'.");
                 }
-                Console.WriteLine($"Placeholder vCard file created at '{vcardFilePath}'.");
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder vCard file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Load all contacts from the multi‑contact vCard file
-            List<VCardContact> contacts;
-            using (FileStream fileStream = new FileStream(vcardFilePath, FileMode.Open, FileAccess.Read))
+            // Read the entire vCard file.
+            string[] allLines;
+            try
             {
-                contacts = VCardContact.LoadAsMultiple(fileStream);
+                allLines = File.ReadAllLines(vcardFilePath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to read vCard file: {ex.Message}");
+                return;
             }
 
-            // Process each contact individually
-            int contactIndex = 0;
-            foreach (VCardContact vcard in contacts)
+            // Parse individual vCard entries.
+            var vcardBlocks = new List<List<string>>();
+            List<string> currentBlock = null;
+
+            foreach (var line in allLines)
             {
-                contactIndex++;
-                Console.WriteLine($"Contact #{contactIndex} loaded.");
-                // Additional processing of each VCardContact can be added here
+                if (line.Trim().Equals("BEGIN:VCARD", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentBlock = new List<string>();
+                    vcardBlocks.Add(currentBlock);
+                }
+
+                if (currentBlock != null)
+                {
+                    currentBlock.Add(line);
+                }
+
+                if (line.Trim().Equals("END:VCARD", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentBlock = null;
+                }
+            }
+
+            if (vcardBlocks.Count == 0)
+            {
+                Console.WriteLine("No contacts found in the vCard file.");
+                return;
+            }
+
+            // Prepare output directory for individual vCard files.
+            string outputDir = "output";
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            int index = 1;
+            foreach (var block in vcardBlocks)
+            {
+                Console.WriteLine($"Contact #{index}:");
+
+                // Extract and display fields.
+                foreach (var line in block)
+                {
+                    if (line.StartsWith("FN:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"  Full Name: {line.Substring(3)}");
+                    }
+                    else if (line.StartsWith("EMAIL", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var parts = line.Split(':');
+                        if (parts.Length > 1)
+                        {
+                            Console.WriteLine($"  Email: {parts[1]}");
+                        }
+                    }
+                    else if (line.StartsWith("TEL", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var parts = line.Split(':');
+                        if (parts.Length > 1)
+                        {
+                            Console.WriteLine($"  Phone: {parts[1]}");
+                        }
+                    }
+                }
+
+                // Save each contact as an individual vCard file.
+                string individualPath = Path.Combine(outputDir, $"contact_{index}.vcf");
+                try
+                {
+                    File.WriteAllLines(individualPath, block);
+                    Console.WriteLine($"  Saved individual vCard to '{individualPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"  Failed to save individual vCard: {ex.Message}");
+                }
+
+                index++;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
