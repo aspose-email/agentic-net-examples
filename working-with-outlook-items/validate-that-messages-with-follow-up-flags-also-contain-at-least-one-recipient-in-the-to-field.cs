@@ -9,51 +9,66 @@ class Program
     {
         try
         {
-            // Path to the message file (placeholder if not present)
-            string messagePath = "sample.msg";
+            string messagePath = "message.msg";
 
-            // Ensure the file exists; create a minimal placeholder if missing
+            // Guard file existence
             if (!File.Exists(messagePath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "", "Placeholder", "This is a placeholder message."))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
                         placeholder.Save(messagePath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"File not found: {messagePath}");
+                return;
             }
 
-            // Load the message inside a using block to ensure disposal
-            using (MapiMessage message = MapiMessage.Load(messagePath))
+            try
             {
-                // Check if any flags are set (excluding the zero flag)
-                if (message.Flags != MapiMessageFlags.MSGFLAG_ZERO)
+                using (MapiMessage message = MapiMessage.Load(messagePath))
                 {
-                    // Validate that there is at least one recipient in the "To" field
-                    if (message.Recipients == null || message.Recipients.Count == 0)
+                    // Retrieve follow‑up options; null means no follow‑up flag
+                    FollowUpOptions options = FollowUpManager.GetOptions(message);
+
+                    if (options != null)
                     {
-                        Console.WriteLine("Warning: Message has follow‑up flags but no recipients in the To field.");
+                        // Validate that there is at least one recipient in the To field
+                        if (string.IsNullOrWhiteSpace(message.DisplayTo))
+                        {
+                            Console.WriteLine("Message has a follow‑up flag but no recipients in the To field.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Message has a follow‑up flag and contains To recipients.");
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("Message is valid: contains follow‑up flags and at least one recipient.");
+                        Console.WriteLine("Message does not contain a follow‑up flag.");
                     }
                 }
-                else
-                {
-                    Console.WriteLine("Message does not have any follow‑up flags.");
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading or processing the message: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
