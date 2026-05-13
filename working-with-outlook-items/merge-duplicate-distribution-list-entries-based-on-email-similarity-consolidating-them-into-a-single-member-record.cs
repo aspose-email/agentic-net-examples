@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -11,89 +9,68 @@ class Program
     {
         try
         {
-            string distListPath = "distributionList.msg";
+            // Placeholder connection settings – replace with real values.
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+            string distributionListId = "placeholder-id";
 
-            // Ensure the file exists; create a minimal placeholder if missing.
-            if (!File.Exists(distListPath))
+            // Skip execution when placeholders are detected.
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || distributionListId == "placeholder-id")
             {
-                try
+                Console.Error.WriteLine("Placeholder credentials or URLs detected. Skipping execution.");
+                return;
+            }
+
+            // Create the Exchange client.
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // Prepare the distribution list reference.
+                ExchangeDistributionList distList = new ExchangeDistributionList
                 {
-                    using (MapiDistributionList placeholder = new MapiDistributionList())
-                    {
-                        placeholder.DisplayName = "Sample Distribution List";
-                        placeholder.Members.Add(new MapiDistributionListMember("John Doe", "john.doe@example.com"));
-                        placeholder.Save(distListPath);
-                        Console.WriteLine($"Placeholder distribution list created at '{distListPath}'.");
-                    }
-                }
-                catch (Exception ex)
+                    Id = distributionListId
+                };
+
+                // Fetch current members.
+                MailAddressCollection members = client.FetchDistributionList(distList);
+                if (members == null || members.Count == 0)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder distribution list: {ex.Message}");
+                    Console.WriteLine("No members found in the distribution list.");
                     return;
                 }
-            }
 
-            // Load the existing distribution list message.
-            try
-            {
-                using (MapiMessage msg = MapiMessage.Load(distListPath))
+                // Identify duplicates based on case‑insensitive email address.
+                var uniqueMembers = new System.Collections.Generic.Dictionary<string, MailAddress>(StringComparer.OrdinalIgnoreCase);
+                MailAddressCollection duplicates = new MailAddressCollection();
+
+                foreach (MailAddress address in members)
                 {
-                    if (msg.SupportedType != MapiItemType.DistList)
+                    string emailKey = address.Address?.Trim().ToLowerInvariant() ?? string.Empty;
+                    if (uniqueMembers.ContainsKey(emailKey))
                     {
-                        Console.Error.WriteLine("The specified file is not a distribution list.");
-                        return;
+                        // Duplicate found – schedule for removal.
+                        duplicates.Add(address);
                     }
-
-                    using (MapiDistributionList distList = (MapiDistributionList)msg.ToMapiMessageItem())
+                    else
                     {
-                        // Merge duplicate members based on email (case‑insensitive).
-                        Dictionary<string, MapiDistributionListMember> uniqueMembers = new Dictionary<string, MapiDistributionListMember>(StringComparer.OrdinalIgnoreCase);
-                        foreach (MapiDistributionListMember member in distList.Members)
-                        {
-                            string email = member.EmailAddress?.Trim() ?? string.Empty;
-                            if (string.IsNullOrEmpty(email))
-                                continue;
-
-                            if (!uniqueMembers.ContainsKey(email))
-                            {
-                                // First occurrence – keep as‑is.
-                                uniqueMembers[email] = new MapiDistributionListMember(member.DisplayName, email);
-                            }
-                            else
-                            {
-                                // Duplicate – optionally merge display names (keep the first one).
-                                // Additional merging logic could be added here.
-                            }
-                        }
-
-                        // Replace the members collection with the merged set.
-                        distList.Members.Clear();
-                        foreach (MapiDistributionListMember mergedMember in uniqueMembers.Values)
-                        {
-                            distList.Members.Add(mergedMember);
-                        }
-
-                        // Save the updated distribution list back to the file.
-                        try
-                        {
-                            distList.Save(distListPath);
-                            Console.WriteLine("Duplicate distribution list entries merged successfully.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save updated distribution list: {ex.Message}");
-                        }
+                        uniqueMembers[emailKey] = address;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing distribution list file: {ex.Message}");
+
+                if (duplicates.Count == 0)
+                {
+                    Console.WriteLine("No duplicate members to remove.");
+                    return;
+                }
+
+                // Remove duplicate members from the distribution list.
+                client.DeleteFromDistributionList(distList, duplicates);
+                Console.WriteLine($"Removed {duplicates.Count} duplicate member(s) from the distribution list.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
