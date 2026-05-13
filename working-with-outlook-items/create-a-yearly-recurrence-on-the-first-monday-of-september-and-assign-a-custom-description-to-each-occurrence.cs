@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Calendar.Recurrences;
@@ -9,40 +10,47 @@ class Program
     {
         try
         {
-            // Define attendees for the appointment
+            // Prepare attendees
             MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("attendee1@example.com"));
-            attendees.Add(new MailAddress("attendee2@example.com"));
+            attendees.Add(new MailAddress("person1@example.com"));
+            attendees.Add(new MailAddress("person2@example.com"));
 
-            // Create a yearly recurrence pattern for the first Monday of September
+            // Define the start and end time for the first occurrence
+            DateTime start = new DateTime(DateTime.Now.Year, 9, 1, 9, 0, 0);
+            DateTime end = start.AddHours(1);
+
+            // Yearly recurrence on the first Monday of September
             YearlyRecurrencePattern yearlyPattern = new YearlyRecurrencePattern(
                 CalendarDay.Monday,
                 CalendarMonth.September,
                 DayPosition.First);
 
-            // Limit the recurrence to a specific end date (e.g., 5 years from now)
-            yearlyPattern.EndDate = new DateTime(DateTime.Now.Year + 5, 9, 30);
-
-            // Create the appointment with the recurrence pattern
+            // Create the appointment with a custom description
             Appointment appointment = new Appointment(
                 "Conference Room",
                 "Annual Meeting",
                 "Custom description for each occurrence",
-                new DateTime(DateTime.Now.Year, 9, 1, 9, 0, 0),
-                new DateTime(DateTime.Now.Year, 9, 1, 10, 0, 0),
+                start,
+                end,
                 new MailAddress("organizer@example.com"),
                 attendees,
                 yearlyPattern);
 
-            // Output appointment details
-            Console.WriteLine("Appointment created with yearly recurrence on the first Monday of September.");
-            Console.WriteLine($"Summary: {appointment.Summary}");
-            Console.WriteLine($"Description: {appointment.Description}");
-            Console.WriteLine($"Recurrence ends on: {yearlyPattern.EndDate:d}");
+            // Ensure the output directory exists
+            string filePath = "annual_meeting.ics";
+            string directory = Path.GetDirectoryName(Path.GetFullPath(filePath));
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            // Save the appointment as an iCalendar file
+            appointment.Save(filePath);
+            Console.WriteLine($"Appointment saved to {filePath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
