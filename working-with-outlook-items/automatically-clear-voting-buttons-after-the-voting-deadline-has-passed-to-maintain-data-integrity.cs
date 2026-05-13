@@ -9,43 +9,45 @@ class Program
     {
         try
         {
-            string inputPath = "message.msg";
-            string outputPath = "message_updated.msg";
+            // Path to the MSG file that contains voting buttons
+            string msgPath = "message.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(inputPath))
+            // Ensure the file exists; if not, create a minimal placeholder MSG
+            if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder message."))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Sample Message",
+                        "This is a placeholder message with no voting buttons."))
                     {
-                        placeholder.Save(inputPath);
-                        Console.WriteLine($"Created placeholder message at '{inputPath}'.");
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the existing message, clear voting buttons, and save the updated message.
+            // Load the message, clear voting buttons, and save the changes
             try
             {
-                using (MapiMessage message = MapiMessage.Load(inputPath))
+                using (MapiMessage message = MapiMessage.Load(msgPath))
                 {
-                    // Clear any voting buttons that may be present.
+                    // Delete any voting buttons that may be present
                     FollowUpManager.ClearVotingButtons(message);
 
-                    // Save the updated message.
-                    message.Save(outputPath);
-                    Console.WriteLine($"Voting buttons cleared and message saved to '{outputPath}'.");
+                    // Save the updated message back to the same file
+                    message.Save(msgPath);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing message: {ex.Message}");
+                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
                 return;
             }
         }
