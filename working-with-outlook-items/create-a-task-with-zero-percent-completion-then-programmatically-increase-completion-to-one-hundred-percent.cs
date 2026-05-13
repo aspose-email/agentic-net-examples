@@ -1,30 +1,68 @@
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Calendar;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailTaskExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Create a new Exchange task with 0% completion
-            ExchangeTask task = new ExchangeTask();
-            task.Subject = "Sample Task";
-            task.Body = "This is a sample task created with Aspose.Email.";
-            task.PercentComplete = 0;
+            try
+            {
+                // Define output directory and ensure it exists
+                string outputDirectory = "Output";
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
 
-            Console.WriteLine($"Aspose.Email.Calendar.Task created. Subject: {task.Subject}, PercentComplete: {task.PercentComplete}%");
+                // Define file paths for the initial and completed task files
+                string initialTaskPath = Path.Combine(outputDirectory, "task_initial.msg");
+                string completedTaskPath = Path.Combine(outputDirectory, "task_completed.msg");
 
-            // Update the task to 100% completion
-            task.PercentComplete = 100;
+                // Create a MAPI task with 0% completion
+                using (MapiTask task = new MapiTask())
+                {
+                    task.Subject = "Sample Task";
+                    task.Body = "This is a sample task created with Aspose.Email.";
+                    task.StartDate = DateTime.Now;
+                    task.DueDate = DateTime.Now.AddDays(7);
+                    task.PercentComplete = 0;
 
-            Console.WriteLine($"Aspose.Email.Calendar.Task updated. Subject: {task.Subject}, PercentComplete: {task.PercentComplete}%");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+                    // Save the task with zero percent completion
+                    try
+                    {
+                        task.Save(initialTaskPath, TaskSaveFormat.Msg);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error saving initial task: {ex.Message}");
+                        return;
+                    }
+
+                    // Update the task to 100% completion
+                    task.PercentComplete = 100;
+
+                    // Save the updated task
+                    try
+                    {
+                        task.Save(completedTaskPath, TaskSaveFormat.Msg);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error saving completed task: {ex.Message}");
+                        return;
+                    }
+                }
+
+                Console.WriteLine("Task files created successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
