@@ -1,9 +1,8 @@
-using Aspose.Email.PersonalInfo;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Google;
+using Aspose.Email.PersonalInfo;
 
 class Program
 {
@@ -11,79 +10,71 @@ class Program
     {
         try
         {
-            string pstPath = "contacts.pst";
-            string csvPath = "contacts.csv";
+            // Placeholder credentials – replace with real values or skip execution.
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
 
-            // Guard PST file existence
-            if (!File.Exists(pstPath))
+            if (clientId.StartsWith("YOUR_") ||
+                clientSecret.StartsWith("YOUR_") ||
+                refreshToken.StartsWith("YOUR_"))
             {
-                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                Console.Error.WriteLine("Placeholder Gmail credentials detected. Skipping contact retrieval.");
                 return;
             }
 
-            // Ensure output directory exists
-            string csvDirectory = Path.GetDirectoryName(csvPath);
-            if (!string.IsNullOrEmpty(csvDirectory) && !Directory.Exists(csvDirectory))
+            // Create Gmail client. Pass null for proxy (IWebProxy) to match the expected signature.
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, null);
+            try
             {
-                Directory.CreateDirectory(csvDirectory);
-            }
+                // Fetch all contacts.
+                Contact[] contacts = gmailClient.GetAllContacts();
 
-            // Open CSV writer
-            using (StreamWriter csvWriter = new StreamWriter(csvPath, false))
-            {
-                // Write CSV header
-                csvWriter.WriteLine("Email");
-
-                // Load PST and process contacts
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                // Prepare CSV output.
+                string csvPath = "contacts.csv";
+                string directory = Path.GetDirectoryName(csvPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    // Attempt to get the Contacts folder; fallback to Root if not present
-                    FolderInfo contactsFolder;
-                    try
-                    {
-                        contactsFolder = pst.RootFolder.GetSubFolder("Contacts");
-                    }
-                    catch (Exception)
-                    {
-                        contactsFolder = pst.RootFolder;
-                    }
+                    Directory.CreateDirectory(directory);
+                }
 
-                    foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
+                using (StreamWriter writer = new StreamWriter(csvPath, false))
+                {
+                    // Write CSV header.
+                    writer.WriteLine("Email");
+
+                    // Iterate contacts and write each email address.
+                    foreach (Contact contact in contacts)
                     {
-                        using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
+                        EmailAddressList emailList = contact.EmailAddresses;
+                        foreach (EmailAddress email in emailList)
                         {
-                            // Process only contact items
-                            if (mapiMessage.SupportedType == MapiItemType.Contact)
+                            if (!string.IsNullOrEmpty(email.Address))
                             {
-                                MapiContact contact = (MapiContact)mapiMessage.ToMapiMessageItem();
-                                MapiContactElectronicAddressPropertySet electronic = contact.ElectronicAddresses;
-
-                                if (electronic != null)
-                                {
-                                    if (electronic.Email1 != null && !string.IsNullOrEmpty(electronic.Email1.EmailAddress))
-                                    {
-                                        csvWriter.WriteLine(electronic.Email1.EmailAddress);
-                                    }
-                                    if (electronic.Email2 != null && !string.IsNullOrEmpty(electronic.Email2.EmailAddress))
-                                    {
-                                        csvWriter.WriteLine(electronic.Email2.EmailAddress);
-                                    }
-                                    if (electronic.Email3 != null && !string.IsNullOrEmpty(electronic.Email3.EmailAddress))
-                                    {
-                                        csvWriter.WriteLine(electronic.Email3.EmailAddress);
-                                    }
-                                }
+                                writer.WriteLine(email.Address);
                             }
                         }
                     }
                 }
-            }
 
-            Console.WriteLine($"CSV file created at: {csvPath}");
+                Console.WriteLine($"CSV file created at: {Path.GetFullPath(csvPath)}");
+            }
+            catch (Exception clientEx)
+            {
+                Console.Error.WriteLine($"Gmail client error: {clientEx.Message}");
+                return;
+            }
+            finally
+            {
+                if (gmailClient is IDisposable disposableClient)
+                {
+                    disposableClient.Dispose();
+                }
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
