@@ -1,7 +1,7 @@
-using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email.Calendar;
+using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,47 +9,31 @@ class Program
     {
         try
         {
-            // Define output file path
-            string outputDirectory = "Output";
-            string outputPath = Path.Combine(outputDirectory, "Task.msg");
+            // Output file path for the task
+            string outputPath = "Task.msg";
 
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputDirectory))
+            // Ensure the directory exists
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create directory '{outputDirectory}': {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(directory);
             }
 
-            // Create a new Aspose.Email.Calendar.Task and set its start date to the current date and time
+            // Create a new task and set its start date to the current date
             using (Aspose.Email.Calendar.Task task = new Aspose.Email.Calendar.Task())
             {
-                task.Subject = "Sample Task";
                 task.StartDate = DateTime.Now;
-                task.DueDate = DateTime.Now.AddDays(7);
-                task.Body = "This task was created with the start date set to the current date.";
+                task.Subject = "Sample Task";
 
-                // Save the task to a MSG file
-                try
-                {
-                    task.Save(outputPath);
-                    Console.WriteLine($"Aspose.Email.Calendar.Task saved successfully to '{outputPath}'.");
-                }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Failed to save task: {saveEx.Message}");
-                }
+                // Save the task in MSG format
+                task.Save(outputPath, Aspose.Email.Mapi.TaskSaveFormat.Msg);
             }
+
+            Console.WriteLine("Aspose.Email.Calendar.Task saved successfully to " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
