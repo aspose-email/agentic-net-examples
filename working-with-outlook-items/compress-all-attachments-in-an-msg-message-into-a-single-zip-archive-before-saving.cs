@@ -10,12 +10,11 @@ class Program
     {
         try
         {
-            string inputMsgPath = "input.msg";
-            string outputMsgPath = "output.msg";
-            string zipPath = "attachments.zip";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Verify input MSG file exists
-            if (!File.Exists(inputMsgPath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
                 try
                 {
@@ -25,7 +24,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath);
+                        placeholder.Save(inputPath);
                     }
                 }
                 catch (Exception ex)
@@ -34,109 +33,62 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
+            }
+
+            // Ensure output directory exists
+            string? outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
             }
 
             // Load the MSG message
-            MapiMessage message;
-            try
+            using (MapiMessage message = MapiMessage.Load(inputPath))
             {
-                message = MapiMessage.Load(inputMsgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
-            }
+                // Create a ZIP archive in memory containing all original attachments
+                using (MemoryStream zipStream = new MemoryStream())
+                {
+                    using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
+                    {
+                        foreach (MapiAttachment attachment in message.Attachments)
+                        {
+                            byte[] data = attachment.BinaryData;
+                            if (data == null) continue; // skip empty attachments
 
-            // If there are no attachments, just save the original message
-            if (message.Attachments == null || message.Attachments.Count == 0)
-            {
+                            ZipArchiveEntry entry = archive.CreateEntry(attachment.FileName ?? "Unnamed");
+                            using (Stream entryStream = entry.Open())
+                            {
+                                entryStream.Write(data, 0, data.Length);
+                            }
+                        }
+                    }
+
+                    // Prepare ZIP data
+                    zipStream.Position = 0;
+                    byte[] zipBytes = zipStream.ToArray();
+
+                    // Remove existing attachments
+                    for (int i = message.Attachments.Count - 1; i >= 0; i--)
+                    {
+                        message.Attachments.RemoveAt(i);
+                    }
+
+                    // Add the single ZIP attachment
+                    message.Attachments.Add("AllAttachments.zip", zipBytes);
+                }
+
+                // Save the modified message
                 try
                 {
-                    message.Save(outputMsgPath);
+                    message.Save(outputPath);
+                    Console.WriteLine($"Message saved with compressed attachments to: {outputPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
                 }
-                return;
-            }
-
-            // Prepare a temporary folder for extracting attachments
-            string tempFolder = Path.Combine(Path.GetTempPath(), "AsposeAttachments");
-            try
-            {
-                if (!Directory.Exists(tempFolder))
-                    Directory.CreateDirectory(tempFolder);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create temporary folder: {ex.Message}");
-                return;
-            }
-
-            // Create ZIP archive containing all original attachments
-            try
-            {
-                using (FileStream zipStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write))
-                using (ZipArchive zip = new ZipArchive(zipStream, ZipArchiveMode.Create))
-                {
-                    foreach (MapiAttachment attachment in message.Attachments)
-                    {
-                        string tempFilePath = Path.Combine(tempFolder, attachment.FileName);
-                        try
-                        {
-                            attachment.Save(tempFilePath);
-                            zip.CreateEntryFromFile(tempFilePath, attachment.FileName);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to process attachment '{attachment.FileName}': {ex.Message}");
-                        }
-                        finally
-                        {
-                            // Clean up the temporary file
-                            try { if (File.Exists(tempFilePath)) File.Delete(tempFilePath); } catch { }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create ZIP archive: {ex.Message}");
-                return;
-            }
-
-            // Replace original attachments with the single ZIP attachment
-            try
-            {
-                message.Attachments.Clear();
-                byte[] zipBytes = File.ReadAllBytes(zipPath);
-                message.Attachments.Add("attachments.zip", zipBytes);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to replace attachments: {ex.Message}");
-                return;
-            }
-
-            // Save the modified MSG message
-            try
-            {
-                message.Save(outputMsgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save modified MSG file: {ex.Message}");
-            }
-            finally
-            {
-                // Clean up the ZIP file
-                try { if (File.Exists(zipPath)) File.Delete(zipPath); } catch { }
-                // Clean up temporary folder
-                try { if (Directory.Exists(tempFolder)) Directory.Delete(tempFolder, true); } catch { }
             }
         }
         catch (Exception ex)
