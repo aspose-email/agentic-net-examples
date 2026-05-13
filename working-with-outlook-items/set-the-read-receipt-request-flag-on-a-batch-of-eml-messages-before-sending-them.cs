@@ -4,74 +4,47 @@ using System.IO;
 using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Mapi;
 
-namespace AsposeEmailReadReceiptBatch
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
+            // Define the folder containing the EML files.
+            string emlFolder = "Emails";
+            if (!Directory.Exists(emlFolder))
+            {
+                Console.Error.WriteLine($"Folder not found: {emlFolder}");
+                return;
+            }
+
+            // Gather all EML files.
+            string[] emlFiles;
             try
             {
-                // Placeholder SMTP configuration
-                string smtpHost = "smtp.example.com";
-                int smtpPort = 587;
-                string smtpUsername = "user@example.com";
-                string smtpPassword = "password";
+                emlFiles = Directory.GetFiles(emlFolder, "*.eml");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to enumerate files: {ex.Message}");
+                return;
+            }
 
-                // Guard against placeholder credentials/host
-                if (smtpHost.Contains("example.com"))
+            if (emlFiles.Length == 0)
+            {
+                Console.Error.WriteLine("No EML files found to process.");
+                return;
+            }
+
+            // Prepare a list to hold the modified messages.
+            List<MailMessage> messagesToSend = new List<MailMessage>();
+
+            foreach (string emlPath in emlFiles)
+            {
+                if (!File.Exists(emlPath))
                 {
-                    Console.Error.WriteLine("Placeholder SMTP host detected. Skipping send operation.");
-                    return;
-                }
-
-                // Directory containing EML files
-                string emlFolderPath = "Emails";
-
-                // Verify folder existence
-                if (!Directory.Exists(emlFolderPath))
-                {
-                    Console.Error.WriteLine($"Folder does not exist: {emlFolderPath}");
-                    return;
-                }
-
-                // Get list of EML files
-                string[] emlFilePaths = Directory.GetFiles(emlFolderPath, "*.eml");
-                if (emlFilePaths.Length == 0)
-                {
-                    Console.Error.WriteLine("No EML files found in the specified folder.");
-                    return;
-                }
-
-                // Prepare SMTP client
-                using (SmtpClient smtpClient = new SmtpClient())
-                {
-                    smtpClient.Host = smtpHost;
-                    smtpClient.Port = smtpPort;
-                    smtpClient.Username = smtpUsername;
-                    smtpClient.Password = smtpPassword;
-                    smtpClient.SecurityOptions = SecurityOptions.Auto;
-
-                    // Validate credentials safely
-                    try
-                    {
-                        smtpClient.ValidateCredentials();
-                    }
-                    catch (Exception credEx)
-                    {
-                        Console.Error.WriteLine($"SMTP credential validation failed: {credEx.Message}");
-                        return;
-                    }
-
-                    // Load messages, set read receipt flag, and collect them
-                    List<MailMessage> messagesToSend = new List<MailMessage>();
-                    foreach (string emlPath in emlFilePaths)
-                    {
-                        try
-                        {
-                            if (!File.Exists(emlPath))
-                            {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -89,42 +62,71 @@ namespace AsposeEmailReadReceiptBatch
                     return;
                 }
 
-                                Console.Error.WriteLine($"EML file not found: {emlPath}");
-                                continue;
-                            }
+                    Console.Error.WriteLine($"File not found, skipping: {emlPath}");
+                    continue;
+                }
 
-                            MailMessage mailMessage = MailMessage.Load(emlPath);
-                            // Request read receipt by setting the ReadReceiptTo address
-                            mailMessage.ReadReceiptTo = "readreceipt@example.com";
-
-                            messagesToSend.Add(mailMessage);
-                        }
-                        catch (Exception loadEx)
+                try
+                {
+                    // Load the original EML message.
+                    using (MailMessage original = MailMessage.Load(emlPath))
+                    {
+                        // Convert to MAPI message to set the read receipt flag.
+                        using (MapiMessage mapi = MapiMessage.FromMailMessage(original))
                         {
-                            Console.Error.WriteLine($"Failed to load or modify '{emlPath}': {loadEx.Message}");
+                            mapi.ReadReceiptRequested = true;
+
+                            // Convert back to MailMessage for sending.
+                            MailMessage updated = mapi.ToMailMessage(new MailConversionOptions());
+
+                            // Add to the send list.
+                            messagesToSend.Add(updated);
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error processing '{emlPath}': {ex.Message}");
+                }
+            }
 
-                    if (messagesToSend.Count == 0)
-                    {
-                        Console.Error.WriteLine("No valid messages to send after processing.");
-                        return;
-                    }
+            if (messagesToSend.Count == 0)
+            {
+                Console.Error.WriteLine("No messages prepared for sending.");
+                return;
+            }
 
-                    // Send all messages in a batch
-                    try
+            // Placeholder SMTP configuration.
+            string smtpHost = "smtp.example.com";
+            int smtpPort = 587;
+            string smtpUser = "username";
+            string smtpPass = "password";
+
+            // Guard against placeholder credentials/hosts.
+            if (smtpHost.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder SMTP configuration detected. Skipping actual send.");
+                return;
+            }
+
+            // Send the batch of messages.
+            try
+            {
+                using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass))
+                {
+                    client.SecurityOptions = SecurityOptions.Auto;
+                    foreach (MailMessage msg in messagesToSend)
                     {
-                        smtpClient.Send(messagesToSend.ToArray());
-                        Console.WriteLine("All messages sent successfully.");
-                    }
-                    catch (Exception sendEx)
-                    {
-                        Console.Error.WriteLine($"Error sending messages: {sendEx.Message}");
-                    }
-                    finally
-                    {
-                        // Dispose each MailMessage
-                        foreach (MailMessage msg in messagesToSend)
+                        try
+                        {
+                            client.Send(msg);
+                            Console.WriteLine($"Sent: {msg.Subject}");
+                        }
+                        catch (Exception sendEx)
+                        {
+                            Console.Error.WriteLine($"Failed to send '{msg.Subject}': {sendEx.Message}");
+                        }
+                        finally
                         {
                             msg.Dispose();
                         }
@@ -133,8 +135,12 @@ namespace AsposeEmailReadReceiptBatch
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"SMTP client error: {ex.Message}");
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
