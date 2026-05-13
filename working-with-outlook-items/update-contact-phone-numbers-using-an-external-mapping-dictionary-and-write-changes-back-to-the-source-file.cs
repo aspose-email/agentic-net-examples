@@ -1,9 +1,11 @@
-using Aspose.Email.PersonalInfo;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Aspose.Email;
+using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.PersonalInfo;
 
 class Program
 {
@@ -11,132 +13,106 @@ class Program
     {
         try
         {
-            string inputPath = "contact.msg";
-            string outputPath = "contact_updated.msg";
+            string pstPath = "contacts.pst";
 
-            // Ensure the input file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(inputPath))
+            // Ensure PST file exists; create a minimal placeholder if missing
+            if (!File.Exists(pstPath))
             {
                 try
                 {
-                    using (MapiContact placeholder = new MapiContact())
+                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                     {
-                        placeholder.NameInfo = new MapiContactNamePropertySet
-                        {
-                            DisplayName = "Placeholder Contact"
-                        };
-                        placeholder.Telephones = new MapiContactTelephonePropertySet
-                        {
-                            BusinessTelephoneNumber = "+1-000-0000"
-                        };
-                        placeholder.Save(inputPath);
-                        Console.WriteLine($"Placeholder contact created at '{inputPath}'.");
+                        // Placeholder PST created
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder contact: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the existing contact.
-            MapiContact contact;
-            try
-            {
-                using (MapiMessage msg = MapiMessage.Load(inputPath))
-                {
-                    if (msg.SupportedType != MapiItemType.Contact)
-                    {
-                        Console.Error.WriteLine("The provided file is not a contact message.");
-                        return;
-                    }
-                    contact = (MapiContact)msg.ToMapiMessageItem();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load contact: {ex.Message}");
-                return;
-            }
-
-            // Mapping of telephone property names to new values.
+            // Mapping of old phone numbers to new phone numbers
             var phoneMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                { "BusinessTelephoneNumber", "+1-555-1111" },
-                { "HomeTelephoneNumber", "+1-555-2222" },
-                { "MobileTelephoneNumber", "+1-555-3333" }
+                { "123-4567", "555-0001" },
+                { "987-6543", "555-0002" }
             };
 
-            // Update telephone numbers based on the mapping.
-            MapiContactTelephonePropertySet phones = contact.Telephones;
-            foreach (var kvp in phoneMapping)
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                switch (kvp.Key)
+                // Get the Contacts folder (standard predefined folder)
+                FolderInfo contactsFolder;
+                try
                 {
-                    case "BusinessTelephoneNumber":
-                        phones.BusinessTelephoneNumber = kvp.Value;
-                        break;
-                    case "HomeTelephoneNumber":
-                        phones.HomeTelephoneNumber = kvp.Value;
-                        break;
-                    case "MobileTelephoneNumber":
-                        phones.MobileTelephoneNumber = kvp.Value;
-                        break;
-                    case "AssistantTelephoneNumber":
-                        phones.AssistantTelephoneNumber = kvp.Value;
-                        break;
-                    case "CarTelephoneNumber":
-                        phones.CarTelephoneNumber = kvp.Value;
-                        break;
-                    case "CompanyMainTelephoneNumber":
-                        phones.CompanyMainTelephoneNumber = kvp.Value;
-                        break;
-                    case "Home2TelephoneNumber":
-                        phones.Home2TelephoneNumber = kvp.Value;
-                        break;
-                    case "Business2TelephoneNumber":
-                        phones.Business2TelephoneNumber = kvp.Value;
-                        break;
-                    case "OtherTelephoneNumber":
-                        phones.OtherTelephoneNumber = kvp.Value;
-                        break;
-                    case "PagerTelephoneNumber":
-                        phones.PagerTelephoneNumber = kvp.Value;
-                        break;
-                    case "PrimaryTelephoneNumber":
-                        phones.PrimaryTelephoneNumber = kvp.Value;
-                        break;
-                    case "RadioTelephoneNumber":
-                        phones.RadioTelephoneNumber = kvp.Value;
-                        break;
-                    case "TelexNumber":
-                        phones.TelexNumber = kvp.Value;
-                        break;
-                    case "TtyTddPhoneNumber":
-                        phones.TtyTddPhoneNumber = kvp.Value;
-                        break;
-                    // Add additional cases as needed.
+                    contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
                 }
-            }
-
-            // Save the updated contact back to a file.
-            try
-            {
-                // Ensure the directory for the output file exists.
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                catch (Exception ex)
                 {
-                    Directory.CreateDirectory(outputDir);
+                    Console.Error.WriteLine($"Failed to get Contacts folder: {ex.Message}");
+                    return;
                 }
 
-                // Save the contact as a MSG file.
-                contact.Save(outputPath);
-                Console.WriteLine($"Contact updated and saved to '{outputPath}'.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save updated contact: {ex.Message}");
+                // Iterate through each message in the Contacts folder
+                foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
+                {
+                    MapiMessage msg;
+                    try
+                    {
+                        msg = pst.ExtractMessage(messageInfo);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to extract message {messageInfo.EntryId}: {ex.Message}");
+                        continue;
+                    }
+
+                    // Process only contact items
+                    if (msg.SupportedType != MapiItemType.Contact)
+                        continue;
+
+                    // Convert to MapiContact
+                    MapiContact contact = (MapiContact)msg.ToMapiMessageItem();
+
+                    bool updated = false;
+
+                    // Update phone numbers based on the mapping dictionary
+                    var telSet = contact.Telephones;
+                    var telProps = typeof(MapiContactTelephonePropertySet).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                    foreach (var prop in telProps)
+                    {
+                        if (prop.PropertyType != typeof(string) || !prop.CanRead || !prop.CanWrite)
+                            continue;
+
+                        string currentNumber = prop.GetValue(telSet) as string;
+                        if (string.IsNullOrEmpty(currentNumber))
+                            continue;
+
+                        if (phoneMapping.TryGetValue(currentNumber, out string newNumber))
+                        {
+                            prop.SetValue(telSet, newNumber);
+                            updated = true;
+                        }
+                    }
+
+                    if (updated)
+                    {
+                        // Get the underlying MapiMessage after modifications
+                        MapiMessage updatedMessage = contact.GetUnderlyingMessage();
+
+                        // Update the existing message in the PST (no duplicate insert)
+                        try
+                        {
+                            contactsFolder.UpdateMessage(messageInfo.EntryIdString, updatedMessage);
+                            Console.WriteLine($"Updated contact: {contact.NameInfo?.DisplayName ?? "Unnamed"}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to update contact {contact.NameInfo?.DisplayName}: {ex.Message}");
+                        }
+                    }
+                }
             }
         }
         catch (Exception ex)
