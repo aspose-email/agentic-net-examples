@@ -3,19 +3,18 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailTaskExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string inputPath = "task.msg";
-                string outputPath = "updatedTask.msg";
+            string inputPath = "task.msg";
+            string outputPath = "updated_task.msg";
 
-                if (!File.Exists(inputPath))
-                {
+            // Verify input file exists
+            if (!File.Exists(inputPath))
+            {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -33,32 +32,41 @@ namespace AsposeEmailTaskExample
                     return;
                 }
 
-                    Console.Error.WriteLine($"Input file '{inputPath}' not found.");
-                    return;
-                }
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
+            }
 
-                using (MapiMessage message = MapiMessage.Load(inputPath))
+            try
+            {
+                using (MapiMessage msg = MapiMessage.Load(inputPath))
                 {
-                    if (message.SupportedType != MapiItemType.Task)
+                    if (msg.SupportedType == MapiItemType.Task)
                     {
-                        Console.Error.WriteLine("The MSG file does not contain a task.");
-                        return;
-                    }
+                        // Convert to MapiTask
+                        MapiTask task = (MapiTask)msg.ToMapiMessageItem();
 
-                    using (MapiTask task = (MapiTask)message.ToMapiMessageItem())
-                    {
-                        // Modify the EstimatedEffort (minutes)
+                        // Modify EstimatedEffort (minutes)
                         task.EstimatedEffort = 120;
 
-                        // Save the updated task back to MSG format
+                        // Save the updated task to a new MSG file
                         task.Save(outputPath, TaskSaveFormat.Msg);
+                        Console.WriteLine($"Task updated and saved to: {outputPath}");
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine("The provided MSG file does not contain a task.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                return;
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
