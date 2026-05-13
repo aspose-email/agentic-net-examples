@@ -3,87 +3,81 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailFollowUpCounter
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Specify the directory containing MSG files
-            string directoryPath = @"C:\MsgFiles";
-
-            // Verify that the directory exists
-            if (!Directory.Exists(directoryPath))
-            {
-                Console.Error.WriteLine($"Error: Directory not found – {directoryPath}");
-                return;
-            }
-
-            // Get all MSG files in the directory
-            string[] msgFiles;
             try
             {
-                msgFiles = Directory.GetFiles(directoryPath, "*.msg");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error retrieving files: {ex.Message}");
-                return;
-            }
+                // Directory that contains the MSG files.
+                string messagesDirectory = "Messages";
 
-            int totalFollowUpFlags = 0;
-
-            // Process each MSG file
-            foreach (string msgFilePath in msgFiles)
-            {
-                // Ensure the file still exists before processing
-                if (!File.Exists(msgFilePath))
+                // Ensure the directory exists; if not, create it and add a placeholder MSG file.
+                if (!Directory.Exists(messagesDirectory))
                 {
+                    Directory.CreateDirectory(messagesDirectory);
+                    string placeholderPath = Path.Combine(messagesDirectory, "placeholder.msg");
+                    try
+                    {
+                        using (MapiMessage placeholderMessage = new MapiMessage(
+                            "from@example.com",
+                            "to@example.com",
+                            "Placeholder Subject",
+                            "Placeholder body"))
+                        {
+                            placeholderMessage.Save(placeholderPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                        return;
+                    }
+                }
+
+                // Get all MSG files in the directory.
+                string[] msgFiles;
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgFilePath);
-                    }
+                    msgFiles = Directory.GetFiles(messagesDirectory, "*.msg");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error accessing files in directory '{messagesDirectory}': {ex.Message}");
                     return;
                 }
 
-                    Console.Error.WriteLine($"Warning: File not found – {msgFilePath}");
-                    continue;
-                }
+                int totalFollowUpFlags = 0;
 
-                try
+                foreach (string filePath in msgFiles)
                 {
-                    using (MapiMessage message = MapiMessage.Load(msgFilePath))
+                    // Guard each file operation with its own try/catch.
+                    try
                     {
-                        // Retrieve follow‑up options; if options are present, count as a flagged message
-                        FollowUpOptions options = FollowUpManager.GetOptions(message);
-                        if (options != null)
+                        using (MapiMessage message = MapiMessage.Load(filePath))
                         {
-                            totalFollowUpFlags++;
+                            FollowUpOptions options = FollowUpManager.GetOptions(message);
+                            if (options != null && !string.IsNullOrEmpty(options.FlagRequest))
+                            {
+                                totalFollowUpFlags++;
+                            }
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to process file '{filePath}': {ex.Message}");
+                        // Continue with next file.
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing file '{msgFilePath}': {ex.Message}");
-                    // Continue with next file
-                }
-            }
 
-            Console.WriteLine($"Total follow‑up flags across all MSG files: {totalFollowUpFlags}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.WriteLine($"Total follow‑up flags across all MSG files: {totalFollowUpFlags}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
