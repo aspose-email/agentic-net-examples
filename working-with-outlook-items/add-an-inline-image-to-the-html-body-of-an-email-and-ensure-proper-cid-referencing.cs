@@ -9,35 +9,19 @@ class Program
     {
         try
         {
-            // Paths for the inline image and the output email file
+            // Path to the image that will be embedded
             string imagePath = "barcode.jpg";
-            string outputPath = "InlineImageEmail.msg";
 
-            // Ensure the image file exists; create an empty placeholder if it does not
+            // Ensure the image file exists; create a minimal placeholder if missing
             if (!File.Exists(imagePath))
             {
                 try
                 {
                     File.WriteAllBytes(imagePath, new byte[0]);
                 }
-                catch (Exception ex)
+                catch (Exception ioEx)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder image: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (!Directory.Exists(outputDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder image: {ioEx.Message}");
                     return;
                 }
             }
@@ -46,38 +30,54 @@ class Program
             using (MailMessage message = new MailMessage())
             {
                 message.From = "sender@example.com";
-                message.To.Add("recipient@example.com");
-                message.Subject = "Email with Inline Image";
+                message.To = "receiver@example.com";
+                message.Subject = "Email with inline image";
 
-                // Plain‑text view (fallback for clients that do not support HTML)
+                // Plain text view
                 AlternateView plainView = AlternateView.CreateAlternateViewFromString(
-                    "This email contains an inline image.", null, "text/plain");
+                    "This is plain text.", null, "text/plain");
 
-                // HTML view referencing the image via CID
-                string htmlBody = "Here is an inline image: <img src=\"cid:barcode\">";
+                // HTML view with CID reference to the embedded image
                 AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
-                    htmlBody, null, "text/html");
+                    "Here is an embedded image: <img src=\"cid:barcode\">", null, "text/html");
 
-                // Create the linked resource for the image and assign a Content‑Id
-                using (LinkedResource imageResource = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg))
+                // Linked resource representing the image
+                LinkedResource linkedImage = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg)
                 {
-                    imageResource.ContentId = "barcode";
+                    ContentId = "barcode"
+                };
 
-                    // Attach the linked resource and alternate views to the message
-                    message.LinkedResources.Add(imageResource);
-                    message.AlternateViews.Add(plainView);
-                    message.AlternateViews.Add(htmlView);
+                // Attach resources and views to the message
+                message.LinkedResources.Add(linkedImage);
+                message.AlternateViews.Add(plainView);
+                message.AlternateViews.Add(htmlView);
 
-                    // Save the message to a MSG file
+                // Output file path
+                string outputPath = "EmbeddedImage_out.msg";
+
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
                     try
                     {
-                        message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                        Directory.CreateDirectory(outputDir);
                     }
-                    catch (Exception ex)
+                    catch (Exception dirEx)
                     {
-                        Console.Error.WriteLine($"Failed to save email: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
                         return;
                     }
+                }
+
+                // Save the message
+                try
+                {
+                    message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                }
+                catch (Exception saveEx)
+                {
+                    Console.Error.WriteLine($"Failed to save message: {saveEx.Message}");
                 }
             }
         }
