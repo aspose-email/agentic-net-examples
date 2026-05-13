@@ -1,48 +1,62 @@
-using Aspose.Email.PersonalInfo;
+using Aspose.Email;
 using System;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailAsyncContactSample
 {
-    static async Task Main(string[] args)
+    class Program
     {
-        try
+        static async Task Main(string[] args)
         {
-            // Placeholder values – replace with real ones for actual use.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            ICredentials credentials = new NetworkCredential("username", "password");
-
-            // Guard against executing real network calls with placeholder data.
-            if (mailboxUri.Contains("example.com") || credentials is NetworkCredential nc && nc.UserName == "username")
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping network call.");
-                return;
-            }
+                // Placeholder Exchange server URI and credentials
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create the async EWS client.
-            IAsyncEwsClient client = await EWSClient.GetEwsClientAsync(mailboxUri, credentials);
-            using (client)
-            {
-                // Specify the folder URI that contains contacts.
-                string contactsFolderUri = "contacts";
-
-                // Asynchronously retrieve contacts.
-                Contact[] contacts = await client.GetContactsAsync(contactsFolderUri, ExchangeListContactsOptions.FetchPhoto, CancellationToken.None);
-
-                // Process the contacts (example: output names).
-                foreach (Contact contact in contacts)
+                // Guard against placeholder credentials/hosts
+                if (mailboxUri.Contains("example.com"))
                 {
-                    Console.WriteLine($"Name: {contact.GivenName} {contact.Surname}");
+                    Console.Error.WriteLine("Placeholder Exchange server URI detected. Skipping network call.");
+                    return;
+                }
+
+                // Create async EWS client inside a using block to ensure disposal
+                using (IAsyncEwsClient client = EWSClient.GetEWSClient(mailboxUri, username, password) as IAsyncEwsClient)
+                {
+                    if (client == null)
+                    {
+                        Console.Error.WriteLine("Failed to create async EWS client.");
+                        return;
+                    }
+
+                    // Resolve contacts asynchronously without blocking the UI thread
+                    string unresolvedEntry = "John Doe";
+                    try
+                    {
+                        MapiContactCollection contacts = await client.ResolveMapiContactsAsync(unresolvedEntry, CancellationToken.None);
+                        Console.WriteLine($"Resolved {contacts.Count} contact(s) for \"{unresolvedEntry}\":");
+                        foreach (MapiContact contact in contacts)
+                        {
+                            // Use NameInfo.DisplayName instead of non‑existent Name property
+                            string displayName = contact.NameInfo?.DisplayName ?? "(no name)";
+                            Console.WriteLine($"- {displayName}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error resolving contacts: {ex.Message}");
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            }
         }
     }
 }
