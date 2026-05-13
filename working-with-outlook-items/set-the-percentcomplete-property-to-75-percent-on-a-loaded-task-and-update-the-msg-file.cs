@@ -1,25 +1,18 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string taskFilePath = "task.msg";
+            string inputPath = "task.msg";
+            string outputPath = "task_updated.msg";
 
-            // Ensure the directory exists
-            string taskDirectory = Path.GetDirectoryName(taskFilePath);
-            if (!string.IsNullOrEmpty(taskDirectory) && !Directory.Exists(taskDirectory))
-            {
-                Directory.CreateDirectory(taskDirectory);
-            }
-
-            // Guard file existence; create a minimal placeholder if missing
-            if (!File.Exists(taskFilePath))
+            if (!File.Exists(inputPath))
             {
                 try
                 {
@@ -29,7 +22,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(taskFilePath);
+                        placeholder.Save(inputPath);
                     }
                 }
                 catch (Exception ex)
@@ -38,52 +31,27 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    using (MapiTask placeholderTask = new MapiTask())
-                    {
-                        placeholderTask.Subject = "Placeholder Task";
-                        placeholderTask.DueDate = DateTime.Now.AddDays(7);
-                        placeholderTask.Save(taskFilePath, TaskSaveFormat.Msg);
-                    }
-                    Console.WriteLine("Placeholder task file created at: " + taskFilePath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to create placeholder task file: " + ex.Message);
-                }
+                Console.Error.WriteLine($"Input file '{inputPath}' not found.");
                 return;
             }
 
-            // Load the MSG file
-            try
+            using (MapiMessage msg = MapiMessage.Load(inputPath))
             {
-                using (MapiMessage message = MapiMessage.Load(taskFilePath))
+                if (msg.SupportedType != MapiItemType.Task)
                 {
-                    if (message.SupportedType == MapiItemType.Task)
-                    {
-                        MapiTask task = (MapiTask)message.ToMapiMessageItem();
-                        using (task)
-                        {
-                            task.PercentComplete = 75;
-                            task.Save(taskFilePath, TaskSaveFormat.Msg);
-                            Console.WriteLine("Task updated with PercentComplete = 75% and saved.");
-                        }
-                    }
-                    else
-                    {
-                        Console.Error.WriteLine("The MSG file does not contain a task.");
-                    }
+                    Console.Error.WriteLine("The MSG file does not contain a task.");
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Error processing the MSG file: " + ex.Message);
+
+                MapiTask task = (MapiTask)msg.ToMapiMessageItem();
+                task.PercentComplete = 75;
+                task.Save(outputPath, TaskSaveFormat.Msg);
+                Console.WriteLine($"Task updated and saved to '{outputPath}'.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
