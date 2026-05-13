@@ -1,89 +1,115 @@
 using System;
 using System.IO;
-using System.Text;
-using System.Collections.Generic;
 using Aspose.Email;
+using Aspose.Email.Clients.Google;
 using Aspose.Email.PersonalInfo;
 
-namespace ExportContactsToCsv
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Placeholder credentials – replace with real values when needed.
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
+
+            // Guard against placeholder credentials to avoid live network calls.
+            if (string.IsNullOrWhiteSpace(clientId) ||
+                string.IsNullOrWhiteSpace(clientSecret) ||
+                string.IsNullOrWhiteSpace(refreshToken) ||
+                clientId.Contains("your-") ||
+                clientSecret.Contains("your-") ||
+                refreshToken.Contains("your-"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping contact export.");
+                return;
+            }
+
+            // Create Gmail client. Adjusted overload to match expected parameters.
+            IGmailClient client;
             try
             {
-                // Define output CSV file path
-                string outputFilePath = "contacts.csv";
-                string outputDirectory = Path.GetDirectoryName(outputFilePath);
-                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-
-                // Prepare sample contacts
-                List<Contact> contacts = new List<Contact>();
-
-                Contact contact1 = new Contact();
-                contact1.GivenName = "John";
-                contact1.Surname = "Doe";
-                contact1.EmailAddresses.Add(new EmailAddress("john.doe@example.com"));
-                contact1.PhoneNumbers.Add(new PhoneNumber { Number = "+1234567890", Category = PhoneNumberCategory.Company });
-                contacts.Add(contact1);
-
-                Contact contact2 = new Contact();
-                contact2.GivenName = "Jane";
-                contact2.Surname = "Smith";
-                contact2.EmailAddresses.Add(new EmailAddress("jane.smith@example.com"));
-                contact2.PhoneNumbers.Add(new PhoneNumber { Number = "+1987654321", Category = PhoneNumberCategory.Company });
-                contacts.Add(contact2);
-
-                // Custom delimiter for CSV
-                string delimiter = "|";
-
-                // Write contacts to CSV with header row
-                try
-                {
-                    using (StreamWriter writer = new StreamWriter(outputFilePath, false, Encoding.UTF8))
-                    {
-                        // Header row
-                        writer.WriteLine(string.Join(delimiter, "GivenName", "Surname", "Email", "Phone"));
-
-                        // Data rows
-                        foreach (Contact c in contacts)
-                        {
-                            string email = string.Empty;
-                            if (c.EmailAddresses.Count > 0)
-                            {
-                                email = c.EmailAddresses[0].Address;
-                            }
-
-                            string phone = string.Empty;
-                            if (c.PhoneNumbers.Count > 0)
-                            {
-                                phone = c.PhoneNumbers[0].Number;
-                            }
-
-                            writer.WriteLine(string.Join(delimiter,
-                                c.GivenName ?? string.Empty,
-                                c.Surname ?? string.Empty,
-                                email,
-                                phone));
-                        }
-                    }
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Error writing CSV file: {ioEx.Message}");
-                    return;
-                }
-
-                Console.WriteLine($"Contacts exported successfully to '{outputFilePath}'.");
+                client = GmailClient.GetInstance(clientId, null, clientSecret, refreshToken);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                return;
             }
+
+            // Fetch contacts.
+            Contact[] contacts;
+            try
+            {
+                contacts = client.GetAllContacts();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to retrieve contacts: {ex.Message}");
+                return;
+            }
+
+            // Define CSV output path.
+            string outputPath = "contacts.csv";
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                try
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Write contacts to CSV with custom delimiter ';' and header row.
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(outputPath, false))
+                {
+                    // Header row.
+                    writer.WriteLine("GivenName;Surname;Email");
+
+                    foreach (Contact contact in contacts)
+                    {
+                        string givenName = contact.GivenName ?? string.Empty;
+                        string surname = contact.Surname ?? string.Empty;
+                        string email = string.Empty;
+
+                        // Extract the first email address if available.
+                        if (contact.EmailAddresses != null && contact.EmailAddresses.Count > 0)
+                        {
+                            EmailAddress firstEmail = contact.EmailAddresses[0];
+                            if (firstEmail != null && !string.IsNullOrEmpty(firstEmail.Address))
+                            {
+                                email = firstEmail.Address;
+                            }
+                        }
+
+                        // Escape delimiter in fields if needed.
+                        givenName = givenName.Replace(";", "\\;");
+                        surname = surname.Replace(";", "\\;");
+                        email = email.Replace(";", "\\;");
+
+                        writer.WriteLine($"{givenName};{surname};{email}");
+                    }
+                }
+
+                Console.WriteLine($"Contacts exported successfully to '{outputPath}'.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to write CSV file: {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
