@@ -1,10 +1,9 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -12,96 +11,117 @@ class Program
     {
         try
         {
-            // Paths for PST and source email
-            string pstPath = "sample.pst";
-            string emlPath = "sample.eml";
+            // Paths for the attachment and the PST file
+            string attachmentPath = "largefile.bin";
+            string pstPath = "output.pst";
 
-            // Ensure PST file exists; create if missing
-            if (!File.Exists(pstPath))
+            // Ensure the attachment file exists; create a placeholder if missing
+            if (!File.Exists(attachmentPath))
             {
-                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-            }
-
-            // Open PST for read/write
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Get or create an Inbox folder inside the PST
-                FolderInfo inbox;
                 try
                 {
-                    inbox = pst.RootFolder.GetSubFolder("Inbox");
-                }
-                catch
-                {
-                    inbox = null;
-                }
-
-                if (inbox == null)
-                {
-                    inbox = pst.RootFolder.AddSubFolder("Inbox");
-                }
-
-                // Load the source email; create a placeholder if the file is absent
-                MailMessage mail;
-                if (File.Exists(emlPath))
-                {
-                    mail = MailMessage.Load(emlPath);
-                }
-                else
-                {
-                    mail = new MailMessage("sender@example.com", "receiver@example.com", "Sample Subject", "Sample body");
-                }
-
-                // Process attachments: compress those larger than 10 MB using GZIP
-                const long tenMb = 10L * 1024 * 1024;
-                List<Attachment> processedAttachments = new List<Attachment>();
-
-                foreach (Attachment att in mail.Attachments)
-                {
-                    using (MemoryStream originalStream = new MemoryStream())
+                    using (FileStream placeholderStream = File.Create(attachmentPath))
                     {
-                        att.ContentStream.CopyTo(originalStream);
-                        byte[] data = originalStream.ToArray();
+                        byte[] placeholderData = new byte[1024]; // 1 KB placeholder
+                        placeholderStream.Write(placeholderData, 0, placeholderData.Length);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
+                    return;
+                }
+            }
 
-                        if (data.Length > tenMb)
+            // Create a simple mail message
+            using (MailMessage mailMessage = new MailMessage())
+            {
+                mailMessage.From = "sender@example.com";
+                mailMessage.To.Add("recipient@example.com");
+                mailMessage.Subject = "Test Email with Attachment";
+                mailMessage.Body = "Please see the attached file.";
+
+                // Load attachment bytes
+                byte[] attachmentBytes;
+                try
+                {
+                    attachmentBytes = File.ReadAllBytes(attachmentPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to read attachment file: {ex.Message}");
+                    return;
+                }
+
+                const long tenMegabytes = 10L * 1024L * 1024L;
+                if (attachmentBytes.LongLength > tenMegabytes)
+                {
+                    // Compress attachment using GZIP
+                    using (MemoryStream compressedStream = new MemoryStream())
+                    {
+                        try
                         {
-                            // Compress large attachment
-                            using (MemoryStream compressedStream = new MemoryStream())
+                            using (GZipStream gzipStream = new GZipStream(compressedStream, CompressionMode.Compress, true))
                             {
-                                using (GZipStream gzip = new GZipStream(compressedStream, CompressionMode.Compress, true))
-                                {
-                                    gzip.Write(data, 0, data.Length);
-                                }
-                                compressedStream.Position = 0;
-                                Attachment compressedAtt = new Attachment(compressedStream, att.Name + ".gz");
-                                processedAttachments.Add(compressedAtt);
+                                gzipStream.Write(attachmentBytes, 0, attachmentBytes.Length);
                             }
+                            compressedStream.Position = 0;
+                            string compressedFileName = Path.GetFileName(attachmentPath) + ".gz";
+                            Attachment compressedAttachment = new Attachment(compressedStream, compressedFileName);
+                            mailMessage.Attachments.Add(compressedAttachment);
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            // Keep small attachment unchanged
-                            Attachment originalAtt = new Attachment(new MemoryStream(data), att.Name);
-                            processedAttachments.Add(originalAtt);
+                            Console.Error.WriteLine($"Failed to compress attachment: {ex.Message}");
+                            return;
                         }
                     }
                 }
-
-                // Replace original attachments with processed ones
-                mail.Attachments.Clear();
-                foreach (Attachment a in processedAttachments)
+                else
                 {
-                    mail.Attachments.Add(a);
+                    // Add original attachment without compression
+                    using (MemoryStream originalStream = new MemoryStream(attachmentBytes))
+                    {
+                        Attachment originalAttachment = new Attachment(originalStream, Path.GetFileName(attachmentPath));
+                        mailMessage.Attachments.Add(originalAttachment);
+                    }
                 }
 
-                // Convert MailMessage to MapiMessage and add to PST
-                MapiMessage mapiMsg = MapiMessage.FromMailMessage(mail);
-                inbox.AddMessage(mapiMsg);
+                // Ensure the PST file path is ready
+                try
+                {
+                    if (File.Exists(pstPath))
+                    {
+                        // Overwrite existing PST by deleting it
+                        File.Delete(pstPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to prepare PST file: {ex.Message}");
+                    return;
+                }
+
+                // Create PST and add the message
+                try
+                {
+                    using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        pst.RootFolder.AddMessage(MapiMessage.FromMailMessage(mailMessage));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create PST or add message: {ex.Message}");
+                    return;
+                }
+
+                Console.WriteLine("Email saved to PST with attachment handling completed.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
-            return;
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
