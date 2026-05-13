@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using System.Text.Json;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -12,91 +12,75 @@ class Program
     {
         try
         {
-            // Placeholder credentials – skip real network call if they are not replaced.
+            // Placeholder credentials and service URL
             string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string userName = "user@example.com";
+            string username = "username@example.com";
             string password = "password";
 
-            if (serviceUrl.Contains("example"))
+            // Guard against placeholder values to avoid real network calls
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com"))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping network call.");
                 return;
             }
 
-            // Create EWS client inside a try/catch to handle connection issues.
-            try
+            // Create EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, userName, password))
+                // Retrieve all private distribution lists
+                ExchangeDistributionList[] distributionLists = client.ListDistributionLists();
+
+                if (distributionLists == null || distributionLists.Length == 0)
                 {
-                    // Prepare a distribution list identifier (replace with a real Id).
-                    ExchangeDistributionList distributionList = new ExchangeDistributionList();
-                    distributionList.Id = "distributionlist-id";
+                    Console.Error.WriteLine("No distribution lists found.");
+                    return;
+                }
 
-                    // Fetch members of the private distribution list.
-                    MailAddressCollection members;
-                    try
-                    {
-                        members = client.FetchDistributionList(distributionList);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to fetch distribution list members: {ex.Message}");
-                        return;
-                    }
+                // Select the first distribution list (replace with specific logic if needed)
+                ExchangeDistributionList targetList = distributionLists[0];
 
-                    // Filter members whose email address ends with the desired domain.
-                    List<Dictionary<string, string>> filteredMembers = new List<Dictionary<string, string>>();
-                    foreach (MailAddress address in members)
-                    {
-                        if (address.Address != null && address.Address.EndsWith("@example.com", StringComparison.OrdinalIgnoreCase))
-                        {
-                            Dictionary<string, string> entry = new Dictionary<string, string>();
-                            entry["DisplayName"] = address.DisplayName ?? string.Empty;
-                            entry["Email"] = address.Address;
-                            filteredMembers.Add(entry);
-                        }
-                    }
+                // Fetch members of the selected distribution list
+                MailAddressCollection members = client.FetchDistributionList(targetList);
 
-                    // Serialize the filtered list to JSON.
-                    string json = JsonSerializer.Serialize(filteredMembers, new JsonSerializerOptions { WriteIndented = true });
-
-                    // Define output path and ensure the directory exists.
-                    string outputPath = "filteredMembers.json";
-                    string outputDirectory = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                // Filter members whose email address ends with the desired domain
+                string domainPattern = "@contoso.com";
+                List<string> filteredEmails = new List<string>();
+                foreach (MailAddress address in members)
+                {
+                    if (address.Address != null && address.Address.EndsWith(domainPattern, StringComparison.OrdinalIgnoreCase))
                     {
-                        try
-                        {
-                            Directory.CreateDirectory(outputDirectory);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                            return;
-                        }
-                    }
-
-                    // Write JSON to file with error handling.
-                    try
-                    {
-                        File.WriteAllText(outputPath, json);
-                        Console.WriteLine($"Filtered members exported to '{outputPath}'.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to write JSON file: {ex.Message}");
+                        filteredEmails.Add(address.Address);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"EWS client initialization error: {ex.Message}");
-                return;
+
+                // Serialize filtered email addresses to JSON
+                string json = JsonSerializer.Serialize(filteredEmails, new JsonSerializerOptions { WriteIndented = true });
+
+                // Define output file path
+                string outputPath = "filteredMembers.json";
+
+                // Ensure the output directory exists
+                string directory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Write JSON to file with error handling
+                try
+                {
+                    File.WriteAllText(outputPath, json);
+                    Console.WriteLine($"Filtered members exported to {outputPath}");
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to write JSON file: {ioEx.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
