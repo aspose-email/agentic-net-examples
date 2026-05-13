@@ -10,55 +10,45 @@ class Program
     {
         try
         {
-            // Prepare attendees
-            MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("alice@example.com"));
-            attendees.Add(new MailAddress("bob@example.com"));
+            // Define attendees
+            MailAddressCollection attendees = new MailAddressCollection
+            {
+                new MailAddress("person1@domain.com"),
+                new MailAddress("person2@domain.com")
+            };
 
-            // Create the appointment (not disposable, so no using)
-            Appointment appointment = new Appointment(
+            // Create a daily recurrence pattern with a 2‑day interval
+            DailyRecurrencePattern dailyPattern = new DailyRecurrencePattern(2); // repeats every 2 days
+
+            // Create the appointment (meeting request) without recurrence
+            Appointment meeting = new Appointment(
                 location: "Conference Room",
-                summary: "Team Sync",
-                description: "Discuss project updates",
-                startDate: new DateTime(2024, 5, 1, 10, 0, 0),
-                endDate: new DateTime(2024, 5, 1, 11, 0, 0),
-                organizer: new MailAddress("organizer@example.com"),
-                attendees: attendees
-            );
+                startDate: new DateTime(2024, 6, 1, 10, 0, 0),
+                endDate: new DateTime(2024, 6, 1, 11, 0, 0),
+                organizer: new MailAddress("organizer@domain.com"),
+                attendees: attendees);
 
-            // Define a daily recurrence pattern with a two‑day interval
-            DailyRecurrencePattern dailyPattern = new DailyRecurrencePattern(5, 1);
-            dailyPattern.Interval = 2; // repeats every 2 days
-            // Optionally set an end date
-            dailyPattern.EndDate = new DateTime(2024, 5, 31);
+            // Assign recurrence pattern
+            meeting.Recurrence = dailyPattern;
 
-            // Assign the recurrence to the appointment
-            appointment.Recurrence = dailyPattern;
+            meeting.Summary = "Team Sync";
+            meeting.Description = "Recurring team sync meeting every two days.";
 
-            // Define output path
-            string outputDir = Path.Combine(Environment.CurrentDirectory, "Output");
+            // Prepare output path
+            string outputPath = "meeting.ics";
+            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
             if (!Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
-            string icsPath = Path.Combine(outputDir, "RecurringMeeting.ics");
 
             // Save the appointment to an iCalendar file
-            try
-            {
-                appointment.Save(icsPath);
-                Console.WriteLine($"Appointment saved to: {icsPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save appointment: {ex.Message}");
-                return;
-            }
+            meeting.Save(outputPath, AppointmentSaveFormat.Ics);
+            Console.WriteLine($"Meeting request saved to: {outputPath}");
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
-            return;
         }
     }
 }
