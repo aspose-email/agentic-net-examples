@@ -1,6 +1,6 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -9,76 +9,52 @@ class Program
     {
         try
         {
-            // Placeholder credentials – replace with real values.
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
+            // Placeholder credentials check – skip execution in CI environments
+            string host = "exchange.example.com";
+            string username = "user@example.com";
             string password = "password";
-
-            // Guard against executing with placeholder data.
-            if (serviceUrl.Contains("example.com"))
+            if (host.Contains("example.com"))
             {
                 Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
                 return;
             }
 
-            // Create EWS client.
-            try
+            // Create EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(host, username, password))
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                // Identify the distribution list to modify (replace with real Id)
+                ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                distributionList.Id = "distlist-id";
+
+                // Fetch all current members of the distribution list
+                MailAddressCollection allMembers = client.FetchDistributionList(distributionList);
+
+                // Prepare a collection of members to delete based on role information
+                MailAddressCollection membersToDelete = new MailAddressCollection();
+                foreach (MailAddress member in allMembers)
                 {
-                    // Retrieve all private distribution lists.
-                    ExchangeDistributionList[] allLists = client.ListDistributionLists();
-
-                    // Find the distribution list to modify (example: first list).
-                    if (allLists == null || allLists.Length == 0)
+                    // Example criterion: remove members whose DisplayName contains "Contractor"
+                    if (!string.IsNullOrEmpty(member.DisplayName) && member.DisplayName.Contains("Contractor"))
                     {
-                        Console.Error.WriteLine("No distribution lists found.");
-                        return;
+                        membersToDelete.Add(member);
                     }
-
-                    ExchangeDistributionList targetList = allLists[0];
-
-                    // Fetch current members of the distribution list.
-                    MailAddressCollection currentMembers = client.FetchDistributionList(targetList);
-                    if (currentMembers == null || currentMembers.Count == 0)
-                    {
-                        Console.WriteLine("Distribution list has no members.");
-                        return;
-                    }
-
-                    // Prepare a collection of members to remove based on role attribute.
-                    MailAddressCollection membersToRemove = new MailAddressCollection();
-
-                    foreach (MailAddress member in currentMembers)
-                    {
-                        // Example role check: remove members whose display name contains "Manager".
-                        // Adjust the condition as needed for actual role attributes.
-                        if (!string.IsNullOrEmpty(member.DisplayName) && member.DisplayName.IndexOf("Manager", StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            membersToRemove.Add(member);
-                        }
-                    }
-
-                    if (membersToRemove.Count == 0)
-                    {
-                        Console.WriteLine("No members matched the removal criteria.");
-                        return;
-                    }
-
-                    // Delete the selected members from the distribution list.
-                    client.DeleteFromDistributionList(targetList, membersToRemove);
-                    Console.WriteLine($"Removed {membersToRemove.Count} member(s) from distribution list \"{targetList.DisplayName}\".");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
-                return;
+
+                // Delete the filtered members from the distribution list
+                if (membersToDelete.Count > 0)
+                {
+                    client.DeleteFromDistributionList(distributionList, membersToDelete);
+                    Console.WriteLine($"Deleted {membersToDelete.Count} member(s) from the distribution list.");
+                }
+                else
+                {
+                    Console.WriteLine("No members matched the removal criteria.");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
