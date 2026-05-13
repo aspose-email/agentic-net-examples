@@ -9,65 +9,50 @@ class Program
     {
         try
         {
-            string directoryPath = args.Length > 0 ? args[0] : Directory.GetCurrentDirectory();
+            string directoryPath = "MsgFiles";
 
+            // Ensure the directory exists; create if missing and add a placeholder MSG file.
             if (!Directory.Exists(directoryPath))
             {
-                Console.Error.WriteLine($"Error: Directory not found – {directoryPath}");
-                return;
+                Directory.CreateDirectory(directoryPath);
+                string placeholderPath = Path.Combine(directoryPath, "placeholder.msg");
+
+                // Create a minimal task and save it as MSG.
+                MapiTask placeholderTask = new MapiTask(
+                    "Placeholder Task",
+                    "This is a placeholder task.",
+                    DateTime.Now,
+                    DateTime.Now.AddDays(1));
+
+                placeholderTask.Save(placeholderPath, TaskSaveFormat.Msg);
             }
 
-            string[] msgFiles;
-            try
-            {
-                msgFiles = Directory.GetFiles(directoryPath, "*.msg");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error accessing files in directory: {ex.Message}");
-                return;
-            }
+            // Get all .msg files in the directory.
+            string[] msgFiles = Directory.GetFiles(directoryPath, "*.msg");
 
-            foreach (string filePath in msgFiles)
+            foreach (string msgFile in msgFiles)
             {
-                if (!File.Exists(filePath))
-                {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
+                    // Load the MSG file.
+                    using (MapiMessage message = MapiMessage.Load(msgFile))
                     {
-                        placeholder.Save(filePath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                    // Skip missing files gracefully
-                    continue;
-                }
-
-                try
-                {
-                    using (MapiMessage message = MapiMessage.Load(filePath))
-                    {
-                        // Check if the MSG file represents a task (IPM.Task)
-                        if (!string.IsNullOrEmpty(message.MessageClass) &&
-                            message.MessageClass.StartsWith("IPM.Task", StringComparison.OrdinalIgnoreCase))
+                        // Check if the message is a task.
+                        if (message.SupportedType == MapiItemType.Task)
                         {
-                            Console.WriteLine($"Task Subject: {message.Subject}");
+                            // Convert to MapiTask to access task properties.
+                            MapiTask task = (MapiTask)message.ToMapiMessageItem();
+                            Console.WriteLine($"File: {Path.GetFileName(msgFile)} - Task Subject: {task.Subject}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"File: {Path.GetFileName(msgFile)} - Not a task item.");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error processing file '{filePath}': {ex.Message}");
+                    Console.Error.WriteLine($"Error processing file '{msgFile}': {ex.Message}");
                 }
             }
         }
