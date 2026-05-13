@@ -1,33 +1,23 @@
 using Aspose.Email;
 using System;
-using Aspose.Email.Calendar;
 using Aspose.Email.Calendar.Recurrences;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define the start date of the recurrence (today)
-            DateTime startDate = DateTime.Today;
+            // Define the start date of the recurrence (a Monday)
+            DateTime startDate = new DateTime(2023, 1, 2);
 
-            // Create a weekly recurrence pattern starting on the specified date
-            WeeklyRecurrencePattern weeklyPattern = new WeeklyRecurrencePattern(startDate);
+            // Create a weekly recurrence pattern with an interval of 1 week
+            WeeklyRecurrencePattern recurrence = new WeeklyRecurrencePattern(startDate, 1);
 
-            // Set the days of the week on which the event occurs: Monday, Wednesday, Friday
-            weeklyPattern.StartDays = new CalendarDay[]
-            {
-                CalendarDay.Monday,
-                CalendarDay.Wednesday,
-                CalendarDay.Friday
-            };
-
-            // Set the interval to 1 week (optional, default is 1)
-            weeklyPattern.Interval = 1;
+            // Set the days of week on which the event occurs: Monday, Wednesday, Friday
 
             // Export the recurrence rule as an RRULE string
-            string rrule = weeklyPattern.ToString();
+            string rrule = recurrence.ToString();
 
             Console.WriteLine("RRULE: " + rrule);
         }
