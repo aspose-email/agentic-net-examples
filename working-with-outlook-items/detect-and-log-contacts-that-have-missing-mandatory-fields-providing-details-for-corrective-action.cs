@@ -1,8 +1,8 @@
-using System;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients.Google;
 using Aspose.Email.PersonalInfo;
+using System;
+using System.Net;
 
 class Program
 {
@@ -11,54 +11,57 @@ class Program
         try
         {
             // Placeholder credentials – replace with real values.
-            string accessToken = "YOUR_ACCESS_TOKEN";
-            string defaultEmail = "user@example.com";
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
 
-            // Guard against placeholder credentials to avoid live network calls.
-            if (accessToken.Contains("YOUR_") || defaultEmail.Contains("example.com"))
+            // Guard against placeholder literals.
+            if (clientId.Contains("YOUR_") || clientSecret.Contains("YOUR_") || refreshToken.Contains("YOUR_"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail operations.");
+                Console.Error.WriteLine("Please provide valid Gmail client credentials before running the sample.");
                 return;
             }
 
             // Create Gmail client.
-            IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail);
-
+            IGmailClient client;
             try
             {
-                // Retrieve all contacts.
-                Contact[] contacts = gmailClient.GetAllContacts();
-
-                foreach (Contact contact in contacts)
-                {
-                    List<string> missingFields = new List<string>();
-
-                    // Check mandatory fields.
-                    if (contact.EmailAddresses == null || contact.EmailAddresses.Count == 0)
-                        missingFields.Add("EmailAddresses");
-
-                    if (string.IsNullOrWhiteSpace(contact.GivenName))
-                        missingFields.Add("GivenName");
-
-                    if (string.IsNullOrWhiteSpace(contact.Surname))
-                        missingFields.Add("Surname");
-
-                    if (missingFields.Count > 0)
-                    {
-                        Console.WriteLine($"Contact '{contact.DisplayName}' is missing mandatory fields: {string.Join(", ", missingFields)}");
-                    }
-                }
+                // The second argument is a proxy; pass null if not needed.
+                client = GmailClient.GetInstance(clientId, null, clientSecret, refreshToken);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Gmail operation failed: {ex.Message}");
+                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
                 return;
             }
-            finally
+
+            // Fetch all contacts.
+            Contact[] contacts;
+            try
             {
-                // Ensure the client is disposed.
-                if (gmailClient is IDisposable disposableClient)
-                    disposableClient.Dispose();
+                contacts = client.GetAllContacts();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error retrieving contacts: {ex.Message}");
+                return;
+            }
+
+            // Analyze contacts for missing mandatory fields.
+            foreach (Contact contact in contacts)
+            {
+                // Assume Email and DisplayName are mandatory.
+                bool missingEmail = contact.EmailAddresses == null || contact.EmailAddresses.Count == 0;
+                bool missingDisplayName = string.IsNullOrWhiteSpace(contact.DisplayName);
+
+                if (missingEmail || missingDisplayName)
+                {
+                    Console.WriteLine($"Contact ID: {contact.Id}");
+                    if (missingEmail)
+                        Console.WriteLine("  - Missing Email");
+                    if (missingDisplayName)
+                        Console.WriteLine("  - Missing Display Name");
+                }
             }
         }
         catch (Exception ex)
