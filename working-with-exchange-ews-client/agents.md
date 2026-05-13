@@ -18,32 +18,32 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (549 file(s))
-- `using Aspose.Email;` (509 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (481 file(s))
-- `using System.Net;` (313 file(s))
-- `using Aspose.Email.Clients.Exchange;` (274 file(s))
-- `using Aspose.Email.Calendar;` (97 file(s))
-- `using System.IO;` (96 file(s))
+- `using System;` (556 file(s))
+- `using Aspose.Email;` (516 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (488 file(s))
+- `using System.Net;` (316 file(s))
+- `using Aspose.Email.Clients.Exchange;` (277 file(s))
+- `using System.IO;` (98 file(s))
+- `using Aspose.Email.Calendar;` (98 file(s))
 - `using Aspose.Email.Tools.Search;` (58 file(s))
+- `using System.Collections.Generic;` (54 file(s))
 - `using Aspose.Email.Storage.Pst;` (52 file(s))
-- `using System.Collections.Generic;` (49 file(s))
-- `using Aspose.Email.Mapi;` (39 file(s))
-- `using Aspose.Email.PersonalInfo;` (23 file(s))
+- `using Aspose.Email.Mapi;` (41 file(s))
+- `using Aspose.Email.PersonalInfo;` (24 file(s))
 - `using System.Text;` (23 file(s))
+- `using System.Threading.Tasks;` (18 file(s))
 - `using System.Threading;` (17 file(s))
-- `using System.Threading.Tasks;` (17 file(s))
 - `using Aspose.Email.Clients;` (16 file(s))
-- `using Aspose.Email.Calendar.Recurrences;` (8 file(s))
+- `using Aspose.Email.Calendar.Recurrences;` (9 file(s))
+- `using System.Linq;` (8 file(s))
 - `using Aspose.Email.Clients.Google;` (7 file(s))
-- `using System.Linq;` (7 file(s))
 - `using System.Text.Json;` (5 file(s))
+- `using Aspose.Email.Mime;` (5 file(s))
 - `using System.Collections.Specialized;` (4 file(s))
-- `using Aspose.Email.Mime;` (4 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService.Models;` (3 file(s))
 - `using Aspose.Email.Clients.Base;` (3 file(s))
 - `using System.Diagnostics;` (3 file(s))
 - `using Aspose.Email.Clients.Imap;` (3 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService.Models;` (2 file(s))
 - `using System.ComponentModel;` (2 file(s))
 - `using System.Xml.Linq;` (2 file(s))
 - `using System.Reflection;` (2 file(s))
@@ -84,6 +84,8 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs](./add-the-required-email-library-package-to-the-project-using-the-nuget-package-manager.cs) | add the required email library package to the project using the nuget package manager |
 | [append-a-draft-message-to-the-sent-items-folder-asynchronously-specifying-custom-message-flags.cs](./append-a-draft-message-to-the-sent-items-folder-asynchronously-specifying-custom-message-flags.cs) | append a draft message to the sent items folder asynchronously specifying custom message flags |
 | [append-a-message-with-embedded-images-to-a-folder-ensuring-images-are-correctly-encoded-in-the-mime-body.cs](./append-a-message-with-embedded-images-to-a-folder-ensuring-images-are-correctly-encoded-in-the-mime-body.cs) | append a message with embedded images to a folder ensuring images are correctly encoded in the mime body |
+| [append-messages-to-a-folder-while-preserving-the-original-receivedtime-property-using-appendmessagesasync-options.cs](./append-messages-to-a-folder-while-preserving-the-original-receivedtime-property-using-appendmessagesasync-options.cs) | append messages to a folder while preserving the original receivedtime property using appendmessagesasync options |
+| [append-multiple-draft-messages-to-a-custom-folder-in-parallel-using-appendmessagesasync-with-task-whenall.cs](./append-multiple-draft-messages-to-a-custom-folder-in-parallel-using-appendmessagesasync-with-task-whenall.cs) | append multiple draft messages to a custom folder in parallel using appendmessagesasync with task whenall |
 | [apply-a-custom-email-classification-rule-to-incoming-messages-and-move-them-to-a-designated-folder.cs](./apply-a-custom-email-classification-rule-to-incoming-messages-and-move-them-to-a-designated-folder.cs) | apply a custom email classification rule to incoming messages and move them to a designated folder |
 | [apply-a-custom-time-zone-conversion-to-calendar-event-start-and-end-times-during-synchronization.cs](./apply-a-custom-time-zone-conversion-to-calendar-event-start-and-end-times-during-synchronization.cs) | apply a custom time zone conversion to calendar event start and end times during synchronization |
 | [apply-a-date-filter-to-select-messages-older-than-a-threshold-before-calling-archiveitem.cs](./apply-a-date-filter-to-select-messages-older-than-a-threshold-before-calling-archiveitem.cs) | apply a date filter to select messages older than a threshold before calling archiveitem |
@@ -201,6 +203,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [create-a-new-directory-within-the-file-system-ensuring-proper-path-handling-and-comprehensive-error-checking.cs](./create-a-new-directory-within-the-file-system-ensuring-proper-path-handling-and-comprehensive-error-checking.cs) | create a new directory within the file system ensuring proper path handling and comprehensive error checking |
 | [create-a-new-distribution-list-and-programmatically-add-specified-recipients-for-bulk-email-sending.cs](./create-a-new-distribution-list-and-programmatically-add-specified-recipients-for-bulk-email-sending.cs) | create a new distribution list and programmatically add specified recipients for bulk email sending |
 | [create-a-new-email-rule-that-moves-messages-with-attachments-larger-than-five-megabytes-to-a-large-files-folder.cs](./create-a-new-email-rule-that-moves-messages-with-attachments-larger-than-five-megabytes-to-a-large-files-folder.cs) | create a new email rule that moves messages with attachments larger than five megabytes to a large files folder |
+| [create-a-new-email-with-multiple-recipients-attach-a-pdf-report-and-send-it-with-high-priority-flag.cs](./create-a-new-email-with-multiple-recipients-attach-a-pdf-report-and-send-it-with-high-priority-flag.cs) | create a new email with multiple recipients attach a pdf report and send it with high priority flag |
 | [create-a-new-exchange-task-with-subject-and-due-date-using-iewsclient-createtask.cs](./create-a-new-exchange-task-with-subject-and-due-date-using-iewsclient-createtask.cs) | create a new exchange task with subject and due date using iewsclient createtask |
 | [create-a-new-instance-of-the-distributionlist-class-for-managing-email-distribution-groups-within-your-application.cs](./create-a-new-instance-of-the-distributionlist-class-for-managing-email-distribution-groups-within-your-application.cs) | create a new instance of the distributionlist class for managing email distribution groups within your application |
 | [create-a-new-mailbox-folder-hierarchy-programmatically-and-assign-appropriate-permissions-to-a-security-group.cs](./create-a-new-mailbox-folder-hierarchy-programmatically-and-assign-appropriate-permissions-to-a-security-group.cs) | create a new mailbox folder hierarchy programmatically and assign appropriate permissions to a security group |
@@ -211,6 +214,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [create-a-new-userconfiguration-instance-to-configure-user-specific-settings-and-preferences-within-the-application-environment.cs](./create-a-new-userconfiguration-instance-to-configure-user-specific-settings-and-preferences-within-the-application-environment.cs) | create a new userconfiguration instance to configure user specific settings and preferences within the application environment |
 | [create-a-recurring-appointment-that-occurs-every-second-tuesday-of-the-month-with-a-custom-agenda.cs](./create-a-recurring-appointment-that-occurs-every-second-tuesday-of-the-month-with-a-custom-agenda.cs) | create a recurring appointment that occurs every second tuesday of the month with a custom agenda |
 | [create-a-recurring-appointment-with-daily-occurrences-set-a-custom-location-and-add-a-meeting-agenda.cs](./create-a-recurring-appointment-with-daily-occurrences-set-a-custom-location-and-add-a-meeting-agenda.cs) | create a recurring appointment with daily occurrences set a custom location and add a meeting agenda |
+| [create-a-recurring-appointment-with-exceptions-for-holidays-and-verify-exception-dates-via-ews.cs](./create-a-recurring-appointment-with-exceptions-for-holidays-and-verify-exception-dates-via-ews.cs) | create a recurring appointment with exceptions for holidays and verify exception dates via ews |
 | [create-a-recurring-task-that-repeats-monthly-on-the-first-friday-and-assign-it-to-a-project-team.cs](./create-a-recurring-task-that-repeats-monthly-on-the-first-friday-and-assign-it-to-a-project-team.cs) | create a recurring task that repeats monthly on the first friday and assign it to a project team |
 | [create-a-recurring-task-with-daily-pattern-and-verify-instances-appear-in-the-task-list.cs](./create-a-recurring-task-with-daily-pattern-and-verify-instances-appear-in-the-task-list.cs) | create a recurring task with daily pattern and verify instances appear in the task list |
 | [create-a-scheduled-task-that-runs-nightly-to-archive-old-emails-to-a-local-pst-file-via-ews.cs](./create-a-scheduled-task-that-runs-nightly-to-archive-old-emails-to-a-local-pst-file-via-ews.cs) | create a scheduled task that runs nightly to archive old emails to a local pst file via ews |
@@ -231,6 +235,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [create-an-appointment-with-a-required-attendee-list-loaded-from-a-database-query-result-set.cs](./create-an-appointment-with-a-required-attendee-list-loaded-from-a-database-query-result-set.cs) | create an appointment with a required attendee list loaded from a database query result set |
 | [create-an-aqs-query-that-locates-messages-flagged-for-follow-up-and-sent-within-the-last-week.cs](./create-an-aqs-query-that-locates-messages-flagged-for-follow-up-and-sent-within-the-last-week.cs) | create an aqs query that locates messages flagged for follow up and sent within the last week |
 | [create-an-asynchronous-iewsclient-instance-with-a-cancellation-token-for-graceful-operation-termination.cs](./create-an-asynchronous-iewsclient-instance-with-a-cancellation-token-for-graceful-operation-termination.cs) | create an asynchronous iewsclient instance with a cancellation token for graceful operation termination |
+| [create-an-authenticated-ews-client-asynchronously-using-getewsclientasync-with-mailbox-uri-and-credentials.cs](./create-an-authenticated-ews-client-asynchronously-using-getewsclientasync-with-mailbox-uri-and-credentials.cs) | create an authenticated ews client asynchronously using getewsclientasync with mailbox uri and credentials |
 | [create-an-iewsclient-instance-and-retrieve-all-messages-from-a-specific-exchange-mailbox.cs](./create-an-iewsclient-instance-and-retrieve-all-messages-from-a-specific-exchange-mailbox.cs) | create an iewsclient instance and retrieve all messages from a specific exchange mailbox |
 | [create-calendar-event-objects-with-specified-properties-and-add-them-to-a-calendar-store-programmatically.cs](./create-calendar-event-objects-with-specified-properties-and-add-them-to-a-calendar-store-programmatically.cs) | create calendar event objects with specified properties and add them to a calendar store programmatically |
 | [create-modify-or-delete-distribution-lists-on-an-exchange-server-using-the-provided-api.cs](./create-modify-or-delete-distribution-lists-on-an-exchange-server-using-the-provided-api.cs) | create modify or delete distribution lists on an exchange server using the provided api |
@@ -495,6 +500,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [retrieve-the-list-of-all-mail-enabled-security-groups-in-the-organization-for-permission-auditing.cs](./retrieve-the-list-of-all-mail-enabled-security-groups-in-the-organization-for-permission-auditing.cs) | retrieve the list of all mail enabled security groups in the organization for permission auditing |
 | [retrieve-the-list-of-all-mailbox-permissions-for-a-given-user-and-output-them-in-a-structured-json-array.cs](./retrieve-the-list-of-all-mailbox-permissions-for-a-given-user-and-output-them-in-a-structured-json-array.cs) | retrieve the list of all mailbox permissions for a given user and output them in a structured json array |
 | [retrieve-the-list-of-all-mailboxes-that-have-mailbox-auditing-enabled-for-compliance-reporting.cs](./retrieve-the-list-of-all-mailboxes-that-have-mailbox-auditing-enabled-for-compliance-reporting.cs) | retrieve the list of all mailboxes that have mailbox auditing enabled for compliance reporting |
+| [retrieve-the-list-of-all-mailboxes-that-have-mailbox-size-quotas-exceeding-a-specified-threshold.cs](./retrieve-the-list-of-all-mailboxes-that-have-mailbox-size-quotas-exceeding-a-specified-threshold.cs) | retrieve the list of all mailboxes that have mailbox size quotas exceeding a specified threshold |
 | [retrieve-the-list-of-all-mailboxes-with-forwarding-enabled-and-export-the-forwarding-addresses-to-csv.cs](./retrieve-the-list-of-all-mailboxes-with-forwarding-enabled-and-export-the-forwarding-addresses-to-csv.cs) | retrieve the list of all mailboxes with forwarding enabled and export the forwarding addresses to csv |
 | [retrieve-the-list-of-all-public-folders-that-have-been-marked-as-hidden-and-log-their-identifiers.cs](./retrieve-the-list-of-all-public-folders-that-have-been-marked-as-hidden-and-log-their-identifiers.cs) | retrieve the list of all public folders that have been marked as hidden and log their identifiers |
 | [retrieve-the-list-of-delegate-permissions-for-a-shared-mailbox-and-export-them-to-an-excel-spreadsheet.cs](./retrieve-the-list-of-delegate-permissions-for-a-shared-mailbox-and-export-them-to-an-excel-spreadsheet.cs) | retrieve the list of delegate permissions for a shared mailbox and export them to an excel spreadsheet |
@@ -567,6 +573,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [sort-retrieved-messages-by-received-date-in-descending-order-by-adding-sorting-parameters-to-the-mailquery.cs](./sort-retrieved-messages-by-received-date-in-descending-order-by-adding-sorting-parameters-to-the-mailquery.cs) | sort retrieved messages by received date in descending order by adding sorting parameters to the mailquery |
 | [specify-the-file-system-location-where-the-application-will-write-its-log-output-during-execution.cs](./specify-the-file-system-location-where-the-application-will-write-its-log-output-during-execution.cs) | specify the file system location where the application will write its log output during execution |
 | [specify-the-file-system-location-where-the-library-writes-its-log-files-for-troubleshooting-and-diagnostics.cs](./specify-the-file-system-location-where-the-library-writes-its-log-files-for-troubleshooting-and-diagnostics.cs) | specify the file system location where the library writes its log files for troubleshooting and diagnostics |
+| [synchronize-a-local-folder-of-draft-messages-with-the-server-drafts-folder-to-keep-them-consistent.cs](./synchronize-a-local-folder-of-draft-messages-with-the-server-drafts-folder-to-keep-them-consistent.cs) | synchronize a local folder of draft messages with the server drafts folder to keep them consistent |
 | [synchronize-a-local-folder-with-an-exchange-mailbox-by-periodically-listing-and-downloading-new-messages.cs](./synchronize-a-local-folder-with-an-exchange-mailbox-by-periodically-listing-and-downloading-new-messages.cs) | synchronize a local folder with an exchange mailbox by periodically listing and downloading new messages |
 | [synchronize-calendar-events-between-two-separate-exchange-mailboxes-to-maintain-consistent-schedules.cs](./synchronize-calendar-events-between-two-separate-exchange-mailboxes-to-maintain-consistent-schedules.cs) | synchronize calendar events between two separate exchange mailboxes to maintain consistent schedules |
 | [test-connection-to-exchange-using-imap-client-as-fallback-when-ews-endpoint-is-unavailable.cs](./test-connection-to-exchange-using-imap-client-as-fallback-when-ews-endpoint-is-unavailable.cs) | test connection to exchange using imap client as fallback when ews endpoint is unavailable |
@@ -612,7 +619,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [wrap-iewsclient-usage-inside-a-using-statement-to-ensure-automatic-resource-cleanup.cs](./wrap-iewsclient-usage-inside-a-using-statement-to-ensure-automatic-resource-cleanup.cs) | wrap iewsclient usage inside a using statement to ensure automatic resource cleanup |
 
 ## Category Statistics
-- Total examples: 549
+- Total examples: 556
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -621,5 +628,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-04-23 | `20260423_104034` | [examples/batch-20260423_104034](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260423_104034) |
+| 2026-05-12 | `20260512_164607` | [examples/batch-20260512_164607](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260512_164607) |
 <!-- AUTOGENERATED:END -->

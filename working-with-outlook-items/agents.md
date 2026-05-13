@@ -18,41 +18,43 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (409 file(s))
-- `using Aspose.Email;` (406 file(s))
-- `using System.IO;` (345 file(s))
-- `using Aspose.Email.Mapi;` (274 file(s))
-- `using System.Collections.Generic;` (88 file(s))
+- `using System;` (438 file(s))
+- `using Aspose.Email;` (431 file(s))
+- `using System.IO;` (365 file(s))
+- `using Aspose.Email.Mapi;` (288 file(s))
+- `using System.Collections.Generic;` (92 file(s))
 - `using Aspose.Email.PersonalInfo;` (43 file(s))
 - `using Aspose.Email.Calendar;` (35 file(s))
-- `using Aspose.Email.Storage.Pst;` (31 file(s))
+- `using Aspose.Email.Storage.Pst;` (33 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService;` (26 file(s))
 - `using Aspose.Email.Calendar.Recurrences;` (22 file(s))
-- `using System.Text;` (20 file(s))
-- `using Aspose.Email.Clients.Exchange;` (17 file(s))
-- `using System.Text.Json;` (17 file(s))
-- `using Aspose.Email.Clients.Exchange.Dav;` (13 file(s))
-- `using Aspose.Email.Clients;` (12 file(s))
+- `using System.Text;` (21 file(s))
+- `using Aspose.Email.Clients.Exchange;` (18 file(s))
+- `using System.Text.Json;` (18 file(s))
+- `using Aspose.Email.Clients.Exchange.Dav;` (15 file(s))
+- `using Aspose.Email.Clients;` (13 file(s))
 - `using System.Linq;` (11 file(s))
 - `using Aspose.Email.Clients.Pop3;` (10 file(s))
-- `using System.Net;` (8 file(s))
-- `using System.Threading;` (8 file(s))
+- `using System.Net;` (9 file(s))
+- `using System.Threading;` (9 file(s))
+- `using System.IO.Compression;` (8 file(s))
+- `using Aspose.Email.Clients.Imap;` (8 file(s))
 - `using Aspose.Email.Clients.Google;` (7 file(s))
-- `using System.IO.Compression;` (7 file(s))
-- `using Aspose.Email.Clients.Imap;` (7 file(s))
 - `using Aspose.Email.Clients.Smtp;` (6 file(s))
 - `using System.Diagnostics;` (5 file(s))
 - `using System.Threading.Tasks;` (5 file(s))
 - `using System.Text.RegularExpressions;` (4 file(s))
 - `using Aspose.Email.Storage;` (3 file(s))
+- `using Aspose.Email.Mime;` (3 file(s))
 - `using Aspose.Email.PersonalInfo.VCard;` (3 file(s))
 - `using Aspose.Email.Tools.Verifications;` (2 file(s))
-- `using Aspose.Email.Mime;` (2 file(s))
 - `using System.Xml;` (2 file(s))
 - `using System.Xml.Linq;` (2 file(s))
 - `using Aspose.Email.Storage.Nsf;` (2 file(s))
 - `using Aspose.Email.Clients.Pop3.Models;` (2 file(s))
 - `using System.Net.Mime;` (1 file(s))
+- `using Aspose.Words;` (1 file(s))
+- `using Aspose.Words.Saving;` (1 file(s))
 - `using System.Security.Cryptography.X509Certificates;` (1 file(s))
 - `using System.Security.Cryptography;` (1 file(s))
 - `using System.Runtime.InteropServices;` (1 file(s))
@@ -65,6 +67,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 ## Files in this folder
 | File | Description |
 |------|-------------|
+| [access-the-files-collection-from-the-cast-drageventargs-to-obtain-dropped-items.cs](./access-the-files-collection-from-the-cast-drageventargs-to-obtain-dropped-items.cs) | access the files collection from the cast drageventargs to obtain dropped items |
 | [add-a-cancel-voting-button-and-ensure-it-appears-correctly-in-the-outlook-client-preview.cs](./add-a-cancel-voting-button-and-ensure-it-appears-correctly-in-the-outlook-client-preview.cs) | add a cancel voting button and ensure it appears correctly in the outlook client preview |
 | [add-a-custom-mapi-property-to-each-email-in-a-pst-folder-to-track-processing-status.cs](./add-a-custom-mapi-property-to-each-email-in-a-pst-folder-to-track-processing-status.cs) | add a custom mapi property to each email in a pst folder to track processing status |
 | [add-a-custom-mapi-property-to-track-processing-timestamps-for-each-message.cs](./add-a-custom-mapi-property-to-track-processing-timestamps-for-each-message.cs) | add a custom mapi property to track processing timestamps for each message |
@@ -112,8 +115,10 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [batch-load-msg-files-extract-their-attachment-lists-and-produce-a-consolidated-attachment-inventory-report.cs](./batch-load-msg-files-extract-their-attachment-lists-and-produce-a-consolidated-attachment-inventory-report.cs) | batch load msg files extract their attachment lists and produce a consolidated attachment inventory report |
 | [batch-load-msg-files-from-a-directory-and-convert-each-to-eml-format.cs](./batch-load-msg-files-from-a-directory-and-convert-each-to-eml-format.cs) | batch load msg files from a directory and convert each to eml format |
 | [batch-process-adds-a-feedback-voting-button-and-sets-a-follow-up-flag-with-a-one-week-due-date.cs](./batch-process-adds-a-feedback-voting-button-and-sets-a-follow-up-flag-with-a-one-week-due-date.cs) | batch process adds a feedback voting button and sets a follow up flag with a one week due date |
+| [batch-process-msg-files-to-remove-any-duplicate-attachments-across-messages-and-save-cleaned-versions.cs](./batch-process-msg-files-to-remove-any-duplicate-attachments-across-messages-and-save-cleaned-versions.cs) | batch process msg files to remove any duplicate attachments across messages and save cleaned versions |
 | [batch-process-reading-voting-results-from-msg-files-and-update-a-central-database-table.cs](./batch-process-reading-voting-results-from-msg-files-and-update-a-central-database-table.cs) | batch process reading voting results from msg files and update a central database table |
 | [batch-rename-attachment-files-in-multiple-msg-items-using-a-predefined-naming-convention.cs](./batch-rename-attachment-files-in-multiple-msg-items-using-a-predefined-naming-convention.cs) | batch rename attachment files in multiple msg items using a predefined naming convention |
+| [build-a-gui-wizard-guiding-users-through-step-by-step-conversion-and-options-selection-for-msg-files.cs](./build-a-gui-wizard-guiding-users-through-step-by-step-conversion-and-options-selection-for-msg-files.cs) | build a gui wizard guiding users through step by step conversion and options selection for msg files |
 | [check-if-a-message-has-any-follow-up-flags-set-before-performing-batch-archiving-operations.cs](./check-if-a-message-has-any-follow-up-flags-set-before-performing-batch-archiving-operations.cs) | check if a message has any follow up flags set before performing batch archiving operations |
 | [clear-all-voting-buttons-and-then-add-a-single-accepted-button-to-simplify-responses.cs](./clear-all-voting-buttons-and-then-add-a-single-accepted-button-to-simplify-responses.cs) | clear all voting buttons and then add a single accepted button to simplify responses |
 | [clear-all-voting-buttons-from-an-msg-message-before-saving-it-as-a-new-file.cs](./clear-all-voting-buttons-from-an-msg-message-before-saving-it-as-a-new-file.cs) | clear all voting buttons from an msg message before saving it as a new file |
@@ -138,18 +143,22 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [convert-an-msg-to-eml-and-embed-the-original-msg-file-as-an-attachment-within-the-eml.cs](./convert-an-msg-to-eml-and-embed-the-original-msg-file-as-an-attachment-within-the-eml.cs) | convert an msg to eml and embed the original msg file as an attachment within the eml |
 | [convert-an-msg-to-eml-and-ensure-attachment-content-types-remain-unchanged-after-conversion.cs](./convert-an-msg-to-eml-and-ensure-attachment-content-types-remain-unchanged-after-conversion.cs) | convert an msg to eml and ensure attachment content types remain unchanged after conversion |
 | [convert-an-msg-to-eml-and-ensure-that-the-message-original-timestamps-are-retained.cs](./convert-an-msg-to-eml-and-ensure-that-the-message-original-timestamps-are-retained.cs) | convert an msg to eml and ensure that the message original timestamps are retained |
+| [convert-an-msg-to-eml-and-verify-that-all-original-attachments-are-present-in-the-resulting-file.cs](./convert-an-msg-to-eml-and-verify-that-all-original-attachments-are-present-in-the-resulting-file.cs) | convert an msg to eml and verify that all original attachments are present in the resulting file |
 | [convert-an-msg-to-eml-and-verify-that-mime-boundaries-are-correctly-generated.cs](./convert-an-msg-to-eml-and-verify-that-mime-boundaries-are-correctly-generated.cs) | convert an msg to eml and verify that mime boundaries are correctly generated |
 | [convert-an-msg-to-eml-while-compressing-all-attachments-into-a-zip-archive.cs](./convert-an-msg-to-eml-while-compressing-all-attachments-into-a-zip-archive.cs) | convert an msg to eml while compressing all attachments into a zip archive |
 | [create-a-custom-contact-view-that-hides-private-fields-displaying-only-public-information-to-end-users.cs](./create-a-custom-contact-view-that-hides-private-fields-displaying-only-public-information-to-end-users.cs) | create a custom contact view that hides private fields displaying only public information to end users |
 | [create-a-daily-recurrence-that-excludes-weekends-by-setting-the-pattern-dayofweekmask-accordingly.cs](./create-a-daily-recurrence-that-excludes-weekends-by-setting-the-pattern-dayofweekmask-accordingly.cs) | create a daily recurrence that excludes weekends by setting the pattern dayofweekmask accordingly |
 | [create-a-mapicalendartimezone-from-the-system-timezoneinfo-for-pacific-standard-time-and-assign-it-to-an-event.cs](./create-a-mapicalendartimezone-from-the-system-timezoneinfo-for-pacific-standard-time-and-assign-it-to-an-event.cs) | create a mapicalendartimezone from the system timezoneinfo for pacific standard time and assign it to an event |
 | [create-a-mapimessage-from-a-byte-array-add-a-custom-property-and-persist-the-message-as-msg.cs](./create-a-mapimessage-from-a-byte-array-add-a-custom-property-and-persist-the-message-as-msg.cs) | create a mapimessage from a byte array add a custom property and persist the message as msg |
+| [create-a-mapimessage-from-a-byte-array-set-a-custom-header-and-save-as-msg.cs](./create-a-mapimessage-from-a-byte-array-set-a-custom-header-and-save-as-msg.cs) | create a mapimessage from a byte array set a custom header and save as msg |
+| [create-a-mapimessage-from-a-file-and-embed-an-inline-image-within-the-email-body.cs](./create-a-mapimessage-from-a-file-and-embed-an-inline-image-within-the-email-body.cs) | create a mapimessage from a file and embed an inline image within the email body |
 | [create-a-mapimessage-from-a-file-modify-its-importance-flag-and-save-the-changes-back-to-msg.cs](./create-a-mapimessage-from-a-file-modify-its-importance-flag-and-save-the-changes-back-to-msg.cs) | create a mapimessage from a file modify its importance flag and save the changes back to msg |
 | [create-a-mapinote-with-a-specific-subject-and-multiline-body-then-save-it-as-msg.cs](./create-a-mapinote-with-a-specific-subject-and-multiline-body-then-save-it-as-msg.cs) | create a mapinote with a specific subject and multiline body then save it as msg |
 | [create-a-monthly-recurrence-on-the-third-tuesday-of-each-month-and-generate-its-corresponding-rrule-string.cs](./create-a-monthly-recurrence-on-the-third-tuesday-of-each-month-and-generate-its-corresponding-rrule-string.cs) | create a monthly recurrence on the third tuesday of each month and generate its corresponding rrule string |
 | [create-a-new-distribution-list-from-selected-contacts-and-assign-a-descriptive-name-programmatically.cs](./create-a-new-distribution-list-from-selected-contacts-and-assign-a-descriptive-name-programmatically.cs) | create a new distribution list from selected contacts and assign a descriptive name programmatically |
 | [create-a-new-mapicalendar-set-subject-and-location-and-save-it-as-an-ics-file.cs](./create-a-new-mapicalendar-set-subject-and-location-and-save-it-as-an-ics-file.cs) | create a new mapicalendar set subject and location and save it as an ics file |
 | [create-a-new-mapitask-set-its-subject-and-due-date-then-save-as-msg.cs](./create-a-new-mapitask-set-its-subject-and-due-date-then-save-as-msg.cs) | create a new mapitask set its subject and due date then save as msg |
+| [create-a-panel-control-to-act-as-the-outlook-message-drop-target.cs](./create-a-panel-control-to-act-as-the-outlook-message-drop-target.cs) | create a panel control to act as the outlook message drop target |
 | [create-a-read-only-snapshot-of-a-distribution-list-for-compliance-audits-preventing-any-modifications-to-the-list.cs](./create-a-read-only-snapshot-of-a-distribution-list-for-compliance-audits-preventing-any-modifications-to-the-list.cs) | create a read only snapshot of a distribution list for compliance audits preventing any modifications to the list |
 | [create-a-read-only-view-of-contacts-for-audit-purposes-preventing-any-modifications-to-the-underlying-data.cs](./create-a-read-only-view-of-contacts-for-audit-purposes-preventing-any-modifications-to-the-underlying-data.cs) | create a read only view of contacts for audit purposes preventing any modifications to the underlying data |
 | [create-a-scheduled-job-that-synchronizes-contacts-nightly-to-a-remote-server-handling-conflicts-and-logging-results.cs](./create-a-scheduled-job-that-synchronizes-contacts-nightly-to-a-remote-server-handling-conflicts-and-logging-results.cs) | create a scheduled job that synchronizes contacts nightly to a remote server handling conflicts and logging results |
@@ -185,6 +194,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [develop-a-command-line-tool-that-accepts-a-file-path-argument-for-msg-to-eml-conversion.cs](./develop-a-command-line-tool-that-accepts-a-file-path-argument-for-msg-to-eml-conversion.cs) | develop a command line tool that accepts a file path argument for msg to eml conversion |
 | [display-the-count-of-dropped-messages-to-the-user-for-confirmation.cs](./display-the-count-of-dropped-messages-to-the-user-for-confirmation.cs) | display the count of dropped messages to the user for confirmation |
 | [enable-a-reminder-for-a-task-by-setting-reminder-date-time-and-the-reminder-flag.cs](./enable-a-reminder-for-a-task-by-setting-reminder-date-time-and-the-reminder-flag.cs) | enable a reminder for a task by setting reminder date time and the reminder flag |
+| [enable-the-panel-to-accept-drag-and-drop-operations-by-setting-allowdrop-to-true.cs](./enable-the-panel-to-accept-drag-and-drop-operations-by-setting-allowdrop-to-true.cs) | enable the panel to accept drag and drop operations by setting allowdrop to true |
 | [ensure-each-saved-file-uses-the-msg-format-as-required-by-the-control.cs](./ensure-each-saved-file-uses-the-msg-format-as-required-by-the-control.cs) | ensure each saved file uses the msg format as required by the control |
 | [ensure-only-outlook-message-files-are-processed-by-checking-the-file-type-within-files-collection.cs](./ensure-only-outlook-message-files-are-processed-by-checking-the-file-type-within-files-collection.cs) | ensure only outlook message files are processed by checking the file type within files collection |
 | [enumerate-all-recipients-in-a-pst-folder-and-log-their-email-addresses-to-a-text-file.cs](./enumerate-all-recipients-in-a-pst-folder-and-log-their-email-addresses-to-a-text-file.cs) | enumerate all recipients in a pst folder and log their email addresses to a text file |
@@ -204,6 +214,8 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [export-distribution-list-members-to-an-xml-file-with-hierarchical-structure-representing-groups-and-sub-groups.cs](./export-distribution-list-members-to-an-xml-file-with-hierarchical-structure-representing-groups-and-sub-groups.cs) | export distribution list members to an xml file with hierarchical structure representing groups and sub groups |
 | [export-follow-up-flag-details-including-due-dates-and-assigned-recipients-to-a-csv-file-for-reporting.cs](./export-follow-up-flag-details-including-due-dates-and-assigned-recipients-to-a-csv-file-for-reporting.cs) | export follow up flag details including due dates and assigned recipients to a csv file for reporting |
 | [export-voting-button-configurations-and-follow-up-flag-settings-to-separate-csv-files-for-independent-analysis.cs](./export-voting-button-configurations-and-follow-up-flag-settings-to-separate-csv-files-for-independent-analysis.cs) | export voting button configurations and follow up flag settings to separate csv files for independent analysis |
+| [expose-a-rest-endpoint-that-returns-the-message-metadata-in-json-format-for-integration-purposes.cs](./expose-a-rest-endpoint-that-returns-the-message-metadata-in-json-format-for-integration-purposes.cs) | expose a rest endpoint that returns the message metadata in json format for integration purposes |
+| [extract-a-calendar-appointment-from-an-msg-file-and-export-it-as-an-icalendar-ics-file.cs](./extract-a-calendar-appointment-from-an-msg-file-and-export-it-as-an-icalendar-ics-file.cs) | extract a calendar appointment from an msg file and export it as an icalendar ics file |
 | [extract-a-meeting-request-from-an-msg-file-and-list-all-attendee-email-addresses.cs](./extract-a-meeting-request-from-an-msg-file-and-list-all-attendee-email-addresses.cs) | extract a meeting request from an msg file and list all attendee email addresses |
 | [extract-all-attachment-file-names-from-a-pst-folder-and-store-them-in-a-csv-report.cs](./extract-all-attachment-file-names-from-a-pst-folder-and-store-them-in-a-csv-report.cs) | extract all attachment file names from a pst folder and store them in a csv report |
 | [extract-all-inline-images-from-html-bodies-and-replace-them-with-base64-data-uris.cs](./extract-all-inline-images-from-html-bodies-and-replace-them-with-base64-data-uris.cs) | extract all inline images from html bodies and replace them with base64 data uris |
@@ -216,6 +228,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [for-each-file-invoke-file-save-with-a-msg-filename-to-store-the-message.cs](./for-each-file-invoke-file-save-with-a-msg-filename-to-store-the-message.cs) | for each file invoke file save with a msg filename to store the message |
 | [generate-a-csv-file-containing-only-contact-email-addresses-for-use-in-bulk-mailing-campaigns.cs](./generate-a-csv-file-containing-only-contact-email-addresses-for-use-in-bulk-mailing-campaigns.cs) | generate a csv file containing only contact email addresses for use in bulk mailing campaigns |
 | [generate-a-daily-recurrence-pattern-with-a-two-day-interval-and-assign-it-to-a-meeting-request.cs](./generate-a-daily-recurrence-pattern-with-a-two-day-interval-and-assign-it-to-a-meeting-request.cs) | generate a daily recurrence pattern with a two day interval and assign it to a meeting request |
+| [generate-a-dashboard-view-showing-counts-of-messages-by-voting-button-selection-across-a-mailbox.cs](./generate-a-dashboard-view-showing-counts-of-messages-by-voting-button-selection-across-a-mailbox.cs) | generate a dashboard view showing counts of messages by voting button selection across a mailbox |
 | [generate-a-json-manifest-listing-all-messages-their-sizes-and-attachment-counts-in-a-pst.cs](./generate-a-json-manifest-listing-all-messages-their-sizes-and-attachment-counts-in-a-pst.cs) | generate a json manifest listing all messages their sizes and attachment counts in a pst |
 | [generate-a-log-entry-for-each-msg-indicating-whether-follow-up-flags-were-added-modified-or-removed.cs](./generate-a-log-entry-for-each-msg-indicating-whether-follow-up-flags-were-added-modified-or-removed.cs) | generate a log entry for each msg indicating whether follow up flags were added modified or removed |
 | [generate-a-monthly-recurrence-on-second-saturday-set-occurrence-count-to-five-and-export-the-pattern-as-rrule.cs](./generate-a-monthly-recurrence-on-second-saturday-set-occurrence-count-to-five-and-export-the-pattern-as-rrule.cs) | generate a monthly recurrence on second saturday set occurrence count to five and export the pattern as rrule |
@@ -242,6 +255,8 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [import-contacts-from-a-csv-file-that-uses-semicolon-delimiters-mapping-fields-to-appropriate-contact-properties.cs](./import-contacts-from-a-csv-file-that-uses-semicolon-delimiters-mapping-fields-to-appropriate-contact-properties.cs) | import contacts from a csv file that uses semicolon delimiters mapping fields to appropriate contact properties |
 | [import-contacts-from-a-vcard-collection-file-containing-multiple-entries-handling-each-entry-individually.cs](./import-contacts-from-a-vcard-collection-file-containing-multiple-entries-handling-each-entry-individually.cs) | import contacts from a vcard collection file containing multiple entries handling each entry individually |
 | [import-distribution-list-members-from-a-json-array-mapping-json-fields-to-contact-properties-during-load.cs](./import-distribution-list-members-from-a-json-array-mapping-json-fields-to-contact-properties-during-load.cs) | import distribution list members from a json array mapping json fields to contact properties during load |
+| [in-the-dragdrop-handler-cast-the-generic-drageventargs-to-aspose-outlookcontrol-drageventargs.cs](./in-the-dragdrop-handler-cast-the-generic-drageventargs-to-aspose-outlookcontrol-drageventargs.cs) | in the dragdrop handler cast the generic drageventargs to aspose outlookcontrol drageventargs |
+| [in-the-dragenter-handler-set-e-effect-to-dragdropeffects-copy-for-outlook-items.cs](./in-the-dragenter-handler-set-e-effect-to-dragdropeffects-copy-for-outlook-items.cs) | in the dragenter handler set e effect to dragdropeffects copy for outlook items |
 | [integrate-the-aspose-outlook-control-into-the-windows-forms-project-toolbox-for-design-time-use.cs](./integrate-the-aspose-outlook-control-into-the-windows-forms-project-toolbox-for-design-time-use.cs) | integrate the aspose outlook control into the windows forms project toolbox for design time use |
 | [iterate-through-all-notes-in-a-directory-logging-each-note-creation-date-and-subject.cs](./iterate-through-all-notes-in-a-directory-logging-each-note-creation-date-and-subject.cs) | iterate through all notes in a directory logging each note creation date and subject |
 | [iterate-through-the-files-collection-using-a-foreach-loop-efficiently.cs](./iterate-through-the-files-collection-using-a-foreach-loop-efficiently.cs) | iterate through the files collection using a foreach loop efficiently |
@@ -279,12 +294,15 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [load-an-msg-file-and-extract-all-urls-from-the-body-for-validation-against-a-whitelist.cs](./load-an-msg-file-and-extract-all-urls-from-the-body-for-validation-against-a-whitelist.cs) | load an msg file and extract all urls from the body for validation against a whitelist |
 | [load-an-msg-file-and-extract-any-embedded-message-as-a-separate-msg-file.cs](./load-an-msg-file-and-extract-any-embedded-message-as-a-separate-msg-file.cs) | load an msg file and extract any embedded message as a separate msg file |
 | [load-an-msg-file-and-extract-contact-information-from-a-vcard-attachment-for-address-book-import.cs](./load-an-msg-file-and-extract-contact-information-from-a-vcard-attachment-for-address-book-import.cs) | load an msg file and extract contact information from a vcard attachment for address book import |
+| [load-an-msg-file-and-extract-its-embedded-calendar-event-as-an-icalendar-ics-file.cs](./load-an-msg-file-and-extract-its-embedded-calendar-event-as-an-icalendar-ics-file.cs) | load an msg file and extract its embedded calendar event as an icalendar ics file |
 | [load-an-msg-file-and-extract-its-plain-text-body-using-mailmessage-class.cs](./load-an-msg-file-and-extract-its-plain-text-body-using-mailmessage-class.cs) | load an msg file and extract its plain text body using mailmessage class |
 | [load-an-msg-file-and-filter-its-attachments-to-include-only-pdf-files.cs](./load-an-msg-file-and-filter-its-attachments-to-include-only-pdf-files.cs) | load an msg file and filter its attachments to include only pdf files |
 | [load-an-msg-file-and-forward-it-to-another-recipient-while-retaining-all-original-attachments.cs](./load-an-msg-file-and-forward-it-to-another-recipient-while-retaining-all-original-attachments.cs) | load an msg file and forward it to another recipient while retaining all original attachments |
 | [load-an-msg-file-and-generate-a-summary-report-in-xml-format-containing-key-metadata-fields.cs](./load-an-msg-file-and-generate-a-summary-report-in-xml-format-containing-key-metadata-fields.cs) | load an msg file and generate a summary report in xml format containing key metadata fields |
 | [load-an-msg-file-and-generate-an-audit-trail-log-recording-each-modification-made-to-the-message.cs](./load-an-msg-file-and-generate-an-audit-trail-log-recording-each-modification-made-to-the-message.cs) | load an msg file and generate an audit trail log recording each modification made to the message |
+| [load-an-msg-file-and-implement-cancellation-support-for-long-running-batch-jobs-using-cancellationtoken.cs](./load-an-msg-file-and-implement-cancellation-support-for-long-running-batch-jobs-using-cancellationtoken.cs) | load an msg file and implement cancellation support for long running batch jobs using cancellationtoken |
 | [load-an-msg-file-and-implement-retry-logic-to-handle-transient-failures-during-file-access.cs](./load-an-msg-file-and-implement-retry-logic-to-handle-transient-failures-during-file-access.cs) | load an msg file and implement retry logic to handle transient failures during file access |
+| [load-an-msg-file-and-integrate-with-a-structured-logging-framework-to-capture-detailed-processing-events.cs](./load-an-msg-file-and-integrate-with-a-structured-logging-framework-to-capture-detailed-processing-events.cs) | load an msg file and integrate with a structured logging framework to capture detailed processing events |
 | [load-an-msg-file-and-list-all-attachment-sizes-in-bytes.cs](./load-an-msg-file-and-list-all-attachment-sizes-in-bytes.cs) | load an msg file and list all attachment sizes in bytes |
 | [load-an-msg-file-and-log-its-metadata-including-subject-sender-and-timestamps-to-a-json-file.cs](./load-an-msg-file-and-log-its-metadata-including-subject-sender-and-timestamps-to-a-json-file.cs) | load an msg file and log its metadata including subject sender and timestamps to a json file |
 | [load-an-msg-file-and-log-the-processing-duration-to-monitor-performance-of-the-conversion-workflow.cs](./load-an-msg-file-and-log-the-processing-duration-to-monitor-performance-of-the-conversion-workflow.cs) | load an msg file and log the processing duration to monitor performance of the conversion workflow |
@@ -298,6 +316,8 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [load-an-msg-file-and-replace-embedded-images-with-external-urls-pointing-to-a-cdn-host.cs](./load-an-msg-file-and-replace-embedded-images-with-external-urls-pointing-to-a-cdn-host.cs) | load an msg file and replace embedded images with external urls pointing to a cdn host |
 | [load-an-msg-file-and-retrieve-its-html-body-content-for-rendering.cs](./load-an-msg-file-and-retrieve-its-html-body-content-for-rendering.cs) | load an msg file and retrieve its html body content for rendering |
 | [load-an-msg-file-and-schedule-it-for-later-sending-using-outlook-api-scheduling-feature.cs](./load-an-msg-file-and-schedule-it-for-later-sending-using-outlook-api-scheduling-feature.cs) | load an msg file and schedule it for later sending using outlook api scheduling feature |
+| [load-an-msg-file-and-serialize-its-metadata-to-a-relational-database-for-centralized-storage-and-querying.cs](./load-an-msg-file-and-serialize-its-metadata-to-a-relational-database-for-centralized-storage-and-querying.cs) | load an msg file and serialize its metadata to a relational database for centralized storage and querying |
+| [load-an-msg-file-and-set-a-custom-x-custom-header-before-saving-the-modified-message.cs](./load-an-msg-file-and-set-a-custom-x-custom-header-before-saving-the-modified-message.cs) | load an msg file and set a custom x custom header before saving the modified message |
 | [load-an-msg-file-and-set-its-priority-to-high-before-converting-it-to-eml-for-urgent-handling.cs](./load-an-msg-file-and-set-its-priority-to-high-before-converting-it-to-eml-for-urgent-handling.cs) | load an msg file and set its priority to high before converting it to eml for urgent handling |
 | [load-an-msg-file-and-strip-all-html-tags-from-the-body-leaving-only-plain-text-content.cs](./load-an-msg-file-and-strip-all-html-tags-from-the-body-leaving-only-plain-text-content.cs) | load an msg file and strip all html tags from the body leaving only plain text content |
 | [load-an-msg-file-and-upload-all-attachments-to-a-cloud-storage-bucket-for-archival-purposes.cs](./load-an-msg-file-and-upload-all-attachments-to-a-cloud-storage-bucket-for-archival-purposes.cs) | load an msg file and upload all attachments to a cloud storage bucket for archival purposes |
@@ -325,6 +345,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [load-contacts-from-an-encrypted-pst-using-the-provided-password-and-verify-successful-decryption.cs](./load-contacts-from-an-encrypted-pst-using-the-provided-password-and-verify-successful-decryption.cs) | load contacts from an encrypted pst using the provided password and verify successful decryption |
 | [load-contacts-using-a-custom-stream-that-decrypts-data-on-the-fly-eliminating-the-need-for-temporary-files.cs](./load-contacts-using-a-custom-stream-that-decrypts-data-on-the-fly-eliminating-the-need-for-temporary-files.cs) | load contacts using a custom stream that decrypts data on the fly eliminating the need for temporary files |
 | [load-contacts-using-a-memory-stream-to-avoid-temporary-files-and-improve-processing-speed.cs](./load-contacts-using-a-memory-stream-to-avoid-temporary-files-and-improve-processing-speed.cs) | load contacts using a memory stream to avoid temporary files and improve processing speed |
+| [load-msg-files-from-a-zip-stream-extract-attachments-and-save-them-to-a-folder.cs](./load-msg-files-from-a-zip-stream-extract-attachments-and-save-them-to-a-folder.cs) | load msg files from a zip stream extract attachments and save them to a folder |
 | [load-multiple-msg-files-and-detect-duplicate-attachment-filenames-across-the-collection.cs](./load-multiple-msg-files-and-detect-duplicate-attachment-filenames-across-the-collection.cs) | load multiple msg files and detect duplicate attachment filenames across the collection |
 | [load-multiple-notes-from-a-directory-concatenate-their-bodies-and-write-the-combined-text-to-a-file.cs](./load-multiple-notes-from-a-directory-concatenate-their-bodies-and-write-the-combined-text-to-a-file.cs) | load multiple notes from a directory concatenate their bodies and write the combined text to a file |
 | [mark-a-calendar-appointment-as-tentative-by-manually-setting-its-state-property-to-the-appropriate-mapi-value.cs](./mark-a-calendar-appointment-as-tentative-by-manually-setting-its-state-property-to-the-appropriate-mapi-value.cs) | mark a calendar appointment as tentative by manually setting its state property to the appropriate mapi value |
@@ -333,6 +354,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [measure-performance-differences-between-loading-msg-from-a-file-versus-from-a-stream.cs](./measure-performance-differences-between-loading-msg-from-a-file-versus-from-a-stream.cs) | measure performance differences between loading msg from a file versus from a stream |
 | [merge-duplicate-distribution-list-entries-based-on-email-similarity-consolidating-them-into-a-single-member-record.cs](./merge-duplicate-distribution-list-entries-based-on-email-similarity-consolidating-them-into-a-single-member-record.cs) | merge duplicate distribution list entries based on email similarity consolidating them into a single member record |
 | [merge-two-separate-contact-files-into-a-single-pst-eliminating-duplicate-entries-during-import.cs](./merge-two-separate-contact-files-into-a-single-pst-eliminating-duplicate-entries-during-import.cs) | merge two separate contact files into a single pst eliminating duplicate entries during import |
+| [optionally-present-a-savefiledialog-so-the-user-can-choose-the-destination-path.cs](./optionally-present-a-savefiledialog-so-the-user-can-choose-the-destination-path.cs) | optionally present a savefiledialog so the user can choose the destination path |
 | [parse-a-complex-rrule-string-containing-byday-and-bymonthday-rules-and-apply-the-resulting-pattern-to-a-calendar.cs](./parse-a-complex-rrule-string-containing-byday-and-bymonthday-rules-and-apply-the-resulting-pattern-to-a-calendar.cs) | parse a complex rrule string containing byday and bymonthday rules and apply the resulting pattern to a calendar |
 | [parse-a-distribution-list-stored-in-a-csv-file-and-build-a-list-of-email-strings.cs](./parse-a-distribution-list-stored-in-a-csv-file-and-build-a-list-of-email-strings.cs) | parse a distribution list stored in a csv file and build a list of email strings |
 | [parse-an-msg-file-to-extract-the-x-spam-status-header-and-log-its-value.cs](./parse-an-msg-file-to-extract-the-x-spam-status-header-and-log-its-value.cs) | parse an msg file to extract the x spam status header and log its value |
@@ -348,6 +370,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [process-a-collection-of-msg-messages-to-extract-voting-results-and-compile-them-into-a-csv-report.cs](./process-a-collection-of-msg-messages-to-extract-voting-results-and-compile-them-into-a-csv-report.cs) | process a collection of msg messages to extract voting results and compile them into a csv report |
 | [programmatically-set-the-flag-status-of-messages-to-completed-after-successful-processing.cs](./programmatically-set-the-flag-status-of-messages-to-completed-after-successful-processing.cs) | programmatically set the flag status of messages to completed after successful processing |
 | [prompt-the-user-to-choose-save-locations-for-msg-files-before-writing-them-to-disk.cs](./prompt-the-user-to-choose-save-locations-for-msg-files-before-writing-them-to-disk.cs) | prompt the user to choose save locations for msg files before writing them to disk |
+| [provide-visual-feedback-by-changing-the-panel-background-color-when-a-drag-enters.cs](./provide-visual-feedback-by-changing-the-panel-background-color-when-a-drag-enters.cs) | provide visual feedback by changing the panel background color when a drag enters |
 | [read-a-note-body-replace-specific-keywords-and-save-the-modified-note-back-to-msg.cs](./read-a-note-body-replace-specific-keywords-and-save-the-modified-note-back-to-msg.cs) | read a note body replace specific keywords and save the modified note back to msg |
 | [read-a-task-estimatedeffort-convert-hours-to-days-assuming-an-eight-hour-workday-and-log-the-result.cs](./read-a-task-estimatedeffort-convert-hours-to-days-assuming-an-eight-hour-workday-and-log-the-result.cs) | read a task estimatedeffort convert hours to days assuming an eight hour workday and log the result |
 | [read-a-task-from-msg-modify-its-estimatedeffort-and-resave-the-updated-task.cs](./read-a-task-from-msg-modify-its-estimatedeffort-and-resave-the-updated-task.cs) | read a task from msg modify its estimatedeffort and resave the updated task |
@@ -373,8 +396,10 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [remove-voting-buttons-from-messages-that-have-been-marked-as-completed-to-clean-up-metadata.cs](./remove-voting-buttons-from-messages-that-have-been-marked-as-completed-to-clean-up-metadata.cs) | remove voting buttons from messages that have been marked as completed to clean up metadata |
 | [remove-voting-buttons-from-msg-messages-older-than-thirty-days-to-reduce-metadata-clutter.cs](./remove-voting-buttons-from-msg-messages-older-than-thirty-days-to-reduce-metadata-clutter.cs) | remove voting buttons from msg messages older than thirty days to reduce metadata clutter |
 | [replace-missing-contact-photos-with-a-default-placeholder-image-during-export-to-ensure-visual-consistency.cs](./replace-missing-contact-photos-with-a-default-placeholder-image-during-export-to-ensure-visual-consistency.cs) | replace missing contact photos with a default placeholder image during export to ensure visual consistency |
+| [reset-the-panel-background-color-when-the-drag-operation-leaves-without-dropping.cs](./reset-the-panel-background-color-when-the-drag-operation-leaves-without-dropping.cs) | reset the panel background color when the drag operation leaves without dropping |
 | [retrieve-an-msg-message-through-exchange-ews-client-and-extract-the-html-body-content.cs](./retrieve-an-msg-message-through-exchange-ews-client-and-extract-the-html-body-content.cs) | retrieve an msg message through exchange ews client and extract the html body content |
 | [retrieve-an-msg-message-using-a-pop3-client-and-store-it-locally-as-msg.cs](./retrieve-an-msg-message-using-a-pop3-client-and-store-it-locally-as-msg.cs) | retrieve an msg message using a pop3 client and store it locally as msg |
+| [retrieve-an-msg-message-via-imap-convert-it-to-eml-while-preserving-embedded-messages-and-save.cs](./retrieve-an-msg-message-via-imap-convert-it-to-eml-while-preserving-embedded-messages-and-save.cs) | retrieve an msg message via imap convert it to eml while preserving embedded messages and save |
 | [retrieve-an-msg-through-exchange-ews-apply-a-server-side-rule-to-forward-it-to-another-address.cs](./retrieve-an-msg-through-exchange-ews-apply-a-server-side-rule-to-forward-it-to-another-address.cs) | retrieve an msg through exchange ews apply a server side rule to forward it to another address |
 | [retrieve-an-msg-using-imap-convert-to-eml-and-move-the-original-message-to-a-processed-folder.cs](./retrieve-an-msg-using-imap-convert-to-eml-and-move-the-original-message-to-a-processed-folder.cs) | retrieve an msg using imap convert to eml and move the original message to a processed folder |
 | [retrieve-an-msg-via-pop3-process-it-and-mark-the-message-as-read-on-the-server.cs](./retrieve-an-msg-via-pop3-process-it-and-mark-the-message-as-read-on-the-server.cs) | retrieve an msg via pop3 process it and mark the message as read on the server |
@@ -388,6 +413,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [retrieve-msg-messages-in-bulk-via-pop3-and-store-each-locally-as-msg-files.cs](./retrieve-msg-messages-in-bulk-via-pop3-and-store-each-locally-as-msg-files.cs) | retrieve msg messages in bulk via pop3 and store each locally as msg files |
 | [retrieve-msg-messages-through-exchange-ews-and-extract-each-message-subject-and-sender-for-reporting.cs](./retrieve-msg-messages-through-exchange-ews-and-extract-each-message-subject-and-sender-for-reporting.cs) | retrieve msg messages through exchange ews and extract each message subject and sender for reporting |
 | [retrieve-reaction-emojis-and-count-occurrences-to-determine-the-most-popular-sentiment.cs](./retrieve-reaction-emojis-and-count-occurrences-to-determine-the-most-popular-sentiment.cs) | retrieve reaction emojis and count occurrences to determine the most popular sentiment |
+| [retrieve-response-timestamps-for-each-voting-button-and-calculate-the-average-response-time.cs](./retrieve-response-timestamps-for-each-voting-button-and-calculate-the-average-response-time.cs) | retrieve response timestamps for each voting button and calculate the average response time |
 | [retrieve-the-list-of-voting-buttons-from-an-msg-file-and-display-them-in-the-console.cs](./retrieve-the-list-of-voting-buttons-from-an-msg-file-and-display-them-in-the-console.cs) | retrieve the list of voting buttons from an msg file and display them in the console |
 | [retrieve-the-total-count-of-follow-up-flags-across-all-msg-files-in-a-specified-directory.cs](./retrieve-the-total-count-of-follow-up-flags-across-all-msg-files-in-a-specified-directory.cs) | retrieve the total count of follow up flags across all msg files in a specified directory |
 | [retrieve-the-total-number-of-dropped-messages-using-files-count-property.cs](./retrieve-the-total-number-of-dropped-messages-using-files-count-property.cs) | retrieve the total number of dropped messages using files count property |
@@ -429,6 +455,8 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [set-the-recurrence-interval-to-three-weeks-for-a-weekly-pattern-and-verify-generated-dates-reflect-the-interval.cs](./set-the-recurrence-interval-to-three-weeks-for-a-weekly-pattern-and-verify-generated-dates-reflect-the-interval.cs) | set the recurrence interval to three weeks for a weekly pattern and verify generated dates reflect the interval |
 | [set-the-task-history-property-with-a-list-of-status-updates-and-save-the-task.cs](./set-the-task-history-property-with-a-list-of-status-updates-and-save-the-task.cs) | set the task history property with a list of status updates and save the task |
 | [sort-contacts-alphabetically-by-last-name-before-saving-to-ensure-ordered-output-in-the-destination-file.cs](./sort-contacts-alphabetically-by-last-name-before-saving-to-ensure-ordered-output-in-the-destination-file.cs) | sort contacts alphabetically by last name before saving to ensure ordered output in the destination file |
+| [subscribe-to-the-panel-dragdrop-event-to-process-dropped-messages-efficiently.cs](./subscribe-to-the-panel-dragdrop-event-to-process-dropped-messages-efficiently.cs) | subscribe to the panel dragdrop event to process dropped messages efficiently |
+| [subscribe-to-the-panel-dragenter-event-to-handle-incoming-drag-data.cs](./subscribe-to-the-panel-dragenter-event-to-handle-incoming-drag-data.cs) | subscribe to the panel dragenter event to handle incoming drag data |
 | [support-conversion-of-dropped-ics-calendar-items-to-msg-files-using-the-convert-method.cs](./support-conversion-of-dropped-ics-calendar-items-to-msg-files-using-the-convert-method.cs) | support conversion of dropped ics calendar items to msg files using the convert method |
 | [synchronize-contacts-between-two-pst-files-keeping-the-most-recent-changes-and-resolving-conflicts-automatically.cs](./synchronize-contacts-between-two-pst-files-keeping-the-most-recent-changes-and-resolving-conflicts-automatically.cs) | synchronize contacts between two pst files keeping the most recent changes and resolving conflicts automatically |
 | [transform-contacts-from-a-pst-file-into-vcf-format-creating-one-vcard-per-contact-entry.cs](./transform-contacts-from-a-pst-file-into-vcf-format-creating-one-vcard-per-contact-entry.cs) | transform contacts from a pst file into vcf format creating one vcard per contact entry |
@@ -445,6 +473,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [use-followupmanager-to-set-a-flag-with-a-custom-reminder-message-explaining-required-actions.cs](./use-followupmanager-to-set-a-flag-with-a-custom-reminder-message-explaining-required-actions.cs) | use followupmanager to set a flag with a custom reminder message explaining required actions |
 | [use-followupmanager-to-set-a-flag-with-a-custom-reminder-sound-for-high-visibility-alerts.cs](./use-followupmanager-to-set-a-flag-with-a-custom-reminder-sound-for-high-visibility-alerts.cs) | use followupmanager to set a flag with a custom reminder sound for high visibility alerts |
 | [use-followupmanager-to-set-a-high-importance-flag-with-a-reminder-on-an-msg-message.cs](./use-followupmanager-to-set-a-high-importance-flag-with-a-reminder-on-an-msg-message.cs) | use followupmanager to set a high importance flag with a reminder on an msg message |
+| [use-mailmessage-load-to-deserialize-an-msg-file-and-update-its-body-text-before-saving.cs](./use-mailmessage-load-to-deserialize-an-msg-file-and-update-its-body-text-before-saving.cs) | use mailmessage load to deserialize an msg file and update its body text before saving |
 | [use-mailmessage-load-to-parse-an-msg-and-extract-all-inline-images-to-a-local-folder.cs](./use-mailmessage-load-to-parse-an-msg-and-extract-all-inline-images-to-a-local-folder.cs) | use mailmessage load to parse an msg and extract all inline images to a local folder |
 | [use-mailmessage-load-to-parse-an-msg-and-generate-an-html-preview-page-for-web-display.cs](./use-mailmessage-load-to-parse-an-msg-and-generate-an-html-preview-page-for-web-display.cs) | use mailmessage load to parse an msg and generate an html preview page for web display |
 | [use-mailmessage-load-to-read-an-msg-file-and-serialize-its-metadata-to-json.cs](./use-mailmessage-load-to-read-an-msg-file-and-serialize-its-metadata-to-json.cs) | use mailmessage load to read an msg file and serialize its metadata to json |
@@ -452,6 +481,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [use-mailmessage-load-with-msgloadoptions-to-preserve-embedded-message-formats-during-loading.cs](./use-mailmessage-load-with-msgloadoptions-to-preserve-embedded-message-formats-during-loading.cs) | use mailmessage load with msgloadoptions to preserve embedded message formats during loading |
 | [use-msgloadoptions-to-limit-maximum-attachment-size-during-msg-loading-for-memory-safety.cs](./use-msgloadoptions-to-limit-maximum-attachment-size-during-msg-loading-for-memory-safety.cs) | use msgloadoptions to limit maximum attachment size during msg loading for memory safety |
 | [use-regular-expressions-to-extract-domain-parts-from-contact-email-addresses-for-domain-level-analysis.cs](./use-regular-expressions-to-extract-domain-parts-from-contact-email-addresses-for-domain-level-analysis.cs) | use regular expressions to extract domain parts from contact email addresses for domain level analysis |
+| [use-the-outlook-control-to-receive-drageventargs-confirming-proper-integration.cs](./use-the-outlook-control-to-receive-drageventargs-confirming-proper-integration.cs) | use the outlook control to receive drageventargs confirming proper integration |
 | [utilize-the-asynchronous-api-to-load-contacts-without-blocking-the-ui-thread-in-a-desktop-application.cs](./utilize-the-asynchronous-api-to-load-contacts-without-blocking-the-ui-thread-in-a-desktop-application.cs) | utilize the asynchronous api to load contacts without blocking the ui thread in a desktop application |
 | [validate-email-address-format-for-all-contacts-flagging-any-entries-that-fail-standard-regex-checks.cs](./validate-email-address-format-for-all-contacts-flagging-any-entries-that-fail-standard-regex-checks.cs) | validate email address format for all contacts flagging any entries that fail standard regex checks |
 | [validate-msg-file-integrity-before-processing-to-ensure-no-corruption-occurs-during-loading.cs](./validate-msg-file-integrity-before-processing-to-ensure-no-corruption-occurs-during-loading.cs) | validate msg file integrity before processing to ensure no corruption occurs during loading |
@@ -471,12 +501,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [validate-that-required-mapi-properties-exist-in-each-message-before-performing-batch-conversion.cs](./validate-that-required-mapi-properties-exist-in-each-message-before-performing-batch-conversion.cs) | validate that required mapi properties exist in each message before performing batch conversion |
 | [validate-that-the-distribution-list-member-count-does-not-exceed-a-predefined-threshold-before-proceeding-with-export.cs](./validate-that-the-distribution-list-member-count-does-not-exceed-a-predefined-threshold-before-proceeding-with-export.cs) | validate that the distribution list member count does not exceed a predefined threshold before proceeding with export |
 | [validate-that-voting-button-labels-do-not-exceed-twenty-characters-to-comply-with-outlook-limitations.cs](./validate-that-voting-button-labels-do-not-exceed-twenty-characters-to-comply-with-outlook-limitations.cs) | validate that voting button labels do not exceed twenty characters to comply with outlook limitations |
+| [verify-that-the-drag-and-drop-feature-operates-only-within-windows-forms-applications.cs](./verify-that-the-drag-and-drop-feature-operates-only-within-windows-forms-applications.cs) | verify that the drag and drop feature operates only within windows forms applications |
 | [write-contacts-to-a-pst-file-ensuring-each-entry-retains-original-mapi-properties.cs](./write-contacts-to-a-pst-file-ensuring-each-entry-retains-original-mapi-properties.cs) | write contacts to a pst file ensuring each entry retains original mapi properties |
 | [write-distribution-list-members-into-a-csv-file-with-columns-for-name-email-and-role.cs](./write-distribution-list-members-into-a-csv-file-with-columns-for-name-email-and-role.cs) | write distribution list members into a csv file with columns for name email and role |
 | [write-documentation-describing-best-practices-for-preserving-embedded-messages-during-conversion.cs](./write-documentation-describing-best-practices-for-preserving-embedded-messages-during-conversion.cs) | write documentation describing best practices for preserving embedded messages during conversion |
 
 ## Category Statistics
-- Total examples: 409
+- Total examples: 438
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -485,5 +516,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-04-23 | `20260423_104034` | [examples/batch-20260423_104034](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260423_104034) |
+| 2026-05-12 | `20260512_164607` | [examples/batch-20260512_164607](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260512_164607) |
 <!-- AUTOGENERATED:END -->
