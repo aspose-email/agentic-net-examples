@@ -9,46 +9,44 @@ class Program
     {
         try
         {
-            // Define output directory and file path
-            string outputDirectory = "Output";
-            string messagePath = Path.Combine(outputDirectory, "FollowUpMessage.msg");
-
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputDirectory))
+            string outputPath = "output.msg";
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(directory);
             }
 
-            // Create a new MAPI message (sender, recipient, subject, body)
-            using (MapiMessage message = new MapiMessage(
-                "sender@example.com",
-                "recipient@example.com",
-                "Action Required",
-                "Please review the attached information."))
+            // Create a MailMessage first
+            using (MailMessage mail = new MailMessage())
             {
-                // Add a voting button named "Proceed"
-                FollowUpManager.AddVotingButton(message, "Proceed");
+                mail.From = "sender@example.com";
+                mail.To.Add("recipient@example.com");
+                mail.Subject = "Test message with voting button and follow‑up flag";
+                mail.Body = "Please review and proceed.";
 
-                // Set a follow‑up flag with a two‑day due date
+                // Convert to MAPI message to work with voting buttons and flags
+                MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail);
+
+                // Add a "Proceed" voting button
+                FollowUpManager.AddVotingButton(mapiMessage, "Proceed");
+
+                // Set a follow‑up flag with a due date two days from now
                 DateTime startDate = DateTime.Now;
                 DateTime dueDate = startDate.AddDays(2);
-                FollowUpManager.SetFlag(message, "Please respond", startDate, dueDate);
+                FollowUpManager.SetFlag(mapiMessage, "Please follow up", startDate, dueDate);
 
-                // Save the message to a file
-                try
+                // Save the MAPI message to a .msg file
+                using (FileStream fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
                 {
-                    message.Save(messagePath);
-                    Console.WriteLine($"Message saved to: {messagePath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    mapiMessage.Save(fs, SaveOptions.DefaultMsgUnicode);
                 }
             }
+
+            Console.WriteLine("Message saved to " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
