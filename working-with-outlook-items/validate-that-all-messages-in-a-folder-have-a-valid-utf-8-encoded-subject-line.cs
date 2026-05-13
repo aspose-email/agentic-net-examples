@@ -1,8 +1,8 @@
+using Aspose.Email.Clients;
 using System;
 using System.Text;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Clients;
 
 class Program
 {
@@ -10,62 +10,82 @@ class Program
     {
         try
         {
-            // Placeholder connection settings – replace with real values.
+            // Placeholder connection settings
             string host = "imap.example.com";
             int port = 993;
-            string username = "username";
+            string username = "user@example.com";
             string password = "password";
+            string folderName = "INBOX";
 
-            // Skip execution when placeholder credentials are detected.
-            if (host.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+            // Skip execution when using placeholder credentials/host
+            if (host.Contains("example.com") || username.Contains("example.com"))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
                 return;
             }
 
-            // Connect to the IMAP server.
-            using (ImapClient client = new ImapClient(host, port, username, password))
+            // Create and connect the IMAP client (constructor establishes the connection)
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
                 try
                 {
-                    // Select the target folder (e.g., INBOX).
-                    client.SelectFolder("INBOX");
-
-                    // Retrieve the list of messages in the folder.
-                    ImapMessageInfoCollection messages = client.ListMessages();
-
-                    foreach (ImapMessageInfo info in messages)
-                    {
-                        // Fetch the full message.
-                        MailMessage mail = client.FetchMessage(info.UniqueId);
-
-                        string subject = mail.Subject ?? string.Empty;
-
-                        // Validate that the subject can be encoded and decoded as UTF‑8.
-                        try
-                        {
-                            byte[] utf8Bytes = Encoding.UTF8.GetBytes(subject);
-                            string roundTrip = Encoding.UTF8.GetString(utf8Bytes);
-
-                            if (!subject.Equals(roundTrip, StringComparison.Ordinal))
-                            {
-                                Console.Error.WriteLine($"Message UID {info.UniqueId}: Subject contains characters that change after UTF‑8 round‑trip.");
-                            }
-                            else
-                            {
-                                Console.WriteLine($"Message UID {info.UniqueId}: Subject is valid UTF‑8.");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Message UID {info.UniqueId}: Subject validation failed – {ex.Message}");
-                        }
-                    }
+                    client.ValidateCredentials();
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                    Console.Error.WriteLine($"IMAP authentication failed: {ex.Message}");
                     return;
+                }
+
+                // Select the target folder
+                try
+                {
+                    client.SelectFolder(folderName);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to select folder '{folderName}': {ex.Message}");
+                    return;
+                }
+
+                // Retrieve message list from the selected folder
+                ImapMessageInfoCollection messages;
+                try
+                {
+                    messages = client.ListMessages();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
+                    return;
+                }
+
+                // Validate UTF‑8 encoding of each message's subject
+                foreach (ImapMessageInfo info in messages)
+                {
+                    MailMessage message;
+                    try
+                    {
+                        message = client.FetchMessage(info.UniqueId);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to fetch message UID {info.UniqueId}: {ex.Message}");
+                        continue;
+                    }
+
+                    string subject = message.Subject ?? string.Empty;
+                    byte[] utf8Bytes = Encoding.UTF8.GetBytes(subject);
+                    string roundTrip = Encoding.UTF8.GetString(utf8Bytes);
+
+                    if (subject != roundTrip)
+                    {
+                        Console.WriteLine($"Message UID {info.UniqueId} has an invalid UTF‑8 subject.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Message UID {info.UniqueId} subject is valid UTF‑8.");
+                    }
                 }
             }
         }
