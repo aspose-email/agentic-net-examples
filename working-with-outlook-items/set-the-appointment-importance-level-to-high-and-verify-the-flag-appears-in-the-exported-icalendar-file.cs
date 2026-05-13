@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
-using Aspose.Email.Calendar.Recurrences;
 
 class Program
 {
@@ -10,56 +9,70 @@ class Program
     {
         try
         {
-            // Prepare attendees
-            MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("person1@example.com"));
-            attendees.Add(new MailAddress("person2@example.com"));
+            // Define output iCalendar file path
+            string outputPath = "appointment_high_importance.ics";
+
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
 
             // Create an appointment
+            MailAddress organizer = new MailAddress("organizer@example.com");
+            MailAddressCollection attendees = new MailAddressCollection();
+            attendees.Add(new MailAddress("attendee1@example.com"));
+            attendees.Add(new MailAddress("attendee2@example.com"));
+
             Appointment appointment = new Appointment(
-                location: "Conference Room",
-                summary: "Project Kickoff",
-                description: "Discuss project goals and timelines.",
-                startDate: new DateTime(2023, 10, 1, 10, 0, 0),
-                endDate: new DateTime(2023, 10, 1, 11, 0, 0),
-                organizer: new MailAddress("organizer@example.com"),
-                attendees: attendees);
+                "Conference Room",
+                new DateTime(2024, 12, 15, 10, 0, 0),
+                new DateTime(2024, 12, 15, 11, 0, 0),
+                organizer,
+                attendees);
 
             // Set importance to High
             appointment.MicrosoftImportance = MSImportance.High;
 
-            // Export to iCalendar file
-            string icsPath = "appointment.ics";
-            appointment.Save(icsPath, AppointmentSaveFormat.Ics);
+            // Save the appointment to iCalendar format
+            try
+            {
+                appointment.Save(outputPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error saving appointment: {ex.Message}");
+                return;
+            }
 
             // Verify that the importance flag appears in the exported file
-            if (File.Exists(icsPath))
+            if (!File.Exists(outputPath))
             {
-                try
+                Console.Error.WriteLine("The iCalendar file was not created.");
+                return;
+            }
+
+            try
+            {
+                string icsContent = File.ReadAllText(outputPath);
+                if (icsContent.IndexOf("HIGH", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    string content = File.ReadAllText(icsPath);
-                    if (content.Contains("HIGH"))
-                    {
-                        Console.WriteLine("Importance flag set to High and verified in the iCalendar file.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Importance flag not found in the iCalendar file.");
-                    }
+                    Console.WriteLine("Importance flag set to High is present in the iCalendar file.");
                 }
-                catch (Exception ioEx)
+                else
                 {
-                    Console.Error.WriteLine($"Error reading the iCalendar file: {ioEx.Message}");
+                    Console.WriteLine("Importance flag not found in the iCalendar file.");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Console.Error.WriteLine("Failed to create the iCalendar file.");
+                Console.Error.WriteLine($"Error reading iCalendar file: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
