@@ -5,13 +5,14 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             string inputPath = "distributionList.msg";
             string outputPath = "mailinglist.txt";
 
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
@@ -35,53 +36,45 @@ class Program
                 return;
             }
 
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            try
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(inputPath))
             {
-                using (MapiMessage msg = MapiMessage.Load(inputPath))
+                // Check if the message is a distribution list
+                if (msg.SupportedType != MapiItemType.DistList)
                 {
-                    if (msg.SupportedType != MapiItemType.DistList)
-                    {
-                        Console.Error.WriteLine("The provided file is not a distribution list.");
-                        return;
-                    }
+                    Console.Error.WriteLine("The provided MSG file is not a distribution list.");
+                    return;
+                }
 
-                    using (MapiDistributionList distList = (MapiDistributionList)msg.ToMapiMessageItem())
+                // Convert to MapiDistributionList
+                using (MapiDistributionList distList = (MapiDistributionList)msg.ToMapiMessageItem())
+                {
+                    // Write each member's email address to the output file
+                    using (StreamWriter writer = new StreamWriter(outputPath))
                     {
-                        using (StreamWriter writer = new StreamWriter(outputPath, false))
+                        foreach (MapiDistributionListMember member in distList.Members)
                         {
-                            foreach (MapiDistributionListMember member in distList.Members)
+                            if (!string.IsNullOrEmpty(member.EmailAddress))
                             {
                                 writer.WriteLine(member.EmailAddress);
                             }
                         }
                     }
                 }
+            }
 
-                Console.WriteLine($"Mailing list saved to {outputPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing distribution list: {ex.Message}");
-                return;
-            }
+            Console.WriteLine($"Mailing list saved to: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
