@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
@@ -8,37 +9,49 @@ class Program
     {
         try
         {
-            string notePath = "note.msg";
+            string inputPath = "note.msg";
 
             // Ensure the input file exists; create a minimal placeholder if it does not.
-            if (!System.IO.File.Exists(notePath))
+            if (!File.Exists(inputPath))
             {
-                using (MapiMessage placeholder = new MapiMessage(
-                    "placeholder@example.com",
-                    "recipient@example.com",
-                    "Placeholder",
-                    "This is a placeholder note."))
+                try
                 {
-                    placeholder.Save(notePath);
+                    using (MapiMessage placeholder = new MapiMessage())
+                    {
+                        placeholder.Subject = "Placeholder";
+                        placeholder.Save(inputPath);
+                    }
                 }
-
-                Console.WriteLine($"Placeholder MSG created at '{notePath}'.");
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Load the MSG file, modify the subject, and save it back.
-            using (MapiMessage note = MapiMessage.Load(notePath))
+            // Load the MSG file, modify the subject to uppercase, and save it back.
+            try
             {
-                if (!string.IsNullOrEmpty(note.Subject))
+                using (MapiMessage message = MapiMessage.Load(inputPath))
                 {
-                    note.Subject = note.Subject.ToUpperInvariant();
-                }
+                    if (!string.IsNullOrEmpty(message.Subject))
+                    {
+                        message.Subject = message.Subject.ToUpperInvariant();
+                    }
 
-                note.Save(notePath);
+                    // Overwrite the original file with the modified message.
+                    message.Save(inputPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
