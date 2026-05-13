@@ -2,7 +2,6 @@ using Aspose.Email.Calendar;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,77 +9,89 @@ class Program
     {
         try
         {
-            const string emlPath = "appointment.eml";
-            const string msgPath = "appointment.msg";
+            string inputPath = "appointment.eml";
+            string outputPath = "appointment.msg";
 
-            // Ensure the input EML file exists; create a minimal placeholder if missing.
-            if (!File.Exists(emlPath))
+            // Ensure input file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    using (var fs = new FileStream(emlPath, FileMode.Create, FileAccess.Write))
-                    using (var writer = new StreamWriter(fs))
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        writer.WriteLine("Subject: Sample Appointment");
-                        writer.WriteLine("Content-Type: text/html; charset=utf-8");
-                        writer.WriteLine();
-                        writer.WriteLine("<html><body><p>This is a sample appointment with <b>HTML</b> body.</p></body></html>");
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    MailMessage placeholder = new MailMessage();
+                    placeholder.From = new MailAddress("organizer@example.com");
+                    placeholder.To.Add(new MailAddress("attendee@example.com"));
+                    placeholder.Subject = "Sample Appointment";
+                    placeholder.HtmlBody = "<html><body><h1>Meeting</h1><p>Details of the appointment.</p></body></html>";
+
+                    // Save placeholder EML.
+                    placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the EML message with options that preserve embedded content.
-            MailMessage mailMessage;
+            // Ensure output directory exists.
             try
             {
-                var emlLoadOptions = new EmlLoadOptions
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                return;
+            }
+
+            // Load the EML with options to preserve content.
+            try
+            {
+                EmlLoadOptions emlLoadOptions = new EmlLoadOptions()
                 {
                     PreserveTnefAttachments = true,
                     PreserveEmbeddedMessageFormat = true
                 };
-                mailMessage = MailMessage.Load(emlPath, emlLoadOptions);
+
+                using (MailMessage message = MailMessage.Load(inputPath, emlLoadOptions))
+                {
+                    // Save as MSG preserving original dates and formatting.
+                    MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                    {
+                        PreserveOriginalDates = true
+                    };
+
+                    message.Save(outputPath, msgSaveOptions);
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load EML file: {ex.Message}");
+                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
                 return;
             }
 
-            // Convert the MailMessage (which may contain an HTML body) to a MapiMessage.
-            MapiMessage mapiMessage;
-            try
-            {
-                // Use Unicode format to keep HTML body intact.
-                var conversionOptions = MapiConversionOptions.UnicodeFormat;
-                mapiMessage = MapiMessage.FromMailMessage(mailMessage, conversionOptions);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to convert to MAPI message: {ex.Message}");
-                return;
-            }
-
-            // Save the resulting MSG file.
-            try
-            {
-                mapiMessage.Save(msgPath);
-                Console.WriteLine($"Successfully saved MSG file to '{msgPath}'.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-            }
-            finally
-            {
-                // Dispose resources.
-                mailMessage?.Dispose();
-                mapiMessage?.Dispose();
-            }
+            Console.WriteLine("Conversion completed successfully.");
         }
         catch (Exception ex)
         {
