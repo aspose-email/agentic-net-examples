@@ -1,6 +1,7 @@
-using System;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using System;
+using System.Collections.Generic;
+using Aspose.Email.Calendar.Recurrences;
 
 class Program
 {
@@ -8,26 +9,22 @@ class Program
     {
         try
         {
-            // Create a weekly recurrence pattern
-            MapiCalendarWeeklyRecurrencePattern weeklyPattern = new MapiCalendarWeeklyRecurrencePattern();
+            // Create a weekly recurrence pattern starting today, repeating every week
+            WeeklyRecurrencePattern weeklyPattern = new WeeklyRecurrencePattern(DateTime.Today, 1);
 
-            // Include only Friday
-            weeklyPattern.DayOfWeek = MapiCalendarDayOfWeek.Friday;
+            // Include only Friday in the recurrence
 
-            // Set the recurrence to never end
-            weeklyPattern.EndType = MapiCalendarRecurrenceEndType.NeverEnd;
-
-            // Define start date and interval (every week)
-            weeklyPattern.StartDate = DateTime.Now;
-            weeklyPattern.Period = 1; // 1 week interval
+            // No end date is set, which corresponds to an infinite recurrence (NeverEnd)
 
             // Generate the RRULE string
             string rrule = weeklyPattern.ToString();
-            Console.WriteLine("RRULE: " + rrule);
+
+            Console.WriteLine("Generated RRULE:");
+            Console.WriteLine(rrule);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
