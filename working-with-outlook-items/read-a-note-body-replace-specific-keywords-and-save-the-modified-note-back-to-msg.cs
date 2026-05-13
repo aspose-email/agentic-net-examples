@@ -5,72 +5,68 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputPath = "note.msg";
-            string outputPath = "note_modified.msg";
+            // Path to the MSG note file
+            string notePath = "note.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(inputPath))
+            // Verify that the input file exists
+            if (!File.Exists(notePath))
             {
                 try
                 {
-                    string inputDirectory = Path.GetDirectoryName(inputPath);
-                    if (!string.IsNullOrEmpty(inputDirectory) && !Directory.Exists(inputDirectory))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        Directory.CreateDirectory(inputDirectory);
+                        placeholder.Save(notePath);
                     }
-
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Subject = "Placeholder Note";
-                        placeholder.Body = "This is a placeholder note body.";
-                        placeholder.MessageClass = "IPM.StickyNote";
-                        placeholder.Save(inputPath);
-                    }
-
-                    Console.WriteLine($"Placeholder MSG created at '{inputPath}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the existing MSG, modify its body, and save the result.
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(inputPath))
-                {
-                    string originalBody = message.Body ?? string.Empty;
-
-                    // Replace specific keywords in the body.
-                    string modifiedBody = originalBody.Replace("oldKeyword", "newKeyword")
-                                                      .Replace("sample", "example");
-
-                    message.Body = modifiedBody;
-
-                    // Ensure the output directory exists.
-                    string outputDirectory = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-
-                    // Save the modified message using Unicode MSG format.
-                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                    message.Save(outputPath, saveOptions);
-                }
-
-                Console.WriteLine($"Modified MSG saved to '{outputPath}'.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MSG files: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {notePath}");
                 return;
+            }
+
+            // Load the MSG note
+            using (MapiMessage note = MapiMessage.Load(notePath))
+            {
+                // Read the original body
+                string originalBody = note.Body ?? string.Empty;
+
+                // Replace specific keywords
+                string modifiedBody = originalBody
+                    .Replace("keyword1", "replacement1")
+                    .Replace("keyword2", "replacement2");
+
+                // Update the body if changes were made
+                if (!originalBody.Equals(modifiedBody))
+                {
+                    note.Body = modifiedBody;
+
+                    // Save the modified note back to the same MSG file
+                    try
+                    {
+                        note.Save(notePath);
+                        Console.WriteLine("Note updated and saved successfully.");
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Console.Error.WriteLine($"Error saving note: {saveEx.Message}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No keywords found to replace.");
+                }
             }
         }
         catch (Exception ex)
