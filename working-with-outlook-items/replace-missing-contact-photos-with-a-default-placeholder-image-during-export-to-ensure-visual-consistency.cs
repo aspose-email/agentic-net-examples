@@ -1,8 +1,8 @@
-using Aspose.Email.PersonalInfo;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.PersonalInfo;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,84 +10,77 @@ class Program
     {
         try
         {
-            // Placeholder Gmail credentials
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string userEmail = "user@example.com";
+            // Output directory for exported contacts
+            string exportDir = "ExportedContacts";
 
-            // Skip real network calls when using placeholder credentials
-            if (clientId == "clientId" || clientSecret == "clientSecret" ||
-                refreshToken == "refreshToken" || userEmail == "user@example.com")
+            // Ensure the output directory exists
+            if (!Directory.Exists(exportDir))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping Gmail operations.");
-                return;
+                Directory.CreateDirectory(exportDir);
             }
 
-            // Initialize Gmail client
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail))
+            // Path to placeholder image
+            string placeholderPath = "placeholder.png";
+            byte[] placeholderImage;
+
+            // Create a minimal placeholder image if it does not exist
+            if (!File.Exists(placeholderPath))
             {
-                // Retrieve all contacts
-                Contact[] contacts = gmailClient.GetAllContacts();
-
-                // Ensure placeholder image exists
-                string placeholderImagePath = "placeholder.png";
-                if (!File.Exists(placeholderImagePath))
-                {
-                    // Create a minimal 1x1 pixel PNG (transparent)
-                    byte[] pngBytes = new byte[]
-                    {
-                        0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A,
-                        0x00,0x00,0x00,0x0D,0x49,0x48,0x44,0x52,
-                        0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,
-                        0x08,0x06,0x00,0x00,0x00,0x1F,0x15,0xC4,
-                        0x89,0x00,0x00,0x00,0x0A,0x49,0x44,0x41,
-                        0x54,0x78,0x9C,0x63,0x00,0x01,0x00,0x00,
-                        0x05,0x00,0x01,0x0D,0x0A,0x2D,0xB4,0x00,
-                        0x00,0x00,0x00,0x49,0x45,0x4E,0x44,0xAE,
-                        0x42,0x60,0x82
-                    };
-                    try
-                    {
-                        File.WriteAllBytes(placeholderImagePath, pngBytes);
-                    }
-                    catch (Exception ioEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create placeholder image: {ioEx.Message}");
-                        return;
-                    }
-                }
-
-                // Load placeholder image data
-                byte[] placeholderImageData;
+                // 1x1 pixel PNG (base64 encoded)
+                string base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+XK6cAAAAASUVORK5CYII=";
+                placeholderImage = Convert.FromBase64String(base64);
                 try
                 {
-                    placeholderImageData = File.ReadAllBytes(placeholderImagePath);
+                    File.WriteAllBytes(placeholderPath, placeholderImage);
                 }
-                catch (Exception ioEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to read placeholder image: {ioEx.Message}");
+                    Console.Error.WriteLine($"Failed to write placeholder image: {ex.Message}");
                     return;
                 }
-
-                // Process each contact
-                foreach (Contact contact in contacts)
+            }
+            else
+            {
+                try
                 {
-                    if (contact.Photo == null)
-                    {
-                        try
-                        {
-                            // Create a contact photo from the placeholder image
-                            ContactPhoto contactPhoto = gmailClient.CreateContactPhoto(contact, placeholderImageData);
-                            // Update the contact with the new photo
-                            gmailClient.UpdateContactPhoto(contactPhoto);
-                            Console.WriteLine($"Added placeholder photo to contact: {contact.DisplayName ?? "Unnamed"}");
-                        }
-                        catch (Exception apiEx)
-                        {
-                            Console.Error.WriteLine($"Failed to update photo for contact '{contact.DisplayName}': {apiEx.Message}");
-                        }
-                    }
+                    placeholderImage = File.ReadAllBytes(placeholderPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to read placeholder image: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Sample contacts (replace with actual loading logic as needed)
+            Contact[] contacts = new Contact[]
+            {
+                new Contact { DisplayName = "Alice" },
+                new Contact { DisplayName = "Bob" }
+            };
+
+            // Add email addresses to contacts
+            contacts[0].EmailAddresses.Add(new EmailAddress("alice@example.com"));
+            contacts[1].EmailAddresses.Add(new EmailAddress("bob@example.com"));
+
+            foreach (Contact contact in contacts)
+            {
+                // Assign placeholder photo if missing
+                if (contact.Photo == null)
+                {
+                    ContactPhoto photo = new ContactPhoto(placeholderImage, MapiContactPhotoImageFormat.Jpeg);
+                    contact.Photo = photo;
+                }
+
+                // Save each contact as a vCard file
+                string filePath = Path.Combine(exportDir, $"{contact.DisplayName}.vcf");
+                try
+                {
+                    contact.Save(filePath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save contact '{contact.DisplayName}': {ex.Message}");
                 }
             }
         }
