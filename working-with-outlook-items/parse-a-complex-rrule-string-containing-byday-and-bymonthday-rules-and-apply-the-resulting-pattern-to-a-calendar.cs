@@ -1,35 +1,31 @@
-using System;
 using Aspose.Email;
-using Aspose.Email.Calendar;
+using System;
 using Aspose.Email.Calendar.Recurrences;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define a complex RRULE string with BYDAY and BYMONTHDAY components
-            string rrule = "RRULE:FREQ=MONTHLY;BYDAY=MO,TU;BYMONTHDAY=15,30";
+            // iCalendar definition with DTSTART and a complex RRULE containing BYDAY and BYMONTHDAY
+            string iCalendarString = "DTSTART:20230101T090000\nRRULE:FREQ=MONTHLY;BYDAY=MO,WE,FR;BYMONTHDAY=1,15;COUNT=10";
 
-            // Parse the RRULE into a CalendarRecurrence object
-            CalendarRecurrence recurrence = CalendarRecurrence.FromiCalendar(rrule);
+            // Parse the recurrence pattern from the iCalendar string
+            CalendarRecurrence recurrence = CalendarRecurrence.FromiCalendar(iCalendarString);
 
-            // Set the start and end dates for the recurrence generation
-            recurrence.EndDate = new DateTime(2023, 12, 31);
-
-            // Generate all occurrence dates within the specified range
+            // Generate all occurrences defined by the recurrence rule
             DateCollection occurrences = recurrence.GenerateOccurrences();
 
-            // Output the generated dates
+            Console.WriteLine("Generated occurrences:");
             foreach (DateTime occurrence in occurrences)
             {
-                Console.WriteLine(occurrence);
+                Console.WriteLine(occurrence.ToString("yyyy-MM-dd HH:mm"));
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
