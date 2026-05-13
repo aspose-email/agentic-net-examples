@@ -6,86 +6,58 @@ using Aspose.Email.Storage.Nsf;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputDirectory = "NotesDirectory";
-            string outputFilePath = "combined.txt";
+            // Directory containing NSF note files
+            string notesDirectory = "NotesDirectory";
+            // Output file for combined bodies
+            string outputFile = "CombinedBodies.txt";
 
-            // Verify input directory exists
-            if (!Directory.Exists(inputDirectory))
+            // Verify the input directory exists
+            if (!Directory.Exists(notesDirectory))
             {
-                Console.Error.WriteLine($"Input directory does not exist: {inputDirectory}");
+                Console.Error.WriteLine($"Directory does not exist: {notesDirectory}");
                 return;
             }
 
-            // Prepare a StringBuilder for concatenated bodies
-            StringBuilder combinedBody = new StringBuilder();
+            StringBuilder combinedBuilder = new StringBuilder();
 
-            // Get all NSF files in the directory
-            string[] nsfFiles;
-            try
+            // Process each NSF file in the directory
+            foreach (string nsfPath in Directory.GetFiles(notesDirectory, "*.nsf"))
             {
-                nsfFiles = Directory.GetFiles(inputDirectory, "*.nsf");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to enumerate NSF files: {ex.Message}");
-                return;
-            }
-
-            foreach (string nsfFile in nsfFiles)
-            {
-                // Guard against missing file (should not happen after GetFiles, but follow rule)
-                if (!File.Exists(nsfFile))
-                {
-                    Console.Error.WriteLine($"NSF file not found: {nsfFile}");
-                    continue;
-                }
-
-                // Open the NSF file
                 try
                 {
-                    using (NotesStorageFacility notesFacility = new NotesStorageFacility(nsfFile))
+                    // Open the NSF file
+                    using (NotesStorageFacility notesFacility = new NotesStorageFacility(nsfPath))
                     {
-                        // Enumerate messages (MailMessage objects)
+                        // Enumerate all messages (notes) in the NSF
                         foreach (MailMessage message in notesFacility.EnumerateMessages())
                         {
-                            if (message != null && !string.IsNullOrEmpty(message.Body))
+                            using (message)
                             {
-                                combinedBody.AppendLine(message.Body);
+                                // Append the body text if present
+                                if (!string.IsNullOrEmpty(message.Body))
+                                {
+                                    combinedBuilder.AppendLine(message.Body);
+                                }
                             }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error processing NSF file '{nsfFile}': {ex.Message}");
-                    // Continue with next file
+                    // Log errors for this file and continue with the next one
+                    Console.Error.WriteLine($"Failed to process '{nsfPath}': {ex.Message}");
                 }
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputFilePath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Write the combined text to the output file
+            // Write the concatenated bodies to the output file
             try
             {
-                File.WriteAllText(outputFilePath, combinedBody.ToString());
-                Console.WriteLine($"Combined body written to: {outputFilePath}");
+                File.WriteAllText(outputFile, combinedBuilder.ToString());
+                Console.WriteLine($"Combined bodies written to '{outputFile}'.");
             }
             catch (Exception ex)
             {
@@ -94,6 +66,7 @@ class Program
         }
         catch (Exception ex)
         {
+            // Top-level exception handling
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
