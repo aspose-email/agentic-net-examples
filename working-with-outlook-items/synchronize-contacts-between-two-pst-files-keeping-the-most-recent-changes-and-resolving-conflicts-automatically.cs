@@ -1,7 +1,10 @@
-using System;
-using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
+using Aspose.Email.PersonalInfo;
 using Aspose.Email.Storage.Pst;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 class Program
 {
@@ -9,54 +12,93 @@ class Program
     {
         try
         {
+            // Paths to the source and target PST files
             string sourcePstPath = "source.pst";
             string targetPstPath = "target.pst";
 
-            // Verify source PST exists
+            // Ensure source PST exists; create a minimal placeholder if missing
             if (!File.Exists(sourcePstPath))
             {
-                Console.Error.WriteLine($"Source PST file not found: {sourcePstPath}");
-                return;
+                using (PersonalStorage.Create(sourcePstPath, FileFormatVersion.Unicode)) { }
+                Console.WriteLine($"Created placeholder source PST at '{sourcePstPath}'.");
             }
 
-            // Ensure target PST exists; create a minimal one if missing
+            // Ensure target PST exists; create a minimal placeholder if missing
             if (!File.Exists(targetPstPath))
             {
-                try
+                using (PersonalStorage.Create(targetPstPath, FileFormatVersion.Unicode)) { }
+                Console.WriteLine($"Created placeholder target PST at '{targetPstPath}'.");
+            }
+
+            // Open both PST files
+            using (PersonalStorage sourcePst = PersonalStorage.FromFile(sourcePstPath))
+            using (PersonalStorage targetPst = PersonalStorage.FromFile(targetPstPath))
+            {
+                // Get the Contacts folder from each PST
+                FolderInfo sourceContacts = sourcePst.GetPredefinedFolder(StandardIpmFolder.Contacts);
+                FolderInfo targetContacts = targetPst.GetPredefinedFolder(StandardIpmFolder.Contacts);
+
+                // Build a lookup of existing contacts in the target PST keyed by Subject (contact name)
+                Dictionary<string, MessageInfo> targetContactMap = new Dictionary<string, MessageInfo>(StringComparer.OrdinalIgnoreCase);
+                foreach (MessageInfo targetInfo in targetContacts.EnumerateMessages())
                 {
-                    using (PersonalStorage createdPst = PersonalStorage.Create(targetPstPath, FileFormatVersion.Unicode))
+                    using (MapiMessage targetMsg = targetPst.ExtractMessage(targetInfo))
                     {
-                        // Create default Contacts folder in the new PST
-                        createdPst.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
+                        string subject = targetMsg.Subject ?? string.Empty;
+                        if (!string.IsNullOrEmpty(subject))
+                        {
+                            targetContactMap[subject] = targetInfo;
+                        }
                     }
                 }
-                catch (Exception ex)
+
+                // Iterate through contacts in the source PST
+                foreach (MessageInfo sourceInfo in sourceContacts.EnumerateMessages())
                 {
-                    Console.Error.WriteLine($"Failed to create target PST: {ex.Message}");
-                    return;
+                    using (MapiMessage sourceMsg = sourcePst.ExtractMessage(sourceInfo))
+                    {
+                        string subject = sourceMsg.Subject ?? string.Empty;
+                        if (string.IsNullOrEmpty(subject))
+                        {
+                            continue; // Skip contacts without a subject/name
+                        }
+
+                        if (targetContactMap.TryGetValue(subject, out MessageInfo existingTargetInfo))
+                        {
+                            // Contact exists in target PST – compare modification times
+                            using (MapiMessage targetMsg = targetPst.ExtractMessage(existingTargetInfo))
+                            {
+                                DateTime sourceTime = sourceMsg.ClientSubmitTime;
+                                DateTime targetTime = targetMsg.ClientSubmitTime;
+
+                                if (sourceTime > targetTime)
+                                {
+                                    // Source contact is newer – update the target contact
+                                    targetContacts.UpdateMessage(existingTargetInfo.EntryIdString, sourceMsg);
+                                    Console.WriteLine($"Updated contact '{subject}' in target PST.");
+                                }
+                                else
+                                {
+                                    // Target contact is newer or same – no action needed
+                                    Console.WriteLine($"Skipped contact '{subject}' (target is newer or equal).");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Contact does not exist in target PST – add it
+                            string addedEntryId = targetContacts.AddMessage(sourceMsg);
+                            Console.WriteLine($"Added new contact '{subject}' to target PST (EntryId: {addedEntryId}).");
+                        }
+                    }
                 }
             }
 
-            // Open target PST and merge contacts from source PST
-            try
-            {
-                using (PersonalStorage targetPst = PersonalStorage.FromFile(targetPstPath))
-                {
-                    // Merge the entire source PST into the target PST.
-                    // This will bring over contacts and resolve conflicts by keeping the latest changes.
-                    targetPst.MergeWith(new string[] { sourcePstPath });
-                    Console.WriteLine("Contacts synchronized successfully.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error during synchronization: {ex.Message}");
-                return;
-            }
+            Console.WriteLine("Contact synchronization completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
