@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.PersonalInfo;
 
@@ -9,52 +9,33 @@ class Program
     {
         try
         {
-            // Define the output vCard file path
-            string outputPath = Path.Combine(Environment.CurrentDirectory, "Contact.vcf");
+            // Create a sample contact with various fields
+            Contact contact = new Contact();
+            contact.DisplayName = "John Doe";
+            contact.CompanyName = "Acme Corp";
+            contact.GivenName = "John";
+            contact.Surname = "Doe";
+            contact.EmailAddresses.Add(new EmailAddress("john.doe@acme.com"));
+            contact.PhoneNumbers.Add(new PhoneNumber { Number = "+1-555-1234", Category = PhoneNumberCategory.Company });
+            contact.Notes = "Private note that should not be shown to end users.";
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
+            // Simulate a list of contacts (could be retrieved from a server in real scenarios)
+            List<Contact> contacts = new List<Contact> { contact };
 
-            // Create a new contact with public information only
-            Contact contact = new Contact
+            // Display only public information
+            foreach (Contact c in contacts)
             {
-                GivenName = "John",
-                Surname = "Doe",
-                DisplayName = "John Doe",
-                CompanyName = "Example Corp",
-                JobTitle = "Software Engineer"
-            };
-
-            // Add public email address
-            contact.EmailAddresses.Add(new EmailAddress("john.doe@example.com"));
-
-            // Add public phone number using property initialization (no 2‑arg constructor)
-            PhoneNumber phone = new PhoneNumber
-            {
-                Number = "555-1234",
-                Category = PhoneNumberCategory.Company
-            };
-            contact.PhoneNumbers.Add(phone);
-
-            // Save the contact as a vCard file
-            try
-            {
-                contact.Save(outputPath);
-                Console.WriteLine($"Contact saved to: {outputPath}");
-            }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine($"Failed to save contact: {ioEx.Message}");
-                return;
+                Console.WriteLine("Display Name: " + c.DisplayName);
+                Console.WriteLine("Company: " + c.CompanyName);
+                Console.WriteLine("Email: " + (c.EmailAddresses.Count > 0 ? c.EmailAddresses[0].Address : "N/A"));
+                Console.WriteLine("Phone: " + (c.PhoneNumbers.Count > 0 ? c.PhoneNumbers[0].Number : "N/A"));
+                // Private fields such as Notes are intentionally omitted
+                Console.WriteLine();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
