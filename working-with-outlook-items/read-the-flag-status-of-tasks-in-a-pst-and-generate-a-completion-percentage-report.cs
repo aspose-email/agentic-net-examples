@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
@@ -10,17 +11,15 @@ class Program
     {
         try
         {
-            string pstPath = "tasks.pst";
+            string pstPath = "sample.pst";
 
-            // Ensure the PST file exists; create a minimal placeholder if missing.
+            // Ensure PST file exists; create a minimal placeholder if missing
             if (!File.Exists(pstPath))
             {
                 try
                 {
-                    using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // No tasks are added; placeholder PST is empty.
-                    }
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
                 }
                 catch (Exception ex)
                 {
@@ -29,63 +28,65 @@ class Program
                 }
             }
 
-            // Open the PST file.
-            try
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                int totalTasks = 0;
+                int sumPercent = 0;
+
+                // Process root folder and all subfolders recursively
+                ProcessFolder(pst.RootFolder, ref totalTasks, ref sumPercent, pst);
+
+                // Generate report
+                if (totalTasks > 0)
                 {
-                    int totalTasks = 0;
-                    int accumulatedPercent = 0;
-
-                    // Helper to process messages in a folder.
-                    void ProcessFolder(FolderInfo folder)
-                    {
-                        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-                        {
-                            using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
-                            {
-                                if (mapiMessage.SupportedType == MapiItemType.Task)
-                                {
-                                    // Convert the MAPI message to a MapiTask.
-                                    MapiTask task = (MapiTask)mapiMessage.ToMapiMessageItem();
-                                    totalTasks++;
-                                    accumulatedPercent += task.PercentComplete;
-                                }
-                            }
-                        }
-
-                        // Recursively process subfolders.
-                        foreach (FolderInfo subFolder in folder.GetSubFolders())
-                        {
-                            ProcessFolder(subFolder);
-                        }
-                    }
-
-                    // Start processing from the root folder.
-                    ProcessFolder(pst.RootFolder);
-
-                    // Generate the completion percentage report.
-                    if (totalTasks == 0)
-                    {
-                        Console.WriteLine("No tasks found in the PST.");
-                    }
-                    else
-                    {
-                        double averageCompletion = (double)accumulatedPercent / totalTasks;
-                        Console.WriteLine($"Total tasks: {totalTasks}");
-                        Console.WriteLine($"Average completion: {averageCompletion:F2}%");
-                    }
+                    double overallCompletion = (double)sumPercent / totalTasks;
+                    Console.WriteLine($"Total tasks found: {totalTasks}");
+                    Console.WriteLine($"Average completion percentage: {overallCompletion:F2}%");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
-                return;
+                else
+                {
+                    Console.WriteLine("No tasks found in the PST.");
+                }
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    // Recursively processes a folder, updating task counters
+    private static void ProcessFolder(FolderInfo folder, ref int totalTasks, ref int sumPercent, PersonalStorage pst)
+    {
+        // Enumerate messages in the current folder
+        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
+        {
+            try
+            {
+                using (MapiMessage msg = pst.ExtractMessage(messageInfo))
+                {
+                    if (msg.SupportedType == MapiItemType.Task)
+                    {
+                        // Convert to MapiTask via ToMapiMessageItem()
+                        var taskItem = (MapiTask)msg.ToMapiMessageItem();
+                        int percent = taskItem.PercentComplete;
+                        totalTasks++;
+                        sumPercent += percent;
+                        Console.WriteLine($"Task: {taskItem.Subject}, Completion: {percent}%");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to process message ID {messageInfo.EntryId}: {ex.Message}");
+            }
+        }
+
+        // Recurse into subfolders
+        foreach (FolderInfo subFolder in folder.GetSubFolders())
+        {
+            ProcessFolder(subFolder, ref totalTasks, ref sumPercent, pst);
         }
     }
 }
