@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Pop3;
 
 class Program
 {
@@ -9,85 +8,60 @@ class Program
     {
         try
         {
-            // Placeholder POP3 server details
-            string host = "pop3.example.com";
-            int port = 110;
-            string username = "username";
-            string password = "password";
+            string inputPath = "input.eml";
+            string outputPath = "output.eml";
 
-            // Skip actual network call when placeholders are used
-            if (host.Contains("example.com"))
+            // Ensure input file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
-                Console.WriteLine("Skipping POP3 operations due to placeholder credentials.");
-                return;
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder message."))
+                    {
+                        placeholder.Save(inputPath);
+                        Console.WriteLine($"Created placeholder EML file at '{inputPath}'.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Ensure the output directory exists
-            string outputDir = "ProcessedMessages";
+            // Load the message, add a custom processing-stage header, and save
             try
             {
-                if (!Directory.Exists(outputDir))
+                using (MailMessage message = MailMessage.Load(inputPath))
                 {
-                    Directory.CreateDirectory(outputDir);
+                    // Apply custom header indicating the processing stage
+                    message.Headers["X-Processing-Stage"] = "Stage1";
+
+                    // Save the modified message
+                    message.Save(outputPath);
+                    Console.WriteLine($"Message processed and saved to '{outputPath}'.");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
-                return;
-            }
-
-            // Connect to POP3 server and process messages
-            try
-            {
-                using (Pop3Client pop3Client = new Pop3Client(host, port, username, password))
-                {
-                    // Validate credentials safely
-                    try
-                    {
-                        pop3Client.ValidateCredentials();
-                    }
-                    catch (Exception credEx)
-                    {
-                        Console.Error.WriteLine($"Authentication failed: {credEx.Message}");
-                        return;
-                    }
-
-                    int messageCount = pop3Client.GetMessageCount();
-                    Console.WriteLine($"Total messages: {messageCount}");
-
-                    for (int i = 1; i <= messageCount; i++)
-                    {
-                        try
-                        {
-                            using (MailMessage message = pop3Client.FetchMessage(i))
-                            {
-                                // Add a custom header to indicate processing stage
-                                message.Headers.Add("X-Processing-Stage", "Processed");
-
-                                // Save the modified message to a local .eml file
-                                string filePath = Path.Combine(outputDir, $"msg_{i}.eml");
-                                try
-                                {
-                                    message.Save(filePath);
-                                    Console.WriteLine($"Saved processed message #{i} to {filePath}");
-                                }
-                                catch (Exception saveEx)
-                                {
-                                    Console.Error.WriteLine($"Failed to save message #{i}: {saveEx.Message}");
-                                }
-                            }
-                        }
-                        catch (Exception fetchEx)
-                        {
-                            Console.Error.WriteLine($"Failed to fetch message #{i}: {fetchEx.Message}");
-                        }
-                    }
-                }
-            }
-            catch (Exception clientEx)
-            {
-                Console.Error.WriteLine($"POP3 client error: {clientEx.Message}");
+                Console.Error.WriteLine($"Error processing message: {ex.Message}");
                 return;
             }
         }
