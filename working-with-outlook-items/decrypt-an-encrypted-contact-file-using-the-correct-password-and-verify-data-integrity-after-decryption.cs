@@ -1,91 +1,70 @@
 using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Security.Cryptography;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string encryptedFilePath = "encryptedContact.eml";
-            string certificatePath = "cert.pfx";
-            string certificatePassword = "password";
+            string encryptedFilePath = "encrypted_contact.msg";
 
-            // Verify that the encrypted file exists
             if (!File.Exists(encryptedFilePath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(encryptedFilePath, SaveOptions.DefaultEml);
+                        placeholder.Save(encryptedFilePath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                Console.Error.WriteLine($"Encrypted file not found: {encryptedFilePath}");
+                Console.Error.WriteLine($"File not found: {encryptedFilePath}");
                 return;
             }
 
-            // Verify that the certificate file exists
-            if (!File.Exists(certificatePath))
+            using (MapiMessage encryptedMessage = MapiMessage.Load(encryptedFilePath))
             {
-                Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
-                return;
-            }
-
-            try
-            {
-                // Load the certificate with the provided password
-                X509Certificate2 certificate = new X509Certificate2(certificatePath, certificatePassword);
-
-                // Load the encrypted message (contact) from file
-                using (MailMessage encryptedMessage = MailMessage.Load(encryptedFilePath))
+                if (!encryptedMessage.IsEncrypted)
                 {
-                    if (!encryptedMessage.IsEncrypted)
-                    {
-                        Console.Error.WriteLine("The loaded message is not encrypted.");
-                        return;
-                    }
-
-                    // Decrypt the message using the certificate
-                    using (MailMessage decryptedMessage = encryptedMessage.Decrypt(certificate))
-                    {
-                        // Simple integrity check: ensure body is not empty
-                        if (string.IsNullOrEmpty(decryptedMessage.Body))
-                        {
-                            Console.Error.WriteLine("Decryption succeeded but the message body is empty. Integrity check failed.");
-                            return;
-                        }
-
-                        Console.WriteLine("Decryption successful. Message body length: " + decryptedMessage.Body.Length);
-
-                        // Save the decrypted contact to a new file
-                        string decryptedFilePath = "decryptedContact.eml";
-                        decryptedMessage.Save(decryptedFilePath);
-                        Console.WriteLine($"Decrypted contact saved to: {decryptedFilePath}");
-                    }
+                    Console.WriteLine("The message is not encrypted.");
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"An error occurred during decryption: {ex.Message}");
-                return;
+
+                using (MapiMessage decryptedMessage = encryptedMessage.Decrypt())
+                {
+                    // Verify integrity by computing SHA256 hash of the body content
+                    using (SHA256 sha256 = SHA256.Create())
+                    {
+                        string bodyText = decryptedMessage.Body ?? string.Empty;
+                        byte[] bodyBytes = Encoding.UTF8.GetBytes(bodyText);
+                        byte[] hashBytes = sha256.ComputeHash(bodyBytes);
+                        string hashString = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+                        Console.WriteLine($"SHA256 hash of decrypted body: {hashString}");
+                    }
+
+                    string outputPath = "decrypted_contact.msg";
+                    decryptedMessage.Save(outputPath);
+                    Console.WriteLine($"Decrypted message saved to: {outputPath}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
