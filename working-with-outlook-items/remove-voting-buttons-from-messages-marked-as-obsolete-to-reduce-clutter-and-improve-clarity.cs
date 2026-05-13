@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Calendar;
-using Aspose.Email.Calendar.Recurrences;
 
 class Program
 {
@@ -11,66 +9,92 @@ class Program
     {
         try
         {
-            // Placeholder path for the message file
-            const string messagePath = "obsolete.msg";
+            string inputFolder = "Messages";
+            string outputFolder = "Processed";
 
-            // Guard file existence; create a minimal placeholder if missing
-            if (!File.Exists(messagePath))
+            // Ensure input folder exists
+            if (!Directory.Exists(inputFolder))
+            {
+                Console.Error.WriteLine($"Input folder '{inputFolder}' does not exist.");
+                return;
+            }
+
+            // Create output folder if it does not exist
+            if (!Directory.Exists(outputFolder))
             {
                 try
                 {
-                    // Create a simple MAPI message marked as "Obsolete"
-                    using (var placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Obsolete", "This is a placeholder message."))
-                    {
-                        // Add a sample voting button to demonstrate removal later
-                        FollowUpManager.AddVotingButton(placeholder, "Approve");
-                        placeholder.Save(messagePath);
-                        Console.WriteLine($"Created placeholder message at '{messagePath}'.");
-                    }
+                    Directory.CreateDirectory(outputFolder);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output folder: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the existing message
-            MapiMessage message;
+            // Process each .msg file in the input folder
+            string[] msgFiles;
             try
             {
-                message = MapiMessage.Load(messagePath);
+                msgFiles = Directory.GetFiles(inputFolder, "*.msg");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load message '{messagePath}': {ex.Message}");
+                Console.Error.WriteLine($"Failed to enumerate files: {ex.Message}");
                 return;
             }
 
-            // Ensure the message is disposed after processing
-            using (message)
+            foreach (string msgPath in msgFiles)
             {
-                // Check if the message subject contains "Obsolete"
-                if (message.Subject != null && message.Subject.IndexOf("Obsolete", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (!File.Exists(msgPath))
                 {
-                    // Remove all voting buttons from the message
-                    FollowUpManager.ClearVotingButtons(message);
-                    Console.WriteLine("Voting buttons removed from the message.");
-
-                    // Save the updated message back to the same file
-                    try
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        message.Save(messagePath);
-                        Console.WriteLine($"Message saved after modification to '{messagePath}'.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save updated message: {ex.Message}");
+                        placeholder.Save(msgPath);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Message does not contain 'Obsolete' in the subject; no changes made.");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                    Console.Error.WriteLine($"File not found: {msgPath}");
+                    continue;
+                }
+
+                try
+                {
+                    using (MapiMessage msg = MapiMessage.Load(msgPath))
+                    {
+                        // Check if the message is marked as "Obsolete"
+                        if (!string.IsNullOrEmpty(msg.Subject) && msg.Subject.IndexOf("Obsolete", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            // Remove voting buttons
+                            FollowUpManager.ClearVotingButtons(msg);
+
+                            // Save the modified message to the output folder
+                            string fileName = Path.GetFileNameWithoutExtension(msgPath);
+                            string outputPath = Path.Combine(outputFolder, $"{fileName}_clean.msg");
+                            msg.Save(outputPath);
+                            Console.WriteLine($"Processed and saved: {outputPath}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Skipped (not obsolete): {msgPath}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error processing '{msgPath}': {ex.Message}");
                 }
             }
         }
