@@ -1,51 +1,39 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define input and output directories
-            string inputDirectory = "InputEmls";
-            string outputDirectory = "OutputEmls";
+            // Define the folder that contains the EML files.
+            string emlFolderPath = "Emails";
 
-            // Verify input directory exists
-            if (!Directory.Exists(inputDirectory))
+            // Verify the folder exists.
+            if (!Directory.Exists(emlFolderPath))
             {
-                Console.Error.WriteLine($"Input directory does not exist: {inputDirectory}");
+                Console.Error.WriteLine($"Folder not found: {emlFolderPath}");
                 return;
             }
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
+            // Get all .eml files in the folder.
+            string[] emlFilePaths;
+            try
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                emlFilePaths = Directory.GetFiles(emlFolderPath, "*.eml");
             }
-
-            // Get list of .eml files
-            List<string> emlFiles = new List<string>(Directory.GetFiles(inputDirectory, "*.eml"));
-            if (emlFiles.Count == 0)
+            catch (Exception ex)
             {
-                Console.WriteLine("No EML files found to process.");
+                Console.Error.WriteLine($"Failed to enumerate files: {ex.Message}");
                 return;
             }
 
-            foreach (string emlPath in emlFiles)
+            foreach (string emlFilePath in emlFilePaths)
             {
-                // Guard each file existence
-                if (!File.Exists(emlPath))
+                // Ensure the individual file exists before processing.
+                if (!File.Exists(emlFilePath))
                 {
                 try
                 {
@@ -55,7 +43,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
+                        placeholder.Save(emlFilePath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -64,34 +52,27 @@ class Program
                     return;
                 }
 
-                    Console.Error.WriteLine($"File not found, skipping: {emlPath}");
+                    Console.Error.WriteLine($"File not found, skipping: {emlFilePath}");
                     continue;
                 }
 
                 try
                 {
-                    // Load the email message
-                    using (MailMessage message = MailMessage.Load(emlPath))
+                    // Load the email message.
+                    using (MailMessage message = MailMessage.Load(emlFilePath))
                     {
-                        // Example policy: set sensitivity to Private if it is not already Private
-                        if (message.Sensitivity != MailSensitivity.Private)
-                        {
-                            message.Sensitivity = MailSensitivity.Private;
-                        }
+                        // Apply policy: set sensitivity to Private.
+                        message.Sensitivity = MailSensitivity.Private;
 
-                        // Determine output path
-                        string fileName = Path.GetFileName(emlPath);
-                        string outputPath = Path.Combine(outputDirectory, fileName);
-
-                        // Save the modified message (overwrite if exists)
-                        message.Save(outputPath);
-                        Console.WriteLine($"Processed and saved: {outputPath}");
+                        // Save the modified message back to the same file.
+                        // Overwrite the original file.
+                        message.Save(emlFilePath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error processing file '{emlPath}': {ex.Message}");
-                    // Continue with next file
+                    Console.Error.WriteLine($"Error processing '{emlFilePath}': {ex.Message}");
+                    // Continue with next file.
                 }
             }
         }
