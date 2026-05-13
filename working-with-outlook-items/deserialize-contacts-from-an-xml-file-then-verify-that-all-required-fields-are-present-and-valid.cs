@@ -1,113 +1,120 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using System.Xml;
+using System.Xml.Linq;
 using System.Collections.Generic;
-using Aspose.Email;
 using Aspose.Email.PersonalInfo;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             string xmlPath = "contacts.xml";
 
-            // Ensure the XML file exists; create a minimal placeholder if it does not.
+            // Ensure input file exists; create a minimal placeholder if missing
             if (!File.Exists(xmlPath))
             {
-                try
-                {
-                    string placeholderXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<Contacts>
-    <Contact>
-        <DisplayName>John Doe</DisplayName>
-        <Email>john.doe@example.com</Email>
-        <Phone>+1234567890</Phone>
-    </Contact>
-</Contacts>";
-                    File.WriteAllText(xmlPath, placeholderXml);
-                    Console.WriteLine($"Placeholder XML file created at '{xmlPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder XML file: {ex.Message}");
-                    return;
-                }
+                var placeholder = new XDocument(
+                    new XElement("Contacts",
+                        new XElement("Contact",
+                            new XElement("DisplayName", "John Doe"),
+                            new XElement("Email", "john.doe@example.com")
+                        )
+                    )
+                );
+                placeholder.Save(xmlPath);
+                Console.WriteLine($"Placeholder file created at '{xmlPath}'.");
             }
 
-            List<Contact> contacts = new List<Contact>();
-
-            // Load and parse the XML file.
+            // Load XML safely
+            XDocument doc;
             try
             {
-                using (FileStream fileStream = new FileStream(xmlPath, FileMode.Open, FileAccess.Read))
+                using (FileStream fs = new FileStream(xmlPath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    XmlDocument xmlDoc = new XmlDocument();
-                    xmlDoc.Load(fileStream);
-
-                    XmlNodeList contactNodes = xmlDoc.SelectNodes("/Contacts/Contact");
-                    if (contactNodes != null)
-                    {
-                        foreach (XmlNode contactNode in contactNodes)
-                        {
-                            // Extract required fields.
-                            string displayName = string.Empty;
-                            string email = string.Empty;
-                            string phone = string.Empty;
-
-                            XmlNode nameNode = contactNode.SelectSingleNode("DisplayName");
-                            if (nameNode != null)
-                                displayName = nameNode.InnerText.Trim();
-
-                            XmlNode emailNode = contactNode.SelectSingleNode("Email");
-                            if (emailNode != null)
-                                email = emailNode.InnerText.Trim();
-
-                            XmlNode phoneNode = contactNode.SelectSingleNode("Phone");
-                            if (phoneNode != null)
-                                phone = phoneNode.InnerText.Trim();
-
-                            // Validate required fields.
-                            bool isValid = true;
-                            if (string.IsNullOrEmpty(displayName))
-                            {
-                                Console.Error.WriteLine("Contact missing DisplayName.");
-                                isValid = false;
-                            }
-
-                            if (string.IsNullOrEmpty(email) || !email.Contains("@"))
-                            {
-                                Console.Error.WriteLine($"Contact '{displayName}' has invalid or missing Email.");
-                                isValid = false;
-                            }
-
-                            if (!isValid)
-                                continue; // Skip invalid contact.
-
-                            // Create Aspose.Email Contact object.
-                            Contact asposeContact = new Contact();
-                            asposeContact.DisplayName = displayName;
-                            asposeContact.EmailAddresses.Add(new EmailAddress(email));
-
-                            if (!string.IsNullOrEmpty(phone))
-                            {
-                                // Add phone number as a generic phone entry.
-                                asposeContact.PhoneNumbers.Add(new PhoneNumber { Number = phone, Category = PhoneNumberCategory.Company });
-                            }
-
-                            contacts.Add(asposeContact);
-                        }
-                    }
+                    doc = XDocument.Load(fs);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error reading or parsing XML file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to load XML file: {ex.Message}");
                 return;
             }
 
-            Console.WriteLine($"Successfully loaded {contacts.Count} valid contact(s).");
+            // Parse contacts
+            IEnumerable<XElement> contactElements = doc.Root?.Elements("Contact");
+            if (contactElements == null)
+            {
+                Console.Error.WriteLine("No contacts found in the XML.");
+                return;
+            }
+
+            List<Contact> contacts = new List<Contact>();
+            foreach (XElement element in contactElements)
+            {
+                Contact contact = new Contact();
+
+                // DisplayName (required)
+                XElement nameElem = element.Element("DisplayName");
+                if (nameElem != null)
+                {
+                    contact.DisplayName = nameElem.Value.Trim();
+                }
+
+                // Email (required)
+                XElement emailElem = element.Element("Email");
+                if (emailElem != null)
+                {
+                    string email = emailElem.Value.Trim();
+                    if (!string.IsNullOrEmpty(email))
+                    {
+                        contact.EmailAddresses.Add(new EmailAddress(email));
+                    }
+                }
+
+                // Optional fields can be parsed similarly (e.g., PhoneNumbers, CompanyName, etc.)
+
+                contacts.Add(contact);
+            }
+
+            // Validate contacts
+            foreach (Contact contact in contacts)
+            {
+                bool isValid = true;
+
+                // Validate DisplayName
+                if (string.IsNullOrWhiteSpace(contact.DisplayName))
+                {
+                    Console.WriteLine("Invalid contact: DisplayName is missing.");
+                    isValid = false;
+                }
+
+                // Validate at least one email address and its format
+                if (contact.EmailAddresses.Count == 0)
+                {
+                    Console.WriteLine($"Invalid contact '{contact.DisplayName}': No email address provided.");
+                    isValid = false;
+                }
+                else
+                {
+                    foreach (EmailAddress emailAddr in contact.EmailAddresses)
+                    {
+                        string email = emailAddr.Address;
+                        if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+                        {
+                            Console.WriteLine($"Invalid contact '{contact.DisplayName}': Email '{email}' is not valid.");
+                            isValid = false;
+                        }
+                    }
+                }
+
+                if (isValid)
+                {
+                    Console.WriteLine($"Contact '{contact.DisplayName}' is valid.");
+                }
+            }
         }
         catch (Exception ex)
         {
