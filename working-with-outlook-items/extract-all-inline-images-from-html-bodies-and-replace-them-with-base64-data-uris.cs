@@ -1,7 +1,10 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
 using Aspose.Email;
+using Aspose.Email.Mime;
 
 class Program
 {
@@ -9,11 +12,11 @@ class Program
     {
         try
         {
-            // Input and output paths
+            // Input and output file paths
             string inputPath = "input.eml";
-            string outputPath = "output.eml";
+            string outputPath = "output.html";
 
-            // Guard input file existence
+            // Guard file existence
             if (!File.Exists(inputPath))
             {
                 try
@@ -33,72 +36,107 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
                 return;
-            }
-
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
             }
 
             // Load the email message
             using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Process only if there is an HTML body
-                if (string.IsNullOrEmpty(message.HtmlBody))
+                // Ensure the message has an HTML body
+                string htmlBody = message.HtmlBody;
+                if (string.IsNullOrEmpty(htmlBody))
                 {
-                    Console.WriteLine("Message does not contain an HTML body. No processing needed.");
+                    Console.Error.WriteLine("Message does not contain an HTML body.");
+                    return;
                 }
-                else
+
+                // Find all <img> tags with cid sources
+                Regex imgCidRegex = new Regex(@"<img[^>]+src\s*=\s*[""']cid:(?<cid>[^""'>]+)[""']", RegexOptions.IgnoreCase);
+                MatchCollection matches = imgCidRegex.Matches(htmlBody);
+                if (matches.Count == 0)
                 {
-                    string html = message.HtmlBody;
+                    Console.WriteLine("No inline images with CID found.");
+                }
 
-                    // Replace each inline linked resource with a base64 data URI
-                    foreach (LinkedResource resource in message.LinkedResources)
+                // Build a dictionary of ContentId -> base64 data URI for quick lookup
+                Dictionary<string, string> cidToDataUri = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (Match match in matches)
+                {
+                    string cid = match.Groups["cid"].Value;
+                    if (cidToDataUri.ContainsKey(cid))
+                        continue; // Already processed
+
+                    // Find the attachment with matching ContentId
+                    Attachment matchingAttachment = null;
+                    foreach (Attachment attachment in message.Attachments)
                     {
-                        // Read the resource data
-                        using (MemoryStream ms = new MemoryStream())
+                        if (string.Equals(attachment.ContentId, cid, StringComparison.OrdinalIgnoreCase))
                         {
-                            resource.ContentStream.CopyTo(ms);
-                            byte[] bytes = ms.ToArray();
-                            string base64 = Convert.ToBase64String(bytes);
-
-                            // Determine media type (fallback to generic octet-stream)
-                            string mediaType = resource.ContentType?.MediaType ?? "application/octet-stream";
-
-                            // Build data URI
-                            string dataUri = $"data:{mediaType};base64,{base64}";
-
-                            // Replace cid reference in HTML
-                            string cidReference = $"cid:{resource.ContentId}";
-                            html = html.Replace(cidReference, dataUri);
+                            matchingAttachment = attachment;
+                            break;
                         }
                     }
 
-                    // Update the message's HTML body
-                    message.HtmlBody = html;
+                    if (matchingAttachment == null)
+                    {
+                        Console.Error.WriteLine($"Attachment with Content-Id '{cid}' not found.");
+                        continue;
+                    }
+
+                    // Read attachment bytes
+                    byte[] attachmentBytes;
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {
+                        if (matchingAttachment.ContentStream != null)
+                        {
+                            matchingAttachment.ContentStream.CopyTo(memoryStream);
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine($"Attachment '{cid}' does not have a content stream.");
+                            continue;
+                        }
+                        attachmentBytes = memoryStream.ToArray();
+                    }
+
+                    // Determine MIME type (fallback to application/octet-stream)
+                    string mimeType = matchingAttachment.ContentType?.MediaType ?? "application/octet-stream";
+
+                    // Build data URI
+                    string base64Data = Convert.ToBase64String(attachmentBytes);
+                    string dataUri = $"data:{mimeType};base64,{base64Data}";
+                    cidToDataUri[cid] = dataUri;
                 }
 
-                // Save the modified message
+                // Replace cid references with data URIs
+                string updatedHtml = imgCidRegex.Replace(htmlBody, match =>
+                {
+                    string cid = match.Groups["cid"].Value;
+                    if (cidToDataUri.TryGetValue(cid, out string dataUri))
+                    {
+                        // Preserve other attributes of the <img> tag
+                        string prefix = match.Value.Substring(0, match.Value.IndexOf("src", StringComparison.OrdinalIgnoreCase));
+                        string suffix = match.Value.Substring(match.Value.IndexOf('>', StringComparison.Ordinal));
+                        return $"{prefix}src=\"{dataUri}\"{suffix}";
+                    }
+                    // If no data URI found, return the original match unchanged
+                    return match.Value;
+                });
+
+                // Update the message's HTML body
+                message.HtmlBody = updatedHtml;
+
+                // Save the modified HTML to a file
                 try
                 {
-                    message.Save(outputPath);
-                    Console.WriteLine($"Message saved to {outputPath}");
+                    File.WriteAllText(outputPath, updatedHtml, Encoding.UTF8);
+                    Console.WriteLine($"Processed HTML saved to '{outputPath}'.");
                 }
-                catch (Exception saveEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save message: {saveEx.Message}");
+                    Console.Error.WriteLine($"Failed to write output file: {ex.Message}");
                 }
             }
         }
