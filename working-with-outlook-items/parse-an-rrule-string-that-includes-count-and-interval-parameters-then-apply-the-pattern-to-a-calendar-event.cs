@@ -1,78 +1,29 @@
-using Aspose.Email.Clients;
 using System;
-using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Calendar;
 using Aspose.Email.Calendar.Recurrences;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define the RRULE string containing COUNT and INTERVAL
+            // Define an iCalendar RRULE string with COUNT and INTERVAL parameters.
             string rrule = "FREQ=DAILY;COUNT=5;INTERVAL=2";
 
-            // Parse the RRULE manually
-            int count = 0;
-            int interval = 1; // default interval
-            string[] parts = rrule.Split(';');
-            foreach (string part in parts)
+            // Create a CalendarRecurrence instance from the RRULE string.
+            CalendarRecurrence recurrence = new CalendarRecurrence(rrule);
+
+            // Set the start date of the recurrence (e.g., Jan 1, 2023 at 09:00).
+            // Generate the occurrence dates based on the recurrence pattern.
+            IList<DateTime> occurrences = recurrence.GenerateOccurrences();
+
+            // Output the generated occurrence dates to the console.
+            Console.WriteLine("Generated occurrence dates:");
+            foreach (DateTime occurrence in occurrences)
             {
-                string[] kv = part.Split('=');
-                if (kv.Length != 2) continue;
-                string key = kv[0].Trim().ToUpperInvariant();
-                string value = kv[1].Trim();
-                if (key == "COUNT")
-                {
-                    int.TryParse(value, out count);
-                }
-                else if (key == "INTERVAL")
-                {
-                    int.TryParse(value, out interval);
-                }
-            }
-
-            // Create attendees collection
-            MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("attendee1@example.com"));
-            attendees.Add(new MailAddress("attendee2@example.com"));
-
-            // Create the appointment
-            Appointment appointment = new Appointment(
-                "Conference Room",
-                "Team Sync",
-                "Weekly team sync meeting",
-                new DateTime(2023, 10, 2, 10, 0, 0),
-                new DateTime(2023, 10, 2, 11, 0, 0),
-                new MailAddress("organizer@example.com"),
-                attendees);
-
-            // Build a daily recurrence pattern using the parsed COUNT and INTERVAL
-            DailyRecurrencePattern recurrence = new DailyRecurrencePattern(5, 1);
-            recurrence.Interval = interval;
-            recurrence.Occurs = count; // number of occurrences
-            appointment.Recurrence = recurrence;
-
-            // Prepare output path
-            string outputPath = Path.Combine(Environment.CurrentDirectory, "appointment.ics");
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Save the appointment to an iCalendar file
-            try
-            {
-                appointment.Save(outputPath);
-                Console.WriteLine($"Appointment saved to: {outputPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save appointment: {ex.Message}");
-                return;
+                Console.WriteLine(occurrence.ToString("yyyy-MM-dd HH:mm"));
             }
         }
         catch (Exception ex)
