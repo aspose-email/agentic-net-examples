@@ -12,73 +12,85 @@ class Program
         {
             string pstPath = "sample.pst";
 
-            // Ensure the PST file exists; create a minimal placeholder if missing.
+            // Ensure PST file exists; create a minimal placeholder if missing
             if (!File.Exists(pstPath))
             {
                 try
                 {
-                    // Create a new Unicode PST file.
                     PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
                     return;
                 }
-                // No messages to process in a newly created PST.
-                return;
             }
 
-            // Open the PST file.
+            // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Get the Inbox folder.
-                FolderInfo inbox = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
+                // Get the root folder
+                FolderInfo rootFolder = pst.RootFolder;
 
-                // Ensure target folders exist (High, Normal, Low).
-                EnsureSubFolder(pst.RootFolder, "High", out FolderInfo highFolder);
-                EnsureSubFolder(pst.RootFolder, "Normal", out FolderInfo normalFolder);
-                EnsureSubFolder(pst.RootFolder, "Low", out FolderInfo lowFolder);
+                // Create or retrieve target folders
+                FolderInfo highFolder = GetOrCreateFolder(pst, "High");
+                FolderInfo normalFolder = GetOrCreateFolder(pst, "Normal");
+                FolderInfo lowFolder = GetOrCreateFolder(pst, "Low");
 
-                // Iterate through messages in the Inbox and move them based on importance.
-                foreach (MessageInfo msgInfo in inbox.EnumerateMessages())
+                // Enumerate all messages in the root folder
+                foreach (MessageInfo messageInfo in rootFolder.EnumerateMessages())
                 {
-                    switch (msgInfo.Importance)
+                    // Determine importance using MapiImportance
+                    MapiImportance importance = messageInfo.Importance;
+
+                    // Choose target folder based on importance
+                    FolderInfo targetFolder = importance switch
                     {
-                        case MapiImportance.High:
-                            pst.MoveItem(msgInfo, highFolder);
-                            break;
-                        case MapiImportance.Low:
-                            pst.MoveItem(msgInfo, lowFolder);
-                            break;
-                        default:
-                            pst.MoveItem(msgInfo, normalFolder);
-                            break;
+                        MapiImportance.High => highFolder,
+                        MapiImportance.Low => lowFolder,
+                        _ => normalFolder,
+                    };
+
+                    try
+                    {
+                        // Move the message to the appropriate folder
+                        pst.MoveItem(messageInfo, targetFolder);
+                        Console.WriteLine($"Moved message '{messageInfo.Subject}' to folder '{targetFolder.DisplayName}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to move message '{messageInfo.Subject}': {ex.Message}");
                     }
                 }
-
-                Console.WriteLine("Messages have been sorted into High, Normal, and Low folders.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 
-    // Helper method to create a subfolder if it does not already exist.
-    private static void EnsureSubFolder(FolderInfo parent, string folderName, out FolderInfo folder)
+    // Helper to get an existing folder or create a new one if it does not exist
+    private static FolderInfo GetOrCreateFolder(PersonalStorage pst, string folderName)
     {
         try
         {
-            folder = parent.GetSubFolder(folderName);
+            // Try to find the folder by name
+            foreach (FolderInfo subFolder in pst.RootFolder.GetSubFolders())
+            {
+                if (string.Equals(subFolder.DisplayName, folderName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return subFolder;
+                }
+            }
+
+            // Folder not found; create a new one (using Unspecified type for custom folders)
+            return pst.CreatePredefinedFolder(folderName, StandardIpmFolder.Unspecified);
         }
-        catch
+        catch (Exception ex)
         {
-            // Subfolder does not exist; create it.
-            parent.AddSubFolder(folderName);
-            folder = parent.GetSubFolder(folderName);
+            Console.Error.WriteLine($"Error accessing or creating folder '{folderName}': {ex.Message}");
+            throw;
         }
     }
 }
