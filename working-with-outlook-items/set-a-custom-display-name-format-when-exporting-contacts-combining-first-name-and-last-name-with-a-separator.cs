@@ -10,40 +10,37 @@ class Program
     {
         try
         {
-            // Define output directory and file
-            string outputDir = Path.Combine(Environment.CurrentDirectory, "Output");
-            string outputPath = Path.Combine(outputDir, "custom_contact.vcf");
-
-            // Ensure the output directory exists
+            string outputDir = "Output";
             if (!Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Create a new contact and set its properties
-            Contact contact = new Contact();
-            contact.GivenName = "John";
-            contact.Surname = "Doe";
+            string contactPath = Path.Combine(outputDir, "contact.vcf");
 
-            // Custom display name format: FirstName | LastName
-            string separator = " | ";
-            contact.DisplayName = $"{contact.GivenName}{separator}{contact.Surname}";
+            using (MapiContact contact = new MapiContact())
+            {
+                // Set first name and last name
+                contact.NameInfo.GivenName = "John";
+                contact.NameInfo.Surname = "Doe";
 
-            // Save the contact as VCard using the explicit ContactSaveFormat enum
-            try
-            {
-                contact.Save(outputPath, ContactSaveFormat.VCard);
-                Console.WriteLine($"Contact saved to: {outputPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save contact: {ex.Message}");
-                return;
+                // Custom display name format: FirstName - LastName
+                contact.NameInfo.DisplayName = $"{contact.NameInfo.GivenName} - {contact.NameInfo.Surname}";
+
+                try
+                {
+                    contact.Save(contactPath);
+                    Console.WriteLine($"Contact saved to {contactPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save contact: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
