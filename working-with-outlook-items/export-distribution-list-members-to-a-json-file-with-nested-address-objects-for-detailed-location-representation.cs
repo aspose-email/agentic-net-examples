@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.Json;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -12,25 +11,23 @@ class Program
     {
         try
         {
-            // Placeholder connection settings
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Placeholder credentials – skip execution in CI environments.
+            string host = "exchange.example.com";
             string username = "user@example.com";
             string password = "password";
+            string distributionListAddress = "dl@example.com";
 
-            // Guard against executing with placeholder credentials
-            if (serviceUrl.Contains("example.com") || username.Contains("example.com"))
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping external service call.");
+                Console.Error.WriteLine("Placeholder Exchange credentials detected. Skipping execution.");
                 return;
             }
 
-            // Output JSON file path
-            string outputPath = "distributionListMembers.json";
-
-            // Ensure output directory exists
+            // Ensure output directory exists.
+            string outputPath = "dl_members.json";
             try
             {
-                string? directory = Path.GetDirectoryName(outputPath);
+                string? directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
@@ -42,35 +39,36 @@ class Program
                 return;
             }
 
-            // Create and use the EWS client
+            // Connect to Exchange using EWS.
             try
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                using (IEWSClient client = EWSClient.GetEWSClient(host, username, password))
                 {
-                    // Prepare a distribution list object (replace with real Id if available)
-                    ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                    // Expand the public distribution list to get its members.
+                    MailAddressCollection members = client.ExpandDistributionList(new MailAddress(distributionListAddress));
 
-                    // Fetch members of the distribution list
-                    MailAddressCollection members = client.FetchDistributionList(distributionList);
-
-                    // Transform members into a serializable structure
-                    List<MemberInfo> memberInfos = new List<MemberInfo>();
+                    // Prepare a serializable list of member objects.
+                    var memberList = new List<object>();
                     foreach (MailAddress address in members)
                     {
-                        memberInfos.Add(new MemberInfo
+                        memberList.Add(new
                         {
-                            Email = address.Address,
-                            DisplayName = address.DisplayName
+                            DisplayName = address.DisplayName,
+                            Email = address.Address
                         });
                     }
 
-                    // Serialize to JSON
-                    string json = JsonSerializer.Serialize(memberInfos, new JsonSerializerOptions { WriteIndented = true });
+                    // Serialize to JSON.
+                    string json = JsonSerializer.Serialize(memberList, new JsonSerializerOptions { WriteIndented = true });
 
-                    // Write JSON to file
+                    // Write JSON to file.
                     try
                     {
-                        File.WriteAllText(outputPath, json);
+                        using (FileStream fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                        using (StreamWriter writer = new StreamWriter(fs))
+                        {
+                            writer.Write(json);
+                        }
                         Console.WriteLine($"Distribution list members exported to '{outputPath}'.");
                     }
                     catch (Exception ex)
@@ -81,7 +79,7 @@ class Program
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"EWS client error: {ex.Message}");
+                Console.Error.WriteLine($"Failed to connect to Exchange or retrieve members: {ex.Message}");
                 return;
             }
         }
@@ -89,12 +87,5 @@ class Program
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
-    }
-
-    // Helper class for JSON serialization
-    private class MemberInfo
-    {
-        public string Email { get; set; } = string.Empty;
-        public string DisplayName { get; set; } = string.Empty;
     }
 }
