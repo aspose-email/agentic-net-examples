@@ -2,51 +2,46 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.PersonalInfo;
-using Aspose.Email.Clients.Exchange.Dav;
 
 namespace BulkContactImportSample
 {
-    // Event arguments for progress reporting
-    public class ProgressEventArgs : EventArgs
-    {
-        public int Imported { get; }
-        public int Total { get; }
+    // Delegate for progress reporting
+    public delegate void ProgressChangedHandler(int processed, int total);
 
-        public ProgressEventArgs(int imported, int total)
-        {
-            Imported = imported;
-            Total = total;
-        }
-    }
-
-    // Helper class that performs bulk import and raises progress events
+    // Helper class to import contacts in bulk and raise progress events
     public class BulkContactImporter
     {
-        private readonly ExchangeClient _client;
+        private readonly IEWSClient _client;
+        private readonly IList<Contact> _contacts;
 
-        public BulkContactImporter(ExchangeClient client)
+        public event ProgressChangedHandler ProgressChanged;
+
+        public BulkContactImporter(IEWSClient client, IList<Contact> contacts)
         {
             _client = client;
+            _contacts = contacts;
         }
 
-        // Progress event
-        public event EventHandler<ProgressEventArgs> ProgressChanged;
-
-        // Imports a collection of contacts
-        public void ImportContacts(List<Contact> contacts)
+        public void Import()
         {
-            if (contacts == null) throw new ArgumentNullException(nameof(contacts));
+            int total = _contacts.Count;
+            int processed = 0;
 
-            int count = 0;
-            foreach (Contact contact in contacts)
+            foreach (Contact contact in _contacts)
             {
-                // Create contact on the Exchange server
-                _client.CreateContact(contact);
-                count++;
+                try
+                {
+                    _client.CreateContact(contact);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to import contact '{contact.DisplayName}': {ex.Message}");
+                }
 
-                // Raise progress event
-                ProgressChanged?.Invoke(this, new ProgressEventArgs(count, contacts.Count));
+                processed++;
+                ProgressChanged?.Invoke(processed, total);
             }
         }
     }
@@ -57,60 +52,53 @@ namespace BulkContactImportSample
         {
             try
             {
-                // Placeholder connection details
-                string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
+                // Placeholder connection settings
+                string exchangeUrl = "https://exchange.example.com/EWS/Exchange.asmx";
                 string username = "user@example.com";
                 string password = "password";
 
-                // Skip real network call when placeholders are detected
-                if (mailboxUri.Contains("example.com"))
+                // Guard against placeholder credentials to avoid real network calls
+                if (exchangeUrl.Contains("example.com") || username.Contains("example.com"))
                 {
-                    Console.WriteLine("Placeholder credentials detected – skipping actual import.");
+                    Console.WriteLine("Placeholder credentials detected. Skipping actual import.");
                     return;
                 }
 
-                // Create Exchange client inside a using block
-                try
+                // Create the Exchange client
+                using (IEWSClient client = EWSClient.GetEWSClient(exchangeUrl, new NetworkCredential(username, password)))
                 {
-                    using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+                    // Prepare a list of contacts to import
+                    List<Contact> contactsToImport = new List<Contact>
                     {
-                        // Prepare a sample list of contacts to import
-                        List<Contact> contacts = new List<Contact>
+                        new Contact
                         {
-                            new Contact
-                            {
-                                GivenName = "John",
-                                Surname = "Doe",
-                                EmailAddresses = { new EmailAddress("john.doe@example.com", "John Doe") }
-                            },
-                            new Contact
-                            {
-                                GivenName = "Jane",
-                                Surname = "Smith",
-                                EmailAddresses = { new EmailAddress("jane.smith@example.com", "Jane Smith") }
-                            }
-                        };
-
-                        // Instantiate importer and subscribe to progress events
-                        BulkContactImporter importer = new BulkContactImporter(client);
-                        importer.ProgressChanged += (sender, e) =>
+                            DisplayName = "John Doe",
+                            EmailAddresses = { new EmailAddress("john.doe@example.com", "John Doe") },
+                            PhoneNumbers = { new PhoneNumber { Number = "+1234567890", Category = PhoneNumberCategory.Company } }
+                        },
+                        new Contact
                         {
-                            Console.WriteLine($"Imported {e.Imported} of {e.Total} contacts.");
-                        };
+                            DisplayName = "Jane Smith",
+                            EmailAddresses = { new EmailAddress("jane.smith@example.com", "Jane Smith") },
+                            PhoneNumbers = { new PhoneNumber { Number = "+1987654321", Category = PhoneNumberCategory.Company } }
+                        }
+                        // Add more contacts as needed
+                    };
 
-                        // Perform bulk import
-                        importer.ImportContacts(contacts);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
-                    return;
+                    // Initialize the bulk importer and subscribe to progress events
+                    BulkContactImporter importer = new BulkContactImporter(client, contactsToImport);
+                    importer.ProgressChanged += (processed, total) =>
+                    {
+                        Console.WriteLine($"Imported {processed} of {total} contacts.");
+                    };
+
+                    // Start the import process
+                    importer.Import();
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }
