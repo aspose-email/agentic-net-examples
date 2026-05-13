@@ -1,7 +1,7 @@
+using Aspose.Email;
 using System;
 using System.IO;
 using System.Text;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
@@ -13,57 +13,63 @@ class Program
         {
             const string pstPath = "sample.pst";
 
-            // Ensure PST file exists; create a minimal placeholder if missing
+            // Ensure PST file exists; create a minimal one if missing
             if (!File.Exists(pstPath))
             {
                 try
                 {
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // PST created; no further action needed
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
                     return;
                 }
             }
 
-            // Open PST with write access
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
+            // Open the PST file
+            try
             {
-                // Get the Inbox folder (creates if not present)
-                FolderInfo inboxFolder;
-                try
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to obtain Inbox folder: {ex.Message}");
-                    return;
-                }
-
-                // Iterate through each message in the folder
-                foreach (MessageInfo messageInfo in inboxFolder.EnumerateMessages())
-                {
-                    using (MapiMessage message = pst.ExtractMessage(messageInfo))
+                    // Get the Inbox folder (creates it if it does not exist)
+                    FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
+                    if (inboxFolder == null)
                     {
-                        // Add custom MAPI property to track processing status
-                        const string propertyName = "ProcessingStatus";
-                        const string propertyValue = "Processed";
-                        byte[] valueBytes = Encoding.Unicode.GetBytes(propertyValue);
-                        message.AddCustomProperty(MapiPropertyType.PT_UNICODE, valueBytes, propertyName);
+                        Console.Error.WriteLine("Inbox folder not found in PST.");
+                        return;
+                    }
 
-                        // Persist the updated properties back to the PST
+                    // Iterate over each message in the folder
+                    foreach (MessageInfo messageInfo in inboxFolder.EnumerateMessages())
+                    {
                         try
                         {
-                            pst.ChangeMessage(messageInfo.EntryIdString, message.Properties);
+                            using (MapiMessage message = pst.ExtractMessage(messageInfo))
+                            {
+                                // Add custom MAPI property "ProcessingStatus" with value "Processed"
+                                byte[] valueBytes = Encoding.Unicode.GetBytes("Processed");
+                                message.AddCustomProperty(MapiPropertyType.PT_UNICODE, valueBytes, "ProcessingStatus");
+
+                                // Update the message back into the folder
+                                inboxFolder.UpdateMessage(messageInfo.EntryIdString, message);
+                            }
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Failed to update message '{messageInfo.Subject}': {ex.Message}");
+                            Console.Error.WriteLine($"Error processing message '{messageInfo.Subject}': {ex.Message}");
+                            // Continue with next message
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to open or process PST file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
