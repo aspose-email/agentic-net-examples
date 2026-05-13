@@ -1,6 +1,8 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
+using System.Security.Cryptography;
+using System.Text;
 using Aspose.Email.PersonalInfo;
 
 class Program
@@ -9,81 +11,64 @@ class Program
     {
         try
         {
-            // Prepare a minimal vCard content as a placeholder contact.
-            const string vCard = "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:John Doe\r\nEMAIL:john.doe@example.com\r\nEND:VCARD";
-            byte[] encryptedData = System.Text.Encoding.UTF8.GetBytes(vCard); // In a real scenario this would be encrypted.
+            // Path to the encrypted contacts file
+            string encryptedFilePath = "contacts.enc";
 
-            // Simulate a decryption stream that simply returns the original data.
-            using (MemoryStream encryptedStream = new MemoryStream(encryptedData))
-            using (DecryptingStream decryptingStream = new DecryptingStream(encryptedStream))
+            // Placeholder key and IV for AES decryption (replace with real values)
+            byte[] key = new byte[32]; // 256‑bit key (all zeros as placeholder)
+            byte[] iv = new byte[16];  // 128‑bit IV (all zeros as placeholder)
+
+            // Ensure the encrypted file exists; if not, create a placeholder encrypted vCard
+            if (!File.Exists(encryptedFilePath))
             {
-                // Load the contact from the decrypted stream.
-                Contact contact = Contact.Load(decryptingStream, ContactLoadFormat.VCard);
+                // Sample vCard content
+                string vcard = "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:John Doe\r\nEMAIL:john.doe@example.com\r\nEND:VCARD";
+                byte[] plainBytes = Encoding.UTF8.GetBytes(vcard);
 
-                // Output some contact details.
-                Console.WriteLine($"Full Name: {contact.DisplayName}");
-                Console.WriteLine($"Email: {contact.EmailAddresses[0].Address}");
+                using (Aes aesCreate = Aes.Create())
+                {
+                    aesCreate.Key = key;
+                    aesCreate.IV = iv;
+
+                    using (FileStream fs = new FileStream(encryptedFilePath, FileMode.Create, FileAccess.Write))
+                    using (CryptoStream cs = new CryptoStream(fs, aesCreate.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(plainBytes, 0, plainBytes.Length);
+                    }
+                }
+
+                Console.WriteLine("Placeholder encrypted contacts file created.");
+            }
+
+            // Decrypt and load the contact from the encrypted file
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                aes.IV = iv;
+
+                using (FileStream fileStream = new FileStream(encryptedFilePath, FileMode.Open, FileAccess.Read))
+                using (CryptoStream cryptoStream = new CryptoStream(fileStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
+                {
+                    // Load the contact directly from the decrypted stream
+                    Contact contact = Contact.Load(cryptoStream);
+
+                    // Output some basic contact information
+                    Console.WriteLine("Contact Loaded:");
+                    Console.WriteLine("Display Name: " + contact.DisplayName);
+                    if (contact.EmailAddresses != null && contact.EmailAddresses.Count > 0)
+                    {
+                        Console.WriteLine("Email: " + contact.EmailAddresses[0]?.Address);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Email: (none)");
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
-        }
-    }
-
-    // Simple pass‑through stream that would perform decryption in a real scenario.
-    private class DecryptingStream : Stream
-    {
-        private readonly Stream _baseStream;
-
-        public DecryptingStream(Stream baseStream)
-        {
-            _baseStream = baseStream ?? throw new ArgumentNullException(nameof(baseStream));
-        }
-
-        public override bool CanRead => _baseStream.CanRead;
-        public override bool CanSeek => _baseStream.CanSeek;
-        public override bool CanWrite => false;
-        public override long Length => _baseStream.Length;
-        public override long Position
-        {
-            get => _baseStream.Position;
-            set => _baseStream.Position = value;
-        }
-
-        public override void Flush()
-        {
-            _baseStream.Flush();
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            // In a real implementation, decrypt the bytes here.
-            return _baseStream.Read(buffer, offset, count);
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            return _baseStream.Seek(offset, origin);
-        }
-
-        public override void SetLength(long value)
-        {
-            _baseStream.SetLength(value);
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotSupportedException("Write is not supported on DecryptingStream.");
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _baseStream.Dispose();
-            }
-            base.Dispose(disposing);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
