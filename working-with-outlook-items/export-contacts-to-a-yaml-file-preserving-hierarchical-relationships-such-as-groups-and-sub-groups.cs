@@ -1,109 +1,101 @@
-using System;
-using System.IO;
-using System.Text;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients.Google;
 using Aspose.Email.PersonalInfo;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
 
-class Program
+namespace AsposeEmailGmailExport
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials – replace with real values or skip execution.
-            string accessToken = "YOUR_ACCESS_TOKEN";
-            string defaultEmail = "user@example.com";
-
-            // Guard against placeholder credentials to avoid real network calls.
-            if (string.IsNullOrWhiteSpace(accessToken) || accessToken.Contains("YOUR_ACCESS_TOKEN"))
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client operations.");
-                return;
-            }
-
-            // Create Gmail client.
-            IGmailClient gmailClient;
             try
             {
-                gmailClient = GmailClient.GetInstance(accessToken, defaultEmail);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
-                return;
-            }
+                // Placeholder credentials – replace with real values.
+                string clientId = "your-client-id";
+                string clientSecret = "your-client-secret";
+                string refreshToken = "your-refresh-token";
 
-            // Fetch contacts and groups.
-            Contact[] contacts;
-            ContactGroupCollection groups;
-            try
-            {
-                contacts = gmailClient.GetAllContacts();
-                groups = gmailClient.GetAllGroups();
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to retrieve contacts or groups: {ex.Message}");
-                return;
-            }
-
-            // Build YAML content.
-            var yamlBuilder = new StringBuilder();
-
-            yamlBuilder.AppendLine("groups:");
-            foreach (var group in groups)
-            {
-                yamlBuilder.AppendLine($"  - id: {group.Id}");
-                yamlBuilder.AppendLine($"    title: \"{group.Title}\"");
-            }
-
-            yamlBuilder.AppendLine("contacts:");
-            foreach (var contact in contacts)
-            {
-                yamlBuilder.AppendLine($"  - displayName: \"{contact.DisplayName}\"");
-
-                // Get first email address if available.
-                string email = null;
-                foreach (var emailAddr in contact.EmailAddresses)
+                if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-") || refreshToken.StartsWith("your-"))
                 {
-                    email = emailAddr.Address;
-                    break;
+                    Console.Error.WriteLine("Please provide valid Gmail API credentials.");
+                    return;
                 }
-                yamlBuilder.AppendLine($"    email: \"{email ?? string.Empty}\"");
-            }
 
-            // Define output file path.
-            string outputPath = Path.Combine(Environment.CurrentDirectory, "contacts.yaml");
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!Directory.Exists(outputDir))
-            {
-                try
+                string outputPath = "gmail_contacts.yaml";
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
                     Directory.CreateDirectory(outputDir);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
 
-            // Write YAML to file with error handling.
-            try
-            {
-                File.WriteAllText(outputPath, yamlBuilder.ToString(), Encoding.UTF8);
-                Console.WriteLine($"Contacts exported to {outputPath}");
+                // Create Gmail client.
+                using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, null, null))
+                {
+                    // Retrieve all contact groups.
+                    ContactGroupCollection groups;
+                    try
+                    {
+                        groups = gmailClient.GetAllGroups();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to retrieve groups: {ex.Message}");
+                        return;
+                    }
+
+                    List<string> yamlLines = new List<string>();
+                    yamlLines.Add("contacts:");
+
+                    foreach (GoogleContactGroup group in groups)
+                    {
+                        yamlLines.Add($"  - group: \"{group.Title}\"");
+                        yamlLines.Add("    contacts:");
+
+                        Contact[] contactsInGroup;
+                        try
+                        {
+                            contactsInGroup = gmailClient.GetContactsFromGroup(group.Id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to retrieve contacts for group '{group.Title}': {ex.Message}");
+                            continue;
+                        }
+
+                        foreach (Contact contact in contactsInGroup)
+                        {
+                            string displayName = contact.DisplayName ?? string.Empty;
+                            string email = string.Empty;
+                            if (contact.EmailAddresses.Count > 0)
+                            {
+                                email = contact.EmailAddresses[0].Address;
+                            }
+
+                            yamlLines.Add($"      - name: \"{displayName.Replace("\"", "\\\"")}\"");
+                            yamlLines.Add($"        email: \"{email}\"");
+                        }
+                    }
+
+                    // Write YAML to file.
+                    try
+                    {
+                        File.WriteAllLines(outputPath, yamlLines);
+                        Console.WriteLine($"Contacts exported to {outputPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to write YAML file: {ex.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to write YAML file: {ex.Message}");
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
