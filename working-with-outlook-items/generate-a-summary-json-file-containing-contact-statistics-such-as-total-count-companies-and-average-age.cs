@@ -1,10 +1,11 @@
-using Aspose.Email.PersonalInfo;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Collections.Generic;
 using System.Text.Json;
 using Aspose.Email;
+using Aspose.Email.Clients.Google;
+using Aspose.Email.PersonalInfo;
+using System.Net;
 
 class Program
 {
@@ -12,67 +13,101 @@ class Program
     {
         try
         {
-            // Prepare a mock list of contacts using Aspose.Email.Contact
-            List<Contact> contacts = new List<Contact>();
-            List<int> ages = new List<int>();
+            // Placeholder credentials – replace with real values.
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
 
-            // Contact 1
-            Contact contact1 = new Contact();
-            contact1.GivenName = "John";
-            contact1.Surname = "Doe";
-            contact1.CompanyName = "Acme Corp";
-            contacts.Add(contact1);
-            ages.Add(30);
+            // Skip external call when placeholders are detected.
+            if (clientId.Contains("your-") || clientSecret.Contains("your-") || refreshToken.Contains("your-"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client call.");
+                return;
+            }
 
-            // Contact 2
-            Contact contact2 = new Contact();
-            contact2.GivenName = "Jane";
-            contact2.Surname = "Smith";
-            contact2.CompanyName = "Beta Ltd";
-            contacts.Add(contact2);
-            ages.Add(25);
+            // Create Gmail client.
+            IGmailClient gmailClient = null;
+            try
+            {
+                // Added null for optional proxy parameter to match overload.
+                gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, null);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
+                return;
+            }
 
-            // Contact 3
-            Contact contact3 = new Contact();
-            contact3.GivenName = "Bob";
-            contact3.Surname = "Brown";
-            contact3.CompanyName = "Acme Corp";
-            contacts.Add(contact3);
-            ages.Add(40);
+            // Fetch all contacts.
+            Contact[] contacts = null;
+            try
+            {
+                contacts = gmailClient.GetAllContacts();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to fetch contacts: {ex.Message}");
+                return;
+            }
+            finally
+            {
+                if (gmailClient is IDisposable disposableClient)
+                {
+                    disposableClient.Dispose();
+                }
+            }
 
-            // Compute statistics
-            int totalCount = contacts.Count;
-            var distinctCompanies = contacts
-                .Select(c => c.CompanyName)
-                .Where(name => !string.IsNullOrEmpty(name))
-                .Distinct()
-                .ToList();
-            double averageAge = ages.Count > 0 ? ages.Average() : 0.0;
+            // Compute statistics.
+            int totalCount = contacts != null ? contacts.Length : 0;
+            var companyCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            double averageAge = 0.0; // Age information is not available in Contact; default to 0.
 
-            // Build summary object
+            if (contacts != null)
+            {
+                foreach (Contact contact in contacts)
+                {
+                    string company = contact.CompanyName ?? "Unknown";
+                    if (companyCounts.ContainsKey(company))
+                        companyCounts[company]++;
+                    else
+                        companyCounts[company] = 1;
+                }
+            }
+
+            // Prepare summary object.
             var summary = new
             {
                 TotalCount = totalCount,
-                Companies = distinctCompanies,
+                Companies = companyCounts,
                 AverageAge = averageAge
             };
 
-            // Define output directory and file
-            string outputDir = "output";
-            string outputPath = Path.Combine(outputDir, "contact_summary.json");
+            // Serialize to JSON.
+            string json = JsonSerializer.Serialize(summary, new JsonSerializerOptions { WriteIndented = true });
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
+            // Define output path.
+            string outputPath = "contact_summary.json";
 
-            // Serialize to JSON and write to file with error handling
+            // Ensure directory exists.
             try
             {
-                string json = JsonSerializer.Serialize(summary, new JsonSerializerOptions { WriteIndented = true });
+                string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to ensure output directory: {ex.Message}");
+                return;
+            }
+
+            // Write JSON to file.
+            try
+            {
                 File.WriteAllText(outputPath, json);
-                Console.WriteLine($"Contact summary written to: {outputPath}");
+                Console.WriteLine($"Contact summary written to {outputPath}");
             }
             catch (Exception ex)
             {
@@ -83,7 +118,6 @@ class Program
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            return;
         }
     }
 }
