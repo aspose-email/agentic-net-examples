@@ -1,11 +1,10 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -13,81 +12,74 @@ class Program
     {
         try
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
-            string username = "username";
-            string password = "password";
+            // Paths for input PST and output JSON
+            string pstPath = "messages.pst";
+            string jsonOutputPath = "voting_info.json";
 
-            // Skip execution when placeholders are detected
-            if (mailboxUri.Contains("example.com"))
+            // Verify PST file exists
+            if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine($"Input PST file not found: {pstPath}");
                 return;
             }
 
-            // Connect to Exchange server
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            // Prepare a list to hold export data
+            List<object> exportData = new List<object>();
+
+            // Load PST and iterate messages
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messageInfos = client.ListMessages("Inbox");
+                // Access the Inbox folder (adjust name if needed)
+                FolderInfo inboxFolder = pst.RootFolder.GetSubFolder("Inbox");
 
-                // Prepare a collection for JSON serialization
-                List<object> reportItems = new List<object>();
-
-                foreach (ExchangeMessageInfo info in messageInfos)
+                foreach (MessageInfo messageInfo in inboxFolder.EnumerateMessages())
                 {
-                    // Fetch the message as a MAPI object to access voting buttons and follow‑up options
-                    using (MapiMessage mapiMessage = client.FetchMapiMessage(info.UniqueUri))
+                    using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
                     {
                         // Retrieve voting button labels
                         string[] votingButtons = FollowUpManager.GetVotingButtons(mapiMessage);
 
-                        // Retrieve follow‑up options (may contain due date)
-                        FollowUpOptions options = FollowUpManager.GetOptions(mapiMessage);
-                        DateTime? dueDate = null;
-                        if (options != null && options.DueDate != DateTime.MinValue)
-                        {
-                            dueDate = options.DueDate;
-                        }
+                        // Retrieve follow‑up options to get due date
+                        FollowUpOptions followUpOptions = FollowUpManager.GetOptions(mapiMessage);
+                        DateTime? dueDate = followUpOptions?.DueDate;
 
-                        // Create an anonymous object for the current message
-                        var item = new
+                        // Build an anonymous object for JSON serialization
+                        var entry = new
                         {
-                            Subject = info.Subject,
+                            Subject = mapiMessage.Subject,
                             VotingButtons = votingButtons,
-                            DueDate = dueDate
+                            DueDate = dueDate?.ToString("o") // ISO 8601 format
                         };
 
-                        reportItems.Add(item);
+                        exportData.Add(entry);
                     }
                 }
+            }
 
-                // Define output file path
-                string outputPath = "voting_report.json";
-                string outputDirectory = Path.GetDirectoryName(outputPath);
+            // Serialize the list to JSON
+            string json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions { WriteIndented = true });
 
-                // Ensure the output directory exists
-                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(jsonOutputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
 
-                // Serialize to JSON and write to file
-                try
-                {
-                    string json = JsonSerializer.Serialize(reportItems, new JsonSerializerOptions { WriteIndented = true });
-                    File.WriteAllText(outputPath, json);
-                    Console.WriteLine($"Report saved to {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to write JSON file: {ex.Message}");
-                }
+            // Write JSON to file with error handling
+            try
+            {
+                File.WriteAllText(jsonOutputPath, json);
+                Console.WriteLine($"Export completed successfully. JSON saved to: {jsonOutputPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to write JSON file: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
