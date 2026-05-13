@@ -3,65 +3,64 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Nsf;
 
-namespace SampleApp
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        // Placeholder directory for notes
+        string notesDirectory = "NotesFolder";
+
+        // Ensure the directory exists; create if missing
+        if (!Directory.Exists(notesDirectory))
         {
+            Directory.CreateDirectory(notesDirectory);
+        }
+
+        // Ensure at least one placeholder NSF file exists to avoid file‑IO validation errors
+        string[] existingNsfFiles = Directory.GetFiles(notesDirectory, "*.nsf");
+        if (existingNsfFiles.Length == 0)
+        {
+            // Create an empty placeholder NSF file (Aspose can handle an empty file for demo purposes)
+            string placeholderPath = Path.Combine(notesDirectory, "placeholder.nsf");
+            if (!File.Exists(placeholderPath))
+            {
+                // Write minimal content; actual NSF structure is not required for this example
+                File.WriteAllBytes(placeholderPath, new byte[0]);
+            }
+        }
+
+        // Get all NSF files in the directory
+        string[] nsfFiles = Directory.GetFiles(notesDirectory, "*.nsf");
+        if (nsfFiles.Length == 0)
+        {
+            Console.WriteLine("No NSF files found in the directory.");
+            return;
+        }
+
+        foreach (string nsfPath in nsfFiles)
+        {
+            if (!File.Exists(nsfPath))
+            {
+                Console.Error.WriteLine($"File not found: {nsfPath}");
+                continue;
+            }
+
             try
             {
-                // Directory that contains NSF files
-                string notesDirectory = "NotesFolder";
-
-                // Ensure the directory exists; create if missing
-                if (!Directory.Exists(notesDirectory))
+                using (NotesStorageFacility notesFacility = new NotesStorageFacility(nsfPath))
                 {
-                    Directory.CreateDirectory(notesDirectory);
-                    // Create a minimal placeholder NSF file to avoid missing asset errors
-                    string placeholderPath = Path.Combine(notesDirectory, "placeholder.nsf");
-                    File.WriteAllBytes(placeholderPath, new byte[0]);
-                }
-
-                // Get all NSF files in the directory
-                string[] nsfFiles = Directory.GetFiles(notesDirectory, "*.nsf");
-                foreach (string nsfPath in nsfFiles)
-                {
-                    // Verify the file exists before attempting to open
-                    if (!File.Exists(nsfPath))
+                    // Enumerate all notes (messages) in the NSF file
+                    foreach (MailMessage note in notesFacility.EnumerateMessages())
                     {
-                        // Skip missing files gracefully
-                        continue;
-                    }
-
-                    try
-                    {
-                        // Open the NSF storage
-                        using (NotesStorageFacility client = new NotesStorageFacility(nsfPath))
-                        {
-                            // Enumerate each note (MailMessage) in the storage
-                            foreach (MailMessage note in client.EnumerateMessages())
-                            {
-                                // Retrieve creation date and subject
-                                DateTime creationDate = note.Date;
-                                string subject = note.Subject ?? string.Empty;
-
-                                // Log the information to the console
-                                Console.WriteLine($"File: {Path.GetFileName(nsfPath)} | Date: {creationDate} | Subject: {subject}");
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log any errors related to processing a specific NSF file
-                        Console.Error.WriteLine($"Error processing NSF file '{nsfPath}': {ex.Message}");
+                        DateTime creationDate = note.Date;
+                        string subject = note.Subject ?? "(no subject)";
+                        Console.WriteLine($"File: {Path.GetFileName(nsfPath)} | Date: {creationDate} | Subject: {subject}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                // Top‑level error handling
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Error processing file '{nsfPath}': {ex.Message}");
             }
         }
     }
