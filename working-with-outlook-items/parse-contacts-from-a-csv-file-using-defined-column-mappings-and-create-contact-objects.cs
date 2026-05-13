@@ -1,109 +1,106 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Aspose.Email.PersonalInfo;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define input CSV and output directory paths
+            // Path to the CSV file
             string csvPath = "contacts.csv";
-            string outputDir = "OutputVcards";
 
-            // Ensure the CSV file exists; create a minimal placeholder if missing
+            // Ensure the CSV file exists; create a minimal placeholder if it does not
             if (!File.Exists(csvPath))
             {
-                try
+                var placeholderLines = new[]
                 {
-                    using (var writer = new StreamWriter(csvPath))
-                    {
-                        writer.WriteLine("GivenName,Surname,Email");
-                        writer.WriteLine("John,Doe,john.doe@example.com");
-                    }
-                }
-                catch (Exception ex)
+                    "DisplayName,GivenName,Surname,Email",
+                    "John Doe,John,Doe,john.doe@example.com",
+                    "Jane Smith,Jane,Smith,jane.smith@example.com"
+                };
+                File.WriteAllLines(csvPath, placeholderLines);
+                Console.WriteLine($"Placeholder CSV file created at: {csvPath}");
+            }
+
+            // List to hold the created contacts
+            List<Contact> contacts = new List<Contact>();
+
+            // Read and parse the CSV file
+            using (FileStream fileStream = new FileStream(csvPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader reader = new StreamReader(fileStream))
+            {
+                // Read header line and build column index map
+                string headerLine = reader.ReadLine();
+                if (headerLine == null)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder CSV: {ex.Message}");
+                    Console.Error.WriteLine("CSV file is empty.");
                     return;
                 }
-            }
 
-            // Ensure the output directory exists
-            try
-            {
-                if (!Directory.Exists(outputDir))
+                string[] headers = headerLine.Split(',');
+                Dictionary<string, int> columnMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < headers.Length; i++)
                 {
-                    Directory.CreateDirectory(outputDir);
+                    columnMap[headers[i].Trim()] = i;
+                }
+
+                // Expected column names (adjust as needed)
+                const string displayNameColumn = "DisplayName";
+                const string givenNameColumn = "GivenName";
+                const string surnameColumn = "Surname";
+                const string emailColumn = "Email";
+
+                // Read each data line
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    string[] fields = line.Split(',');
+
+                    Contact contact = new Contact();
+
+                    // Map DisplayName
+                    if (columnMap.TryGetValue(displayNameColumn, out int displayNameIdx) && displayNameIdx < fields.Length)
+                        contact.DisplayName = fields[displayNameIdx].Trim();
+
+                    // Map GivenName
+                    if (columnMap.TryGetValue(givenNameColumn, out int givenNameIdx) && givenNameIdx < fields.Length)
+                        contact.GivenName = fields[givenNameIdx].Trim();
+
+                    // Map Surname
+                    if (columnMap.TryGetValue(surnameColumn, out int surnameIdx) && surnameIdx < fields.Length)
+                        contact.Surname = fields[surnameIdx].Trim();
+
+                    // Map Email (adds to EmailAddresses collection)
+                    if (columnMap.TryGetValue(emailColumn, out int emailIdx) && emailIdx < fields.Length)
+                    {
+                        string email = fields[emailIdx].Trim();
+                        if (!string.IsNullOrEmpty(email))
+                        {
+                            contact.EmailAddresses.Add(new EmailAddress(email));
+                        }
+                    }
+
+                    contacts.Add(contact);
                 }
             }
-            catch (Exception ex)
+
+            // Output the created contacts
+            foreach (Contact c in contacts)
             {
-                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                return;
-            }
-
-            // Read all lines from the CSV
-            string[] lines;
-            try
-            {
-                lines = File.ReadAllLines(csvPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to read CSV file: {ex.Message}");
-                return;
-            }
-
-            // Parse contacts (skip header)
-            var contacts = new List<Contact>();
-            for (int i = 1; i < lines.Length; i++)
-            {
-                string line = lines[i];
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                string[] parts = line.Split(',');
-                if (parts.Length < 3)
-                    continue; // insufficient data
-
-                string givenName = parts[0].Trim();
-                string surname = parts[1].Trim();
-                string email = parts[2].Trim();
-
-                var contact = new Contact
-                {
-                    GivenName = givenName,
-                    Surname = surname
-                };
-                contact.EmailAddresses.Add(new EmailAddress(email));
-
-                contacts.Add(contact);
-            }
-
-            // Save each contact as a vCard file
-            foreach (Contact contact in contacts)
-            {
-                string fileName = $"{contact.GivenName}_{contact.Surname}.vcf";
-                string vcardPath = Path.Combine(outputDir, fileName);
-
-                try
-                {
-                    contact.Save(vcardPath);
-                    Console.WriteLine($"Saved vCard: {vcardPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save vCard for {contact.GivenName} {contact.Surname}: {ex.Message}");
-                }
+                string email = c.EmailAddresses.Count > 0 ? c.EmailAddresses[0].Address : "N/A";
+                Console.WriteLine($"Contact: {c.DisplayName}, Email: {email}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
