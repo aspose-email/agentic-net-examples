@@ -9,19 +9,26 @@ class Program
     {
         try
         {
+            string inputPath = "task.ics";
             string originalPath = "originalTask.msg";
             string clonePath = "cloneTask.msg";
 
-            // Ensure the original task file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(originalPath))
+            // Ensure the input .ics file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    MapiMessage placeholder = new MapiMessage();
-                    placeholder.Subject = "Sample Task";
-                    placeholder.Body = "This is a placeholder task.";
-                    placeholder.MessageClass = "IPM.Task";
-                    placeholder.Save(originalPath);
+                    using (StreamWriter writer = new StreamWriter(inputPath))
+                    {
+                        writer.WriteLine("BEGIN:VCALENDAR");
+                        writer.WriteLine("VERSION:2.0");
+                        writer.WriteLine("BEGIN:VTODO");
+                        writer.WriteLine("SUMMARY:Placeholder Task");
+                        writer.WriteLine("DTSTART:20240101T090000Z");
+                        writer.WriteLine("DUE:20240102T090000Z");
+                        writer.WriteLine("END:VTODO");
+                        writer.WriteLine("END:VCALENDAR");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -30,34 +37,55 @@ class Program
                 }
             }
 
-            // Load the original task message.
-            using (MapiMessage originalMessage = MapiMessage.Load(originalPath))
+            // Load the task from the .ics file
+            MapiTask originalTask = null;
+            try
             {
-                // Clone the original message.
-                using (MapiMessage clonedMessage = (MapiMessage)originalMessage.Clone())
+                originalTask = MapiTask.FromVTodo(inputPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load task: {ex.Message}");
+                return;
+            }
+
+            using (originalTask)
+            {
+                // Save the original task as MSG
+                try
                 {
-                    // Modify the subject of the cloned task.
-                    clonedMessage.Subject = "Modified Task Subject";
+                    originalTask.Save(originalPath, TaskSaveFormat.Msg);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save original task: {ex.Message}");
+                    return;
+                }
 
-                    // Save the original message (unchanged or updated).
-                    try
-                    {
-                        originalMessage.Save(originalPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save original task: {ex.Message}");
-                    }
+                // Clone the task by copying its properties
+                MapiTask clonedTask = new MapiTask();
+                try
+                {
+                    clonedTask.Subject = originalTask.Subject;
+                    clonedTask.Body = originalTask.Body;
+                    clonedTask.StartDate = originalTask.StartDate;
+                    clonedTask.DueDate = originalTask.DueDate;
+                    clonedTask.Priority = originalTask.Priority;
+                    clonedTask.PercentComplete = originalTask.PercentComplete;
 
-                    // Save the cloned message to a new file.
-                    try
-                    {
-                        clonedMessage.Save(clonePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save cloned task: {ex.Message}");
-                    }
+                    // Modify the clone's subject
+                    clonedTask.Subject = clonedTask.Subject + " - Clone";
+
+                    // Save the cloned task as MSG
+                    clonedTask.Save(clonePath, TaskSaveFormat.Msg);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to clone or save task: {ex.Message}");
+                }
+                finally
+                {
+                    clonedTask.Dispose();
                 }
             }
         }
