@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
@@ -9,62 +10,81 @@ class Program
     {
         try
         {
-            // Path to the Outlook MSG file
-            string filePath = "sample.msg";
+            string messagePath = "sample.msg";
 
-            // Verify that the file exists before attempting to load it
-            if (!File.Exists(filePath))
+            // Ensure the file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(messagePath))
             {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
+                        "sender@example.com",
+                        "recipient@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(filePath);
+                        placeholder.Save(messagePath);
+                        Console.WriteLine($"Created placeholder message at '{messagePath}'.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
                     return;
                 }
-
-                Console.Error.WriteLine($"File not found: {filePath}");
-                return;
             }
 
-            // Load the MSG file inside a using block to ensure proper disposal
-            using (MapiMessage message = MapiMessage.Load(filePath))
+            // Load the message and read transport headers.
+            try
             {
-                // Retrieve the raw transport headers
-                string transportHeaders = message.TransportMessageHeaders;
-
-                if (string.IsNullOrEmpty(transportHeaders))
+                using (MapiMessage message = MapiMessage.Load(messagePath))
                 {
-                    Console.WriteLine("No transport headers found in the message.");
-                    return;
-                }
+                    string transportHeaders = message.TransportMessageHeaders;
 
-                // Split the headers into individual lines
-                string[] headerLines = transportHeaders.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-
-                // Log any "Received:" headers which represent routing information
-                foreach (string headerLine in headerLines)
-                {
-                    if (headerLine.StartsWith("Received:", StringComparison.OrdinalIgnoreCase))
+                    if (string.IsNullOrEmpty(transportHeaders))
                     {
-                        Console.WriteLine(headerLine.Trim());
+                        Console.WriteLine("No transport headers found in the message.");
+                        return;
+                    }
+
+                    // Split headers into individual lines.
+                    string[] headerLines = transportHeaders.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                    List<string> unexpectedHeaders = new List<string>();
+
+                    foreach (string line in headerLines)
+                    {
+                        string trimmed = line.Trim();
+
+                        // Consider "Received:" lines as expected routing information.
+                        if (!trimmed.StartsWith("Received:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            unexpectedHeaders.Add(trimmed);
+                        }
+                    }
+
+                    if (unexpectedHeaders.Count == 0)
+                    {
+                        Console.WriteLine("All transport headers are expected (only Received lines).");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Unexpected transport headers detected:");
+                        foreach (string unexpected in unexpectedHeaders)
+                        {
+                            Console.WriteLine($"  {unexpected}");
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing message file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            // Gracefully handle any unexpected errors
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }
