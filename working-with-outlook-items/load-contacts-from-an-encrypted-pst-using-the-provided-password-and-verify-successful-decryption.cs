@@ -1,7 +1,7 @@
 using Aspose.Email.PersonalInfo;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
@@ -11,7 +11,7 @@ class Program
     {
         try
         {
-            string pstPath = "EncryptedContacts.pst";
+            string pstPath = "encrypted.pst";
             string password = "SecretPassword";
 
             // Ensure PST file exists; create a minimal placeholder if missing
@@ -19,10 +19,8 @@ class Program
             {
                 try
                 {
-                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Empty PST created
-                    }
+                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode)) { }
+                    Console.WriteLine($"Placeholder PST created at '{pstPath}'.");
                 }
                 catch (Exception ex)
                 {
@@ -34,43 +32,37 @@ class Program
             // Load the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                MessageStore store = pst.Store;
-
-                // Verify password if the PST is protected
-                if (store.IsPasswordProtected)
+                // Verify if the PST is password protected
+                if (pst.Store.IsPasswordProtected)
                 {
-                    if (!store.IsPasswordValid(password))
-                    {
-                        Console.Error.WriteLine("Invalid password for the PST file.");
-                        return;
-                    }
+                    bool isValid = pst.Store.IsPasswordValid(password);
+                    Console.WriteLine(isValid
+                        ? "Password is valid. PST decrypted successfully."
+                        : "Invalid password. Cannot decrypt PST.");
+                    if (!isValid) return;
+                }
+                else
+                {
+                    Console.WriteLine("PST is not password protected.");
                 }
 
                 // Access the Contacts folder
                 FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
-                if (contactsFolder == null)
-                {
-                    Console.Error.WriteLine("Contacts folder not found in the PST.");
-                    return;
-                }
+                Console.WriteLine($"Contacts folder contains {contactsFolder.ContentCount} items.");
 
-                // Enumerate contact messages
+                // Enumerate contacts (stored as MAPI messages)
                 foreach (MessageInfo msgInfo in contactsFolder.EnumerateMessages())
                 {
-                    using (MapiMessage contactMsg = pst.ExtractMessage(msgInfo))
+                    using (MapiMessage contactMessage = pst.ExtractMessage(msgInfo))
                     {
-                        // Decrypt the message if it is encrypted
-                        MapiMessage decrypted = contactMsg.IsEncrypted ? contactMsg.Decrypt() : contactMsg;
-
-                        // Output basic contact information (Subject often holds the display name)
-                        Console.WriteLine($"Contact Subject: {decrypted.Subject}");
+                        Console.WriteLine($"Contact Subject: {contactMessage.Subject}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
