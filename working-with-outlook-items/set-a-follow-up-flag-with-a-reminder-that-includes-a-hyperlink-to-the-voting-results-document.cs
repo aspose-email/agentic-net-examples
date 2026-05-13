@@ -9,8 +9,10 @@ class Program
     {
         try
         {
-            // Define output file path
-            string outputPath = "FollowUpMessage.msg";
+            // Define output file path for the draft message
+            string outputPath = "DraftMessage.msg";
+
+            // Ensure the output directory exists
             string outputDirectory = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
@@ -22,22 +24,23 @@ class Program
                 "sender@example.com",
                 "recipient@example.com",
                 "Follow‑up Request",
-                "Please review the voting results: https://example.com/vote-results"))
+                "Please review the voting results: https://example.com/vote-results.docx"))
             {
-                // Set a follow‑up flag with a reminder (due in 2 days)
-                DateTime startDate = DateTime.Now;
-                DateTime dueDate = startDate.AddDays(2);
-                FollowUpManager.SetFlag(message, "Please respond", startDate, dueDate);
+                // Set a follow‑up flag for recipients with a reminder time
+                DateTime reminderTime = DateTime.Now.AddHours(2);
+                FollowUpManager.SetFlagForRecipients(message,
+                    "Please review the voting results: https://example.com/vote-results.docx",
+                    reminderTime);
 
-                // Save the message to a file
+                // Save the draft message to a file
                 try
                 {
                     message.Save(outputPath);
-                    Console.WriteLine($"Message saved to: {outputPath}");
+                    Console.WriteLine($"Draft message saved to: {outputPath}");
                 }
-                catch (Exception ex)
+                catch (Exception ioEx)
                 {
-                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save the message: {ioEx.Message}");
                     return;
                 }
             }
