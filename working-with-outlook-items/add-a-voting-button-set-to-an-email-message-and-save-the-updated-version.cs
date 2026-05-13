@@ -9,36 +9,29 @@ class Program
     {
         try
         {
-            string inputPath = "input.msg";
             string outputPath = "output.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                using (MapiMessage placeholder = new MapiMessage(
-                    "sender@example.com",
-                    "recipient@example.com",
-                    "Placeholder Subject",
-                    "Placeholder body"))
-                {
-                    placeholder.Save(inputPath);
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the existing message
-            using (MapiMessage message = MapiMessage.Load(inputPath))
+            // Create a new MAPI message
+            using (MapiMessage message = new MapiMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is the body of the email."))
             {
-                // Add voting buttons
+                // Add a voting button named "Approve"
                 FollowUpManager.AddVotingButton(message, "Approve");
-                FollowUpManager.AddVotingButton(message, "Reject");
 
-                // Save the updated message
+                // Save the updated message to a file
                 message.Save(outputPath);
+                Console.WriteLine($"Message saved to: {outputPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
