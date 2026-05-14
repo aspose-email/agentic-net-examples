@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 2719,
+  "total_examples": 2773,
   "total_categories": 17,
-  "last_updated": "2026-05-12",
+  "last_updated": "2026-05-13",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -3342,10 +3342,12 @@
     },
     {
       "name": "working-with-outlook-items",
-      "file_count": 438,
+      "file_count": 492,
       "files": [
         "access-the-files-collection-from-the-cast-drageventargs-to-obtain-dropped-items.cs",
         "add-a-cancel-voting-button-and-ensure-it-appears-correctly-in-the-outlook-client-preview.cs",
+        "add-a-custom-disclaimer-to-the-footer-of-every-email-in-a-pst-before-archiving.cs",
+        "add-a-custom-flag-to-messages-that-contain-attachments-larger-than-a-configurable-threshold.cs",
         "add-a-custom-mapi-property-to-each-email-in-a-pst-folder-to-track-processing-status.cs",
         "add-a-custom-mapi-property-to-track-processing-timestamps-for-each-message.cs",
         "add-a-custom-property-to-calendar-items-indicating-the-project-code-and-save-changes.cs",
@@ -3357,10 +3359,12 @@
         "add-a-recurring-weekly-task-that-occurs-on-fridays-only-then-export-it-to-mht-for-preview.cs",
         "add-a-reference-to-aspose-outlook-control-in-the-net-project.cs",
         "add-a-thumbs-up-reaction-to-an-msg-message-for-a-specific-user-programmatically.cs",
+        "add-a-timestamp-to-each-exported-contact-file-name-to-uniquely-identify-generation-time.cs",
         "add-a-voting-button-set-to-an-email-message-and-save-the-updated-version.cs",
         "add-an-audio-reminder-to-a-meeting-by-specifying-a-wav-file-path-in-the-reminderaudio-property.cs",
         "add-an-inline-image-to-the-html-body-of-an-email-and-ensure-proper-cid-referencing.cs",
         "add-custom-user-defined-fields-to-each-contact-and-ensure-they-are-included-during-export.cs",
+        "add-multiple-file-attachments-to-a-task-then-verify-the-attachment-count-before-saving.cs",
         "add-selected-contacts-to-an-existing-distribution-list-programmatically-ensuring-no-duplicate-members-are-introduced.cs",
         "add-voting-buttons-to-a-message-and-verify-that-the-msg-file-size-increases-accordingly.cs",
         "add-yes-no-and-maybe-voting-buttons-to-a-message-and-verify-correct-ordering.cs",
@@ -3368,19 +3372,25 @@
         "apply-a-custom-follow-up-category-named-finance-review-to-an-msg-message-for-routing.cs",
         "apply-a-custom-header-indicating-processing-stage-to-each-message-during-workflow-transitions.cs",
         "apply-a-custom-prefix-to-all-contact-display-names-during-export-to-differentiate-them-in-the-target-system.cs",
+        "apply-a-custom-time-stamp-to-the-senton-property-of-messages-during-batch-import.cs",
         "apply-a-default-domain-to-contacts-missing-email-addresses-ensuring-every-contact-has-a-valid-email.cs",
+        "apply-a-filter-to-exclude-contacts-marked-as-do-not-email-from-any-outbound-mailing-operations.cs",
         "apply-a-filter-to-load-only-tasks-whose-subject-contains-the-word-project-from-msg-files.cs",
         "apply-a-time-zone-offset-of-utc-5-30-to-an-appointment-and-verify-the-displayed-start-time-adjusts-accordingly.cs",
+        "apply-compression-when-saving-large-contact-files-to-reduce-storage-size-without-losing-data-integrity.cs",
         "apply-conditional-formatting-to-contacts-when-exporting-to-excel-highlighting-rows-with-missing-email-addresses.cs",
         "apply-custom-sorting-based-on-a-user-defined-field-value-ordering-contacts-accordingly-before-export.cs",
+        "apply-locale-specific-date-formatting-when-exporting-contacts-to-ensure-dates-appear-correctly-for-target-region.cs",
         "assign-a-follow-up-flag-to-a-specific-recipient-requiring-response-before-a-defined-deadline.cs",
         "assign-different-follow-up-flags-to-multiple-recipients-within-the-same-msg-based-on-their-roles.cs",
+        "attach-a-pdf-document-to-a-calendar-appointment-then-retrieve-and-verify-the-attachment-using-calendarreader.cs",
         "attach-an-image-file-to-a-note-and-verify-the-image-is-embedded-when-reopened.cs",
         "automatically-add-a-review-needed-voting-button-when-a-message-contains-the-word-draft.cs",
         "automatically-assign-a-follow-up-flag-to-messages-containing-the-word-urgent-for-priority-handling.cs",
         "automatically-clear-voting-buttons-after-the-voting-deadline-has-passed-to-maintain-data-integrity.cs",
         "batch-convert-a-collection-of-msg-task-files-to-html-preserving-each-task-fields-in-separate-files.cs",
         "batch-convert-msg-files-to-eml-and-generate-a-summary-csv-listing-conversion-success-or-failure.cs",
+        "batch-generate-html-files-for-tasks-naming-each-file-after-the-task-subject-with-safe-characters.cs",
         "batch-job-processes-msg-files-adds-voting-buttons-and-moves-them-to-a-processed-folder.cs",
         "batch-load-msg-files-and-archive-those-older-than-one-year-into-a-compressed-zip-package.cs",
         "batch-load-msg-files-and-compress-all-of-them-into-a-single-archive-for-backup-purposes.cs",
@@ -3395,6 +3405,7 @@
         "batch-process-msg-files-to-remove-any-duplicate-attachments-across-messages-and-save-cleaned-versions.cs",
         "batch-process-reading-voting-results-from-msg-files-and-update-a-central-database-table.cs",
         "batch-rename-attachment-files-in-multiple-msg-items-using-a-predefined-naming-convention.cs",
+        "batch-update-the-read-receipt-request-flag-for-messages-older-than-one-year.cs",
         "build-a-gui-wizard-guiding-users-through-step-by-step-conversion-and-options-selection-for-msg-files.cs",
         "check-if-a-message-has-any-follow-up-flags-set-before-performing-batch-archiving-operations.cs",
         "clear-all-voting-buttons-and-then-add-a-single-accepted-button-to-simplify-responses.cs",
@@ -3408,8 +3419,10 @@
         "compress-all-attachments-in-an-msg-message-into-a-single-zip-archive-before-saving.cs",
         "compress-attachments-larger-than-10-mb-using-gzip-before-saving-the-email-to-pst.cs",
         "configure-a-daily-recurrence-pattern-on-a-task-to-repeat-every-three-days-starting-tomorrow.cs",
+        "configure-a-meeting-request-to-never-end-its-recurrence-by-setting-the-endtype-enumeration-to-neverend.cs",
         "configure-msgloadoptions-to-skip-loading-embedded-messages-when-processing-large-msg-files.cs",
         "confirm-that-all-saved-files-can-be-reopened-as-aspose-mailmessage-objects-to-validate-integrity.cs",
+        "convert-a-calendar-item-from-msg-to-ics-format-while-ensuring-the-product-identifier-remains-unchanged.cs",
         "convert-a-distribution-list-into-a-json-array-including-member-names-and-email-addresses.cs",
         "convert-a-distribution-list-into-an-outlook-rule-file-enabling-automatic-handling-of-incoming-messages.cs",
         "convert-a-distribution-list-stored-in-pst-to-a-csv-file-mapping-members-to-rows.cs",
@@ -3423,6 +3436,10 @@
         "convert-an-msg-to-eml-and-verify-that-all-original-attachments-are-present-in-the-resulting-file.cs",
         "convert-an-msg-to-eml-and-verify-that-mime-boundaries-are-correctly-generated.cs",
         "convert-an-msg-to-eml-while-compressing-all-attachments-into-a-zip-archive.cs",
+        "convert-contact-photo-streams-to-png-format-during-export-to-ensure-compatibility-with-most-image-viewers.cs",
+        "convert-contacts-to-a-proprietary-crm-xml-schema-mapping-fields-to-match-the-target-system-requirements.cs",
+        "create-a-backup-of-all-contacts-by-compressing-them-into-a-zip-archive-with-timestamped-filename.cs",
+        "create-a-calendar-item-with-multiple-attendees-assign-each-attendee-a-different-response-status-and-save-as-msg.cs",
         "create-a-custom-contact-view-that-hides-private-fields-displaying-only-public-information-to-end-users.cs",
         "create-a-daily-recurrence-that-excludes-weekends-by-setting-the-pattern-dayofweekmask-accordingly.cs",
         "create-a-mapicalendartimezone-from-the-system-timezoneinfo-for-pacific-standard-time-and-assign-it-to-an-event.cs",
@@ -3438,9 +3455,11 @@
         "create-a-panel-control-to-act-as-the-outlook-message-drop-target.cs",
         "create-a-read-only-snapshot-of-a-distribution-list-for-compliance-audits-preventing-any-modifications-to-the-list.cs",
         "create-a-read-only-view-of-contacts-for-audit-purposes-preventing-any-modifications-to-the-underlying-data.cs",
+        "create-a-rule-to-move-messages-with-specific-attachment-extensions-to-a-quarantine-folder.cs",
         "create-a-scheduled-job-that-synchronizes-contacts-nightly-to-a-remote-server-handling-conflicts-and-logging-results.cs",
         "create-a-scheduled-task-that-scans-a-directory-and-adds-a-default-voting-button-to-missing-msg-files.cs",
         "create-a-script-that-adds-a-follow-up-flag-with-uniform-due-date-to-each-msg-file.cs",
+        "create-a-task-set-its-history-entries-and-export-the-task-to-html-with-history-displayed.cs",
         "create-a-task-with-a-monthly-recurrence-on-the-15th-day-and-verify-the-next-occurrence-date.cs",
         "create-a-task-with-a-yearly-recurrence-on-february-29th-and-handle-non-leap-year-scenarios.cs",
         "create-a-task-with-an-estimated-effort-of-eight-hours-and-verify-the-value-after-loading.cs",
@@ -3472,6 +3491,7 @@
         "display-the-count-of-dropped-messages-to-the-user-for-confirmation.cs",
         "enable-a-reminder-for-a-task-by-setting-reminder-date-time-and-the-reminder-flag.cs",
         "enable-the-panel-to-accept-drag-and-drop-operations-by-setting-allowdrop-to-true.cs",
+        "encrypt-a-contact-file-with-a-password-using-aes-encryption-to-protect-sensitive-information.cs",
         "ensure-each-saved-file-uses-the-msg-format-as-required-by-the-control.cs",
         "ensure-only-outlook-message-files-are-processed-by-checking-the-file-type-within-files-collection.cs",
         "enumerate-all-recipients-in-a-pst-folder-and-log-their-email-addresses-to-a-text-file.cs",
@@ -3480,16 +3500,23 @@
         "export-a-json-file-containing-each-message-voting-button-labels-and-the-number-of-votes-received.cs",
         "export-a-list-of-messages-with-their-voting-button-configurations-to-a-json-array-for-external-processing.cs",
         "export-a-list-of-messages-with-voting-button-labels-and-corresponding-follow-up-due-dates-to-json.cs",
+        "export-a-mapitask-to-mht-format-preserving-all-task-fields-for-web-based-viewing.cs",
+        "export-all-contacts-to-a-json-document-structuring-each-contact-as-a-separate-json-object.cs",
         "export-contacts-along-with-their-associated-notes-to-a-plain-text-file-preserving-line-breaks-for-readability.cs",
         "export-contacts-into-a-csv-file-with-custom-delimiters-and-include-header-rows-for-each-column.cs",
         "export-contacts-to-a-fixed-width-text-file-for-legacy-system-import-defining-column-widths-for-each-field.cs",
         "export-contacts-to-a-markdown-table-including-columns-for-name-email-and-phone-for-documentation.cs",
         "export-contacts-to-a-yaml-file-preserving-hierarchical-relationships-such-as-groups-and-sub-groups.cs",
+        "export-contacts-with-embedded-photos-and-save-each-photo-as-a-separate-png-image-file.cs",
+        "export-contacts-with-their-associated-tasks-to-a-csv-file-including-task-status-and-due-dates.cs",
         "export-contacts-with-their-birthday-fields-formatted-as-iso-8601-dates-for-standardized-data-exchange.cs",
+        "export-contacts-with-their-categories-as-separate-worksheets-in-an-excel-workbook-for-organized-presentation.cs",
         "export-distribution-list-members-to-a-csv-file-with-headers-for-name-email-and-assigned-role-columns.cs",
         "export-distribution-list-members-to-a-json-file-with-nested-address-objects-for-detailed-location-representation.cs",
         "export-distribution-list-members-to-an-xml-file-with-hierarchical-structure-representing-groups-and-sub-groups.cs",
         "export-follow-up-flag-details-including-due-dates-and-assigned-recipients-to-a-csv-file-for-reporting.cs",
+        "export-the-complete-mapi-property-set-of-a-message-to-an-xml-document-for-analysis.cs",
+        "export-vote-results-and-reaction-counts-to-an-excel-worksheet-for-stakeholder-analysis.cs",
         "export-voting-button-configurations-and-follow-up-flag-settings-to-separate-csv-files-for-independent-analysis.cs",
         "expose-a-rest-endpoint-that-returns-the-message-metadata-in-json-format-for-integration-purposes.cs",
         "extract-a-calendar-appointment-from-an-msg-file-and-export-it-as-an-icalendar-ics-file.cs",
@@ -3502,6 +3529,7 @@
         "extract-the-subject-and-body-from-a-msg-note-and-write-them-to-a-plain-text-file.cs",
         "extract-vote-results-including-each-recipient-response-and-response-time-from-an-msg-file.cs",
         "filter-contacts-by-company-name-then-save-the-filtered-subset-to-a-new-csv-file.cs",
+        "filter-contacts-created-after-a-specific-date-and-archive-them-into-a-separate-pst-for-long-term-storage.cs",
         "for-each-file-invoke-file-save-with-a-msg-filename-to-store-the-message.cs",
         "generate-a-csv-file-containing-only-contact-email-addresses-for-use-in-bulk-mailing-campaigns.cs",
         "generate-a-daily-recurrence-pattern-with-a-two-day-interval-and-assign-it-to-a-meeting-request.cs",
@@ -3509,11 +3537,16 @@
         "generate-a-json-manifest-listing-all-messages-their-sizes-and-attachment-counts-in-a-pst.cs",
         "generate-a-log-entry-for-each-msg-indicating-whether-follow-up-flags-were-added-modified-or-removed.cs",
         "generate-a-monthly-recurrence-on-second-saturday-set-occurrence-count-to-five-and-export-the-pattern-as-rrule.cs",
+        "generate-a-pdf-directory-of-contacts-with-formatted-layout-including-photos-names-and-contact-details.cs",
+        "generate-a-pdf-report-listing-distribution-list-members-with-detailed-contact-information-and-formatted-headings.cs",
         "generate-a-recurrence-pattern-that-ends-after-ten-occurrences-and-apply-it-to-a-daily-appointment.cs",
+        "generate-a-report-of-all-messages-with-attachments-larger-than-5-mb-in-a-given-pst.cs",
         "generate-a-report-showing-messages-that-have-both-voting-buttons-and-follow-up-flags-enabled.cs",
         "generate-a-summary-json-file-containing-contact-statistics-such-as-total-count-companies-and-average-age.cs",
         "generate-a-summary-report-of-voting-outcomes-showing-total-counts-for-each-voting-button.cs",
+        "generate-a-summary-report-that-counts-contacts-per-company-and-outputs-the-data-to-a-csv-summary-file.cs",
         "generate-an-html-file-for-each-task-that-includes-a-table-of-its-properties-and-values.cs",
+        "generate-an-html-page-listing-all-contacts-with-clickable-mailto-links-for-each-email-address.cs",
         "generate-an-rrule-for-a-daily-recurrence-that-stops-after-fifteen-occurrences-and-validate-the-rule-syntax.cs",
         "generate-an-rrule-for-a-daily-recurrence-with-an-interval-of-three-days-set-end-after-twenty-occurrences-and-generate-the-rrule.cs",
         "generate-vcard-3-0-files-for-each-contact-and-store-them-in-a-designated-output-directory.cs",
@@ -3531,12 +3564,16 @@
         "import-a-distribution-list-from-an-outlook-msg-file-and-rename-it-according-to-the-new-naming-convention.cs",
         "import-contacts-from-a-csv-file-that-uses-semicolon-delimiters-mapping-fields-to-appropriate-contact-properties.cs",
         "import-contacts-from-a-vcard-collection-file-containing-multiple-entries-handling-each-entry-individually.cs",
+        "import-contacts-from-an-excel-spreadsheet-using-column-mapping-to-align-spreadsheet-fields-with-contact-properties.cs",
+        "import-contacts-from-an-ldap-directory-into-a-pst-file-mapping-ldap-attributes-to-outlook-contact-fields.cs",
         "import-distribution-list-members-from-a-json-array-mapping-json-fields-to-contact-properties-during-load.cs",
         "in-the-dragdrop-handler-cast-the-generic-drageventargs-to-aspose-outlookcontrol-drageventargs.cs",
         "in-the-dragenter-handler-set-e-effect-to-dragdropeffects-copy-for-outlook-items.cs",
         "integrate-the-aspose-outlook-control-into-the-windows-forms-project-toolbox-for-design-time-use.cs",
         "iterate-through-all-notes-in-a-directory-logging-each-note-creation-date-and-subject.cs",
         "iterate-through-the-files-collection-using-a-foreach-loop-efficiently.cs",
+        "load-a-calendar-from-an-msg-file-enumerate-attendees-and-output-their-email-addresses-to-a-text-file.cs",
+        "load-a-distribution-list-from-a-pst-file-and-enumerate-its-member-entries-programmatically.cs",
         "load-a-folder-of-msg-files-add-a-review-voting-button-to-each-and-save-changes.cs",
         "load-a-msg-note-file-change-its-body-text-and-overwrite-the-original-file.cs",
         "load-a-note-change-its-subject-to-uppercase-and-save-the-modified-note-back-to-msg.cs",
@@ -3619,16 +3656,20 @@
         "load-an-msg-with-preserveembeddedmessageformat-set-to-true-to-keep-original-attachment-formats.cs",
         "load-an-outlook-msg-file-and-read-its-subject-sender-and-received-date-properties.cs",
         "load-contacts-from-a-pst-file-into-a-mailmessagecollection-for-further-processing.cs",
+        "load-contacts-from-a-sharepoint-document-library-using-the-rest-api-and-map-metadata-to-contact-fields.cs",
         "load-contacts-from-an-encrypted-pst-using-the-provided-password-and-verify-successful-decryption.cs",
+        "load-contacts-using-a-custom-property-filter-to-exclude-fields-such-as-notes-and-private-comments.cs",
         "load-contacts-using-a-custom-stream-that-decrypts-data-on-the-fly-eliminating-the-need-for-temporary-files.cs",
         "load-contacts-using-a-memory-stream-to-avoid-temporary-files-and-improve-processing-speed.cs",
         "load-msg-files-from-a-zip-stream-extract-attachments-and-save-them-to-a-folder.cs",
         "load-multiple-msg-files-and-detect-duplicate-attachment-filenames-across-the-collection.cs",
         "load-multiple-notes-from-a-directory-concatenate-their-bodies-and-write-the-combined-text-to-a-file.cs",
+        "map-custom-mapi-properties-to-user-defined-fields-during-contact-import-to-retain-additional-metadata.cs",
         "mark-a-calendar-appointment-as-tentative-by-manually-setting-its-state-property-to-the-appropriate-mapi-value.cs",
         "mark-an-existing-follow-up-flag-as-completed-after-the-associated-task-finishes-successfully.cs",
         "mark-follow-up-flags-as-completed-for-recipients-who-responded-positively-to-the-voting-poll.cs",
         "measure-performance-differences-between-loading-msg-from-a-file-versus-from-a-stream.cs",
+        "merge-contact-groups-from-multiple-pst-files-into-a-unified-list-removing-any-overlapping-entries-automatically.cs",
         "merge-duplicate-distribution-list-entries-based-on-email-similarity-consolidating-them-into-a-single-member-record.cs",
         "merge-two-separate-contact-files-into-a-single-pst-eliminating-duplicate-entries-during-import.cs",
         "optionally-present-a-savefiledialog-so-the-user-can-choose-the-destination-path.cs",
@@ -3639,8 +3680,11 @@
         "parse-an-rrule-string-representing-monthly-recurrence-and-apply-the-resulting-pattern-to-an-existing-calendar-item.cs",
         "parse-an-rrule-string-that-includes-count-and-interval-parameters-then-apply-the-pattern-to-a-calendar-event.cs",
         "parse-contacts-from-a-csv-file-using-defined-column-mappings-and-create-contact-objects.cs",
+        "perform-a-bulk-update-of-contact-titles-using-a-lookup-table-mapping-old-titles-to-new-values.cs",
         "perform-a-case-insensitive-search-for-contacts-by-last-name-and-return-matching-results-as-a-list.cs",
         "perform-an-integrity-check-on-a-pst-file-before-loading-contacts-to-ensure-the-file-is-not-corrupted.cs",
+        "perform-batch-conversion-of-multiple-pst-files-to-vcf-format-processing-each-file-sequentially-with-progress-logging.cs",
+        "perform-batch-deletion-of-contacts-that-match-a-blacklist-pattern-ensuring-no-unintended-records-are-removed.cs",
         "preserve-original-contact-categories-while-converting-between-file-formats-to-maintain-organizational-grouping.cs",
         "preserve-original-message-timestamps-when-converting-msg-to-eml-to-maintain-chronological-order.cs",
         "preserve-the-read-unread-flag-while-loading-msg-and-saving-it-back-unchanged.cs",
@@ -3664,6 +3708,7 @@
         "remove-all-reactions-from-an-msg-file-before-archiving-it-to-a-secure-location.cs",
         "remove-embedded-images-from-an-outlook-message-and-save-the-cleaned-version-as-a-new-msg-file.cs",
         "remove-follow-up-flags-from-messages-that-have-been-archived-for-more-than-one-year.cs",
+        "remove-follow-up-flags-from-messages-that-have-been-replied-to-and-log-the-action-for-audit.cs",
         "remove-follow-up-flags-from-messages-that-have-been-replied-to-indicating-no-further-follow-up-needed.cs",
         "remove-specific-members-from-a-distribution-list-based-on-their-role-attribute-to-refine-group-composition.cs",
         "remove-the-approve-voting-button-from-a-loaded-msg-message-using-removevotingbutton.cs",
@@ -3691,6 +3736,7 @@
         "retrieve-msg-messages-through-exchange-ews-and-extract-each-message-subject-and-sender-for-reporting.cs",
         "retrieve-reaction-emojis-and-count-occurrences-to-determine-the-most-popular-sentiment.cs",
         "retrieve-response-timestamps-for-each-voting-button-and-calculate-the-average-response-time.cs",
+        "retrieve-the-list-of-recipients-who-have-set-their-own-follow-up-flags-on-a-shared-msg-file.cs",
         "retrieve-the-list-of-voting-buttons-from-an-msg-file-and-display-them-in-the-console.cs",
         "retrieve-the-total-count-of-follow-up-flags-across-all-msg-files-in-a-specified-directory.cs",
         "retrieve-the-total-number-of-dropped-messages-using-files-count-property.cs",
@@ -3700,13 +3746,16 @@
         "save-a-distribution-list-into-a-pst-file-preserving-group-hierarchy-and-member-details.cs",
         "save-a-distribution-list-with-utf-8-encoding-to-support-international-characters-in-member-names-and-emails.cs",
         "save-a-mailmessage-as-msg-after-converting-it-from-an-existing-eml-file.cs",
+        "save-a-task-as-html-while-rendering-task-fields-using-htmlformatoptions-rendertaskfields-enumeration.cs",
         "save-a-task-with-unicode-characters-in-its-subject-and-body-to-ensure-proper-msg-encoding.cs",
+        "save-contacts-as-msg-files-one-file-per-contact-using-default-outlook-formatting.cs",
         "save-contacts-directly-to-a-network-share-ensuring-proper-file-permissions-are-applied-during-write-operation.cs",
         "save-contacts-to-a-temporary-file-process-it-and-then-securely-delete-the-file-after-completion.cs",
         "save-contacts-while-preserving-original-mapi-property-values-to-maintain-fidelity-during-format-conversion.cs",
         "script-removes-voting-buttons-from-messages-flagged-as-completed-to-tidy-up-metadata.cs",
         "select-distribution-list-members-whose-email-domain-matches-a-pattern-and-export-them-to-json.cs",
         "serialize-both-voting-and-follow-up-configurations-into-a-single-json-object-for-backup-purposes.cs",
+        "serialize-contacts-to-an-xml-document-and-validate-it-against-the-provided-xsd-schema-for-correctness.cs",
         "serialize-follow-up-flag-settings-to-xml-for-persistence-across-application-restarts.cs",
         "serialize-voting-options-from-an-msg-message-into-json-for-integration-with-external-services.cs",
         "set-a-custom-display-name-format-when-exporting-contacts-combining-first-name-and-last-name-with-a-separator.cs",
@@ -3737,12 +3786,15 @@
         "support-conversion-of-dropped-ics-calendar-items-to-msg-files-using-the-convert-method.cs",
         "synchronize-contacts-between-two-pst-files-keeping-the-most-recent-changes-and-resolving-conflicts-automatically.cs",
         "transform-contacts-from-a-pst-file-into-vcf-format-creating-one-vcard-per-contact-entry.cs",
+        "update-contact-addresses-using-responses-from-a-geocoding-api-enriching-location-data-with-latitude-and-longitude.cs",
         "update-contact-phone-numbers-using-an-external-mapping-dictionary-and-write-changes-back-to-the-source-file.cs",
         "update-the-due-date-of-an-existing-follow-up-flag-extending-it-by-two-additional-days.cs",
+        "update-the-importance-flag-of-multiple-msg-items-based-on-custom-priority-rules.cs",
         "update-the-name-of-a-distribution-list-based-on-recent-organizational-changes-and-save-the-updated-list.cs",
         "update-the-reply-to-address-of-an-email-using-a-lookup-table-and-save-changes.cs",
         "update-the-subject-line-of-an-msg-file-while-preserving-existing-voting-and-follow-up-settings.cs",
         "use-a-cancellation-token-to-abort-msg-loading-operation-if-it-exceeds-a-timeout.cs",
+        "use-a-configuration-file-to-define-import-field-mappings-allowing-flexible-adaptation-to-different-source-schemas.cs",
         "use-a-for-loop-alternative-to-iterate-through-files-when-index-based-processing-is-required.cs",
         "use-a-thread-pool-to-process-multiple-contact-files-in-parallel-reducing-overall-conversion-time.cs",
         "use-event-handlers-to-track-progress-during-bulk-contact-import-providing-real-time-feedback-to-the-user.cs",
@@ -3750,6 +3802,7 @@
         "use-followupmanager-to-set-a-flag-with-a-custom-reminder-message-explaining-required-actions.cs",
         "use-followupmanager-to-set-a-flag-with-a-custom-reminder-sound-for-high-visibility-alerts.cs",
         "use-followupmanager-to-set-a-high-importance-flag-with-a-reminder-on-an-msg-message.cs",
+        "use-linq-to-project-contact-names-and-email-addresses-into-a-simple-list-for-quick-reference.cs",
         "use-mailmessage-load-to-deserialize-an-msg-file-and-update-its-body-text-before-saving.cs",
         "use-mailmessage-load-to-parse-an-msg-and-extract-all-inline-images-to-a-local-folder.cs",
         "use-mailmessage-load-to-parse-an-msg-and-generate-an-html-preview-page-for-web-display.cs",
@@ -3768,6 +3821,7 @@
         "validate-that-all-contacts-have-at-least-one-phone-number-entry-flagging-those-that-lack-any.cs",
         "validate-that-all-distribution-list-members-have-valid-phone-numbers-reporting-any-entries-that-fail-validation.cs",
         "validate-that-all-messages-in-a-folder-have-a-valid-utf-8-encoded-subject-line.cs",
+        "validate-that-all-messages-in-a-pst-have-a-non-empty-subject-line-before-export.cs",
         "validate-that-an-msg-file-contains-at-least-one-voting-button-before-sending-it-through-smtp.cs",
         "validate-that-attachment-file-sizes-do-not-exceed-a-configurable-limit-before-saving-messages.cs",
         "validate-that-contact-email-domains-are-within-an-allowed-list-rejecting-any-addresses-from-unauthorized-domains.cs",
@@ -3786,94 +3840,106 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 438
+          "count": 492
         },
         {
           "name": "Aspose.Email",
-          "count": 431
+          "count": 485
         },
         {
           "name": "System.IO",
-          "count": 365
+          "count": 411
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 288
+          "count": 322
         },
         {
           "name": "System.Collections.Generic",
-          "count": 92
+          "count": 110
         },
         {
           "name": "Aspose.Email.PersonalInfo",
+          "count": 68
+        },
+        {
+          "name": "Aspose.Email.Storage.Pst",
           "count": 43
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 35
-        },
-        {
-          "name": "Aspose.Email.Storage.Pst",
-          "count": 33
+          "count": 34
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 27
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.Dav",
+          "count": 27
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange",
           "count": 26
         },
         {
           "name": "Aspose.Email.Calendar.Recurrences",
-          "count": 22
+          "count": 24
         },
         {
           "name": "System.Text",
-          "count": 21
-        },
-        {
-          "name": "Aspose.Email.Clients.Exchange",
-          "count": 18
+          "count": 22
         },
         {
           "name": "System.Text.Json",
-          "count": 18
-        },
-        {
-          "name": "Aspose.Email.Clients.Exchange.Dav",
-          "count": 15
+          "count": 21
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 13
+          "count": 17
         },
         {
-          "name": "System.Linq",
-          "count": 11
-        },
-        {
-          "name": "Aspose.Email.Clients.Pop3",
-          "count": 10
+          "name": "Aspose.Email.Clients.Google",
+          "count": 16
         },
         {
           "name": "System.Net",
-          "count": 9
+          "count": 14
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 12
+        },
+        {
+          "name": "System.Linq",
+          "count": 12
+        },
+        {
+          "name": "System.IO.Compression",
+          "count": 10
         },
         {
           "name": "System.Threading",
           "count": 9
         },
         {
-          "name": "System.IO.Compression",
-          "count": 8
+          "name": "Aspose.Email.Mime",
+          "count": 7
         },
         {
-          "name": "Aspose.Email.Clients.Imap",
-          "count": 8
+          "name": "System.Text.RegularExpressions",
+          "count": 7
         },
         {
-          "name": "Aspose.Email.Clients.Google",
+          "name": "Aspose.Email.Clients.Pop3",
           "count": 7
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
+          "count": 6
+        },
+        {
+          "name": "System.Xml.Linq",
           "count": 6
         },
         {
@@ -3885,7 +3951,7 @@
           "count": 5
         },
         {
-          "name": "System.Text.RegularExpressions",
+          "name": "System.Security.Cryptography",
           "count": 4
         },
         {
@@ -3893,7 +3959,7 @@
           "count": 3
         },
         {
-          "name": "Aspose.Email.Mime",
+          "name": "System.Reflection",
           "count": 3
         },
         {
@@ -3901,15 +3967,11 @@
           "count": 3
         },
         {
-          "name": "Aspose.Email.Tools.Verifications",
+          "name": "Aspose.Words",
           "count": 2
         },
         {
-          "name": "System.Xml",
-          "count": 2
-        },
-        {
-          "name": "System.Xml.Linq",
+          "name": "Aspose.Words.Saving",
           "count": 2
         },
         {
@@ -3921,23 +3983,23 @@
           "count": 2
         },
         {
+          "name": "Aspose.Email.Clients.Imap.Models",
+          "count": 1
+        },
+        {
           "name": "System.Net.Mime",
           "count": 1
         },
         {
-          "name": "Aspose.Words",
+          "name": "System.Globalization",
           "count": 1
         },
         {
-          "name": "Aspose.Words.Saving",
+          "name": "Aspose.Email.Tools.Verifications",
           "count": 1
         },
         {
-          "name": "System.Security.Cryptography.X509Certificates",
-          "count": 1
-        },
-        {
-          "name": "System.Security.Cryptography",
+          "name": "EmailTask = Aspose.Email.Calendar.Task",
           "count": 1
         },
         {
@@ -3953,6 +4015,10 @@
           "count": 1
         },
         {
+          "name": "System.Net.Http",
+          "count": 1
+        },
+        {
           "name": "System.Security.AccessControl",
           "count": 1
         },
@@ -3961,7 +4027,19 @@
           "count": 1
         },
         {
+          "name": "System.Xml",
+          "count": 1
+        },
+        {
+          "name": "System.Xml.Schema",
+          "count": 1
+        },
+        {
           "name": "System.Xml.Serialization",
+          "count": 1
+        },
+        {
+          "name": "System.Collections",
           "count": 1
         }
       ],
