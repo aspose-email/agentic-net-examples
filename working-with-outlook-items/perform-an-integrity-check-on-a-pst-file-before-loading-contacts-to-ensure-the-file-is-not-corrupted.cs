@@ -1,9 +1,9 @@
-using Aspose.Email.Mapi;
 using Aspose.Email.PersonalInfo;
 using Aspose.Email;
 using System;
 using System.IO;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -11,76 +11,58 @@ class Program
     {
         try
         {
-            string pstPath = "sample.pst";
+            string pstFilePath = "contacts.pst";
 
-            // Ensure PST file exists; create a minimal placeholder if missing
-            if (!File.Exists(pstPath))
+            // Verify PST file existence
+            if (!File.Exists(pstFilePath))
             {
+                // Create a minimal placeholder PST if missing
                 try
                 {
-                    using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Create a default Contacts folder to make the PST usable
-                        placeholder.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
-                    }
+                    PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Placeholder PST created at '{pstFilePath}'.");
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
                     return;
                 }
+                return;
             }
 
-            // Open PST and perform integrity check
-            try
+            // Open PST and perform a basic integrity check
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
             {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                try
                 {
-                    bool isCorrupted = false;
-
-                    // Attempt to enumerate subfolders; any exception indicates corruption
-                    try
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                     {
-                        foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
-                        {
-                            // No operation needed; just iterating validates structure
-                            foreach (MessageInfo msgInfo in folder.EnumerateMessages())
-                            {
-                                // Access a property to ensure message info is readable
-                                string subject = msgInfo.Subject;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"PST integrity check failed: {ex.Message}");
-                        isCorrupted = true;
-                    }
-
-                    if (isCorrupted)
-                    {
-                        Console.WriteLine("The PST file appears to be corrupted. Aborting contact loading.");
-                        return;
-                    }
-
-                    Console.WriteLine("PST integrity check passed. Loading contacts...");
-
-                    // Load contacts from the predefined Contacts folder
-                    FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
-                    foreach (MessageInfo contactInfo in contactsFolder.EnumerateMessages())
-                    {
-                        using (MapiMessage contactMessage = pst.ExtractMessage(contactInfo))
-                        {
-                            Console.WriteLine($"Contact: {contactMessage.Subject}");
-                            // Additional contact processing can be added here
-                        }
+                        // Access a property to force enumeration and surface errors
+                        int _ = folderInfo.ContentCount;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error accessing PST file: {ex.Message}");
-                return;
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"PST integrity check failed: {ex.Message}");
+                    return;
+                }
+
+                // Retrieve the Contacts folder
+                FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
+                if (contactsFolder == null)
+                {
+                    Console.Error.WriteLine("Contacts folder not found in PST.");
+                    return;
+                }
+
+                // Enumerate and display contacts
+                foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
+                {
+                    using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
+                    {
+                        Console.WriteLine($"Contact entry: Subject = {mapiMessage.Subject}");
+                    }
+                }
             }
         }
         catch (Exception ex)

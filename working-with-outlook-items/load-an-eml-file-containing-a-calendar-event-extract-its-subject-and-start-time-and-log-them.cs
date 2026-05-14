@@ -1,105 +1,47 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Calendar;
-using Aspose.Email.Mime;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            const string emlPath = "calendar.eml";
+            // Path to the EML file containing the calendar event
+            string emlPath = "calendar.eml";
 
-            // Ensure the input file exists; create a minimal placeholder if it does not.
+            // Verify that the file exists before attempting to load it
             if (!File.Exists(emlPath))
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    // Create a simple mail message with a calendar appointment attached.
-                    MailMessage placeholderMessage = new MailMessage(
-                        "organizer@example.com",
-                        "attendee@example.com",
-                        "Meeting Invitation",
-                        "Please find the meeting details attached.");
-
-                    // Create a basic appointment (subject, start, end, organizer, attendees).
-                    MailAddressCollection attendees = new MailAddressCollection();
-                    attendees.Add(new MailAddress("attendee@example.com"));
-                    Appointment appointment = new Appointment(
-                        "Meeting Invitation",
-                        DateTime.Now.AddHours(1),
-                        DateTime.Now.AddHours(2),
-                        new MailAddress("organizer@example.com"),
-                        attendees);
-                    appointment.Summary = "Meeting Invitation";
-
-                    // Add the appointment as an alternate view (iCalendar) to the message.
-                    placeholderMessage.AlternateViews.Add(appointment.RequestApointment());
-
-                    // Save the placeholder EML file.
-                    placeholderMessage.Save(emlPath, SaveOptions.DefaultEml);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder EML: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"File not found: {emlPath}");
+                return;
             }
 
-            // Load the EML message.
-            using (MailMessage mailMessage = MailMessage.Load(emlPath))
+            // Load the EML file as a MapiMessage
+            using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(emlPath))
             {
-                bool calendarFound = false;
-
-                // Search for a calendar attachment (Content-Type: text/calendar).
-                foreach (Attachment attachment in mailMessage.Attachments)
+                // Ensure the message contains a calendar item
+                if (mapiMessage.SupportedType == MapiItemType.Calendar)
                 {
-                    if (attachment.ContentType.MediaType.Equals("text/calendar", StringComparison.OrdinalIgnoreCase))
-                    {
-                        using (Stream calendarStream = attachment.ContentStream)
-                        {
-                            // Load the appointment from the calendar stream.
-                            Appointment appointment = Appointment.Load(calendarStream);
+                    // Convert the MapiMessage to a MapiCalendar object
+                    MapiCalendar calendar = (MapiCalendar)mapiMessage.ToMapiMessageItem();
 
-                            // Log subject (use appointment summary if available) and start time.
-                            string subject = !string.IsNullOrEmpty(appointment.Summary) ? appointment.Summary : mailMessage.Subject;
-                            Console.WriteLine($"Subject: {subject}");
-                            Console.WriteLine($"Start Time: {appointment.StartDate}");
-
-                            calendarFound = true;
-                            break;
-                        }
-                    }
+                    // Log the subject and start time of the calendar event
+                    Console.WriteLine($"Subject: {calendar.Subject}");
+                    Console.WriteLine($"Start Time: {calendar.StartDate}");
                 }
-
-                if (!calendarFound)
+                else
                 {
-                    Console.Error.WriteLine("No calendar attachment found in the EML file.");
+                    Console.WriteLine("The provided EML file does not contain a calendar event.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Log any unexpected errors
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

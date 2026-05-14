@@ -8,29 +8,42 @@ class Program
     {
         try
         {
-            // Create a MapiCalendar event
-            MapiCalendar calendar = new MapiCalendar(
-                "Conference Room",
-                "Team Meeting",
-                "Discuss project status",
-                new DateTime(2023, 10, 10, 9, 0, 0),
-                new DateTime(2023, 10, 10, 10, 0, 0));
+            // Retrieve the Pacific Standard Time zone from the system.
+            TimeZoneInfo pacificTimeZone;
+            try
+            {
+                pacificTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+            }
+            catch (TimeZoneNotFoundException ex)
+            {
+                Console.Error.WriteLine("Pacific Standard Time zone not found: " + ex.Message);
+                return;
+            }
+            catch (InvalidTimeZoneException ex)
+            {
+                Console.Error.WriteLine("Invalid time zone data: " + ex.Message);
+                return;
+            }
 
-            // Retrieve the Pacific Standard Time zone information
-            TimeZoneInfo pacificTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+            // Create a MapiCalendarTimeZone based on the retrieved TimeZoneInfo.
+            MapiCalendarTimeZone calendarTimeZone = new MapiCalendarTimeZone(pacificTimeZone);
+            calendarTimeZone.KeyName = "Pacific Standard Time";
 
-            // Create a MapiCalendarTimeZone from the TimeZoneInfo
-            MapiCalendarTimeZone mapiTimeZone = new MapiCalendarTimeZone(pacificTimeZone);
+            // Create a calendar event and assign the time zone to it.
+            using (MapiCalendar calendar = new MapiCalendar())
+            {
+                calendar.Subject = "Sample Event";
+                calendar.StartDate = new DateTime(2023, 10, 1, 9, 0, 0);
+                calendar.EndDate = new DateTime(2023, 10, 1, 10, 0, 0);
+                calendar.StartDateTimeZone = calendarTimeZone;
+                calendar.EndDateTimeZone = calendarTimeZone;
 
-            // Assign the time zone to the calendar event
-            calendar.StartDateTimeZone = mapiTimeZone;
-            calendar.EndDateTimeZone = mapiTimeZone;
-
-            Console.WriteLine("Calendar event created with Pacific Standard Time zone.");
+                Console.WriteLine("Event created with time zone: " + calendar.StartDateTimeZone.KeyName);
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

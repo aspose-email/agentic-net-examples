@@ -11,11 +11,23 @@ class Program
     {
         try
         {
-            // Path to the distribution list MSG file
-            string distListPath = "distributionList.msg";
+            // Placeholder credentials – replace with real values.
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Verify the file exists
-            if (!File.Exists(distListPath))
+            // Guard against placeholder credentials to avoid unwanted network calls.
+            if (serviceUrl.Contains("example") || username.Contains("example") || password == "password")
+            {
+                Console.Error.WriteLine("Please provide valid Exchange service URL and credentials.");
+                return;
+            }
+
+            // Path to the distribution list MSG file.
+            string dlPath = "distlist.msg";
+
+            // Verify the file exists before attempting to load.
+            if (!File.Exists(dlPath))
             {
                 try
                 {
@@ -25,7 +37,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(distListPath);
+                        placeholder.Save(dlPath);
                     }
                 }
                 catch (Exception ex)
@@ -34,66 +46,47 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"File not found: {distListPath}");
+                Console.Error.WriteLine($"Distribution list file not found: {dlPath}");
                 return;
             }
 
-            // Load the MSG file containing the distribution list
-            using (MapiMessage msg = MapiMessage.Load(distListPath))
+            // Create the Exchange client.
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // Ensure the message is a distribution list
-                if (msg.SupportedType != MapiItemType.DistList)
+                try
                 {
-                    Console.Error.WriteLine("The provided file is not a distribution list.");
-                    return;
-                }
-
-                // Convert to a MapiDistributionList object
-                using (MapiDistributionList distList = (MapiDistributionList)msg.ToMapiMessageItem())
-                {
-                    // Placeholder connection details (replace with real values)
-                    string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
-                    string username = "username@example.com";
-                    string password = "password";
-
-                    // Skip execution if placeholders are detected
-                    if (serviceUrl.Contains("example.com") || username.Contains("username") || password == "password")
+                    // Load the MSG file as a MAPI message.
+                    using (MapiMessage mapiMsg = MapiMessage.Load(dlPath))
                     {
-                        Console.Error.WriteLine("Placeholder credentials detected. Skipping client operations.");
-                        return;
-                    }
-
-                    // Create an EWS client and ensure it is disposed properly
-                    try
-                    {
-                        using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                        // Ensure the message is a distribution list.
+                        if (mapiMsg.SupportedType != MapiItemType.DistList)
                         {
-                            // Destination folder identifier (e.g., Inbox)
-                            string destinationFolderId = "inbox";
-
-                            // Create a rule for each member of the distribution list
-                            foreach (MapiDistributionListMember member in distList.Members)
-                            {
-                                try
-                                {
-                                    InboxRule rule = InboxRule.CreateRuleMoveFrom(
-                                        new MailAddress(member.EmailAddress),
-                                        destinationFolderId);
-
-                                    client.CreateInboxRule(rule);
-                                    Console.WriteLine($"Created rule for {member.EmailAddress}");
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.Error.WriteLine($"Failed to create rule for {member.EmailAddress}: {ex.Message}");
-                                }
-                            }
+                            Console.Error.WriteLine("The provided MSG file is not a distribution list.");
+                            return;
                         }
+
+                        // Convert to a MapiDistributionList to access members.
+                        MapiDistributionList distList = (MapiDistributionList)mapiMsg.ToMapiMessageItem();
+
+                        // Create a rule for each member to move their messages to Inbox.
+                        foreach (var member in distList.Members)
+                        {
+                            // member.EmailAddress may be null; skip such entries.
+                            if (string.IsNullOrEmpty(member.EmailAddress))
+                                continue;
+
+                            MailAddress mailAddr = new MailAddress(member.EmailAddress);
+                            // Create a rule that moves messages from this address to the Inbox folder.
+                            InboxRule rule = InboxRule.CreateRuleMoveFrom(mailAddr, "Inbox");
+                            client.CreateInboxRule(rule);
+                        }
+
+                        Console.WriteLine("Inbox rules created for distribution list members.");
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to connect to Exchange service: {ex.Message}");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error processing distribution list: {ex.Message}");
                 }
             }
         }

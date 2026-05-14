@@ -9,49 +9,44 @@ class Program
     {
         try
         {
-            string messagePath = "sample.msg";
-
-            // Ensure the message file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(messagePath))
+            // Prepare output directory and file path
+            string outputDirectory = "Output";
+            if (!Directory.Exists(outputDirectory))
             {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            string outputPath = Path.Combine(outputDirectory, "FollowUpMessage.msg");
+
+            // Create a MAPI message
+            using (MapiMessage message = new MapiMessage(
+                "sender@example.com",
+                "recipient@example.com",
+                "Follow‑up Example",
+                "Please review the attached information."))
+            {
+                // Add a custom category to the message
+                FollowUpManager.AddCategory(message, "MyCustomCategory");
+
+                // Set a follow‑up flag with a request text
+                FollowUpManager.SetFlag(message, "Please follow up");
+
+                // Save the message to MSG format
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage("from@example.com", "to@example.com", "Sample Subject", "Sample Body"))
-                    {
-                        placeholder.Save(messagePath);
-                    }
+                    message.Save(outputPath, SaveOptions.DefaultMsg);
+                    Console.WriteLine($"Message saved to: {outputPath}");
                 }
-                catch (Exception ex)
+                catch (Exception ioEx)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
                     return;
                 }
-            }
-
-            // Load the existing message, add a custom category, set a follow‑up flag, and save.
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(messagePath))
-                {
-                    // Add a custom category.
-                    FollowUpManager.AddCategory(message, "MyCustomCategory");
-
-                    // Set a follow‑up flag with a request string.
-                    FollowUpManager.SetFlag(message, "Please review");
-
-                    // Save the changes back to the same file.
-                    message.Save(messagePath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing the message: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

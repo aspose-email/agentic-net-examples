@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Mapi;
 
 class Program
@@ -11,81 +10,66 @@ class Program
     {
         try
         {
-            // Placeholder credentials – skip execution if not replaced with real values
-            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
-            string username = "username";
-            string password = "password";
+            // Define output directory for exported contacts
+            string outputDirectory = "ExportedContacts";
 
-            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDirectory))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Create Exchange client (connection safety wrapped in try/catch)
-            try
-            {
-                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
-                {
-                    // Client created successfully – no server operations needed for this example
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to connect to Exchange server: {ex.Message}");
-                return;
-            }
-
-            // Prepare output directory for exported contacts
-            string outputDir = Path.Combine(Environment.CurrentDirectory, "ExportedContacts");
-            try
-            {
-                if (!Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                return;
-            }
-
-            // Create contacts with custom user‑defined fields
+            // Prepare a list of contacts with custom user‑defined fields
             List<MapiContact> contacts = new List<MapiContact>();
-            for (int i = 1; i <= 2; i++)
-            {
-                MapiContact mapiContact = new MapiContact();
-                mapiContact.NameInfo.GivenName = $"John{i}";
-                mapiContact.NameInfo.Surname = $"Doe{i}";
-                mapiContact.NameInfo.DisplayName = $"John{i} Doe{i}";
 
-                // Set custom user‑defined fields (UserField1‑4)
-                mapiContact.OtherFields.UserField1 = $"CustomField1_Value{i}";
-                mapiContact.OtherFields.UserField2 = $"CustomField2_Value{i}";
-                mapiContact.OtherFields.UserField3 = $"CustomField3_Value{i}";
-                mapiContact.OtherFields.UserField4 = $"CustomField4_Value{i}";
+            // First contact
+            MapiContact contact1 = new MapiContact();
+            contact1.NameInfo.DisplayName = "John Doe";
+            contact1.ElectronicAddresses.Email1.EmailAddress = "john.doe@example.com";
 
-                contacts.Add(mapiContact);
-            }
+            // Set custom user‑defined fields via OtherFields property
+            MapiContactOtherPropertySet otherFields1 = new MapiContactOtherPropertySet();
+            otherFields1.UserField1 = "CustomValue1";
+            otherFields1.UserField2 = "CustomValue2";
+            contact1.OtherFields = otherFields1;
+
+            contacts.Add(contact1);
+
+            // Second contact
+            MapiContact contact2 = new MapiContact();
+            contact2.NameInfo.DisplayName = "Jane Smith";
+            contact2.ElectronicAddresses.Email1.EmailAddress = "jane.smith@example.com";
+
+            MapiContactOtherPropertySet otherFields2 = new MapiContactOtherPropertySet();
+            otherFields2.UserField1 = "AnotherCustom1";
+            otherFields2.UserField3 = "AnotherCustom3";
+            contact2.OtherFields = otherFields2;
+
+            contacts.Add(contact2);
 
             // Export each contact to a VCard file, ensuring custom fields are included
-            foreach (MapiContact contact in contacts)
+            int index = 1;
+            foreach (MapiContact mapiContact in contacts)
             {
-                using (contact)
+                string filePath = Path.Combine(outputDirectory, $"Contact_{index}.vcf");
+
+                // Guard file write operation
+                try
                 {
-                    string fileName = $"{contact.NameInfo.DisplayName.Replace(' ', '_')}.vcf";
-                    string filePath = Path.Combine(outputDir, fileName);
-                    try
+                    using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                     {
-                        contact.Save(filePath);
-                        Console.WriteLine($"Exported contact to: {filePath}");
+                        // Save the contact using VCard format; custom fields are preserved
+                        mapiContact.Save(fileStream);
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to export contact '{contact.NameInfo.DisplayName}': {ex.Message}");
-                    }
+
+                    Console.WriteLine($"Exported contact {index} to '{filePath}'.");
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to export contact {index}: {ex.Message}");
+                }
+
+                index++;
             }
         }
         catch (Exception ex)

@@ -1,50 +1,62 @@
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Placeholder Exchange server details
-            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Define the output file path
+            string outputPath = "confidential.eml";
 
-            // Skip execution when placeholder credentials are detected
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
+            // Ensure the directory for the output file exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping email operation.");
-                return;
+                try
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create directory '{outputDirectory}': {dirEx.Message}");
+                    return;
+                }
             }
 
-            // Create and use the Exchange client
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            // Create a new mail message
+            using (MailMessage message = new MailMessage())
             {
-                // Compose the email message
-                using (MailMessage message = new MailMessage(
-                    "sender@example.com",
-                    "recipient@example.com",
-                    "Subject: Confidential Information",
-                    "This email contains confidential information. Please handle with care."))
-                {
-                    // If the body contains the word "confidential", request a delivery receipt
-                    if (message.Body != null &&
-                        message.Body.IndexOf("confidential", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        message.DeliveryNotificationOptions = DeliveryNotificationOptions.OnSuccess;
-                    }
+                // Set basic properties
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Confidential: Project Plan";
+                message.Body = "Please find the confidential project plan attached.";
 
-                    // Send the message via Exchange
-                    client.Send(message);
+                // Check for confidential keyword and request delivery receipt
+                if (message.Subject != null && message.Subject.IndexOf("confidential", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    // Request a delivery receipt when the message is successfully delivered
+                    message.DeliveryNotificationOptions = DeliveryNotificationOptions.OnSuccess;
+                }
+
+                // Save the message to a file
+                try
+                {
+                    message.Save(outputPath);
+                    Console.WriteLine($"Message saved to '{outputPath}'.");
+                }
+                catch (Exception saveEx)
+                {
+                    Console.Error.WriteLine($"Failed to save message: {saveEx.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
+using System.Text;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
@@ -11,113 +11,107 @@ class Program
         try
         {
             // Input MSG file path
-            string msgPath = "sample.msg";
+            string inputMsgPath = "sample.msg";
 
-            // Ensure the input file exists; if not, create a minimal placeholder message
-            if (!File.Exists(msgPath))
+            // Verify input file exists
+            if (!File.Exists(inputMsgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage("from@example.com", "to@example.com", "Sample Subject", "Sample body"))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.Save(msgPath);
+                        placeholder.Save(inputMsgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the message
-            MapiMessage message;
-            try
-            {
-                message = MapiMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
                 return;
             }
 
-            using (message)
+            // Output CSV paths
+            string votingCsvPath = "voting_buttons.csv";
+            string optionsCsvPath = "followup_options.csv";
+
+            // Ensure output directories exist
+            try
             {
-                // Retrieve voting buttons
-                string[] votingButtons;
-                try
+                string votingDir = Path.GetDirectoryName(votingCsvPath);
+                if (!string.IsNullOrEmpty(votingDir) && !Directory.Exists(votingDir))
                 {
-                    votingButtons = FollowUpManager.GetVotingButtons(message);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error retrieving voting buttons: {ex.Message}");
-                    votingButtons = new string[0];
+                    Directory.CreateDirectory(votingDir);
                 }
 
-                // Retrieve follow‑up options
-                FollowUpOptions followUpOptions;
-                try
+                string optionsDir = Path.GetDirectoryName(optionsCsvPath);
+                if (!string.IsNullOrEmpty(optionsDir) && !Directory.Exists(optionsDir))
                 {
-                    followUpOptions = FollowUpManager.GetOptions(message);
+                    Directory.CreateDirectory(optionsDir);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error retrieving follow‑up options: {ex.Message}");
-                    followUpOptions = null;
-                }
+            }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Failed to prepare output directories: {dirEx.Message}");
+                return;
+            }
 
-                // Export voting buttons to CSV
-                string votingCsvPath = "voting_buttons.csv";
+            // Load the MSG file
+            using (MapiMessage message = MapiMessage.Load(inputMsgPath))
+            {
+                // ----- Export voting buttons -----
+                string[] votingButtons = FollowUpManager.GetVotingButtons(message);
+
                 try
                 {
-                    using (StreamWriter votingWriter = new StreamWriter(votingCsvPath, false))
+                    using (StreamWriter writer = new StreamWriter(votingCsvPath, false, Encoding.UTF8))
                     {
-                        votingWriter.WriteLine("Button");
-                        foreach (string button in votingButtons)
+                        writer.WriteLine("Button");
+                        if (votingButtons != null)
                         {
-                            votingWriter.WriteLine($"\"{button}\"");
+                            foreach (string button in votingButtons)
+                            {
+                                // Escape double quotes by doubling them
+                                string escaped = button?.Replace("\"", "\"\"");
+                                writer.WriteLine($"\"{escaped}\"");
+                            }
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception writeEx)
                 {
-                    Console.Error.WriteLine($"Failed to write voting buttons CSV: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to write voting buttons CSV: {writeEx.Message}");
+                    // Continue to attempt writing options
                 }
 
-                // Export follow‑up options to CSV
-                string flagCsvPath = "followup_flags.csv";
+                // ----- Export follow‑up options -----
+                FollowUpOptions options = FollowUpManager.GetOptions(message);
+
                 try
                 {
-                    using (StreamWriter flagWriter = new StreamWriter(flagCsvPath, false))
+                    using (StreamWriter writer = new StreamWriter(optionsCsvPath, false, Encoding.UTF8))
                     {
-                        // Header
-                        flagWriter.WriteLine("FlagRequest,ReminderTime,DueDate,StartDate,Categories,VotingButtons");
+                        writer.WriteLine("FlagRequest,DueDate,ReminderTime,Categories,VotingButtons,IsCompleted");
+                        string flagRequest = options.FlagRequest ?? string.Empty;
+                        string dueDate = options.DueDate != DateTime.MinValue ? options.DueDate.ToString("o") : string.Empty;
+                        string reminderTime = options.ReminderTime != DateTime.MinValue ? options.ReminderTime.ToString("o") : string.Empty;
+                        string categories = options.Categories ?? string.Empty;
+                        string votingButtonsList = options.VotingButtons ?? string.Empty;
+                        string isCompleted = options.IsCompleted.ToString();
 
-                        if (followUpOptions != null)
-                        {
-                            // Prepare fields, handling possible nulls
-                            string flagRequest = followUpOptions.FlagRequest ?? string.Empty;
-                            string reminderTime = followUpOptions.ReminderTime != DateTime.MinValue ? followUpOptions.ReminderTime.ToString("o") : string.Empty;
-                            string dueDate = followUpOptions.DueDate != DateTime.MinValue ? followUpOptions.DueDate.ToString("o") : string.Empty;
-                            string startDate = followUpOptions.StartDate != DateTime.MinValue ? followUpOptions.StartDate.ToString("o") : string.Empty;
-                            string categories = followUpOptions.Categories ?? string.Empty;
-                            string voting = followUpOptions.VotingButtons ?? string.Empty;
-
-                            // Write a single line with the collected data
-                            flagWriter.WriteLine($"\"{flagRequest}\",\"{reminderTime}\",\"{dueDate}\",\"{startDate}\",\"{categories}\",\"{voting}\"");
-                        }
-                        else
-                        {
-                            // No options available; write empty line
-                            flagWriter.WriteLine(",,,,,");
-                        }
+                        // Escape commas in fields by surrounding with double quotes
+                        writer.WriteLine($"\"{flagRequest}\",\"{dueDate}\",\"{reminderTime}\",\"{categories}\",\"{votingButtonsList}\",\"{isCompleted}\"");
                     }
                 }
-                catch (Exception ex)
+                catch (Exception writeEx)
                 {
-                    Console.Error.WriteLine($"Failed to write follow‑up flags CSV: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to write follow‑up options CSV: {writeEx.Message}");
                 }
             }
         }

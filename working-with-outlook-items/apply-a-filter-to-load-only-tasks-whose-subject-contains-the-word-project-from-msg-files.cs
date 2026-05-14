@@ -3,28 +3,40 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailTaskFilter
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
+            // Define the folder containing MSG files
+            string folderPath = "Tasks";
+
+            // Verify the folder exists
+            if (!Directory.Exists(folderPath))
+            {
+                Console.Error.WriteLine($"Folder not found: {folderPath}");
+                return;
+            }
+
+            // Get all MSG files in the folder
+            string[] msgFiles;
             try
             {
-                string msgFolder = @"C:\MsgFiles";
+                msgFiles = Directory.GetFiles(folderPath, "*.msg");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to enumerate files: {ex.Message}");
+                return;
+            }
 
-                if (!Directory.Exists(msgFolder))
+            // Process each MSG file
+            foreach (string filePath in msgFiles)
+            {
+                // Verify the file exists
+                if (!File.Exists(filePath))
                 {
-                    Console.Error.WriteLine($"Error: Directory not found – {msgFolder}");
-                    return;
-                }
-
-                string[] msgFiles = Directory.GetFiles(msgFolder, "*.msg");
-
-                foreach (string filePath in msgFiles)
-                {
-                    if (!File.Exists(filePath))
-                    {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -42,36 +54,38 @@ namespace AsposeEmailTaskFilter
                     return;
                 }
 
-                        Console.Error.WriteLine($"Error: File not found – {filePath}");
-                        continue;
-                    }
+                    Console.Error.WriteLine($"File not found: {filePath}");
+                    continue;
+                }
 
-                    try
+                try
+                {
+                    // Load the MSG file
+                    using (MapiMessage msg = MapiMessage.Load(filePath))
                     {
-                        using (MapiMessage msg = MapiMessage.Load(filePath))
+                        // Check if the message is a task
+                        if (msg.SupportedType == MapiItemType.Task)
                         {
-                            if (msg.SupportedType == MapiItemType.Task)
+                            // Convert to MapiTask
+                            MapiTask task = (MapiTask)msg.ToMapiMessageItem();
+
+                            // Filter tasks whose subject contains "Project"
+                            if (task.Subject != null && task.Subject.Contains("Project"))
                             {
-                                using (MapiTask task = (MapiTask)msg.ToMapiMessageItem())
-                                {
-                                    if (!string.IsNullOrEmpty(task.Subject) && task.Subject.IndexOf("Project", StringComparison.OrdinalIgnoreCase) >= 0)
-                                    {
-                                        Console.WriteLine($"Task found in file '{Path.GetFileName(filePath)}': {task.Subject}");
-                                    }
-                                }
+                                Console.WriteLine($"Task found: {task.Subject}");
                             }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error processing file {filePath}: {ex.Message}");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error processing file {filePath}: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

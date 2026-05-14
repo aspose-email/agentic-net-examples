@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Mime;
 
 class Program
 {
@@ -9,21 +9,21 @@ class Program
     {
         try
         {
-            string inputPath = "sample.msg";
-            string outputPath = "output.html";
+            const string inputPath = "input.msg";
+            const string outputPath = "output.html";
 
-            // Verify input file exists
+            // Ensure the input file exists; create a minimal placeholder if it does not.
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath);
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
@@ -32,26 +32,53 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
-
-            // Load the MSG file and extract HTML from the RTF body
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
-            {
-                string htmlBody = msg.BodyHtml;
-
-                // Write the HTML output
                 try
                 {
-                    File.WriteAllText(outputPath, htmlBody);
-                    Console.WriteLine($"HTML saved to {outputPath}");
+                    // Create a simple mail message with HTML body to simulate rich‑text formatting.
+                    using (MailMessage placeholder = new MailMessage())
+                    {
+                        placeholder.From = "sender@example.com";
+                        placeholder.To = "receiver@example.com";
+                        placeholder.Subject = "Sample Message";
+
+                        // HTML body with bold and italic formatting.
+                        placeholder.IsBodyHtml = true;
+                        placeholder.Body = "This is <b>bold</b> and <i>italic</i> text.";
+
+                        // Save as MSG using Unicode format (required by validation rules).
+                        var msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
+                        placeholder.Save(inputPath, msgSaveOptions);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to write HTML file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
+                    return;
                 }
             }
+
+            // Load the message and convert it to HTML while preserving formatting.
+            try
+            {
+                using (MailMessage message = MailMessage.Load(inputPath))
+                {
+                    var htmlOptions = new HtmlSaveOptions
+                    {
+                        // Embed resources (images, etc.) directly into the HTML.
+                        ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                    };
+
+                    // Save the message as HTML using the Save method with SaveOptions.
+                    message.Save(outputPath, htmlOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during conversion: {ex.Message}");
+                return;
+            }
+
+            Console.WriteLine($"Conversion completed successfully. HTML saved to '{outputPath}'.");
         }
         catch (Exception ex)
         {

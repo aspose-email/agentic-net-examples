@@ -1,45 +1,52 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
+            // Input folder containing MSG task files
             string inputFolder = "Tasks";
+            // Output folder for generated HTML files
             string outputFolder = "HtmlOutput";
 
+            // Ensure input folder exists
             if (!Directory.Exists(inputFolder))
             {
-                Console.Error.WriteLine($"Error: Input folder not found – {inputFolder}");
+                Console.Error.WriteLine($"Input folder does not exist: {inputFolder}");
                 return;
             }
 
-            if (!Directory.Exists(outputFolder))
+            // Ensure output folder exists or create it
+            try
             {
-                try
+                if (!Directory.Exists(outputFolder))
                 {
                     Directory.CreateDirectory(outputFolder);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create output folder – {ex.Message}");
-                    return;
-                }
-            }
-
-            string[] msgFiles;
-            try
-            {
-                msgFiles = Directory.GetFiles(inputFolder, "*.msg");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: Unable to enumerate .msg files – {ex.Message}");
+                Console.Error.WriteLine($"Failed to create output folder: {ex.Message}");
+                return;
+            }
+
+            // Gather all .msg files in the input folder
+            List<string> msgFiles;
+            try
+            {
+                msgFiles = Directory.GetFiles(inputFolder, "*.msg").ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to enumerate MSG files: {ex.Message}");
                 return;
             }
 
@@ -64,58 +71,74 @@ class Program
                     return;
                 }
 
-                    Console.Error.WriteLine($"Warning: File not found – {msgPath}");
+                    Console.Error.WriteLine($"File not found, skipping: {msgPath}");
                     continue;
                 }
 
                 try
                 {
-                    using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
+                    // Load the MSG file
+                    using (MapiMessage msg = MapiMessage.Load(msgPath))
                     {
-                        // Verify that the message is a task; otherwise create a minimal placeholder HTML.
-                        bool isTask = mapiMessage.SupportedType == MapiItemType.Task;
-
-                        string htmlFileName = Path.GetFileNameWithoutExtension(msgPath) + ".html";
-                        string htmlFilePath = Path.Combine(outputFolder, htmlFileName);
-
-                        string htmlContent;
-
-                        if (isTask)
+                        // Verify that the MSG represents a Task
+                        if (msg.SupportedType != MapiItemType.Task)
                         {
-                            // Extract common task fields.
-                            string subject = mapiMessage.Subject ?? string.Empty;
-                            string body = mapiMessage.Body ?? string.Empty;
-
-                            // Attempt to retrieve task-specific properties if they exist.
-                            // Example: TaskStartDate and TaskDueDate are stored as custom properties.
-                            // For simplicity, we include only subject and body here.
-                            htmlContent = $"<html><head><meta charset=\"UTF-8\"><title>{System.Net.WebUtility.HtmlEncode(subject)}</title></head><body>";
-                            htmlContent += $"<h1>{System.Net.WebUtility.HtmlEncode(subject)}</h1>";
-                            htmlContent += $"<pre>{System.Net.WebUtility.HtmlEncode(body)}</pre>";
-                            htmlContent += "</body></html>";
-                        }
-                        else
-                        {
-                            // Placeholder for non‑task MSG files.
-                            htmlContent = "<html><head><meta charset=\"UTF-8\"><title>Placeholder</title></head><body>";
-                            htmlContent += "<p>Not a task message. Placeholder content generated.</p>";
-                            htmlContent += "</body></html>";
+                            Console.Error.WriteLine($"File is not a Task, skipping: {msgPath}");
+                            continue;
                         }
 
+                        // Convert to MapiTask
+                        MapiTask task = (MapiTask)msg.ToMapiMessageItem();
+
+                        // Build simple HTML representation of the task fields
+                        string title = WebUtility.HtmlEncode(task.Subject ?? "Task");
+                        string htmlContent = "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<title>"
+                                             + title
+                                             + "</title>\n</head>\n<body>\n<h1>"
+                                             + title
+                                             + "</h1>\n<ul>\n";
+
+                        htmlContent += "<li><strong>Start Date:</strong> " + (task.StartDate != DateTime.MinValue ? task.StartDate.ToString("u") : "N/A") + "</li>\n";
+                        htmlContent += "<li><strong>Due Date:</strong> " + (task.DueDate != DateTime.MinValue ? task.DueDate.ToString("u") : "N/A") + "</li>\n";
+                        htmlContent += "<li><strong>Status:</strong> " + WebUtility.HtmlEncode(task.Status.ToString()) + "</li>\n";
+                        htmlContent += "<li><strong>Percent Complete:</strong> " + task.PercentComplete + "%</li>\n";
+                        htmlContent += "<li><strong>Priority:</strong> " + WebUtility.HtmlEncode(task.Priority.ToString()) + "</li>\n";
+
+                        string categories = (task.Categories != null && task.Categories.Length > 0)
+                                            ? string.Join(", ", task.Categories)
+                                            : "N/A";
+                        htmlContent += "<li><strong>Categories:</strong> " + WebUtility.HtmlEncode(categories) + "</li>\n";
+
+                        htmlContent += "</ul>\n";
+
+                        string body = task.Body ?? string.Empty;
+                        htmlContent += "<h2>Body</h2>\n<div>" + WebUtility.HtmlEncode(body) + "</div>\n";
+
+                        htmlContent += "</body>\n</html>";
+
+                        // Create a safe file name for the HTML file
+                        string safeFileName = string.IsNullOrWhiteSpace(task.Subject) ? "Task" : task.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeFileName = safeFileName.Replace(c, '_');
+                        }
+                        string htmlPath = Path.Combine(outputFolder, safeFileName + ".html");
+
+                        // Write HTML to file
                         try
                         {
-                            File.WriteAllText(htmlFilePath, htmlContent);
-                            Console.WriteLine($"Converted: {msgPath} -> {htmlFilePath}");
+                            File.WriteAllText(htmlPath, htmlContent);
+                            Console.WriteLine($"Converted '{msgPath}' to '{htmlPath}'.");
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Error: Unable to write HTML file – {ex.Message}");
+                            Console.Error.WriteLine($"Failed to write HTML file '{htmlPath}': {ex.Message}");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error processing file {msgPath}: {ex.Message}");
+                    Console.Error.WriteLine($"Error processing file '{msgPath}': {ex.Message}");
                 }
             }
         }

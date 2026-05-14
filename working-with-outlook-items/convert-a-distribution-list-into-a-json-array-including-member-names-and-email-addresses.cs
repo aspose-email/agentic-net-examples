@@ -1,103 +1,100 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using System.Text.Json;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
-namespace DistributionListToJson
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Placeholder connection settings
-                string host = "exchange.example.com";
-                string username = "user@example.com";
-                string password = "password";
+            // Path to the MSG file that contains the distribution list
+            string msgPath = "distributionList.msg";
 
-                // Skip external call if placeholders are detected
-                if (host.Contains("example.com") || username.Contains("example.com"))
+            // Verify that the input file exists
+            if (!File.Exists(msgPath))
+            {
+                try
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                // Create and connect the Exchange client
-                using (IEWSClient client = EWSClient.GetEWSClient(host, username, password))
-                {
-                    try
-                    {
-                        // List private distribution lists
-                        ExchangeDistributionList[] distributionLists = client.ListDistributionLists();
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
+            }
 
-                        if (distributionLists == null || distributionLists.Length == 0)
-                        {
-                            Console.Error.WriteLine("No distribution lists found.");
-                            return;
-                        }
-
-                        // Use the first distribution list (adjust as needed)
-                        ExchangeDistributionList targetList = distributionLists[0];
-
-                        // Fetch members of the selected distribution list
-                        MailAddressCollection members = client.FetchDistributionList(targetList);
-
-                        // Prepare a list of simple objects for JSON serialization
-                        List<MemberInfo> memberInfoList = new List<MemberInfo>();
-
-                        foreach (MailAddress address in members)
-                        {
-                            MemberInfo info = new MemberInfo();
-                            info.Name = address.DisplayName;
-                            info.Email = address.Address;
-                            memberInfoList.Add(info);
-                        }
-
-                        // Serialize to JSON
-                        string json = JsonSerializer.Serialize(memberInfoList, new JsonSerializerOptions { WriteIndented = true });
-
-                        // Define output path
-                        string outputPath = "distributionList.json";
-
-                        // Ensure directory exists
-                        string directory = Path.GetDirectoryName(outputPath);
-                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                        {
-                            Directory.CreateDirectory(directory);
-                        }
-
-                        // Write JSON to file with guarded IO
-                        try
-                        {
-                            File.WriteAllText(outputPath, json);
-                            Console.WriteLine($"Distribution list exported to {outputPath}");
-                        }
-                        catch (Exception ioEx)
-                        {
-                            Console.Error.WriteLine($"Failed to write JSON file: {ioEx.Message}");
-                        }
-                    }
-                    catch (Exception clientEx)
-                    {
-                        Console.Error.WriteLine($"Exchange operation failed: {clientEx.Message}");
-                    }
-                }
+            // Load the MSG file
+            MapiMessage message;
+            try
+            {
+                message = MapiMessage.Load(msgPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                return;
             }
-        }
 
-        // Simple DTO for JSON output
-        private class MemberInfo
+            // Ensure the message is a distribution list
+            if (message.SupportedType != MapiItemType.DistList)
+            {
+                Console.Error.WriteLine("The provided MSG file is not a distribution list.");
+                return;
+            }
+
+            // Convert to MapiDistributionList
+            MapiDistributionList distributionList = (MapiDistributionList)message.ToMapiMessageItem();
+
+            // Prepare a list to hold member information
+            List<Dictionary<string, string>> membersJson = new List<Dictionary<string, string>>();
+
+            // Iterate over members and collect name and email address
+            foreach (MapiDistributionListMember member in distributionList.Members)
+            {
+                Dictionary<string, string> entry = new Dictionary<string, string>();
+                entry["Name"] = member.DisplayName ?? string.Empty;
+                entry["Email"] = member.EmailAddress ?? string.Empty;
+                membersJson.Add(entry);
+            }
+
+            // Serialize the list to JSON
+            string jsonOutput = JsonSerializer.Serialize(membersJson, new JsonSerializerOptions { WriteIndented = true });
+
+            // Path for the output JSON file
+            string jsonPath = "distributionList.json";
+
+            // Write JSON to file
+            try
+            {
+                File.WriteAllText(jsonPath, jsonOutput);
+                Console.WriteLine($"Distribution list exported to JSON file: {jsonPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to write JSON file: {ex.Message}");
+            }
+
+            // Dispose the loaded message
+            message.Dispose();
+        }
+        catch (Exception ex)
         {
-            public string Name { get; set; }
-            public string Email { get; set; }
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

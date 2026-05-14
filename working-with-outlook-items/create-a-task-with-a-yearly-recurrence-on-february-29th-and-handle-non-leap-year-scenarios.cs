@@ -1,7 +1,7 @@
 using Aspose.Email;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using Aspose.Email.Calendar;
 using Aspose.Email.Calendar.Recurrences;
 
 class Program
@@ -10,44 +10,52 @@ class Program
     {
         try
         {
-            // Define the output file for the generated occurrence dates
-            string outputPath = "Feb29Occurrences.txt";
+            // Determine a start date that is valid for the current year.
+            int year = DateTime.Now.Year;
+            DateTime startDate;
+            if (DateTime.IsLeapYear(year))
+                startDate = new DateTime(year, 2, 29, 10, 0, 0);
+            else
+                startDate = new DateTime(year, 2, 28, 10, 0, 0); // fallback for non‑leap years
 
-            // Ensure the directory for the output file exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Create a yearly recurrence pattern that targets February 29.
+            YearlyRecurrencePattern yearlyPattern = new YearlyRecurrencePattern(29, CalendarMonth.February);
+
+            // Build the appointment and assign the recurrence.
+            Appointment appointment = new Appointment(
+                "Team Sync",
+                startDate,
+                startDate.AddHours(1),
+                new MailAddress("organizer@example.com"),
+                new MailAddressCollection());
+
+            appointment.Recurrence = yearlyPattern;
+            appointment.Summary = "Quarterly team sync (occurs on Feb 29)";
+            appointment.Description = "This meeting recurs yearly on February 29. In non‑leap years it will be scheduled on February 28.";
+
+            // Define output path.
+            string outputPath = Path.Combine(Environment.CurrentDirectory, "YearlyFeb29Appointment.ics");
+
+            // Ensure the directory exists.
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            // Save the appointment to an iCalendar file.
+            try
             {
-                Directory.CreateDirectory(outputDirectory);
+                appointment.Save(outputPath, AppointmentSaveFormat.Ics);
+                Console.WriteLine($"Appointment saved to: {outputPath}");
             }
-
-            // Create a yearly recurrence pattern that occurs on February 29th.
-            // The iCalendar rule "FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=29" expresses this.
-            CalendarRecurrence recurrence = new CalendarRecurrence("FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=29");
-
-            // Set the start date to a known leap‑year date (Feb 29, 2020)
-            // Set an end date several years later to demonstrate handling of non‑leap years
-            recurrence.EndDate = new DateTime(2028, 2, 28); // end just before a leap day to stop after 2028
-
-            // Generate all occurrence dates between StartDate and EndDate.
-            // CalendarRecurrence handles non‑leap years by simply skipping those years.
-            List<DateTime> occurrences = recurrence.GenerateOccurrences();
-
-            // Write the occurrences to the console and to the output file.
-            using (StreamWriter writer = new StreamWriter(outputPath, false))
+            catch (Exception ex)
             {
-                foreach (DateTime occ in occurrences)
-                {
-                    string line = occ.ToString("yyyy-MM-dd");
-                    Console.WriteLine(line);
-                    writer.WriteLine(line);
-                }
+                Console.Error.WriteLine($"Failed to save appointment: {ex.Message}");
+                return;
             }
-
-            Console.WriteLine($"Occurrences have been written to '{outputPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

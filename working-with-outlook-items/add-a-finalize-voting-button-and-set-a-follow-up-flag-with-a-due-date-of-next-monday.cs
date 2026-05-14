@@ -9,44 +9,47 @@ class Program
     {
         try
         {
-            // Define output file path
-            string outputPath = "FinalizeMessage.msg";
-
-            // Ensure the directory for the output file exists
-            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Create a new MAPI message
+            // Create a new MAPI message (4‑argument constructor required)
             using (MapiMessage message = new MapiMessage(
                 "sender@example.com",
                 "recipient@example.com",
-                "Please review",
-                "Kindly review the attached document."))
+                "Project Update",
+                "Please review the attached documents."))
             {
                 // Add a voting button named "Finalize"
                 FollowUpManager.AddVotingButton(message, "Finalize");
 
-                // Calculate next Monday's date
+                // Calculate the date of the next Monday
                 DateTime today = DateTime.Today;
                 int daysUntilMonday = ((int)DayOfWeek.Monday - (int)today.DayOfWeek + 7) % 7;
-                daysUntilMonday = daysUntilMonday == 0 ? 7 : daysUntilMonday; // ensure next Monday, not today
+                if (daysUntilMonday == 0)
+                {
+                    daysUntilMonday = 7; // Ensure we get the *next* Monday, not today if today is Monday
+                }
                 DateTime nextMonday = today.AddDays(daysUntilMonday);
 
-                // Set a follow‑up flag with due date of next Monday
+                // Set a follow‑up flag with a start date of now and a due date of next Monday
                 FollowUpManager.SetFlag(message, "Please finalize", DateTime.Now, nextMonday);
 
-                // Save the message to a .msg file
+                // Define output path
+                string outputPath = "output.msg";
+
+                // Ensure the target directory exists
+                string outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                // Save the message to a file
                 try
                 {
                     message.Save(outputPath);
-                    Console.WriteLine($"Message saved to: {outputPath}");
+                    Console.WriteLine($"Message saved to {outputPath}");
                 }
-                catch (Exception ex)
+                catch (Exception ioEx)
                 {
-                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
                     return;
                 }
             }
@@ -54,6 +57,7 @@ class Program
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
+            return;
         }
     }
 }

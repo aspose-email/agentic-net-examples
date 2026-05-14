@@ -11,39 +11,38 @@ class Program
         {
             string msgPath = "note.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if it does not.
             if (!File.Exists(msgPath))
             {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
-                        "placeholder@example.com",
-                        "placeholder@example.com",
-                        "Placeholder",
-                        "This is a placeholder message."))
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
                         placeholder.Save(msgPath);
-                        Console.WriteLine($"Placeholder MSG created at '{msgPath}'.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"File not found: {msgPath}");
+                return;
             }
 
-            // Load the existing MSG file, modify its body, and overwrite the original file.
             try
             {
                 using (MapiMessage message = MapiMessage.Load(msgPath))
                 {
-                    // Change the body text.
-                    message.Body = "This is the updated body text.";
+                    // Modify the body text
+                    message.Body = "Updated body text.";
 
-                    // Overwrite the original file with the modified message.
+                    // Overwrite the original MSG file
                     message.Save(msgPath);
-                    Console.WriteLine($"Message body updated and saved to '{msgPath}'.");
                 }
             }
             catch (Exception ex)

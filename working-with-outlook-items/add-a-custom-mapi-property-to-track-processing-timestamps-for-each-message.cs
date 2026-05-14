@@ -10,54 +10,46 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string outputPath = "ProcessedMessage.msg";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Ensure the directory for the output file exists
-            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (!Directory.Exists(outputDir))
+            // Ensure input file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder message."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create directory '{outputDir}': {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
                     return;
                 }
             }
 
-            // Create a new MAPI message
-            using (MapiMessage message = new MapiMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is the body of the message."))
+            // Load the message, add custom property, and save
+            try
             {
-                // Prepare the processing timestamp value
-                string timestamp = DateTime.UtcNow.ToString("o"); // ISO 8601 format
+                using (MapiMessage message = MapiMessage.Load(inputPath))
+                {
+                    string propertyName = "ProcessingTimestamp";
+                    string timestamp = DateTime.UtcNow.ToString("o");
+                    byte[] propertyValue = Encoding.Unicode.GetBytes(timestamp);
 
-                // Add a custom Unicode property named "ProcessingTimestamp"
-                try
-                {
-                    message.AddCustomProperty(
-                        MapiPropertyType.PT_UNICODE,
-                        Encoding.Unicode.GetBytes(timestamp),
-                        "ProcessingTimestamp");
-                }
-                catch (Exception propEx)
-                {
-                    Console.Error.WriteLine($"Failed to add custom property: {propEx.Message}");
-                    return;
-                }
+                    // Add custom Unicode property
+                    message.AddCustomProperty(MapiPropertyType.PT_UNICODE, propertyValue, propertyName);
 
-                // Save the message to the specified file
-                try
-                {
+                    // Save the updated message
                     message.Save(outputPath);
-                    Console.WriteLine($"Message saved with custom property to '{outputPath}'.");
                 }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Failed to save message: {saveEx.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing MAPI message: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)

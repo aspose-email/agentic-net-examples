@@ -2,8 +2,8 @@ using System;
 using System.Net;
 using System.Threading;
 using Aspose.Email;
-using Aspose.Email.PersonalInfo;
 using Aspose.Email.Clients.Google;
+using Aspose.Email.PersonalInfo;
 
 class Program
 {
@@ -12,70 +12,64 @@ class Program
         try
         {
             // Placeholder credentials – replace with real values.
-            string clientId = "your-client-id";
-            string clientSecret = "your-client-secret";
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
 
-            // Skip execution when placeholder credentials are detected.
-            if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-"))
+            // Guard against executing network calls with placeholder credentials.
+            if (clientId.StartsWith("YOUR_") || clientSecret.StartsWith("YOUR_") || refreshToken.StartsWith("YOUR_"))
             {
-                Console.Error.WriteLine("Gmail client credentials are placeholders. Skipping network call.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping contact retrieval.");
                 return;
             }
 
-            const int maxRetries = 3;
-            const int delayMilliseconds = 2000;
-            int attempt = 0;
-            bool success = false;
+            // Create Gmail client instance. Pass null for proxy (no proxy).
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, null, clientSecret, refreshToken);
 
-            while (attempt < maxRetries && !success)
+            // Retry logic parameters.
+            const int maxAttempts = 3;
+            const int delayMilliseconds = 2000;
+            Contact[] contacts = null;
+
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                attempt++;
                 try
                 {
-                    // Create Gmail client instance.
-                    using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret))
-                    {
-                        // Fetch all contacts.
-                        Contact[] contacts = gmailClient.GetAllContacts();
-
-                        Console.WriteLine($"Retrieved {contacts.Length} contacts:");
-                        foreach (Contact contact in contacts)
-                        {
-                            // Example: display the primary email address if available.
-                            if (contact.EmailAddresses != null && contact.EmailAddresses.Count > 0)
-                            {
-                                Console.WriteLine(contact.EmailAddresses[0].Address);
-                            }
-                        }
-                    }
-
-                    success = true; // If we reach here, the operation succeeded.
-                }
-                catch (WebException webEx)
-                {
-                    Console.Error.WriteLine($"Attempt {attempt} failed: {webEx.Message}");
-                    if (attempt < maxRetries)
-                    {
-                        Thread.Sleep(delayMilliseconds);
-                        Console.WriteLine("Retrying...");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error on attempt {attempt}: {ex.Message}");
-                    // Do not retry on unknown exceptions.
+                    contacts = gmailClient.GetAllContacts();
+                    // Successful retrieval, exit retry loop.
                     break;
+                }
+                catch (WebException ex)
+                {
+                    Console.Error.WriteLine($"Attempt {attempt} failed: {ex.Message}");
+                    if (attempt == maxAttempts)
+                    {
+                        Console.Error.WriteLine("Maximum retry attempts reached. Unable to load contacts.");
+                        return;
+                    }
+                    // Wait before next retry.
+                    Thread.Sleep(delayMilliseconds);
                 }
             }
 
-            if (!success)
+            // Process retrieved contacts.
+            if (contacts != null && contacts.Length > 0)
             {
-                Console.Error.WriteLine("Failed to load contacts after multiple attempts.");
+                Console.WriteLine($"Retrieved {contacts.Length} contacts:");
+                foreach (Contact contact in contacts)
+                {
+                    string email = contact.EmailAddresses?.Count > 0 ? contact.EmailAddresses[0]?.Address : "No Email";
+                    Console.WriteLine($"- {contact.GivenName} {contact.Surname} ({email})");
+                }
+            }
+            else
+            {
+                Console.WriteLine("No contacts were retrieved.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

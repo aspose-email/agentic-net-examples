@@ -1,6 +1,8 @@
+using Aspose.Email.Clients.Exchange.Dav;
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -8,85 +10,115 @@ class Program
     {
         try
         {
-            const long MaxAttachmentSizeBytes = 5 * 1024 * 1024; // 5 MB limit
-            string inputPath = "input.eml";
-            string outputPath = "output.eml";
+            // Configurable maximum attachment size (5 MB)
+            const long maxAttachmentSizeBytes = 5 * 1024 * 1024;
 
-            // Ensure input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Exchange server connection details (placeholders)
+            string exchangeUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard: skip network operations when placeholders are detected
+            if (exchangeUri.Contains("example.com") ||
+                username.Contains("example.com") ||
+                password == "password")
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    File.WriteAllText(inputPath, "Subject: Placeholder\r\n\r\nBody");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder input file: {ex.Message}");
-                    return;
-                }
+                Console.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
+                return;
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
+            // Folder where messages will be saved
+            string outputFolder = "SavedMessages";
 
-            // Load the message and validate attachment sizes
+            // Ensure the output directory exists
             try
             {
-                using (MailMessage message = MailMessage.Load(inputPath))
+                if (!Directory.Exists(outputFolder))
                 {
-                    foreach (Attachment attachment in message.Attachments)
-                    {
-                        if (attachment.ContentStream != null && attachment.ContentStream.Length > MaxAttachmentSizeBytes)
-                        {
-                            Console.Error.WriteLine($"Attachment \"{attachment.Name}\" exceeds the size limit of {MaxAttachmentSizeBytes} bytes.");
-                            return;
-                        }
-                    }
+                    Directory.CreateDirectory(outputFolder);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                return;
+            }
 
-                    // All attachments are within the limit; save the message
+            // Create and use the Exchange client
+            try
+            {
+                using (ExchangeClient client = new ExchangeClient(exchangeUri, username, password))
+                {
+                    // Verify connectivity by listing messages in the Inbox
                     try
                     {
-                        message.Save(outputPath);
-                        Console.WriteLine($"Message saved to \"{outputPath}\".");
+                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                        foreach (ExchangeMessageInfo messageInfo in messages)
+                        {
+                            // Fetch the full mail message
+                            using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
+                            {
+                                bool attachmentsOk = true;
+
+                                // Validate each attachment size
+                                foreach (Attachment attachment in message.Attachments)
+                                {
+                                    try
+                                    {
+                                        if (attachment.ContentStream != null)
+                                        {
+                                            long size = attachment.ContentStream.Length;
+                                            if (size > maxAttachmentSizeBytes)
+                                            {
+                                                Console.WriteLine($"Skipping message \"{message.Subject}\" because attachment \"{attachment.Name}\" size {size} exceeds limit.");
+                                                attachmentsOk = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.Error.WriteLine($"Error checking attachment size: {ex.Message}");
+                                        attachmentsOk = false;
+                                        break;
+                                    }
+                                }
+
+                                if (!attachmentsOk)
+                                {
+                                    continue;
+                                }
+
+                                // Build a safe file name from the subject
+                                string safeSubject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
+                                foreach (char c in Path.GetInvalidFileNameChars())
+                                {
+                                    safeSubject = safeSubject.Replace(c, '_');
+                                }
+                                string filePath = Path.Combine(outputFolder, safeSubject + ".eml");
+
+                                // Save the message to the file system
+                                try
+                                {
+                                    client.SaveMessage(messageInfo.UniqueUri, filePath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.Error.WriteLine($"Failed to save message \"{message.Subject}\": {ex.Message}");
+                                }
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                        Console.Error.WriteLine($"Error accessing mailbox: {ex.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load or process the message: {ex.Message}");
+                Console.Error.WriteLine($"Failed to create or use Exchange client: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)

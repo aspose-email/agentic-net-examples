@@ -1,18 +1,17 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Path to the Outlook MSG file
-            string msgPath = "message.msg";
+            string msgPath = "sample.msg";
 
-            // Verify that the file exists before attempting to load it
+            // Guard against missing file
             if (!File.Exists(msgPath))
             {
                 try
@@ -36,18 +35,26 @@ class Program
                 return;
             }
 
-            // Load the MSG file and read its properties
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            try
             {
-                Console.WriteLine("Subject: " + msg.Subject);
-                Console.WriteLine("Sender: " + msg.SenderName);
-                Console.WriteLine("Received: " + msg.ClientSubmitTime);
+                // Load the MSG file
+                using (MapiMessage msg = MapiMessage.Load(msgPath))
+                {
+                    // Read and display properties
+                    Console.WriteLine("Subject: " + msg.Subject);
+                    Console.WriteLine("Sender: " + msg.SenderName);
+                    Console.WriteLine("Received: " + msg.ClientSubmitTime);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            // Output any unexpected errors
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

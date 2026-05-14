@@ -5,42 +5,51 @@ using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Placeholder credentials – replace with real values or skip execution.
-            string exchangeUrl = "https://your.exchange.server/EWS/Exchange.asmx";
-            string username = "username";
+            // Service URL and credentials (replace with real values)
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
-            if (exchangeUrl.Contains("your.") || username == "username" || password == "password")
+            // Guard against placeholder credentials to avoid external calls during CI
+            if (serviceUrl.Contains("example.com"))
             {
-                Console.Error.WriteLine("Exchange credentials are placeholders. Skipping execution.");
+                Console.Error.WriteLine("Placeholder service URL detected. Skipping execution.");
                 return;
             }
 
-            // Create and connect the EWS client.
-            using (IEWSClient client = EWSClient.GetEWSClient(exchangeUrl, username, password))
+            // Create and authenticate the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // Define a new distribution list with a descriptive name.
-                ExchangeDistributionList distributionList = new ExchangeDistributionList();
-                distributionList.DisplayName = "Project Team";
+                // Define a new distribution list with a descriptive name
+                ExchangeDistributionList distributionList = new ExchangeDistributionList
+                {
+                    DisplayName = "Project Team"
+                };
 
-                // Prepare the list of members to add.
+                // Prepare initial members for the distribution list
                 MailAddressCollection members = new MailAddressCollection();
-                members.Add(new MailAddress("alice@example.com"));
-                members.Add(new MailAddress("bob@example.com"));
-                members.Add(new MailAddress("carol@example.com"));
+                members.Add(new MailAddress("alice@example.com", "Alice"));
+                members.Add(new MailAddress("bob@example.com", "Bob"));
+                members.Add(new MailAddress("carol@example.com", "Carol"));
 
-                // Create the distribution list on the Exchange server.
+                // Create the distribution list on the Exchange server
                 string distributionListId = client.CreateDistributionList(distributionList, members);
-                Console.WriteLine("Distribution List created with Id: " + distributionListId);
+                Console.WriteLine($"Distribution List created with Id: {distributionListId}");
+
+                // Optionally add more members later
+                MailAddressCollection additionalMembers = new MailAddressCollection();
+                additionalMembers.Add(new MailAddress("dave@example.com", "Dave"));
+                client.AddToDistributionList(distributionList, additionalMembers);
+                Console.WriteLine("Additional members added to the distribution list.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

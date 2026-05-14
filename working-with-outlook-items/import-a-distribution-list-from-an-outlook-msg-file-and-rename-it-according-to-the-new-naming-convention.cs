@@ -12,7 +12,6 @@ class Program
             string inputPath = "distributionList.msg";
             string outputPath = "renamedDistributionList.msg";
 
-            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
@@ -36,38 +35,27 @@ class Program
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Load the MSG file
             using (MapiMessage msg = MapiMessage.Load(inputPath))
             {
-                // Check that the MSG contains a distribution list
                 if (msg.SupportedType != MapiItemType.DistList)
                 {
                     Console.Error.WriteLine("The MSG file does not contain a distribution list.");
                     return;
                 }
 
-                // Convert to MapiDistributionList
-                using (MapiDistributionList distributionList = (MapiDistributionList)msg.ToMapiMessageItem())
+                using (MapiDistributionList distList = (MapiDistributionList)msg.ToMapiMessageItem())
                 {
-                    // Rename according to new naming convention
-                    distributionList.DisplayName = "New Distribution List Name";
+                    // Rename according to the new naming convention
+                    distList.DisplayName = "New Naming Convention";
 
                     // Save the updated distribution list to a new MSG file
-                    distributionList.Save(outputPath);
-                    Console.WriteLine($"Distribution list saved to {outputPath}");
+                    distList.Save(outputPath);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

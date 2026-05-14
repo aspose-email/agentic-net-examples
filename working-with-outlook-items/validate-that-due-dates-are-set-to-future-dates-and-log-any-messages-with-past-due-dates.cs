@@ -1,7 +1,7 @@
-using Aspose.Email;
 using System;
-using System.Collections.Generic;
-using Aspose.Email.Calendar;
+using System.IO;
+using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,36 +9,86 @@ class Program
     {
         try
         {
-            // Prepare a collection of tasks for validation
-            List<Aspose.Email.Calendar.Task> tasks = new List<Aspose.Email.Calendar.Task>();
+            // Define the folder containing Outlook MSG files
+            string inputFolder = "Tasks";
 
-            // Example task with a future due date
-            Aspose.Email.Calendar.Task futureTask = new Aspose.Email.Calendar.Task();
-            futureTask.Subject = "Future Task";
-            futureTask.DueDate = DateTime.Now.AddDays(5);
-            tasks.Add(futureTask);
-
-            // Example task with a past due date
-            Aspose.Email.Calendar.Task pastTask = new Aspose.Email.Calendar.Task();
-            pastTask.Subject = "Past Task";
-            pastTask.DueDate = DateTime.Now.AddDays(-2);
-            tasks.Add(pastTask);
-
-            // Validate each task's due date
-            foreach (Aspose.Email.Calendar.Task task in tasks)
+            // Verify the folder exists
+            if (!Directory.Exists(inputFolder))
             {
-                using (task)
+                Console.Error.WriteLine($"Input folder '{inputFolder}' does not exist.");
+                return;
+            }
+
+            // Get all .msg files in the folder
+            string[] msgFiles;
+            try
+            {
+                msgFiles = Directory.GetFiles(inputFolder, "*.msg");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to enumerate files: {ex.Message}");
+                return;
+            }
+
+            foreach (string filePath in msgFiles)
+            {
+                // Ensure the file exists before processing
+                if (!File.Exists(filePath))
                 {
-                    if (task.DueDate < DateTime.Now)
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        Console.WriteLine($"Task '{task.Subject}' has a past due date: {task.DueDate}");
+                        placeholder.Save(filePath);
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                    Console.Error.WriteLine($"File not found: {filePath}");
+                    continue;
+                }
+
+                try
+                {
+                    // Load the MSG file as a MapiMessage
+                    using (MapiMessage msg = MapiMessage.Load(filePath))
+                    {
+                        // Process only task items
+                        if (msg.SupportedType == MapiItemType.Task)
+                        {
+                            // Convert to MapiTask
+                            MapiTask task = (MapiTask)msg.ToMapiMessageItem();
+
+                            // Validate due date
+                            DateTime now = DateTime.Now;
+                            if (task.DueDate < now)
+                            {
+                                Console.WriteLine($"Past due task detected:");
+                                Console.WriteLine($"  File: {Path.GetFileName(filePath)}");
+                                Console.WriteLine($"  Subject: {task.Subject}");
+                                Console.WriteLine($"  DueDate: {task.DueDate}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error processing file '{filePath}': {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

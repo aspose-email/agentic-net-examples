@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
@@ -9,61 +10,100 @@ class Program
     {
         try
         {
-            // Path to the Outlook MSG file
-            string msgFilePath = "sample.msg";
+            // Input Outlook MSG file path
+            string msgPath = "sample.msg";
 
-            // Directory where extracted OLE objects will be saved
-            string outputDirectory = "OleObjects";
+            // Output directory for extracted OLE objects
+            string outputDir = "ExtractedOleObjects";
 
-            // Verify that the MSG file exists
-            if (!File.Exists(msgFilePath))
+            // Guard input file existence
+            if (!File.Exists(msgPath))
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgFilePath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputDirectory))
+            // Ensure output directory exists
+            try
             {
-                Directory.CreateDirectory(outputDirectory);
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+            }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                return;
             }
 
-            // Load the MSG file
-            using (MapiMessage message = MapiMessage.Load(msgFilePath))
+            // Process the MSG file
+            using (MapiMessageReader reader = new MapiMessageReader(msgPath))
             {
-                // Iterate through all attachments (OLE objects are represented as attachments)
-                foreach (MapiAttachment attachment in message.Attachments)
+                using (MapiMessage message = reader.ReadMessage())
                 {
-                    // Build a safe file name for the extracted object
-                    string safeFileName = $"{Path.GetFileNameWithoutExtension(msgFilePath)}_{attachment.FileName}";
-                    string outputPath = Path.Combine(outputDirectory, safeFileName);
+                    MapiAttachmentCollection attachments = message.Attachments;
+                    foreach (MapiAttachment attachment in attachments)
+                    {
+                        // Save attachment to a temporary file
+                        string tempAttachmentPath = Path.Combine(Path.GetTempPath(), attachment.FileName);
+                        try
+                        {
+                            attachment.Save(tempAttachmentPath);
+                        }
+                        catch (Exception saveEx)
+                        {
+                            Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {saveEx.Message}");
+                            continue;
+                        }
 
-                    // Save the attachment to disk
-                    attachment.Save(outputPath);
-                    Console.WriteLine($"Saved OLE object: {outputPath}");
+                        // Open the saved attachment and enumerate OLE objects
+                        try
+                        {
+                            using (FileStream attachmentStream = File.OpenRead(tempAttachmentPath))
+                            {
+                                IDictionary<string, byte[]> oleFiles = InlineAttachmentExtractor.EnumerateMsoPackage(attachmentStream);
+                                foreach (KeyValuePair<string, byte[]> kvp in oleFiles)
+                                {
+                                    string outFilePath = Path.Combine(outputDir, kvp.Key);
+                                    try
+                                    {
+                                        File.WriteAllBytes(outFilePath, kvp.Value);
+                                        Console.WriteLine($"Extracted OLE object to: {outFilePath}");
+                                    }
+                                    catch (Exception writeEx)
+                                    {
+                                        Console.Error.WriteLine($"Failed to write OLE object '{kvp.Key}': {writeEx.Message}");
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception extractEx)
+                        {
+                            Console.Error.WriteLine($"Failed to extract OLE objects from attachment '{attachment.FileName}': {extractEx.Message}");
+                        }
+                        finally
+                        {
+                            // Clean up temporary attachment file
+                            try
+                            {
+                                if (File.Exists(tempAttachmentPath))
+                                {
+                                    File.Delete(tempAttachmentPath);
+                                }
+                            }
+                            catch
+                            {
+                                // Ignore cleanup errors
+                            }
+                        }
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

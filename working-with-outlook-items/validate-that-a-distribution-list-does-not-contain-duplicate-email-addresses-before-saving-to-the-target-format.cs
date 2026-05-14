@@ -1,73 +1,68 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define output file path
-            string outputPath = "outputDistributionList.msg";
+            string inputPath = "distributionList.msg";
+            string outputPath = "distributionListValidated.msg";
 
-            // Ensure the directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Ensure the input file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(inputPath))
             {
-                Directory.CreateDirectory(directory);
+                using (MapiDistributionList placeholder = new MapiDistributionList())
+                {
+                    placeholder.DisplayName = "Placeholder List";
+                    placeholder.Save(inputPath);
+                }
+                Console.WriteLine($"Placeholder distribution list created at '{inputPath}'.");
             }
 
-            // Create a new MAPI distribution list
-            using (MapiDistributionList distributionList = new MapiDistributionList())
+            // Load the message and verify it is a distribution list.
+            using (MapiMessage message = MapiMessage.Load(inputPath))
             {
-                distributionList.DisplayName = "Sample Distribution List";
-
-                // Prepare members (some duplicates included for demonstration)
-                var membersToAdd = new List<MapiDistributionListMember>
+                if (message.SupportedType != MapiItemType.DistList)
                 {
-                    new MapiDistributionListMember("Alice", "alice@example.com"),
-                    new MapiDistributionListMember("Bob", "bob@example.com"),
-                    new MapiDistributionListMember("Charlie", "charlie@example.com"),
-                    new MapiDistributionListMember("Bob Duplicate", "bob@example.com") // duplicate
-                };
-
-                // Collection to hold unique members
-                MapiDistributionListMemberCollection uniqueMembers = new MapiDistributionListMemberCollection();
-                HashSet<string> emailSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var member in membersToAdd)
-                {
-                    if (emailSet.Add(member.EmailAddress))
-                    {
-                        uniqueMembers.Add(member);
-                    }
-                    else
-                    {
-                        Console.Error.WriteLine($"Duplicate email detected and skipped: {member.EmailAddress}");
-                    }
+                    Console.WriteLine("The specified file is not a distribution list.");
+                    return;
                 }
 
-                // Assign the filtered unique members to the distribution list
-                distributionList.Members.AddRange(uniqueMembers);
-
-                // Save the distribution list to a file (guarded with try/catch)
-                try
+                using (MapiDistributionList distributionList = (MapiDistributionList)message.ToMapiMessageItem())
                 {
+                    // Validate that there are no duplicate email addresses.
+                    HashSet<string> seenEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    bool hasDuplicate = false;
+
+                    foreach (MapiDistributionListMember member in distributionList.Members)
+                    {
+                        if (!seenEmails.Add(member.EmailAddress))
+                        {
+                            Console.WriteLine($"Duplicate email address detected: {member.EmailAddress}");
+                            hasDuplicate = true;
+                        }
+                    }
+
+                    if (hasDuplicate)
+                    {
+                        Console.WriteLine("Distribution list contains duplicate email addresses. Saving aborted.");
+                        return;
+                    }
+
+                    // No duplicates found; save the validated distribution list.
                     distributionList.Save(outputPath);
-                    Console.WriteLine($"Distribution list saved successfully to '{outputPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save distribution list: {ex.Message}");
+                    Console.WriteLine($"Validated distribution list saved to '{outputPath}'.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

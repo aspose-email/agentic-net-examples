@@ -1,68 +1,72 @@
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailPaginationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials – replace with real values or skip execution.
-            string exchangeUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Guard against placeholder values to avoid unwanted network calls.
-            if (exchangeUri.Contains("example.com") || username.Contains("example.com"))
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange contact retrieval.");
-                return;
-            }
+                // Placeholder credentials – replace with real values.
+                string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
+                string username = "username";
+                string password = "password";
 
-            // Create and connect the Exchange client.
-            using (ExchangeClient client = new ExchangeClient(exchangeUri, new System.Net.NetworkCredential(username, password)))
-            {
-                // Folder URI for the default contacts folder.
-                string contactsFolderUri = client.GetFolderInfo("contacts").Uri;
-
-                // Retrieve all contacts (may be large).
-                MapiContact[] allContacts = client.ListContacts(contactsFolderUri);
-
-                // Define page size for pagination.
-                const int pageSize = 100;
-                int totalContacts = allContacts.Length;
-                int totalPages = (totalContacts + pageSize - 1) / pageSize;
-
-                for (int pageIndex = 0; pageIndex < totalPages; pageIndex++)
+                // Guard against executing with placeholder credentials.
+                if (username == "username" || password == "password")
                 {
-                    int start = pageIndex * pageSize;
-                    int count = Math.Min(pageSize, totalContacts - start);
-                    List<MapiContact> page = new List<MapiContact>(count);
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                    return;
+                }
 
-                    for (int i = 0; i < count; i++)
+                // Create and use the Exchange client safely.
+                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+                {
+                    // Folder URI where contacts are stored.
+                    string contactsFolderUri = "/contacts";
+
+                    // Retrieve all contacts from the folder.
+                    MapiContact[] allContacts;
+                    try
                     {
-                        page.Add(allContacts[start + i]);
+                        allContacts = client.ListContacts(contactsFolderUri);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to list contacts: {ex.Message}");
+                        return;
                     }
 
-                    // Process the current page of contacts.
-                    Console.WriteLine($"Page {pageIndex + 1}/{totalPages}:");
-                    foreach (MapiContact contact in page)
-                    {
-                        Console.WriteLine($"- {contact.NameInfo.DisplayName}");
-                    }
+                    // Define page size for pagination.
+                    const int pageSize = 100;
+                    int total = allContacts.Length;
+                    Console.WriteLine($"Total contacts retrieved: {total}");
 
-                    // Optional: insert a short delay to simulate throttling or to avoid overwhelming the server.
-                    // System.Threading.Thread.Sleep(100);
+                    // Process contacts in pages to reduce memory pressure.
+                    for (int offset = 0; offset < total; offset += pageSize)
+                    {
+                        IEnumerable<MapiContact> page = allContacts.Skip(offset).Take(pageSize);
+                        Console.WriteLine($"Processing contacts {offset + 1} to {Math.Min(offset + pageSize, total)}:");
+
+                        foreach (MapiContact contact in page)
+                        {
+                            // DisplayName is available via the NameInfo property.
+                            string displayName = contact.NameInfo?.DisplayName ?? "(no name)";
+                            Console.WriteLine($"- {displayName}");
+                        }
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

@@ -10,73 +10,56 @@ class Program
     {
         try
         {
+            // Define output MSG file path
             string msgPath = "appointment.msg";
 
-            // Ensure the output directory exists
+            // Ensure the directory for the output file exists
             string directory = Path.GetDirectoryName(Path.GetFullPath(msgPath));
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            // Create appointment details
+            // Create organizer and attendees
             MailAddress organizer = new MailAddress("organizer@example.com");
             MailAddressCollection attendees = new MailAddressCollection();
             attendees.Add(new MailAddress("attendee1@example.com"));
-            DateTime start = new DateTime(2023, 12, 25, 10, 0, 0);
-            DateTime end = start.AddHours(1);
+            attendees.Add(new MailAddress("attendee2@example.com"));
 
-            // Initialize the appointment
-            Appointment appointment = new Appointment("Conference Room", start, end, organizer, attendees)
+            // Create an appointment and set its privacy to Confidential
+            Appointment appointment = new Appointment(
+                "Project Discussion",
+                DateTime.Now.AddHours(1),
+                DateTime.Now.AddHours(2),
+                organizer,
+                attendees);
+            appointment.Summary = "Project Discussion";
+            appointment.Description = "Discuss project milestones.";
+            appointment.Class = AppointmentClass.Confidential; // privacy flag
+
+            // Convert the appointment to a MAPI message and save it as MSG
+            using (MapiMessage mapiMsg = appointment.ToMapiMessage())
             {
-                Summary = "Year End Meeting",
-                Description = "Discuss yearly results."
-            };
-
-            // Set the privacy flag to Confidential
-            appointment.Class = AppointmentClass.Confidential;
-
-            // Save the appointment as MSG
-            AppointmentMsgSaveOptions saveOptions = new AppointmentMsgSaveOptions();
-            appointment.Save(msgPath, saveOptions);
-
-            // Verify that the MSG file was created
-            if (!File.Exists(msgPath))
-            {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine("Failed to create the MSG file.");
-                return;
+                mapiMsg.Save(msgPath);
             }
 
-            Console.WriteLine("Appointment saved to MSG successfully.");
-
-            // Load the MSG file as a MapiMessage to confirm the flag
-            using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
+            // Verify that the confidentiality flag is retained after loading the MSG
+            if (File.Exists(msgPath))
             {
-                // Retrieve the appointment class property
-                var classProperty = mapiMessage.GetProperty(KnownPropertyList.AppointmentMessageClass);
-                Console.WriteLine("Stored appointment class property: " + (classProperty?.ToString() ?? "null"));
+                using (MapiMessage loadedMsg = MapiMessage.Load(msgPath))
+                {
+                    // The Sensitivity property reflects the confidentiality setting
+                    Console.WriteLine("Sensitivity after load: " + loadedMsg.Sensitivity);
+                }
+            }
+            else
+            {
+                Console.Error.WriteLine("Failed to create the MSG file.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

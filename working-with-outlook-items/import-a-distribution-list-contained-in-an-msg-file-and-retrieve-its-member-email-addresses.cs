@@ -5,7 +5,7 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
@@ -30,32 +30,41 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine("The MSG file '{0}' was not found.", msgPath);
+                Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            try
             {
-                if (msg.SupportedType != MapiItemType.DistList)
+                using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
                 {
-                    Console.WriteLine("The loaded MSG file is not a distribution list.");
-                    return;
+                    if (mapiMessage.SupportedType != MapiItemType.DistList)
+                    {
+                        Console.WriteLine("The MSG file does not contain a distribution list.");
+                        return;
+                    }
+
+                    using (MapiDistributionList distributionList = (MapiDistributionList)mapiMessage.ToMapiMessageItem())
+                    {
+                        Console.WriteLine($"Distribution List: {distributionList.DisplayName}");
+                        Console.WriteLine($"Member count: {distributionList.Members.Count}");
+
+                        foreach (MapiDistributionListMember member in distributionList.Members)
+                        {
+                            Console.WriteLine($"Member: {member.DisplayName} <{member.EmailAddress}>");
+                        }
+                    }
                 }
-
-                MapiDistributionList distributionList = (MapiDistributionList)msg.ToMapiMessageItem();
-
-                Console.WriteLine("Distribution List Name: " + distributionList.DisplayName);
-                Console.WriteLine("Member Count: " + distributionList.Members.Count);
-
-                foreach (MapiDistributionListMember member in distributionList.Members)
-                {
-                    Console.WriteLine("Member Email: " + member.EmailAddress);
-                }
+            }
+            catch (Exception ioEx)
+            {
+                Console.Error.WriteLine($"IO error: {ioEx.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

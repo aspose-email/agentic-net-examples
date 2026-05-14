@@ -11,32 +11,20 @@ class Program
     {
         try
         {
-            // Input directory containing MSG files
-            string inputDirectory = "InputMsgs";
-            // Output directory for extracted unique attachments
-            string outputDirectory = "OutputAttachments";
-
-            // Verify input directory exists
-            if (!Directory.Exists(inputDirectory))
+            // List of MSG files to process
+            string[] msgFiles = new string[]
             {
-                Console.Error.WriteLine($"Error: Input directory not found – {inputDirectory}");
-                return;
-            }
+                @"C:\Emails\msg1.msg",
+                @"C:\Emails\msg2.msg",
+                @"C:\Emails\msg3.msg"
+            };
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
+            // Keep track of attachment hashes that have already been seen
+            HashSet<string> seenAttachmentHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (string msgPath in msgFiles)
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Dictionary to track attachment hashes (to identify duplicates)
-            Dictionary<string, string> attachmentHashMap = new Dictionary<string, string>();
-
-            // Process each MSG file in the input directory
-            foreach (string msgFilePath in Directory.GetFiles(inputDirectory, "*.msg"))
-            {
-                // Verify the MSG file exists before loading
-                if (!File.Exists(msgFilePath))
+                if (!File.Exists(msgPath))
                 {
                 try
                 {
@@ -46,7 +34,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgFilePath);
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -55,68 +43,66 @@ class Program
                     return;
                 }
 
-                    Console.Error.WriteLine($"Warning: File not found – {msgFilePath}");
+                    Console.Error.WriteLine($"File not found: {msgPath}");
                     continue;
                 }
 
-                // Load the MSG file
-                using (MapiMessage message = MapiMessage.Load(msgFilePath))
+                try
                 {
-                    // Iterate through each attachment in the message
-                    foreach (MapiAttachment attachment in message.Attachments)
+                    using (MapiMessage message = MapiMessage.Load(msgPath))
                     {
-                        // Compute SHA256 hash of the attachment content
-                        string attachmentHash;
-                        using (MemoryStream memoryStream = new MemoryStream())
+                        // Collect attachments to remove after iteration to avoid modifying collection while enumerating
+                        List<MapiAttachment> attachmentsToRemove = new List<MapiAttachment>();
+
+                        foreach (MapiAttachment attachment in message.Attachments)
                         {
-                            attachment.Save(memoryStream);
-                            byte[] attachmentBytes = memoryStream.ToArray();
+                            byte[] attachmentData;
+
+                            // Try to get raw bytes of the attachment
+                            using (MemoryStream ms = new MemoryStream())
+                            {
+                                attachment.Save(ms);
+                                attachmentData = ms.ToArray();
+                            }
+
+                            // Compute SHA256 hash of the attachment content
                             using (SHA256 sha256 = SHA256.Create())
                             {
-                                byte[] hashBytes = sha256.ComputeHash(attachmentBytes);
-                                attachmentHash = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+                                byte[] hashBytes = sha256.ComputeHash(attachmentData);
+                                string hashString = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+
+                                if (seenAttachmentHashes.Contains(hashString))
+                                {
+                                    // Duplicate found – mark for removal
+                                    attachmentsToRemove.Add(attachment);
+                                }
+                                else
+                                {
+                                    // First occurrence – remember the hash
+                                    seenAttachmentHashes.Add(hashString);
+                                }
                             }
                         }
 
-                        // If this attachment hash has not been seen before, save it
-                        if (!attachmentHashMap.ContainsKey(attachmentHash))
+                        // Remove duplicate attachments
+                        foreach (MapiAttachment dupAttachment in attachmentsToRemove)
                         {
-                            string safeFileName = Path.GetFileName(attachment.FileName);
-                            string destinationPath = Path.Combine(outputDirectory, safeFileName);
-
-                            // Ensure we do not overwrite an existing file with the same name
-                            int duplicateCounter = 1;
-                            while (File.Exists(destinationPath))
-                            {
-                                string fileNameWithoutExt = Path.GetFileNameWithoutExtension(safeFileName);
-                                string extension = Path.GetExtension(safeFileName);
-                                string newFileName = $"{fileNameWithoutExt}_{duplicateCounter}{extension}";
-                                destinationPath = Path.Combine(outputDirectory, newFileName);
-                                duplicateCounter++;
-                            }
-
-                            // Save the attachment to the output directory
-                            using (FileStream fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
-                            {
-                                attachment.Save(fileStream);
-                            }
-
-                            // Record the hash to prevent future duplicates
-                            attachmentHashMap.Add(attachmentHash, destinationPath);
-                            Console.WriteLine($"Saved unique attachment: {destinationPath}");
+                            message.Attachments.Remove(dupAttachment);
                         }
-                        else
-                        {
-                            // Duplicate attachment detected; skip saving
-                            Console.WriteLine($"Skipped duplicate attachment: {attachment.FileName}");
-                        }
+
+                        // Save the modified message back to the same file
+                        message.Save(msgPath);
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error processing '{msgPath}': {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

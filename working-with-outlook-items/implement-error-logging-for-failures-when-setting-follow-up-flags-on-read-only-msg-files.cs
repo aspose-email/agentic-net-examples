@@ -9,74 +9,59 @@ class Program
     {
         try
         {
-            string inputPath = "readonly.msg";
+            const string msgPath = "readonly_message.msg";
 
-            if (!File.Exists(inputPath))
+            // Ensure the MSG file exists; create a minimal placeholder if missing.
+            if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
+                    MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
                         "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputPath);
-                    }
+                        "Placeholder body");
+                    placeholder.Save(msgPath);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
                     return;
                 }
+            }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+            // Mark the file as read‑only to simulate a read‑only MSG.
+            try
+            {
+                File.SetAttributes(msgPath, FileAttributes.ReadOnly);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error setting file attribute: {ex.Message}");
                 return;
             }
 
+            // Load the MSG file and attempt to set a follow‑up flag.
             try
             {
-                using (MapiMessage message = MapiMessage.Load(inputPath))
+                using (MapiMessage message = MapiMessage.Load(msgPath))
                 {
                     try
                     {
                         FollowUpManager.SetFlag(message, "Follow up");
+                        // Attempt to save the modified message back to the same read‑only file.
+                        message.Save(msgPath);
+                        Console.WriteLine("Follow‑up flag set and saved successfully.");
                     }
-                    catch (Exception flagEx)
+                    catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error setting follow‑up flag: {flagEx.Message}");
-                        // Continue without rethrowing; the message may remain unchanged.
-                    }
-
-                    string outputPath = "updated.msg";
-                    string outputDirectory = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                    {
-                        try
-                        {
-                            Directory.CreateDirectory(outputDirectory);
-                        }
-                        catch (Exception dirEx)
-                        {
-                            Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                            return;
-                        }
-                    }
-
-                    try
-                    {
-                        message.Save(outputPath);
-                        Console.WriteLine($"Message saved to {outputPath}");
-                    }
-                    catch (Exception saveEx)
-                    {
-                        Console.Error.WriteLine($"Error saving message: {saveEx.Message}");
+                        Console.Error.WriteLine($"Failed to set or save follow‑up flag: {ex.Message}");
                     }
                 }
             }
-            catch (Exception loadEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load MSG file: {loadEx.Message}");
+                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
             }
         }
         catch (Exception ex)

@@ -1,6 +1,7 @@
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -8,48 +9,57 @@ class Program
     {
         try
         {
-            // Placeholder connection details – real credentials should be provided by the user.
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-            string taskUri = "https://exchange.example.com/EWS/Tasks/12345";
+            string taskFilePath = "task.msg";
 
-            // Skip execution when placeholder values are detected to avoid unwanted network calls.
-            if (serviceUrl.Contains("example.com") || username.Contains("example.com"))
+            // Ensure the task file exists; create a minimal placeholder if missing
+            if (!File.Exists(taskFilePath))
             {
-                Console.Error.WriteLine("Placeholder credentials detected – skipping Exchange operation.");
-                return;
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage())
+                    {
+                        placeholder.Save(taskFilePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder task file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Create and configure the EWS client.
+            // Load the message and process the task
             try
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                using (MapiMessage msg = MapiMessage.Load(taskFilePath))
                 {
-                    // Fetch the task from Exchange.
-                    ExchangeTask task = client.FetchTask(taskUri);
-
-                    // Compare the stored reminder date with the current system time.
-                    DateTime reminderDate = task.ReminderDate;
-                    DateTime now = DateTime.Now;
-
-                    // Log the result.
-                    if (reminderDate != now)
+                    if (msg.SupportedType != MapiItemType.Task)
                     {
-                        Console.WriteLine($"Discrepancy detected: ReminderDate = {reminderDate:u}, System Time = {now:u}");
+                        Console.WriteLine("The loaded message is not a task.");
+                        return;
+                    }
+
+                    // Convert to MapiTask
+                    MapiTask task = (MapiTask)msg.ToMapiMessageItem();
+
+                    DateTime reminderTime = task.ReminderTime;
+                    DateTime systemTime = DateTime.Now;
+
+                    if (reminderTime != systemTime)
+                    {
+                        Console.WriteLine($"Discrepancy detected:");
+                        Console.WriteLine($"  Stored Reminder Time: {reminderTime:O}");
+                        Console.WriteLine($"  System Current Time : {systemTime:O}");
                     }
                     else
                     {
-                        Console.WriteLine("ReminderDate matches the current system time.");
+                        Console.WriteLine("Reminder time matches the system time.");
                     }
-
-                    // Dispose the task object.
-                    task.Dispose();
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
+                Console.Error.WriteLine($"Error processing task file: {ex.Message}");
                 return;
             }
         }

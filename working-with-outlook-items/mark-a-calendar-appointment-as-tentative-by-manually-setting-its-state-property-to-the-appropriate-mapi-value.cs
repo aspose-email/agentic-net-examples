@@ -10,38 +10,38 @@ class Program
     {
         try
         {
-            // Define output directory and file
-            string outputDir = Path.Combine(Environment.CurrentDirectory, "Output");
-            string outputPath = Path.Combine(outputDir, "TentativeAppointment.msg");
+            // Define output file path
+            string outputPath = Path.Combine("Output", "TentativeAppointment.msg");
 
             // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
             if (!Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Create a new MapiCalendar instance
-            using (MapiCalendar mapiCalendar = new MapiCalendar(
-                location: "Conference Room",
-                summary: "Project Discussion",
-                description: "Discuss project milestones.",
-                startDate: new DateTime(2024, 5, 20, 10, 0, 0),
-                endDate: new DateTime(2024, 5, 20, 11, 0, 0)))
+            // Create a new MapiCalendar (appointment)
+            using (MapiCalendar calendar = new MapiCalendar())
             {
-                // Set the state to Tentative by using the appropriate MAPI value.
-                // In MapiCalendarState, the closest representation is Received,
-                // which indicates the meeting request has been received.
-                // This example forces the state accordingly.
-                mapiCalendar.SetStateForced(MapiCalendarState.Received);
+                // Set basic appointment details
+                calendar.Subject = "Project Discussion";
+                calendar.Location = "Conference Room";
+                calendar.StartDate = new DateTime(2024, 12, 1, 10, 0, 0);
+                calendar.EndDate = new DateTime(2024, 12, 1, 11, 0, 0);
+                calendar.Body = "Discuss project milestones and deliverables.";
 
-                // Save the calendar as a MSG file using default MSG save options
-                mapiCalendar.Save(outputPath, MapiCalendarSaveOptions.DefaultMsg);
-                Console.WriteLine($"Tentative appointment saved to: {outputPath}");
+                // Mark the appointment as tentative by setting the busy status
+                calendar.BusyStatus = MapiCalendarBusyStatus.Tentative;
+
+                // Save the appointment to a MSG file using default MSG save options
+                calendar.Save(outputPath, MapiCalendarSaveOptions.DefaultMsg);
             }
+
+            Console.WriteLine("Tentative appointment saved to: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Calendar;
 
 class Program
 {
@@ -9,65 +9,56 @@ class Program
     {
         try
         {
-            // Paths for the audio reminder and the output MSG file
-            string wavPath = "reminder.wav";
-            string outputMsgPath = "MeetingWithAudioReminder.msg";
+            // Path to the audio file that will be used for the reminder
+            string audioFilePath = "reminder.wav";
 
-            // Ensure the WAV file exists; create an empty placeholder if missing
-            if (!File.Exists(wavPath))
+            // Verify that the audio file exists before proceeding
+            if (!File.Exists(audioFilePath))
             {
-                try
-                {
-                    File.WriteAllBytes(wavPath, new byte[0]);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder WAV file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Audio file not found: {audioFilePath}");
+                return;
             }
+
+            // Prepare attendees for the meeting
+            MailAddressCollection attendees = new MailAddressCollection
+            {
+                new MailAddress("alice@example.com"),
+                new MailAddress("bob@example.com")
+            };
+
+            // Create a new appointment (meeting)
+            Appointment meeting = new Appointment(
+                location: "Conference Room",
+                summary: "Project Sync",
+                description: "Discuss project status and next steps.",
+                startDate: new DateTime(2024, 12, 1, 10, 0, 0),
+                endDate: new DateTime(2024, 12, 1, 11, 0, 0),
+                organizer: new MailAddress("organizer@example.com"),
+                attendees: attendees);
+
+            // Create a reminder for the appointment
+            AppointmentReminder reminder = new AppointmentReminder();
+            reminder.Action = ReminderAction.Audio; // Use audio action
+
+            // Attach the WAV file as a reminder attachment
+            Uri audioUri = new Uri(Path.GetFullPath(audioFilePath));
+            reminder.Attachments.Add(new ReminderAttachment(audioUri));
+
+            // Add the reminder to the appointment
+            meeting.Reminders.Add(reminder);
+
+            // Save the appointment to an iCalendar file
+            string outputPath = "meeting.ics";
 
             // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputMsgPath));
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create a MAPI calendar (meeting) and configure the audio reminder
-            using (MapiCalendar meeting = new MapiCalendar(
-                location: "Conference Room",
-                summary: "Team Sync",
-                description: "Weekly team synchronization meeting.",
-                startDate: DateTime.Now.AddHours(1),
-                endDate: DateTime.Now.AddHours(2)))
-            {
-                // Enable reminder and set it to fire 15 minutes before the start
-                meeting.ReminderSet = true;
-                meeting.ReminderDelta = 15; // minutes
-
-                // Specify the full path to the WAV file to be played as the reminder audio
-                meeting.ReminderFileParameter = Path.GetFullPath(wavPath);
-
-                // Save the meeting as an MSG file using the default MSG save options
-                try
-                {
-                    meeting.Save(outputMsgPath, MapiCalendarSaveOptions.DefaultMsg);
-                    Console.WriteLine($"Meeting with audio reminder saved to: {outputMsgPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save meeting: {ex.Message}");
-                }
-            }
+            meeting.Save(outputPath);
+            Console.WriteLine($"Appointment saved to {outputPath}");
         }
         catch (Exception ex)
         {

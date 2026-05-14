@@ -4,6 +4,7 @@ using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Calendar.Recurrences;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -11,95 +12,49 @@ class Program
     {
         try
         {
-            // Define file paths
             string msgPath = "task.msg";
             string mhtPath = "task.mht";
 
-            // Ensure the directory for the output files exists
-            try
+            // Ensure output directories exist
+            string msgDir = Path.GetDirectoryName(msgPath);
+            if (!string.IsNullOrEmpty(msgDir) && !Directory.Exists(msgDir))
             {
-                string? directory = Path.GetDirectoryName(Path.GetFullPath(msgPath));
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
-                return;
+                Directory.CreateDirectory(msgDir);
             }
 
-            // Create a recurring weekly task that occurs on Fridays only
+            string mhtDir = Path.GetDirectoryName(mhtPath);
+            if (!string.IsNullOrEmpty(mhtDir) && !Directory.Exists(mhtDir))
+            {
+                Directory.CreateDirectory(mhtDir);
+            }
+
+            // Create a weekly recurring task that occurs on Fridays only
             using (ExchangeTask task = new ExchangeTask())
             {
                 task.Subject = "Weekly Report";
-                task.StartDate = DateTime.Today.AddHours(9);      // 9:00 AM today
-                task.DueDate = DateTime.Today.AddHours(10);      // 10:00 AM today
-                task.Body = "Prepare and send the weekly status report.";
+                task.StartDate = DateTime.Today;
+                task.DueDate = DateTime.Today.AddDays(1);
 
-                // Configure weekly recurrence on Fridays
-                WeeklyRecurrencePattern recurrence = new WeeklyRecurrencePattern(DateTime.Today, 1);
-                recurrence.Interval = 1;                         // Every week
+                // Weekly recurrence pattern with interval of 1 week
+                WeeklyRecurrencePattern recurrence = new WeeklyRecurrencePattern(task.StartDate, 1);
                 task.RecurrencePattern = recurrence;
 
                 // Save the task to MSG format
-                try
-                {
-                    task.Save(msgPath, Aspose.Email.Mapi.TaskSaveFormat.Msg);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save task to MSG: {ex.Message}");
-                    return;
-                }
+                task.Save(msgPath, TaskSaveFormat.Msg);
             }
 
-            // Load the saved MSG as a MailMessage
-            if (!File.Exists(msgPath))
-            {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine("The task MSG file was not created.");
-                return;
-            }
-
+            // Load the MSG file as a MailMessage and export it to MHT for preview
             using (MailMessage mail = MailMessage.Load(msgPath))
             {
-                // Prepare MHT save options to render task fields
                 MhtSaveOptions mhtOptions = new MhtSaveOptions();
-                mhtOptions.MhtFormatOptions = MhtFormatOptions.RenderTaskFields;
-
-                // Save the MailMessage as MHT for preview
-                try
-                {
-                    mail.Save(mhtPath, mhtOptions);
-                    Console.WriteLine($"Aspose.Email.Calendar.Task preview saved to MHT at: {Path.GetFullPath(mhtPath)}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MHT preview: {ex.Message}");
-                }
+                mail.Save(mhtPath, mhtOptions);
             }
+
+            Console.WriteLine("Aspose.Email.Calendar.Task exported to MHT successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -3,42 +3,42 @@ using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Calendar.Recurrences;
 
-namespace RecurrenceExample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // Prepare attendees
-                MailAddressCollection attendees = new MailAddressCollection();
-                attendees.Add(new MailAddress("attendee1@example.com"));
-                attendees.Add(new MailAddress("attendee2@example.com"));
+            // Define appointment details
+            DateTime startDate = new DateTime(2023, 10, 1, 9, 0, 0);
+            DateTime endDate = startDate.AddHours(1);
+            MailAddress organizer = new MailAddress("organizer@example.com");
 
-                // Create a daily appointment
-                Appointment appointment = new Appointment(
-                    "Conference Room",
-                    "Team Meeting",
-                    "Discuss project updates",
-                    new DateTime(2023, 10, 1, 9, 0, 0),
-                    new DateTime(2023, 10, 1, 10, 0, 0),
-                    new MailAddress("organizer@example.com"),
-                    attendees);
+            MailAddressCollection attendees = new MailAddressCollection();
+            attendees.Add(new MailAddress("attendee1@example.com"));
+            attendees.Add(new MailAddress("attendee2@example.com"));
 
-                // Define a daily recurrence that ends after ten occurrences
-                DailyRecurrencePattern dailyPattern = new DailyRecurrencePattern(1); // every 1 day
-                dailyPattern.Occurs = 10; // limit to 10 occurrences
+            // Create a daily recurrence that ends after ten occurrences
+            DailyRecurrencePattern recurrence = new DailyRecurrencePattern(10);
+            // Interval defaults to 1 (every day)
 
-                // Apply the recurrence to the appointment
-                appointment.Recurrence = dailyPattern;
+            // Create the appointment with the recurrence pattern
+            Appointment appointment = new Appointment(
+                "Conference Room",
+                "Daily Standup",
+                "Team sync meeting",
+                startDate,
+                endDate,
+                organizer,
+                attendees,
+                recurrence);
 
-                Console.WriteLine("Appointment created with daily recurrence for 10 occurrences.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex.Message);
-            }
+            // Example output
+            Console.WriteLine("Appointment created with a daily recurrence of {0} occurrences.", recurrence.Occurs);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

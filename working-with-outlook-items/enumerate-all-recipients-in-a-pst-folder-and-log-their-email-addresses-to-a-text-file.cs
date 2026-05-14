@@ -3,66 +3,83 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using System.Collections.Generic;
 
-namespace EnumeratePstRecipients
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
+        {
+            // Paths for PST input and recipients output
+            string pstFilePath = "sample.pst";
+            string outputFilePath = "recipients.txt";
+
+            // Verify that the PST file exists before proceeding
+            if (!File.Exists(pstFilePath))
+            {
+                Console.Error.WriteLine($"PST file not found: {pstFilePath}");
+                return;
+            }
+
+            // Ensure the directory for the output file exists
+            string outputDirectory = Path.GetDirectoryName(outputFilePath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+            {
+                // Use the root folder as the starting point
+                FolderInfo rootFolder = pst.RootFolder;
+
+                // Open a writer for the recipients log
+                using (StreamWriter writer = new StreamWriter(outputFilePath, false))
+                {
+                    // Process the root folder and all its subfolders recursively
+                    ProcessFolder(rootFolder, pst, writer);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    // Recursively enumerates messages in a folder, extracts recipients, and writes email addresses
+    private static void ProcessFolder(FolderInfo folder, PersonalStorage pst, StreamWriter writer)
+    {
+        // Enumerate each message in the current folder
+        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
         {
             try
             {
-                // Input PST file path
-                string pstPath = "sample.pst";
-                // Output text file path
-                string outputPath = "recipients.txt";
+                // Extract the collection of recipients for the message
+                MapiRecipientCollection recipients = pst.ExtractRecipients(messageInfo);
 
-                // Verify PST file exists
-                if (!File.Exists(pstPath))
+                // Write each recipient's email address to the output file
+                foreach (MapiRecipient recipient in recipients)
                 {
-                    Console.Error.WriteLine($"PST file not found: {pstPath}");
-                    return;
-                }
-
-                // Ensure output directory exists
-                string outputDirectory = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-
-                // Open PST file
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-                {
-                    // Access a specific folder (e.g., Inbox)
-                    FolderInfo folder = pst.RootFolder.GetSubFolder("Inbox");
-
-                    // Open writer for logging email addresses
-                    using (StreamWriter writer = new StreamWriter(outputPath, false))
+                    if (!string.IsNullOrEmpty(recipient.EmailAddress))
                     {
-                        // Enumerate all messages in the folder
-                        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-                        {
-                            // Extract recipients for the current message
-                            MapiRecipientCollection recipients = pst.ExtractRecipients(messageInfo);
-
-                            // Log each recipient's email address
-                            foreach (MapiRecipient recipient in recipients)
-                            {
-                                string email = recipient.EmailAddress;
-                                if (!string.IsNullOrEmpty(email))
-                                {
-                                    writer.WriteLine(email);
-                                }
-                            }
-                        }
+                        writer.WriteLine(recipient.EmailAddress);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex.Message);
+                // Log extraction errors but continue processing other messages
+                Console.Error.WriteLine($"Failed to extract recipients for message \"{messageInfo.Subject}\": {ex.Message}");
             }
+        }
+
+        // Recursively process all subfolders
+        foreach (FolderInfo subFolder in folder.GetSubFolders())
+        {
+            ProcessFolder(subFolder, pst, writer);
         }
     }
 }

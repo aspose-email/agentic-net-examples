@@ -1,6 +1,6 @@
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Pop3;
 
 class Program
 {
@@ -8,58 +8,89 @@ class Program
     {
         try
         {
-            // POP3 server connection details (replace with real values)
-            string host = "pop3.example.com";
-            int port = 110;
-            string username = "user@example.com";
-            string password = "password";
+            const string inputFolder = "InputMessages";
 
-            // Guard against placeholder credentials to avoid unwanted network calls
-            if (host.Contains("example.com") || username.Contains("example.com"))
+            // Ensure the input folder exists
+            if (!Directory.Exists(inputFolder))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
+                Console.Error.WriteLine($"Input folder '{inputFolder}' does not exist.");
                 return;
             }
 
-            // Create and connect the POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            string[] emlFiles;
+            try
             {
+                emlFiles = Directory.GetFiles(inputFolder, "*.eml");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to enumerate files: {ex.Message}");
+                return;
+            }
+
+            if (emlFiles.Length == 0)
+            {
+                Console.WriteLine("No EML files found to process.");
+                return;
+            }
+
+            foreach (string emlPath in emlFiles)
+            {
+                // Guard file existence
+                if (!File.Exists(emlPath))
+                {
                 try
                 {
-                    client.ValidateCredentials();
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to validate POP3 credentials: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
 
-                // Retrieve the list of messages on the server
-                Pop3MessageInfoCollection messageInfos = client.ListMessages();
+                    Console.Error.WriteLine($"File not found: {emlPath}");
+                    continue;
+                }
 
-                foreach (Pop3MessageInfo messageInfo in messageInfos)
+                try
                 {
-                    // Verify that the Message-ID header is present
-                    string messageId = messageInfo.MessageId;
-                    if (string.IsNullOrEmpty(messageId))
+                    using (MailMessage message = MailMessage.Load(emlPath))
                     {
-                        Console.Error.WriteLine($"Message #{messageInfo.SequenceNumber} is missing a Message-ID header. Skipping import.");
-                        continue;
-                    }
+                        // Check for Message-ID header
+                        string messageId = message.Headers["Message-ID"];
+                        if (string.IsNullOrEmpty(messageId))
+                        {
+                            Console.Error.WriteLine($"Message-ID header missing in file: {emlPath}");
+                            // Handle the case as needed (e.g., skip import)
+                            continue;
+                        }
 
-                    // Fetch the full message for further processing
-                    using (MailMessage mailMessage = client.FetchMessage(messageInfo.SequenceNumber))
-                    {
-                        // TODO: Insert code here to import 'mailMessage' into the target system
-                        // Example: ImportMessage(mailMessage);
-                        Console.WriteLine($"Message-ID {messageId} validated and ready for import.");
+                        // At this point the message is considered valid for import
+                        Console.WriteLine($"Valid message '{messageId}' loaded from '{emlPath}'.");
+                        // Insert import logic here
                     }
+                }
+                catch (AsposeException aex)
+                {
+                    Console.Error.WriteLine($"Aspose error processing '{emlPath}': {aex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Unexpected error processing '{emlPath}': {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Fatal error: {ex.Message}");
         }
     }
 }

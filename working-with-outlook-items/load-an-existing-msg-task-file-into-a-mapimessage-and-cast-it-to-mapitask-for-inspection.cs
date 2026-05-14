@@ -3,18 +3,18 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailTaskExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string msgFilePath = "task.msg";
+            // Path to the MSG task file
+            string msgFilePath = "task.msg";
 
-                if (!File.Exists(msgFilePath))
-                {
+            // Verify that the file exists before attempting to load it
+            if (!File.Exists(msgFilePath))
+            {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -32,32 +32,37 @@ namespace AsposeEmailTaskExample
                     return;
                 }
 
-                    Console.Error.WriteLine($"File not found: {msgFilePath}");
-                    return;
-                }
+                Console.Error.WriteLine("File not found: " + msgFilePath);
+                return;
+            }
 
-                using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+            // Load the MSG file into a MapiMessage inside a using block for proper disposal
+            using (MapiMessage msg = MapiMessage.Load(msgFilePath))
+            {
+                // Ensure the loaded message represents a task
+                if (msg.SupportedType == MapiItemType.Task)
                 {
-                    if (mapiMessage.SupportedType == MapiItemType.Task)
+                    // Convert the MapiMessage to a MapiTask and dispose it after use
+                    using (MapiTask task = (MapiTask)msg.ToMapiMessageItem())
                     {
-                        using (MapiTask mapiTask = (MapiTask)mapiMessage.ToMapiMessageItem())
-                        {
-                            Console.WriteLine($"Subject: {mapiTask.Subject}");
-                            Console.WriteLine($"Due Date: {mapiTask.DueDate}");
-                            Console.WriteLine($"Start Date: {mapiTask.StartDate}");
-                            Console.WriteLine($"Percent Complete: {mapiTask.PercentComplete}");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("The loaded MSG file is not a task item.");
+                        // Display selected task properties
+                        Console.WriteLine("Subject: " + task.Subject);
+                        Console.WriteLine("Due Date: " + task.DueDate);
+                        Console.WriteLine("Start Date: " + task.StartDate);
+                        Console.WriteLine("Percent Complete: " + task.PercentComplete);
+                        Console.WriteLine("Status: " + task.Status);
                     }
                 }
+                else
+                {
+                    Console.WriteLine("The specified MSG file does not contain a task.");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            // Output any unexpected errors without crashing the application
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

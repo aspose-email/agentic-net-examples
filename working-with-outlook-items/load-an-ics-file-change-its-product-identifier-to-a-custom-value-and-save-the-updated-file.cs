@@ -12,16 +12,16 @@ class Program
             string inputPath = "input.ics";
             string outputPath = "output.ics";
 
-            // Ensure the input file exists; create a minimal placeholder if it does not.
+            // Ensure the input file exists; create a minimal placeholder if missing.
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    File.WriteAllText(inputPath, "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR");
+                    File.WriteAllText(inputPath, "BEGIN:VCALENDAR\r\nEND:VCALENDAR");
                 }
-                catch (Exception ioEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder input file: {ioEx.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder input file: {ex.Message}");
                     return;
                 }
             }
@@ -32,15 +32,15 @@ class Program
             {
                 appointment = Appointment.Load(inputPath);
             }
-            catch (Exception loadEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load iCalendar file: {loadEx.Message}");
+                Console.Error.WriteLine($"Failed to load iCalendar file: {ex.Message}");
                 return;
             }
 
-            // Prepare save options with a custom product identifier.
+            // Configure save options with a custom product identifier.
             AppointmentIcsSaveOptions saveOptions = new AppointmentIcsSaveOptions();
-            saveOptions.ProductId = "MyCustomProduct/1.0";
+            saveOptions.ProductId = "MyCustomProduct";
 
             // Save the updated iCalendar file.
             try
@@ -48,9 +48,9 @@ class Program
                 appointment.Save(outputPath, saveOptions);
                 Console.WriteLine($"Updated iCalendar saved to '{outputPath}'.");
             }
-            catch (Exception saveEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to save iCalendar file: {saveEx.Message}");
+                Console.Error.WriteLine($"Failed to save iCalendar file: {ex.Message}");
             }
         }
         catch (Exception ex)

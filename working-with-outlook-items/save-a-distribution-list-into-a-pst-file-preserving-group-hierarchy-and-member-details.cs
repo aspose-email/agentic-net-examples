@@ -10,17 +10,9 @@ class Program
     {
         try
         {
-            // Define PST file path
-            string pstPath = "MyDistributionList.pst";
+            string pstPath = "distribution_list.pst";
 
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                Directory.CreateDirectory(pstDirectory);
-            }
-
-            // Create PST file if it does not exist
+            // Ensure the PST file exists; create a new one if it does not.
             if (!File.Exists(pstPath))
             {
                 try
@@ -34,41 +26,41 @@ class Program
                 }
             }
 
-            // Open the PST file
+            // Open the PST file.
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Get the Contacts folder (standard predefined folder)
+                // Get or create the Contacts folder.
                 FolderInfo contactsFolder;
                 try
                 {
                     contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Console.Error.WriteLine($"Failed to get Contacts folder: {ex.Message}");
-                    return;
+                    // If the predefined folder is missing, create it.
+                    contactsFolder = pst.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
                 }
 
-                // Prepare distribution list members
-                MapiDistributionListMemberCollection members = new MapiDistributionListMemberCollection();
-                members.Add(new MapiDistributionListMember("John Doe", "john.doe@example.com"));
-                members.Add(new MapiDistributionListMember("Jane Smith", "jane.smith@example.com"));
+                // Create a distribution list.
+                MapiDistributionList distributionList = new MapiDistributionList
+                {
+                    DisplayName = "Team Members"
+                };
 
-                // Create the distribution list
-                MapiDistributionList distributionList = new MapiDistributionList("My Distribution List", members);
+                // Add members to the distribution list.
+                distributionList.Members.Add(new MapiDistributionListMember("Alice Smith", "alice@example.com"));
+                distributionList.Members.Add(new MapiDistributionListMember("Bob Johnson", "bob@example.com"));
+                distributionList.Members.Add(new MapiDistributionListMember("Carol Davis", "carol@example.com"));
 
-                // Convert distribution list to a MAPI message
-                MapiMessage distMessage = distributionList.GetUnderlyingMessage();
-
-                // Add the distribution list message to the Contacts folder
+                // Add the distribution list to the Contacts folder.
                 try
                 {
-                    string entryId = contactsFolder.AddMessage(distMessage);
-                    Console.WriteLine($"Distribution list added with EntryId: {entryId}");
+                    contactsFolder.AddMapiMessageItem(distributionList);
+                    Console.WriteLine("Distribution list saved to PST successfully.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to add distribution list to PST: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to add distribution list: {ex.Message}");
                 }
             }
         }

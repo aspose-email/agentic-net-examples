@@ -1,7 +1,7 @@
-using Aspose.Email;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
@@ -11,95 +11,88 @@ class Program
     {
         try
         {
-            string sourcePstPath1 = "Contacts1.pst";
-            string sourcePstPath2 = "Contacts2.pst";
-            string destPstPath = "MergedContacts.pst";
+            string targetPath = "merged.pst";
+            string sourcePath1 = "contacts1.pst";
+            string sourcePath2 = "contacts2.pst";
 
-            // Verify source files exist
-            if (!File.Exists(sourcePstPath1))
+            // Verify source files exist; if missing, just skip them.
+            var sourceFiles = new List<string> { sourcePath1, sourcePath2 };
+            foreach (var src in sourceFiles)
             {
-                Console.Error.WriteLine($"Source PST not found: {sourcePstPath1}");
-                return;
-            }
-            if (!File.Exists(sourcePstPath2))
-            {
-                Console.Error.WriteLine($"Source PST not found: {sourcePstPath2}");
-                return;
+                if (!File.Exists(src))
+                {
+                    Console.Error.WriteLine($"Source PST not found: {src}. It will be skipped.");
+                }
             }
 
-            // Ensure destination directory exists
-            string destDirectory = Path.GetDirectoryName(destPstPath);
-            if (!string.IsNullOrEmpty(destDirectory) && !Directory.Exists(destDirectory))
-            {
-                Directory.CreateDirectory(destDirectory);
-            }
-
-            // If destination PST already exists, delete it to start fresh
-            if (File.Exists(destPstPath))
+            // Create the target PST if it does not exist.
+            if (!File.Exists(targetPath))
             {
                 try
                 {
-                    File.Delete(destPstPath);
+                    PersonalStorage.Create(targetPath, FileFormatVersion.Unicode);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to delete existing destination PST: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create target PST: {ex.Message}");
                     return;
                 }
             }
 
-            // Create destination PST (Unicode format)
-            using (PersonalStorage destPst = PersonalStorage.Create(destPstPath, FileFormatVersion.Unicode))
+            // Open the target PST and perform merging.
+            using (PersonalStorage targetPst = PersonalStorage.FromFile(targetPath))
             {
-                // Get or create the Contacts folder in the destination PST
-                FolderInfo destContactsFolder = destPst.GetPredefinedFolder(StandardIpmFolder.Contacts);
-                if (destContactsFolder == null)
+                // Get or create the Contacts folder in the target PST.
+                FolderInfo targetContactsFolder = targetPst.GetPredefinedFolder(StandardIpmFolder.Contacts);
+                if (targetContactsFolder == null)
                 {
-                    destContactsFolder = destPst.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
+                    targetContactsFolder = targetPst.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
                 }
 
-                // HashSet to track already imported contact subjects (names)
-                HashSet<string> importedContactNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                // Local function to import contacts from a source PST
-                void ImportContacts(string sourcePath)
+                // Build a set of existing contact names to avoid duplicates.
+                var existingNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (MessageInfo msgInfo in targetContactsFolder.EnumerateMessages())
                 {
+                    using (MapiMessage msg = targetPst.ExtractMessage(msgInfo))
+                    {
+                        string name = msg.Subject ?? string.Empty;
+                        existingNames.Add(name);
+                    }
+                }
+
+                // Local function to import contacts from a source PST.
+                void ImportFromSource(string sourcePath)
+                {
+                    if (!File.Exists(sourcePath))
+                        return;
+
                     using (PersonalStorage sourcePst = PersonalStorage.FromFile(sourcePath))
                     {
                         FolderInfo sourceContactsFolder = sourcePst.GetPredefinedFolder(StandardIpmFolder.Contacts);
                         if (sourceContactsFolder == null)
-                        {
-                            Console.WriteLine($"No contacts folder found in {sourcePath}");
                             return;
-                        }
 
-                        foreach (MessageInfo msgInfo in sourceContactsFolder.EnumerateMessages())
+                        foreach (MessageInfo srcMsgInfo in sourceContactsFolder.EnumerateMessages())
                         {
-                            // Use the subject (usually the contact's display name) as a simple duplicate key
-                            string contactName = msgInfo.Subject ?? string.Empty;
-                            if (importedContactNames.Contains(contactName))
+                            using (MapiMessage srcMsg = sourcePst.ExtractMessage(srcMsgInfo))
                             {
-                                continue; // Skip duplicate
+                                string name = srcMsg.Subject ?? string.Empty;
+                                if (!existingNames.Contains(name))
+                                {
+                                    targetContactsFolder.AddMessage(srcMsg);
+                                    existingNames.Add(name);
+                                }
                             }
-
-                            using (MapiMessage contactMessage = sourcePst.ExtractMessage(msgInfo))
-                            {
-                                // Add the contact message to the destination contacts folder
-                                destContactsFolder.AddMessage(contactMessage);
-                            }
-
-                            importedContactNames.Add(contactName);
                         }
                     }
                 }
 
-                // Import contacts from both source PSTs
-                ImportContacts(sourcePstPath1);
-                ImportContacts(sourcePstPath2);
-
-                // No explicit save needed; disposing the PersonalStorage writes the file
-                Console.WriteLine($"Merged contacts saved to {destPstPath}");
+                // Import contacts from each source PST.
+                ImportFromSource(sourcePath1);
+                ImportFromSource(sourcePath2);
             }
+
+            Console.WriteLine("Merging completed successfully.");
         }
         catch (Exception ex)
         {

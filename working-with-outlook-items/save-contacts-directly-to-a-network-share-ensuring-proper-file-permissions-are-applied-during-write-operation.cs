@@ -1,9 +1,9 @@
+using Aspose.Email;
 using System;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.PersonalInfo;
 
 class Program
 {
@@ -11,62 +11,66 @@ class Program
     {
         try
         {
-            // Network share folder where contacts will be saved
-            string networkSharePath = @"\\networkshare\contacts";
+            // Define the network share folder and the contact file name
+            string networkFolder = @"\\server\share\Contacts";
+            string contactFile = Path.Combine(networkFolder, "JohnDoe.vcf");
 
-            // Ensure the network share directory exists
-            if (!Directory.Exists(networkSharePath))
+            // Ensure the network folder exists
+            if (!Directory.Exists(networkFolder))
             {
                 try
                 {
-                    Directory.CreateDirectory(networkSharePath);
+                    Directory.CreateDirectory(networkFolder);
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create directory '{networkSharePath}': {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to create network folder: {ex.Message}");
                     return;
                 }
             }
 
-            // Create a new MAPI contact
-            using (MapiContact contact = new MapiContact())
+            // Create a new contact and populate fields
+            Contact contact = new Contact
             {
-                // Set contact details using the correct properties
-                contact.NameInfo.GivenName = "John";
-                contact.NameInfo.Surname = "Doe";
-                contact.ElectronicAddresses.Email1.EmailAddress = "john.doe@example.com";
+                GivenName = "John",
+                Surname = "Doe"
+            };
+            contact.EmailAddresses.Add(new EmailAddress("john.doe@example.com"));
+            contact.PhoneNumbers.Add(new PhoneNumber { Number = "123-456-7890", Category = PhoneNumberCategory.Company });
 
-                // Define the full file path for the vCard
-                string filePath = Path.Combine(networkSharePath, "JohnDoe.vcf");
-
-                // Save the contact to the network share
-                try
-                {
-                    contact.Save(filePath);
-                }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Failed to save contact to '{filePath}': {saveEx.Message}");
-                    return;
-                }
-
-                // Apply file permissions (grant Read/Write to Everyone)
-                try
-                {
-                    FileInfo fileInfo = new FileInfo(filePath);
-                    FileSecurity fileSecurity = fileInfo.GetAccessControl();
-                    FileSystemAccessRule accessRule = new FileSystemAccessRule(
-                        new SecurityIdentifier(WellKnownSidType.WorldSid, null),
-                        FileSystemRights.Read | FileSystemRights.Write,
-                        AccessControlType.Allow);
-                    fileSecurity.AddAccessRule(accessRule);
-                    fileInfo.SetAccessControl(fileSecurity);
-                }
-                catch (Exception permEx)
-                {
-                    Console.Error.WriteLine($"Failed to set permissions on '{filePath}': {permEx.Message}");
-                }
+            // Save the contact to the network share as a vCard file
+            try
+            {
+                contact.Save(contactFile);
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save contact: {ex.Message}");
+                return;
+            }
+
+            // Apply file permissions to the saved vCard file
+            try
+            {
+                FileInfo fileInfo = new FileInfo(contactFile);
+                FileSecurity security = fileInfo.GetAccessControl();
+
+                // Grant read/write access to Everyone (adjust as needed)
+                var rule = new FileSystemAccessRule(
+                    new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                    FileSystemRights.Read | FileSystemRights.Write,
+                    AccessControlType.Allow);
+
+                security.AddAccessRule(rule);
+                fileInfo.SetAccessControl(security);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to set file permissions: {ex.Message}");
+                return;
+            }
+
+            Console.WriteLine("Contact saved successfully to the network share.");
         }
         catch (Exception ex)
         {

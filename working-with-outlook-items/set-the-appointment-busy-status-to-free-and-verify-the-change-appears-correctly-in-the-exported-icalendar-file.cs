@@ -9,32 +9,39 @@ class Program
     {
         try
         {
-            // Define the output iCalendar file path
-            string icsPath = "appointment.ics";
+            // Define output directory and file path
+            string outputDir = "Output";
+            string icsPath = Path.Combine(outputDir, "appointment.ics");
 
-            // Ensure the directory for the output file exists
-            string directory = Path.GetDirectoryName(icsPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create a new appointment
-            Appointment appointment = new Appointment(
-                "Room 101",
-                new DateTime(2023, 12, 25, 10, 0, 0),
-                new DateTime(2023, 12, 25, 11, 0, 0),
-                new MailAddress("organizer@example.com"),
-                new MailAddressCollection());
+            // Prepare attendees
+            MailAddressCollection attendees = new MailAddressCollection();
+            attendees.Add(new MailAddress("person1@example.com"));
+            attendees.Add(new MailAddress("person2@example.com"));
 
-            // Set the busy status to Free
+            // Create the appointment
+            Appointment appointment = new Appointment(
+                "Team Meeting",
+                new DateTime(2023, 12, 1, 10, 0, 0),
+                new DateTime(2023, 12, 1, 11, 0, 0),
+                new MailAddress("organizer@example.com"),
+                attendees);
+
+            appointment.Summary = "Project discussion";
+            appointment.Description = "Discuss project milestones.";
+            // Set busy status to Free
             appointment.MicrosoftBusyStatus = MSBusyStatus.Free;
 
             // Save the appointment to an iCalendar file
             try
             {
                 appointment.Save(icsPath);
-                Console.WriteLine($"Appointment saved to '{icsPath}'.");
+                Console.WriteLine($"Appointment saved to {icsPath}");
             }
             catch (Exception ex)
             {
@@ -42,14 +49,14 @@ class Program
                 return;
             }
 
-            // Verify that the busy status was saved correctly
+            // Verify the busy status by loading the saved file
             if (!File.Exists(icsPath))
             {
-                Console.Error.WriteLine("The iCalendar file was not created.");
+                Console.Error.WriteLine("Saved iCalendar file not found.");
                 return;
             }
 
-            Appointment loadedAppointment;
+            Appointment loadedAppointment = null;
             try
             {
                 loadedAppointment = Appointment.Load(icsPath);
@@ -60,13 +67,11 @@ class Program
                 return;
             }
 
-            if (loadedAppointment.MicrosoftBusyStatus == MSBusyStatus.Free)
+            if (loadedAppointment != null)
             {
-                Console.WriteLine("Busy status verified as Free in the exported iCalendar file.");
-            }
-            else
-            {
-                Console.WriteLine($"Busy status verification failed. Current status: {loadedAppointment.MicrosoftBusyStatus}");
+                Console.WriteLine($"Loaded Busy Status: {loadedAppointment.MicrosoftBusyStatus}");
+                bool isFree = loadedAppointment.MicrosoftBusyStatus == MSBusyStatus.Free;
+                Console.WriteLine(isFree ? "Busy status correctly set to Free." : "Busy status not set correctly.");
             }
         }
         catch (Exception ex)

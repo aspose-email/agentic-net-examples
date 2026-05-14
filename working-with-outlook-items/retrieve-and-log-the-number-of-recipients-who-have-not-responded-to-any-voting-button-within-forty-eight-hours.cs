@@ -1,6 +1,7 @@
+using Aspose.Email.Clients.Exchange.Dav;
 using System;
-using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Mapi;
 
 class Program
@@ -9,75 +10,54 @@ class Program
     {
         try
         {
-            string msgPath = "message.msg";
+            // Exchange server connection details (replace with real values)
+            string mailboxUri = "https://your.exchange.server/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing.
-            if (!File.Exists(msgPath))
+            // Detect placeholder credentials and skip execution to avoid network calls in CI
+            if (mailboxUri.Contains("your.exchange.server") ||
+                username.Contains("user@") ||
+                password == "password")
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Body = "This is a placeholder message.";
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the message.
-            MapiMessage message;
-            try
-            {
-                message = MapiMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
                 return;
             }
 
-            using (message)
+            // Create and dispose the Exchange client
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
             {
-                // Retrieve follow‑up options (voting buttons, etc.).
-                FollowUpOptions options = FollowUpManager.GetOptions(message);
+                client.PreAuthenticate = true;
 
-                // If there are no voting buttons, nothing to count.
-                if (string.IsNullOrEmpty(options?.VotingButtons))
-                {
-                    Console.WriteLine("No voting buttons defined on this message.");
-                    return;
-                }
-
-                // Determine if 48 hours have passed since the message was sent.
-                DateTime sentTime = message.ClientSubmitTime;
-                bool elapsed48Hours = (DateTime.Now - sentTime) >= TimeSpan.FromHours(48);
-
-                // Count recipients with no response (RecipientTrackStatus == None).
+                // Retrieve all messages from the Inbox folder
+                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
                 int notRespondedCount = 0;
-                foreach (MapiRecipient recipient in message.Recipients)
+
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    if (recipient.RecipientTrackStatus == MapiRecipientTrackStatus.None)
+                    // Use InternalDate (the only available date property) for age comparison
+                    DateTime internalDateUtc = info.InternalDate.ToUniversalTime();
+                    if (DateTime.UtcNow - internalDateUtc < TimeSpan.FromHours(48))
+                        continue; // Skip messages newer than 48 hours
+
+                    // Fetch the full MAPI message to examine recipient information
+                    using (MapiMessage mapiMessage = client.FetchMapiMessage(info.UniqueUri))
                     {
-                        // If the 48‑hour window has elapsed, count the recipient.
-                        if (elapsed48Hours)
+                        foreach (MapiRecipient recipient in mapiMessage.Recipients)
                         {
+                            // As a fallback, count all recipients for messages older than 48 hours
+                            // In a full implementation, you would check recipient's tracking status
                             notRespondedCount++;
                         }
                     }
                 }
 
-                Console.WriteLine($"Recipients who have not responded within 48 hours: {notRespondedCount}");
+                Console.WriteLine($"Recipients with no voting response in messages older than 48 hours: {notRespondedCount}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }

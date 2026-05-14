@@ -1,84 +1,87 @@
 using Aspose.Email.PersonalInfo;
-using Aspose.Email;
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
-class Program
+namespace PSTContactToVCard
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string pstFilePath = "contacts.pst";
-            string outputFolder = "vcards";
-
-            // Ensure PST file exists; create a minimal placeholder if missing
-            if (!File.Exists(pstFilePath))
+            try
             {
-                using (PersonalStorage placeholderPst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
+                string pstPath = "contacts.pst";
+                string outputDirectory = "vCards";
+
+                // Verify PST file existence
+                if (!File.Exists(pstPath))
                 {
-                    placeholderPst.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
-                }
-                Console.WriteLine($"Placeholder PST created at {pstFilePath}");
-            }
-
-            // Ensure output directory exists
-            if (!Directory.Exists(outputFolder))
-            {
-                Directory.CreateDirectory(outputFolder);
-            }
-
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
-            {
-                // Get the predefined Contacts folder
-                FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
-                if (contactsFolder == null)
-                {
-                    Console.Error.WriteLine("Contacts folder not found in PST.");
+                    Console.Error.WriteLine($"PST file not found: {pstPath}");
                     return;
                 }
 
-                // Enumerate all messages in the Contacts folder
-                foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
+                // Ensure output directory exists
+                try
                 {
-                    // Extract the full MAPI message
-                    using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
+                    if (!Directory.Exists(outputDirectory))
                     {
-                        // Process only contact items
-                        if (mapiMessage.SupportedType == MapiItemType.Contact)
-                        {
-                            // Convert to MapiContact
-                            using (MapiContact contact = (MapiContact)mapiMessage.ToMapiMessageItem())
-                            {
-                                // Determine a safe file name for the vCard
-                                string displayName = contact.NameInfo != null ? contact.NameInfo.DisplayName : null;
-                                string safeName = string.IsNullOrEmpty(displayName) ? Guid.NewGuid().ToString() : SanitizeFileName(displayName);
-                                string vcfPath = Path.Combine(outputFolder, safeName + ".vcf");
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory '{outputDirectory}': {dirEx.Message}");
+                    return;
+                }
 
-                                // Save the contact as a vCard file
-                                contact.Save(vcfPath);
+                // Open PST file
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    // Get the predefined Contacts folder
+                    FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
+
+                    // Enumerate all messages in the Contacts folder
+                    foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
+                    {
+                        try
+                        {
+                            // Extract the full MAPI message
+                            using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
+                            {
+                                // Process only contact items
+                                if (mapiMessage.SupportedType == MapiItemType.Contact)
+                                {
+                                    // Convert to MapiContact
+                                    MapiContact mapiContact = (MapiContact)mapiMessage.ToMapiMessageItem();
+
+                                    // Build a safe file name for the vCard
+                                    string baseFileName = string.IsNullOrEmpty(messageInfo.Subject) ? "Contact" : messageInfo.Subject;
+                                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                                    {
+                                        baseFileName = baseFileName.Replace(invalidChar, '_');
+                                    }
+                                    string vcardFilePath = Path.Combine(outputDirectory, $"{baseFileName}.vcf");
+
+                                    // Save as vCard
+                                    mapiContact.Save(vcardFilePath);
+                                    Console.WriteLine($"Saved vCard: {vcardFilePath}");
+                                }
                             }
+                        }
+                        catch (Exception msgEx)
+                        {
+                            Console.Error.WriteLine($"Failed to process message '{messageInfo.Subject}': {msgEx.Message}");
                         }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
-        }
-    }
-
-    // Replaces invalid filename characters with an underscore
-    private static string SanitizeFileName(string fileName)
-    {
-        foreach (char invalidChar in Path.GetInvalidFileNameChars())
-        {
-            fileName = fileName.Replace(invalidChar, '_');
-        }
-        return fileName;
     }
 }

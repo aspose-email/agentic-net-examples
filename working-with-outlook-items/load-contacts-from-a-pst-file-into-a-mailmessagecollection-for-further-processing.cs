@@ -4,71 +4,48 @@ using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailPstContacts
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string pstFilePath = "contacts.pst";
+            string pstPath = "contacts.pst";
 
-                // Ensure the PST file exists; create a minimal placeholder if it does not.
-                if (!File.Exists(pstFilePath))
+            if (!File.Exists(pstPath))
+            {
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                return;
+            }
+
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                // Get the predefined Contacts folder
+                FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
+
+                // Collection to hold the loaded contacts as MailMessage objects
+                MailMessageCollection contacts = new MailMessageCollection();
+
+                // Enumerate all messages in the Contacts folder
+                foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
                 {
-                    try
+                    using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
                     {
-                        PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
-                        Console.WriteLine($"Placeholder PST file created at '{pstFilePath}'.");
-                    }
-                    catch (Exception createEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create placeholder PST file: {createEx.Message}");
-                        return;
+                        // Convert MAPI contact message to MailMessage
+                        MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions());
+
+                        // Add to the collection for further processing
+                        contacts.Add(mailMessage);
                     }
                 }
 
-                // Load the PST file and extract contacts.
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
-                {
-                    // Get the predefined Contacts folder.
-                    FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
-                    if (contactsFolder == null)
-                    {
-                        Console.Error.WriteLine("Contacts folder not found in the PST file.");
-                        return;
-                    }
-
-                    MailMessageCollection contactMessages = new MailMessageCollection();
-
-                    // Enumerate all messages (contacts) in the Contacts folder.
-                    foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
-                    {
-                        try
-                        {
-                            using (MapiMessage contactMessage = pst.ExtractMessage(messageInfo))
-                            {
-                                // Convert the MAPI contact message to a MailMessage.
-                                MailMessage mailMessage = contactMessage.ToMailMessage(new MailConversionOptions());
-                                contactMessages.Add(mailMessage);
-                            }
-                        }
-                        catch (Exception msgEx)
-                        {
-                            Console.Error.WriteLine($"Failed to process a contact message: {msgEx.Message}");
-                            // Continue processing remaining messages.
-                        }
-                    }
-
-                    Console.WriteLine($"Total contacts loaded into MailMessageCollection: {contactMessages.Count}");
-                    // Further processing of contactMessages can be performed here.
-                }
+                // Example processing: output the count of loaded contacts
+                Console.WriteLine($"Loaded {contacts.Count} contacts from PST.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"An error occurred: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

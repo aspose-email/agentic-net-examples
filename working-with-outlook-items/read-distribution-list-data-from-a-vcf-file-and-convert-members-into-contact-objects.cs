@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 using Aspose.Email.PersonalInfo;
@@ -11,40 +11,38 @@ class Program
     {
         try
         {
-            string vcfPath = "distributionList.vcf";
+            string vcfPath = "distributionlist.vcf";
 
             if (!File.Exists(vcfPath))
             {
-                Console.Error.WriteLine($"File not found: {vcfPath}");
+                Console.Error.WriteLine($"VCF file not found: {vcfPath}");
                 return;
             }
 
-            // Load the distribution list from the VCF file
             using (MapiDistributionList distributionList = MapiDistributionList.FromVCF(vcfPath))
             {
+                Console.WriteLine($"Distribution List: {distributionList.DisplayName}");
+
                 List<Contact> contacts = new List<Contact>();
 
                 foreach (MapiDistributionListMember member in distributionList.Members)
                 {
-                    Contact contact = new Contact
-                    {
-                        DisplayName = member.DisplayName
-                    };
+                    Contact contact = new Contact();
+                    contact.DisplayName = string.IsNullOrEmpty(member.DisplayName) ? member.EmailAddress : member.DisplayName;
                     contact.EmailAddresses.Add(new EmailAddress(member.EmailAddress));
                     contacts.Add(contact);
                 }
 
-                // Output the created contacts
                 foreach (Contact contact in contacts)
                 {
                     string email = contact.EmailAddresses.Count > 0 ? contact.EmailAddresses[0].Address : "N/A";
-                    Console.WriteLine($"Name: {contact.DisplayName}, Email: {email}");
+                    Console.WriteLine($"Contact: {contact.DisplayName}, Email: {email}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

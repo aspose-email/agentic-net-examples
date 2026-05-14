@@ -1,6 +1,7 @@
 using System;
 using System.IO;
-using System.Xml;
+using System.Collections.Generic;
+using System.Xml.Linq;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
@@ -11,117 +12,111 @@ class Program
     {
         try
         {
-            // Placeholder credentials – replace with real values.
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string host = "exchange.example.com";
             string username = "username";
             string password = "password";
+            string outputPath = "distributionLists.xml";
 
-            // Guard against executing with placeholder credentials.
-            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username == "username" || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create and connect the EWS client.
-            IEWSClient client = null;
+            if (host.Contains("example.com") || username == "username")
+            {
+                Console.Error.WriteLine("Please provide valid Exchange server credentials.");
+                return;
+            }
+
             try
             {
-                client = EWSClient.GetEWSClient(serviceUrl, username, password);
+                string directory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to create or connect EWS client: {ex.Message}");
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
                 return;
             }
 
-            // Ensure the client is disposed properly.
-            using (client)
+            using (IEWSClient client = EWSClient.GetEWSClient(host, username, password))
             {
-                // List all private distribution lists.
-                ExchangeDistributionList[] distributionLists = null;
+                ExchangeDistributionList[] allLists = client.ListDistributionLists();
+
+                Dictionary<string, ExchangeDistributionList> dlMap = new Dictionary<string, ExchangeDistributionList>(StringComparer.OrdinalIgnoreCase);
+                foreach (ExchangeDistributionList list in allLists)
+                {
+                    if (!string.IsNullOrEmpty(list.DisplayName))
+                    {
+                        dlMap[list.DisplayName] = list;
+                    }
+                }
+
+                XDocument doc = new XDocument(new XElement("DistributionLists"));
+                HashSet<string> visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (ExchangeDistributionList list in allLists)
+                {
+                    ExportDistributionList(list, client, doc.Root, dlMap, visited);
+                }
+
                 try
                 {
-                    distributionLists = client.ListDistributionLists();
+                    doc.Save(outputPath);
+                    Console.WriteLine($"Distribution lists exported to {outputPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to list distribution lists: {ex.Message}");
-                    return;
-                }
-
-                // Prepare output file path.
-                string outputPath = "distributionLists.xml";
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                        return;
-                    }
-                }
-
-                // Write distribution list information to XML.
-                try
-                {
-                    XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
-                    using (XmlWriter writer = XmlWriter.Create(outputPath, settings))
-                    {
-                        writer.WriteStartDocument();
-                        writer.WriteStartElement("DistributionLists");
-
-                        foreach (ExchangeDistributionList dl in distributionLists)
-                        {
-                            writer.WriteStartElement("DistributionList");
-                            writer.WriteAttributeString("DisplayName", dl.DisplayName ?? string.Empty);
-                            writer.WriteAttributeString("Id", dl.Id ?? string.Empty);
-
-                            // Fetch members of the current distribution list.
-                            MailAddressCollection members = null;
-                            try
-                            {
-                                members = client.FetchDistributionList(dl);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to fetch members for list '{dl.DisplayName}': {ex.Message}");
-                                // Continue with next list.
-                                writer.WriteEndElement(); // DistributionList
-                                continue;
-                            }
-
-                            writer.WriteStartElement("Members");
-                            foreach (MailAddress address in members)
-                            {
-                                writer.WriteStartElement("Member");
-                                writer.WriteAttributeString("DisplayName", address.DisplayName ?? string.Empty);
-                                writer.WriteAttributeString("Address", address.Address ?? string.Empty);
-                                writer.WriteEndElement(); // Member
-                            }
-                            writer.WriteEndElement(); // Members
-                            writer.WriteEndElement(); // DistributionList
-                        }
-
-                        writer.WriteEndElement(); // DistributionLists
-                        writer.WriteEndDocument();
-                    }
-
-                    Console.WriteLine($"Distribution lists exported to '{outputPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to write XML file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save XML file: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    static void ExportDistributionList(ExchangeDistributionList dl, IEWSClient client, XContainer parent, Dictionary<string, ExchangeDistributionList> dlMap, HashSet<string> visited)
+    {
+        if (dl == null || string.IsNullOrEmpty(dl.DisplayName) || visited.Contains(dl.DisplayName))
+            return;
+
+        visited.Add(dl.DisplayName);
+
+        XElement dlElement = new XElement("DistributionList");
+        dlElement.SetAttributeValue("Name", dl.DisplayName);
+        parent.Add(dlElement);
+
+        MailAddressCollection members;
+        try
+        {
+            members = client.FetchDistributionList(dl);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to fetch members for {dl.DisplayName}: {ex.Message}");
+            return;
+        }
+
+        foreach (MailAddress member in members)
+        {
+            XElement memberElement = new XElement("Member");
+            memberElement.SetAttributeValue("Email", member.Address);
+            if (!string.IsNullOrEmpty(member.DisplayName))
+                memberElement.SetAttributeValue("DisplayName", member.DisplayName);
+            dlElement.Add(memberElement);
+
+            if (dlMap.TryGetValue(member.DisplayName, out ExchangeDistributionList subDl))
+            {
+                ExportDistributionList(subDl, client, memberElement, dlMap, visited);
+            }
         }
     }
 }

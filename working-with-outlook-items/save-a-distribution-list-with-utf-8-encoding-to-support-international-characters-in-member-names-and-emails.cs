@@ -9,30 +9,35 @@ class Program
     {
         try
         {
-            string outputPath = "DistributionList.vcf";
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            string outputDirectory = "Output";
+            string outputPath = Path.Combine(outputDirectory, "distributionList.msg");
+
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(directory);
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Create a collection of members with international characters
-            MapiDistributionListMemberCollection members = new MapiDistributionListMemberCollection();
-            members.Add(new MapiDistributionListMember("张伟", "zhangwei@example.com"));
-            members.Add(new MapiDistributionListMember("Иван Иванов", "ivan.ivanov@example.com"));
-            members.Add(new MapiDistributionListMember("علي الأحمد", "ali.ahmad@example.com"));
-
-            using (MapiDistributionList distributionList = new MapiDistributionList("国际分发列表", members))
+            // Create a new MAPI distribution list
+            using (MapiDistributionList distributionList = new MapiDistributionList())
             {
-                // Save the distribution list as VCard (UTF‑8 encoded)
-                MapiDistributionListSaveOptions saveOptions = new MapiDistributionListSaveOptions(ContactSaveFormat.VCard);
+                distributionList.DisplayName = "International Contacts";
+
+                // Add members with Unicode characters in names and emails
+                distributionList.Members.Add(new MapiDistributionListMember("Иван Иванов", "ivan@example.com"));
+                distributionList.Members.Add(new MapiDistributionListMember("张伟", "zhang@example.cn"));
+                distributionList.Members.Add(new MapiDistributionListMember("علي الأحمد", "ali@example.sa"));
+
+                // Save the distribution list using default save options (Unicode-aware)
+                MapiDistributionListSaveOptions saveOptions = MapiDistributionListSaveOptions.Default;
                 distributionList.Save(outputPath, saveOptions);
-                Console.WriteLine($"Distribution list saved to {outputPath}");
             }
+
+            Console.WriteLine("Distribution list saved to: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

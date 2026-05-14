@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.PersonalInfo;
+using Aspose.Email.Mapi;
 using Aspose.Email.PersonalInfo.VCard;
 
 class Program
@@ -11,51 +10,54 @@ class Program
     {
         try
         {
-            // Define output directory
-            string outputDir = Path.Combine(Environment.CurrentDirectory, "VCardOutput");
+            // Define output directory for vCard files
+            string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "OutputVcards");
             if (!Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Prepare a list of contacts
-            List<Contact> contacts = new List<Contact>();
+            // Sample contacts to be saved as vCard 3.0
+            MapiContact[] contacts = new MapiContact[2];
 
-            Contact contact1 = new Contact();
-            contact1.GivenName = "John";
-            contact1.Surname = "Doe";
-            contact1.EmailAddresses.Add(new EmailAddress("john.doe@example.com"));
-            contact1.PhoneNumbers.Add(new PhoneNumber { Number = "+1234567890", Category = PhoneNumberCategory.Company });
-            contacts.Add(contact1);
+            // First contact
+            MapiContact contact1 = new MapiContact();
+            contact1.NameInfo.DisplayName = "John Doe";
+            contact1.ElectronicAddresses.Email1.EmailAddress = "john.doe@example.com";
+            contact1.Telephones.BusinessTelephoneNumber = "+1-555-0100";
+            contacts[0] = contact1;
 
-            Contact contact2 = new Contact();
-            contact2.GivenName = "Jane";
-            contact2.Surname = "Smith";
-            contact2.EmailAddresses.Add(new EmailAddress("jane.smith@example.com"));
-            contact2.PhoneNumbers.Add(new PhoneNumber { Number = "+1987654321", Category = PhoneNumberCategory.Home });
-            contacts.Add(contact2);
+            // Second contact
+            MapiContact contact2 = new MapiContact();
+            contact2.NameInfo.DisplayName = "Jane Smith";
+            contact2.ElectronicAddresses.Email1.EmailAddress = "jane.smith@example.com";
+            contact2.Telephones.HomeTelephoneNumber = "+1-555-0200";
+            contacts[1] = contact2;
 
-            // Save each contact as a VCard 3.0 file
-            foreach (Contact c in contacts)
+            // Prepare vCard save options (default version is 3.0)
+            VCardSaveOptions saveOptions = new VCardSaveOptions();
+
+            // Save each contact as a vCard file
+            foreach (MapiContact contact in contacts)
             {
-                string fileName = $"{c.GivenName}_{c.Surname}.vcf";
-                string filePath = Path.Combine(outputDir, fileName);
+                using (contact)
+                {
+                    string safeFileName = string.Concat(contact.NameInfo.DisplayName.Split(Path.GetInvalidFileNameChars()));
+                    string vcardPath = Path.Combine(outputDir, safeFileName + ".vcf");
 
-                try
-                {
-                    VCardSaveOptions saveOptions = new VCardSaveOptions(VCardVersion.V30);
-                    c.Save(filePath, saveOptions);
-                    Console.WriteLine($"Saved VCard: {filePath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save VCard for {c.GivenName} {c.Surname}: {ex.Message}");
+                    if (File.Exists(vcardPath))
+                    {
+                        File.Delete(vcardPath);
+                    }
+
+                    contact.Save(vcardPath, saveOptions);
+                    Console.WriteLine($"Saved vCard: {vcardPath}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

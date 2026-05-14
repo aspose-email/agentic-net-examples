@@ -1,37 +1,37 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define the output file path for the MSG file
+            // Output file path for the MSG file
             string outputPath = "note.msg";
 
-            // Ensure the directory for the output file exists
-            string directoryPath = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+            // Ensure the target directory exists
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                Directory.CreateDirectory(directoryPath);
+                Directory.CreateDirectory(directory);
             }
 
-            // Create a MapiNote with a subject and multiline body
-            string subject = "Sample Note Subject";
-            string body = "First line of the note.\r\nSecond line of the note.\r\nThird line of the note.";
+            // Create a MapiNote with a subject and a multiline body
+            string subject = "Meeting Reminder";
+            string body = "Dear Team,\nPlease attend the meeting at 10 AM.\nRegards,\nManager";
+
             using (MapiNote note = new MapiNote(subject, body))
             {
                 // Save the note as an MSG file
                 note.Save(outputPath, NoteSaveFormat.Msg);
-                Console.WriteLine($"MapiNote saved successfully to '{outputPath}'.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

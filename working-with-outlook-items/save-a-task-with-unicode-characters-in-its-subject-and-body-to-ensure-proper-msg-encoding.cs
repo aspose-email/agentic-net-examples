@@ -1,6 +1,7 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
+using Aspose.Email.Calendar;
 using Aspose.Email.Mapi;
 
 class Program
@@ -9,35 +10,31 @@ class Program
     {
         try
         {
-            // Define the output MSG file path
-            string outputPath = "task_unicode.msg";
+            // Output file path for the task
+            string outputPath = "UnicodeTask.msg";
 
-            // Ensure the target directory exists
+            // Ensure the directory for the output file exists
             string directory = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            // Create a task message with Unicode characters in subject and body
-            using (MapiMessage taskMessage = new MapiMessage(
-                "sender@example.com",
-                "recipient@example.com",
-                "Subject with Unicode 🚀",
-                "Body with Unicode 漢字",
-                OutlookMessageFormat.Unicode))
+            // Create a task with Unicode characters in subject and body
+            using (Aspose.Email.Calendar.Task task = new Aspose.Email.Calendar.Task())
             {
-                // Set the message class to Task
-                taskMessage.MessageClass = "IPM.Task";
+                task.Subject = "任务 – Пример – مثال 🚀";
+                task.Body = "This is a task body with Unicode characters: 中文, العربية, हिन्दी, 😊";
 
-                // Save the message as MSG (Unicode encoding)
-                taskMessage.Save(outputPath);
-                Console.WriteLine($"Task message saved to: {outputPath}");
+                // Save the task as MSG (Unicode encoding)
+                task.Save(outputPath, TaskSaveFormat.Msg);
             }
+
+            Console.WriteLine("Aspose.Email.Calendar.Task saved successfully to " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

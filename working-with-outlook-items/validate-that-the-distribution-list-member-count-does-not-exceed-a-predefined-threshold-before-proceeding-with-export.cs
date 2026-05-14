@@ -1,7 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -9,82 +10,73 @@ class Program
     {
         try
         {
-            // Define input and output paths
-            string inputFile = "distributionList.msg";
-            string outputFile = "exportedDistributionList.msg";
+            // Placeholder connection settings
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Verify input file exists
-            if (!File.Exists(inputFile))
+            // Threshold for maximum allowed members
+            int maxMemberCount = 100;
+
+            // Output file for exported distribution lists
+            string outputPath = "ExportedDistributionList.txt";
+
+            // Detect placeholder credentials/host and skip external calls
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com"))
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputFile);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine($"Input file '{inputFile}' does not exist.");
+                Console.WriteLine("Placeholder credentials detected. Skipping export.");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputFile);
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the MAPI message
-            using (MapiMessage msg = MapiMessage.Load(inputFile))
+            // Create and use the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // Check if the message is a distribution list
-                if (msg.SupportedType != MapiItemType.DistList)
-                {
-                    Console.Error.WriteLine("The provided message is not a distribution list.");
-                    return;
-                }
-
-                // Convert to MapiDistributionList
-                MapiDistributionList distList = (MapiDistributionList)msg.ToMapiMessageItem();
-
-                // Define the maximum allowed members
-                const int maxMembers = 100;
-
-                // Validate member count
-                int memberCount = distList.Members.Count;
-                if (memberCount > maxMembers)
-                {
-                    Console.Error.WriteLine($"Distribution list has {memberCount} members, which exceeds the allowed maximum of {maxMembers}.");
-                    return;
-                }
-
-                // Export (save) the distribution list
                 try
                 {
-                    distList.Save(outputFile);
-                    Console.WriteLine($"Distribution list exported successfully to '{outputFile}'.");
+                    // Retrieve all private distribution lists
+                    ExchangeDistributionList[] distributionLists = client.ListDistributionLists();
+
+                    foreach (ExchangeDistributionList dl in distributionLists)
+                    {
+                        // Fetch members of the current distribution list
+                        MailAddressCollection members = client.FetchDistributionList(dl);
+
+                        // Validate member count against the threshold
+                        if (members.Count > maxMemberCount)
+                        {
+                            Console.WriteLine($"Distribution list '{dl.DisplayName}' has {members.Count} members, exceeding the limit of {maxMemberCount}. Skipping export.");
+                            continue;
+                        }
+
+                        // Export the distribution list members to the output file
+                        try
+                        {
+                            using (StreamWriter writer = new StreamWriter(outputPath, true))
+                            {
+                                writer.WriteLine($"Distribution List: {dl.DisplayName}");
+                                foreach (MailAddress address in members)
+                                {
+                                    writer.WriteLine($"{address.DisplayName} <{address.Address}>");
+                                }
+                                writer.WriteLine(); // Blank line between lists
+                            }
+                        }
+                        catch (Exception ioEx)
+                        {
+                            Console.Error.WriteLine($"Failed to write distribution list '{dl.DisplayName}' to file: {ioEx.Message}");
+                        }
+                    }
                 }
-                catch (Exception ex)
+                catch (Exception clientEx)
                 {
-                    Console.Error.WriteLine($"Failed to save distribution list: {ex.Message}");
+                    Console.Error.WriteLine($"EWS client operation failed: {clientEx.Message}");
                 }
             }
         }

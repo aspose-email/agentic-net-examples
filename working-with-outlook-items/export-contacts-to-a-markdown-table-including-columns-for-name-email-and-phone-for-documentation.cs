@@ -1,83 +1,102 @@
+using Aspose.Email.PersonalInfo;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define output markdown file path
-            string outputPath = "contacts.md";
+            // Input PST file path
+            string pstPath = "contacts.pst";
+            // Output markdown file path
+            string mdPath = "Contacts.md";
 
-            // Ensure the directory for the output file exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Guard input file existence
+            if (!File.Exists(pstPath))
+            {
+                Console.Error.WriteLine($"Input PST file not found: {pstPath}");
+                return;
+            }
+
+            // Ensure output directory exists
+            string mdDirectory = Path.GetDirectoryName(mdPath);
+            if (!string.IsNullOrEmpty(mdDirectory) && !Directory.Exists(mdDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    Directory.CreateDirectory(mdDirectory);
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create directory '{outputDir}': {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                     return;
                 }
             }
 
-            // Prepare a list of contacts
-            List<MapiContact> contacts = new List<MapiContact>();
+            // Prepare markdown lines
+            List<string> markdownLines = new List<string>();
+            markdownLines.Add("| Name | Email | Phone |");
+            markdownLines.Add("|---|---|---|");
 
-            // First contact
-            using (MapiContact contact1 = new MapiContact())
+            // Open PST and process contacts
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                contact1.NameInfo.DisplayName = "John Doe";
-                contact1.ElectronicAddresses.Email1 = new MapiContactElectronicAddress("john.doe@example.com");
-                contact1.Telephones.BusinessTelephoneNumber = "123-456-7890";
-                contacts.Add(contact1);
-            }
-
-            // Second contact
-            using (MapiContact contact2 = new MapiContact())
-            {
-                contact2.NameInfo.DisplayName = "Jane Smith";
-                contact2.ElectronicAddresses.Email1 = new MapiContactElectronicAddress("jane.smith@example.com");
-                contact2.Telephones.MobileTelephoneNumber = "555-123-4567";
-                contacts.Add(contact2);
-            }
-
-            // Write contacts to markdown file
-            try
-            {
-                using (StreamWriter writer = new StreamWriter(outputPath, false))
+                // Get the predefined Contacts folder
+                FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
+                if (contactsFolder == null)
                 {
-                    // Write table header
-                    writer.WriteLine("| Name | Email | Phone |");
-                    writer.WriteLine("|------|-------|-------|");
+                    Console.Error.WriteLine("Contacts folder not found in PST.");
+                    return;
+                }
 
-                    // Write each contact as a table row
-                    foreach (MapiContact contact in contacts)
+                foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
+                {
+                    using (MapiMessage msg = pst.ExtractMessage(messageInfo))
                     {
+                        // Verify the item is a contact
+                        if (msg.SupportedType != MapiItemType.Contact)
+                            continue;
+
+                        // Convert to MapiContact
+                        MapiContact contact = (MapiContact)msg.ToMapiMessageItem();
+
+                        // Extract required fields
                         string name = contact.NameInfo?.DisplayName ?? string.Empty;
                         string email = contact.ElectronicAddresses?.Email1?.EmailAddress ?? string.Empty;
-                        string phone = contact.Telephones?.BusinessTelephoneNumber ?? contact.Telephones?.MobileTelephoneNumber ?? string.Empty;
+                        string phone = contact.Telephones?.PrimaryTelephoneNumber ?? string.Empty;
 
-                        writer.WriteLine($"| {name} | {email} | {phone} |");
+                        // Add a markdown row
+                        markdownLines.Add($"| {EscapePipe(name)} | {EscapePipe(email)} | {EscapePipe(phone)} |");
                     }
                 }
             }
-            catch (Exception ioEx)
+
+            // Write markdown file
+            try
             {
-                Console.Error.WriteLine($"Error writing markdown file: {ioEx.Message}");
-                return;
+                File.WriteAllLines(mdPath, markdownLines);
+                Console.WriteLine($"Markdown file created at: {mdPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to write markdown file: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
+    }
+
+    // Helper to escape pipe characters in markdown cells
+    private static string EscapePipe(string input)
+    {
+        return input?.Replace("|", "\\|") ?? string.Empty;
     }
 }

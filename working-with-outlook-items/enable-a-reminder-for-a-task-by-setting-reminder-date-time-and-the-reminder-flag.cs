@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -9,42 +9,35 @@ class Program
     {
         try
         {
-            // Define output file path
-            string outputFilePath = "task_with_reminder.msg";
+            // Output file for the task
+            string outputPath = "task.msg";
 
             // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputFilePath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!Directory.Exists(directory))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(directory);
             }
 
-            // Create a new MAPI task and configure reminder properties
-            using (MapiTask task = new MapiTask())
+            // Create and configure the ExchangeTask
+            using (ExchangeTask task = new ExchangeTask())
             {
                 task.Subject = "Sample Task with Reminder";
                 task.Body = "This task has a reminder set.";
-                task.DueDate = DateTime.Now.AddDays(2);
                 task.StartDate = DateTime.Now;
-                task.ReminderSet = true;
-                task.ReminderTime = DateTime.Now.AddHours(1); // Reminder after 1 hour
+                task.DueDate = DateTime.Now.AddDays(2);
+
+                // Enable reminder by setting the reminder date and time
+                task.ReminderDate = DateTime.Now.AddHours(1);
 
                 // Save the task to a MSG file
-                try
-                {
-                    task.Save(outputFilePath, TaskSaveFormat.Msg);
-                    Console.WriteLine($"Task saved successfully to '{outputFilePath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving task: {ex.Message}");
-                    return;
-                }
+                task.Save(outputPath);
+                Console.WriteLine($"Task saved to {outputPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

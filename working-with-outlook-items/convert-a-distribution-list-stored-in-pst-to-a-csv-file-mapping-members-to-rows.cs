@@ -1,75 +1,61 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string pstPath = "sample.pst";
+            string pstPath = "input.pst";
             string csvPath = "distribution_list.csv";
 
-            // Verify PST file exists
             if (!File.Exists(pstPath))
             {
                 Console.Error.WriteLine($"PST file not found: {pstPath}");
                 return;
             }
 
-            // Ensure output directory exists
             string csvDirectory = Path.GetDirectoryName(csvPath);
             if (!string.IsNullOrEmpty(csvDirectory) && !Directory.Exists(csvDirectory))
             {
                 Directory.CreateDirectory(csvDirectory);
             }
 
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            using (StreamWriter writer = new StreamWriter(csvPath, false))
             {
-                // Collect all folders recursively starting from root
-                List<FolderInfo> allFolders = new List<FolderInfo>();
-                FolderInfo rootFolder = pst.RootFolder;
-                allFolders.Add(rootFolder);
+                writer.WriteLine("DistributionList,MemberDisplayName,MemberEmailAddress,MemberAddressType");
 
-                for (int i = 0; i < allFolders.Count; i++)
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    FolderInfo current = allFolders[i];
-                    foreach (FolderInfo subFolder in current.GetSubFolders())
-                    {
-                        allFolders.Add(subFolder);
-                    }
-                }
+                    Stack<FolderInfo> folderStack = new Stack<FolderInfo>();
+                    folderStack.Push(pst.RootFolder);
 
-                using (StreamWriter writer = new StreamWriter(csvPath, false, Encoding.UTF8))
-                {
-                    // Write CSV header
-                    writer.WriteLine("DisplayName,EmailAddress");
-
-                    foreach (FolderInfo folder in allFolders)
+                    while (folderStack.Count > 0)
                     {
-                        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
+                        FolderInfo currentFolder = folderStack.Pop();
+
+                        foreach (FolderInfo subFolder in currentFolder.GetSubFolders())
                         {
-                            using (MapiMessage message = pst.ExtractMessage(messageInfo))
+                            folderStack.Push(subFolder);
+                        }
+
+                        foreach (MessageInfo messageInfo in currentFolder.EnumerateMessages())
+                        {
+                            using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
                             {
-                                if (message.SupportedType == MapiItemType.DistList)
+                                if (mapiMessage.SupportedType == MapiItemType.DistList)
                                 {
-                                    MapiDistributionList distributionList = (MapiDistributionList)message.ToMapiMessageItem();
+                                    MapiDistributionList distributionList = (MapiDistributionList)mapiMessage.ToMapiMessageItem();
 
                                     foreach (MapiDistributionListMember member in distributionList.Members)
                                     {
-                                        string displayName = member.DisplayName ?? string.Empty;
-                                        string emailAddress = member.EmailAddress ?? string.Empty;
-
-                                        // Escape quotes for CSV
-                                        displayName = displayName.Replace("\"", "\"\"");
-                                        emailAddress = emailAddress.Replace("\"", "\"\"");
-
-                                        writer.WriteLine($"\"{displayName}\",\"{emailAddress}\"");
+                                        string line = $"{EscapeCsv(distributionList.DisplayName)},{EscapeCsv(member.DisplayName)},{EscapeCsv(member.EmailAddress)},{EscapeCsv(member.AddressType)}";
+                                        writer.WriteLine(line);
                                     }
                                 }
                             }
@@ -77,11 +63,24 @@ class Program
                     }
                 }
             }
+
+            Console.WriteLine($"Distribution list exported to {csvPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
-            return;
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
+    }
+
+    static string EscapeCsv(string field)
+    {
+        if (field == null)
+            return "";
+        if (field.Contains(",") || field.Contains("\"") || field.Contains("\n"))
+        {
+            string escaped = field.Replace("\"", "\"\"");
+            return $"\"{escaped}\"";
+        }
+        return field;
     }
 }

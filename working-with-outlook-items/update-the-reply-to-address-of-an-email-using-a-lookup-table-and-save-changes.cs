@@ -1,8 +1,8 @@
-using Aspose.Email;
 using System;
-using System.IO;
 using System.Collections.Generic;
-using Aspose.Email.Mapi;
+using System.IO;
+using Aspose.Email;
+
 
 class Program
 {
@@ -10,45 +10,78 @@ class Program
     {
         try
         {
-            // Define file paths
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
+            string inputPath = "input.eml";
+            string outputPath = "output.eml";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
+            // Ensure input file exists; create a minimal placeholder if missing
             if (!File.Exists(inputPath))
             {
-                using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Sample Subject", "Sample body"))
+                try
                 {
-                    placeholder.Save(inputPath);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
                 }
             }
 
-            // Lookup table for Reply-To address replacement
-            Dictionary<string, string> replyLookup = new Dictionary<string, string>();
-            replyLookup.Add("old@example.com", "new@example.com");
-            replyLookup.Add("another@example.com", "updated@example.com");
-
-            // Load the message, update ReplyTo, and save changes
-            using (MapiMessage message = MapiMessage.Load(inputPath))
+            // Load the email
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                string currentReplyTo = message.ReplyTo;
-
-                if (replyLookup.TryGetValue(currentReplyTo, out string newReplyTo))
+                // Lookup table for new Reply-To addresses keyed by original sender address
+                var replyToLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    message.ReplyTo = newReplyTo;
+                    { "sender1@example.com", "replyto1@example.com" },
+                    { "sender2@example.com", "replyto2@example.com" }
+                };
+
+                // Determine the key (use the From address)
+                string fromAddress = message.From?.Address ?? string.Empty;
+
+                if (replyToLookup.TryGetValue(fromAddress, out string newReplyTo))
+                {
+                    // Clear existing ReplyToList collection and set the new address
+                    message.ReplyToList.Clear();
+                    message.ReplyToList.Add(new MailAddress(newReplyTo));
                 }
                 else
                 {
-                    // If no mapping found, set a default Reply-To address
-                    message.ReplyTo = "default@example.com";
+                    Console.Error.WriteLine($"No Reply-To mapping found for sender '{fromAddress}'. No changes applied.");
                 }
 
-                message.Save(outputPath);
+                // Save the modified email using appropriate SaveOptions
+                try
+                {
+                    message.Save(outputPath, SaveOptions.DefaultEml);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save modified email: {ex.Message}");
+                    return;
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

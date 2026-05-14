@@ -1,41 +1,50 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputFolder = @"C:\MsgFiles";
-            string outputFolder = @"C:\RenamedAttachments";
+            string inputDirectory = "InputMsgs";
+            string outputDirectory = "RenamedAttachments";
 
-            if (!Directory.Exists(inputFolder))
+            // Verify input directory exists
+            if (!Directory.Exists(inputDirectory))
             {
-                Console.Error.WriteLine($"Error: Input directory not found – {inputFolder}");
+                Console.Error.WriteLine($"Input directory does not exist: {inputDirectory}");
                 return;
             }
 
-            if (!Directory.Exists(outputFolder))
+            // Ensure output directory exists or create it
+            if (!Directory.Exists(outputDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputFolder);
+                    Directory.CreateDirectory(outputDirectory);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Could not create output directory – {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                     return;
                 }
             }
 
-            string[] msgFiles = Directory.GetFiles(inputFolder, "*.msg");
-            foreach (string msgPath in msgFiles)
+            // Get all MSG files in the input directory
+            string[] msgFiles = Directory.GetFiles(inputDirectory, "*.msg");
+            if (msgFiles.Length == 0)
             {
-                if (!File.Exists(msgPath))
+                Console.WriteLine("No MSG files found in the input directory.");
+                return;
+            }
+
+            // Process each MSG file
+            foreach (string msgFilePath in msgFiles)
+            {
+                if (!File.Exists(msgFilePath))
                 {
                 try
                 {
@@ -45,7 +54,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath);
+                        placeholder.Save(msgFilePath);
                     }
                 }
                 catch (Exception ex)
@@ -54,27 +63,34 @@ class Program
                     return;
                 }
 
-                    Console.Error.WriteLine($"Warning: MSG file not found – {msgPath}");
+                    Console.Error.WriteLine($"File not found: {msgFilePath}");
                     continue;
                 }
 
                 try
                 {
-                    using (MapiMessage message = MapiMessage.Load(msgPath))
+                    using (MapiMessage message = MapiMessage.Load(msgFilePath))
                     {
-                        string safeSubject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : MakeFileSystemSafe(message.Subject);
-                        int attachmentIndex = 1;
+                        // Use the message subject (or file name) as part of the new attachment name
+                        string subject = message.Subject ?? Path.GetFileNameWithoutExtension(msgFilePath);
+                        string safeSubject = SanitizeFileName(subject);
 
+                        int attachmentIndex = 1;
                         foreach (MapiAttachment attachment in message.Attachments)
                         {
-                            string originalFileName = attachment.FileName;
-                            string extension = Path.GetExtension(originalFileName);
+                            string extension = Path.GetExtension(attachment.FileName);
                             string newFileName = $"{safeSubject}_Attachment{attachmentIndex}{extension}";
-                            string newFilePath = Path.Combine(outputFolder, newFileName);
+                            string newFilePath = Path.Combine(outputDirectory, newFileName);
 
-                            // Save the attachment with the new file name
-                            attachment.Save(newFilePath);
-                            Console.WriteLine($"Saved attachment as: {newFileName}");
+                            try
+                            {
+                                attachment.Save(newFilePath);
+                                Console.WriteLine($"Saved attachment to: {newFilePath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
+                            }
 
                             attachmentIndex++;
                         }
@@ -82,8 +98,7 @@ class Program
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error processing file '{msgPath}': {ex.Message}");
-                    // Continue with next file
+                    Console.Error.WriteLine($"Failed to process MSG file '{msgFilePath}': {ex.Message}");
                 }
             }
         }
@@ -94,11 +109,12 @@ class Program
     }
 
     // Helper to replace invalid filename characters
-    private static string MakeFileSystemSafe(string name)
+    private static string SanitizeFileName(string name)
     {
-        foreach (char c in Path.GetInvalidFileNameChars())
+        char[] invalidChars = Path.GetInvalidFileNameChars();
+        foreach (char invalidChar in invalidChars)
         {
-            name = name.Replace(c, '_');
+            name = name.Replace(invalidChar, '_');
         }
         return name;
     }

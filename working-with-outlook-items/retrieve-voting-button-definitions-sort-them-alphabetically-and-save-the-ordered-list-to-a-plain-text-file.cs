@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
@@ -10,84 +10,47 @@ class Program
     {
         try
         {
-            string inputMessagePath = "input.msg";
+            // Output file path
             string outputFilePath = "voting_buttons.txt";
 
-            // Ensure input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputMessagePath))
+            // Ensure the directory exists
+            string outputDirectory = Path.GetDirectoryName(outputFilePath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Create a sample MAPI message and add voting buttons
+            using (MapiMessage sampleMessage = new MapiMessage("sender@example.com", "recipient@example.com", "Sample Subject", "Sample body"))
+            {
+                FollowUpManager.AddVotingButton(sampleMessage, "Approve");
+                FollowUpManager.AddVotingButton(sampleMessage, "Reject");
+                FollowUpManager.AddVotingButton(sampleMessage, "Maybe");
+
+                // Retrieve voting buttons
+                string[] votingButtons = FollowUpManager.GetVotingButtons(sampleMessage);
+
+                // Sort alphabetically (case‑insensitive)
+                List<string> buttonList = new List<string>(votingButtons);
+                buttonList.Sort(StringComparer.OrdinalIgnoreCase);
+
+                // Write sorted list to the file
                 try
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(inputMessagePath) ?? string.Empty);
-                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Subject", "Body"))
+                    using (StreamWriter writer = new StreamWriter(outputFilePath, false))
                     {
-                        placeholder.Save(inputMessagePath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the message and retrieve voting buttons
-            string[] votingButtons;
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(inputMessagePath))
-                {
-                    votingButtons = FollowUpManager.GetVotingButtons(message);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load message or retrieve voting buttons: {ex.Message}");
-                return;
-            }
-
-            // Sort the buttons alphabetically
-            if (votingButtons != null && votingButtons.Length > 0)
-            {
-                Array.Sort(votingButtons);
-            }
-
-            // Ensure output directory exists
-            try
-            {
-                string outputDir = Path.GetDirectoryName(outputFilePath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to ensure output directory: {ex.Message}");
-                return;
-            }
-
-            // Write sorted buttons to the output file
-            try
-            {
-                using (StreamWriter writer = new StreamWriter(outputFilePath, false))
-                {
-                    if (votingButtons != null)
-                    {
-                        foreach (string button in votingButtons)
+                        foreach (string button in buttonList)
                         {
                             writer.WriteLine(button);
                         }
                     }
+                    Console.WriteLine($"Voting buttons saved to '{outputFilePath}'.");
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Error writing to file: {ioEx.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to write voting buttons to file: {ex.Message}");
-                return;
-            }
-
-            Console.WriteLine("Voting buttons have been saved successfully.");
         }
         catch (Exception ex)
         {

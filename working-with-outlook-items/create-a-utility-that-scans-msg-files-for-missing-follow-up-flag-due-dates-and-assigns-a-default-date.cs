@@ -13,17 +13,28 @@ class Program
 
             if (!Directory.Exists(folderPath))
             {
-                Console.Error.WriteLine($"Directory not found: {folderPath}");
+                Console.Error.WriteLine($"Folder not found: {folderPath}");
                 return;
             }
 
             string[] msgFiles = Directory.GetFiles(folderPath, "*.msg");
             foreach (string msgFile in msgFiles)
             {
-                try
-                {
-                    if (!File.Exists(msgFile))
-                    {
+                ProcessMessage(msgFile);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    static void ProcessMessage(string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+            {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -32,7 +43,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgFile);
+                        placeholder.Save(filePath);
                     }
                 }
                 catch (Exception ex)
@@ -41,38 +52,33 @@ class Program
                     return;
                 }
 
-                        Console.Error.WriteLine($"File not found: {msgFile}");
-                        continue;
-                    }
+                Console.Error.WriteLine($"File not found: {filePath}");
+                return;
+            }
 
-                    using (MapiMessage message = MapiMessage.Load(msgFile))
-                    {
-                        FollowUpOptions options = FollowUpManager.GetOptions(message);
-                        DateTime dueDate = options.DueDate;
+            using (MapiMessage message = MapiMessage.Load(filePath))
+            {
+                FollowUpOptions options = FollowUpManager.GetOptions(message);
+                DateTime dueDate = options.DueDate;
 
-                        if (dueDate == DateTime.MinValue)
-                        {
-                            DateTime startDate = DateTime.Now;
-                            DateTime defaultDueDate = startDate.AddDays(7);
-                            FollowUpManager.SetFlag(message, "Follow up", startDate, defaultDueDate);
-                            message.Save(msgFile);
-                            Console.WriteLine($"Updated follow-up flag for: {msgFile}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Follow-up already set for: {msgFile}");
-                        }
-                    }
-                }
-                catch (Exception ex)
+                if (dueDate == default(DateTime))
                 {
-                    Console.Error.WriteLine($"Error processing file {msgFile}: {ex.Message}");
+                    DateTime startDate = DateTime.Now;
+                    DateTime defaultDueDate = startDate.AddDays(7);
+
+                    FollowUpManager.SetFlag(message, "Follow up", startDate, defaultDueDate);
+                    message.Save(filePath);
+                    Console.WriteLine($"Flag added with default due date to: {Path.GetFileName(filePath)}");
+                }
+                else
+                {
+                    Console.WriteLine($"Flag already present in: {Path.GetFileName(filePath)}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error processing '{filePath}': {ex.Message}");
         }
     }
 }

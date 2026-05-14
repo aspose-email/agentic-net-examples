@@ -1,92 +1,103 @@
-using Aspose.Email.Mapi;
 using System;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
-class Program
+namespace ExtractPstAttachments
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Input PST file path
-            string pstPath = "sample.pst";
-            // Folder name inside the PST to scan (e.g., "Inbox")
-            string folderName = "Inbox";
-            // Output CSV report path
-            string csvPath = "AttachmentReport.csv";
-
-            // Verify PST file exists
-            if (!File.Exists(pstPath))
+            try
             {
-                Console.Error.WriteLine($"PST file not found: {pstPath}");
-                return;
-            }
+                // Input PST file path
+                string pstFilePath = "sample.pst";
 
-            // Ensure output directory exists
-            string csvDirectory = Path.GetDirectoryName(csvPath);
-            if (!string.IsNullOrEmpty(csvDirectory) && !Directory.Exists(csvDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(csvDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
+                // Output CSV report path
+                string csvReportPath = "attachments_report.csv";
 
-            // Open PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Locate the target folder
-                FolderInfo targetFolder;
-                try
+                // Verify PST file exists
+                if (!File.Exists(pstFilePath))
                 {
-                    targetFolder = pst.RootFolder.GetSubFolder(folderName);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to locate folder '{folderName}': {ex.Message}");
+                    Console.Error.WriteLine($"PST file not found: {pstFilePath}");
                     return;
                 }
 
-                // Prepare CSV writer
-                using (StreamWriter writer = new StreamWriter(csvPath, false))
+                // Ensure the directory for the CSV report exists
+                string csvDirectory = Path.GetDirectoryName(csvReportPath);
+                if (!string.IsNullOrEmpty(csvDirectory) && !Directory.Exists(csvDirectory))
                 {
-                    // Write CSV header
-                    writer.WriteLine("MessageSubject,AttachmentFileName");
+                    try
+                    {
+                        Directory.CreateDirectory(csvDirectory);
+                    }
+                    catch (Exception dirEx)
+                    {
+                        Console.Error.WriteLine($"Failed to create directory for CSV report: {dirEx.Message}");
+                        return;
+                    }
+                }
 
-                    // Enumerate messages in the folder
+                // List to hold CSV rows
+                List<string> csvLines = new List<string>();
+                // Add CSV header
+                csvLines.Add("MessageSubject,AttachmentFileName");
+
+                // Open PST file
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+                {
+                    // Specify the folder to process; using root folder in this example
+                    FolderInfo targetFolder = pst.RootFolder;
+
+                    // Iterate through each message in the folder
                     foreach (MessageInfo messageInfo in targetFolder.EnumerateMessages())
                     {
                         // Extract attachments for the current message
                         MapiAttachmentCollection attachments = pst.ExtractAttachments(messageInfo);
 
-                        // If there are no attachments, continue
+                        // If there are no attachments, continue to next message
                         if (attachments == null || attachments.Count == 0)
+                        {
                             continue;
+                        }
 
-                        // Write each attachment file name to CSV
+                        // Record each attachment file name with the message subject
                         foreach (MapiAttachment attachment in attachments)
                         {
-                            // Escape commas in subject or filename if needed
-                            string safeSubject = messageInfo.Subject?.Replace(",", " ");
-                            string safeFileName = attachment.FileName?.Replace(",", " ");
-                            writer.WriteLine($"{safeSubject},{safeFileName}");
+                            string sanitizedSubject = messageInfo.Subject?.Replace("\"", "\"\"") ?? string.Empty;
+                            string sanitizedFileName = attachment.FileName?.Replace("\"", "\"\"") ?? string.Empty;
+                            // Enclose fields in quotes to handle commas
+                            string csvLine = $"\"{sanitizedSubject}\",\"{sanitizedFileName}\"";
+                            csvLines.Add(csvLine);
                         }
                     }
                 }
 
-                Console.WriteLine($"Attachment report generated at: {csvPath}");
+                // Write CSV report to file
+                try
+                {
+                    using (StreamWriter writer = new StreamWriter(csvReportPath, false))
+                    {
+                        foreach (string line in csvLines)
+                        {
+                            writer.WriteLine(line);
+                        }
+                    }
+
+                    Console.WriteLine($"Attachment report generated: {csvReportPath}");
+                }
+                catch (Exception writeEx)
+                {
+                    Console.Error.WriteLine($"Failed to write CSV report: {writeEx.Message}");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Storage.Pst;
+
 
 class Program
 {
@@ -10,82 +10,110 @@ class Program
     {
         try
         {
-            string inputFolder = "InputMsgs";
-            string outputFolder = "ConvertedPst";
+            // Define input and output directories
+            string inputFolder = "InputMessages";
+            string outputFolder = "ConvertedMessages";
 
-            if (!Directory.Exists(inputFolder))
-            {
-                Console.Error.WriteLine($"Input folder '{inputFolder}' does not exist.");
-                return;
-            }
-
+            // Ensure output directory exists
             if (!Directory.Exists(outputFolder))
             {
                 Directory.CreateDirectory(outputFolder);
             }
 
-            string pstPath = Path.Combine(outputFolder, "output.pst");
-
-            if (!File.Exists(pstPath))
+            // Guard against missing input directory
+            if (!Directory.Exists(inputFolder))
             {
-                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                Console.Error.WriteLine($"Input directory does not exist: {inputFolder}");
+                return;
             }
 
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            // Get all MSG files in the input folder
+            string[] msgFiles;
+            try
             {
-                FolderInfo rootFolder = pst.RootFolder;
+                msgFiles = Directory.GetFiles(inputFolder, "*.msg");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to enumerate files: {ex.Message}");
+                return;
+            }
 
-                foreach (string msgFile in Directory.GetFiles(inputFolder, "*.msg"))
+            // Define required MAPI property tags (Unicode variants)
+            const long PR_SUBJECT_UNICODE = 0x0037001F;               // Subject
+            const long PR_SENDER_EMAIL_ADDRESS_UNICODE = 0x0C1F001F; // Sender email address
+
+            foreach (string msgPath in msgFiles)
+            {
+                // Guard file existence
+                if (!File.Exists(msgPath))
                 {
-                    if (!File.Exists(msgFile))
+                    try
                     {
+                        using (MapiMessage placeholder = new MapiMessage(
+                            "from@example.com",
+                            "to@example.com",
+                            "Placeholder Subject",
+                            "Placeholder body."))
+                        {
+                            placeholder.Save(msgPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                        return;
+                    }
+
+                    Console.Error.WriteLine($"File not found: {msgPath}");
+                    continue;
+                }
+
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
+                    // Load the MSG file
+                    using (MapiMessage msg = MapiMessage.Load(msgPath))
                     {
-                        placeholder.Save(msgFile);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
+                        // Validate required properties
+                        string subject = msg.GetPropertyString(PR_SUBJECT_UNICODE);
+                        string senderEmail = msg.GetPropertyString(PR_SENDER_EMAIL_ADDRESS_UNICODE);
 
-                        Console.Error.WriteLine($"Message file '{msgFile}' missing, skipping.");
-                        continue;
-                    }
-
-                    using (MapiMessage msg = MapiMessage.Load(msgFile))
-                    {
-                        const long PR_SUBJECT = 0x0037001F;               // Subject string property
-                        const long PR_SENDER_EMAIL_ADDRESS = 0x0C1F001F; // Sender email address string property
-
-                        string subject = null;
-                        string senderEmail = null;
-
-                        bool hasSubject = msg.TryGetPropertyString(PR_SUBJECT, ref subject);
-                        bool hasSender = msg.TryGetPropertyString(PR_SENDER_EMAIL_ADDRESS, ref senderEmail);
+                        bool hasSubject = !string.IsNullOrEmpty(subject);
+                        bool hasSender = !string.IsNullOrEmpty(senderEmail);
 
                         if (!hasSubject || !hasSender)
                         {
-                            Console.WriteLine($"Message '{msgFile}' missing required properties, skipping.");
+                            Console.Error.WriteLine($"Required properties missing in: {Path.GetFileName(msgPath)}");
                             continue;
                         }
 
-                        rootFolder.AddMessage(msg);
-                        Console.WriteLine($"Added '{msgFile}' to PST.");
+                        // Convert to MailMessage
+                        MailConversionOptions conversionOptions = new MailConversionOptions();
+                        using (MailMessage mail = msg.ToMailMessage(conversionOptions))
+                        {
+                            // Save as EML
+                            string outputPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(msgPath) + ".eml");
+                            try
+                            {
+                                mail.Save(outputPath);
+                                Console.WriteLine($"Converted and saved: {outputPath}");
+                            }
+                            catch (Exception saveEx)
+                            {
+                                Console.Error.WriteLine($"Failed to save EML for {msgPath}: {saveEx.Message}");
+                            }
+                        }
                     }
+                }
+                catch (Exception loadEx)
+                {
+                    Console.Error.WriteLine($"Failed to process {msgPath}: {loadEx.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -4,19 +4,20 @@ using System.Collections.Generic;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
             string csvPath = "distributionlist.csv";
 
-            // Ensure the CSV file exists; create a minimal placeholder if missing
+            // Ensure the CSV file exists; create a minimal placeholder if missing.
             if (!File.Exists(csvPath))
             {
                 try
                 {
-                    File.WriteAllText(csvPath, "Email\r\nexample@example.com\r\n");
-                    Console.WriteLine($"Placeholder CSV created at {csvPath}");
+                    string placeholder = "Name,Email\nJohn Doe,john@example.com";
+                    File.WriteAllText(csvPath, placeholder);
+                    Console.WriteLine($"Placeholder CSV created at '{csvPath}'.");
                 }
                 catch (Exception ex)
                 {
@@ -27,33 +28,25 @@ class Program
 
             List<string> emailList = new List<string>();
 
-            // Read and parse the CSV file
             try
             {
-                using (StreamReader reader = new StreamReader(csvPath))
+                using (FileStream fileStream = new FileStream(csvPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (StreamReader reader = new StreamReader(fileStream))
                 {
+                    // Read header line (if any) and ignore.
+                    string headerLine = reader.ReadLine();
+
                     string line;
-                    bool isFirstLine = true;
                     while ((line = reader.ReadLine()) != null)
                     {
-                        if (isFirstLine)
+                        // Split by commas; trim whitespace.
+                        string[] parts = line.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        foreach (string part in parts)
                         {
-                            // Assume first line is a header
-                            isFirstLine = false;
-                            continue;
-                        }
-
-                        if (string.IsNullOrWhiteSpace(line))
-                            continue;
-
-                        // Split by comma and take the first column as the email address
-                        string[] parts = line.Split(',');
-                        if (parts.Length > 0)
-                        {
-                            string email = parts[0].Trim();
-                            if (!string.IsNullOrEmpty(email))
+                            string trimmed = part.Trim();
+                            if (trimmed.Contains("@"))
                             {
-                                emailList.Add(email);
+                                emailList.Add(trimmed);
                             }
                         }
                     }
@@ -61,11 +54,11 @@ class Program
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error reading CSV: {ex.Message}");
+                Console.Error.WriteLine($"Error reading CSV file: {ex.Message}");
                 return;
             }
 
-            // Output the parsed email addresses
+            // Output the collected email addresses.
             Console.WriteLine("Parsed email addresses:");
             foreach (string email in emailList)
             {

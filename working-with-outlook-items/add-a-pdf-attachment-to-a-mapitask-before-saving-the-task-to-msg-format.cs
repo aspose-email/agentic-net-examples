@@ -9,65 +9,44 @@ class Program
     {
         try
         {
+            // Paths for the PDF attachment and the output MSG file
             string pdfPath = "sample.pdf";
-            string taskPath = "task.msg";
+            string msgPath = "task_with_attachment.msg";
 
-            // Ensure the PDF file exists; create a minimal placeholder if missing
+            // Verify that the PDF file exists
             if (!File.Exists(pdfPath))
             {
-                try
-                {
-                    byte[] placeholderPdf = System.Text.Encoding.ASCII.GetBytes("%PDF-1.4\n%âãÏÓ\n");
-                    File.WriteAllBytes(pdfPath, placeholderPdf);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder PDF: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"PDF file not found: {pdfPath}");
+                return;
             }
 
-            // Ensure the output directory exists
-            string taskDirectory = Path.GetDirectoryName(taskPath);
-            if (!string.IsNullOrEmpty(taskDirectory) && !Directory.Exists(taskDirectory))
+            // Read the PDF data
+            byte[] pdfData;
+            try
             {
-                try
-                {
-                    Directory.CreateDirectory(taskDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                pdfData = File.ReadAllBytes(pdfPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to read PDF file: {ex.Message}");
+                return;
             }
 
-            // Create a new MapiTask
-            using (MapiTask task = new MapiTask("Sample Task", "Task body", DateTime.Now, DateTime.Now.AddDays(2)))
+            // Create a MapiTask and add the PDF attachment
+            using (MapiTask task = new MapiTask("Task Subject", "Task Body", DateTime.Now, DateTime.Now.AddDays(2)))
             {
-                // Read PDF data
-                byte[] pdfData;
+                // Add attachment using the collection's Add method (name, data)
+                task.Attachments.Add(Path.GetFileName(pdfPath), pdfData);
+
+                // Save the task as an MSG file
                 try
                 {
-                    pdfData = File.ReadAllBytes(pdfPath);
+                    task.Save(msgPath, TaskSaveFormat.Msg);
+                    Console.WriteLine($"Task saved with attachment to: {msgPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to read PDF file: {ex.Message}");
-                    return;
-                }
-
-                // Add PDF attachment to the task
-                task.Attachments.Add("sample.pdf", pdfData);
-
-                // Save the task as MSG
-                try
-                {
-                    task.Save(taskPath, TaskSaveFormat.Msg);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save task: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
                 }
             }
         }

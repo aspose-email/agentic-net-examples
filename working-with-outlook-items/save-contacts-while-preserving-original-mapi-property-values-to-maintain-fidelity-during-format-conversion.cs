@@ -10,98 +10,66 @@ class Program
     {
         try
         {
-            // Define input and output file paths
-            string inputMsgPath = "contact.msg";
-            string outputVcfPath = "contact.vcf";
+            string inputPath = "contact.msg";
+            string outputPath = "contact.vcf";
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputVcfPath);
+            // Verify input file exists
+            if (!File.Exists(inputPath))
+            {
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
+                return;
+            }
+
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Guard input file existence; create a minimal placeholder if missing
-            if (!File.Exists(inputMsgPath))
+            // Load the MSG file as a MAPI message
+            using (MapiMessage mapiMessage = MapiMessage.Load(inputPath))
             {
-                try
+                // Verify the MSG is a contact
+                if (mapiMessage.SupportedType != MapiItemType.Contact)
                 {
-                    using (MapiMessage placeholderMsg = new MapiMessage())
-                    {
-                        placeholderMsg.Subject = "Placeholder Contact";
-                        placeholderMsg.Body = "This is a placeholder contact message.";
-                        // Set minimal contact properties via MapiContact conversion
-                        using (MapiContact placeholderContact = new MapiContact())
-                        {
-                            placeholderContact.NameInfo.GivenName = "John";
-                            placeholderContact.NameInfo.Surname = "Doe";
-                            placeholderContact.ElectronicAddresses.Email1.EmailAddress = "john.doe@example.com";
-                            // Save as MSG
-                            placeholderContact.Save(inputMsgPath);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine("The provided MSG file is not a contact.");
                     return;
                 }
+
+                // Convert to MapiContact to access contact-specific members
+                using (MapiContact contact = (MapiContact)mapiMessage.ToMapiMessageItem())
+                {
+                    // Use default save options which preserve original MAPI properties
+                    MapiContactSaveOptions saveOptions = MapiContactSaveOptions.Default;
+
+                    // Save the contact to VCard format
+                    contact.Save(outputPath, saveOptions);
+                }
             }
 
-            // Load the MSG file
-            MapiMessage mapiMessage = null;
-            try
-            {
-                mapiMessage = MapiMessage.Load(inputMsgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
-            }
-
-            // Ensure the loaded message is a contact
-            if (mapiMessage.SupportedType != MapiItemType.Contact)
-            {
-                Console.Error.WriteLine("The loaded MSG file is not a contact.");
-                mapiMessage.Dispose();
-                return;
-            }
-
-            // Convert to MapiContact to preserve original MAPI properties
-            MapiContact mapiContact = null;
-            try
-            {
-                mapiContact = (MapiContact)mapiMessage.ToMapiMessageItem();
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to convert to MapiContact: {ex.Message}");
-                mapiMessage.Dispose();
-                return;
-            }
-
-            // Save the contact to VCard preserving original MAPI properties
-            try
-            {
-                // Use default save options which retain custom MAPI properties
-                mapiContact.Save(outputVcfPath);
-                Console.WriteLine($"Contact saved to VCard: {outputVcfPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save VCard: {ex.Message}");
-            }
-            finally
-            {
-                // Dispose resources
-                mapiContact.Dispose();
-                mapiMessage.Dispose();
-            }
+            Console.WriteLine("Contact saved successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

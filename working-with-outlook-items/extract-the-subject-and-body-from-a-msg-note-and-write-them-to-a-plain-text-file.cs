@@ -9,12 +9,11 @@ class Program
     {
         try
         {
-            // Paths for input MSG file and output text file
-            string inputMsgPath = "input.msg";
-            string outputTxtPath = "output.txt";
+            string inputPath = "note.msg";
+            string outputPath = "output.txt";
 
-            // Verify that the input MSG file exists
-            if (!File.Exists(inputMsgPath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
                 try
                 {
@@ -24,7 +23,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath);
+                        placeholder.Save(inputPath);
                     }
                 }
                 catch (Exception ex)
@@ -33,35 +32,47 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputTxtPath);
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(outputDirectory);
+                try
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
+                }
             }
 
-            // Load the MSG file and extract subject and body
-            using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(inputPath))
             {
                 string subject = msg.Subject ?? string.Empty;
                 string body = msg.Body ?? string.Empty;
 
-                // Write the extracted information to a plain text file
-                using (StreamWriter writer = new StreamWriter(outputTxtPath, false))
+                string content = $"Subject: {subject}{Environment.NewLine}Body:{Environment.NewLine}{body}";
+
+                try
                 {
-                    writer.WriteLine("Subject: " + subject);
-                    writer.WriteLine();
-                    writer.WriteLine(body);
+                    File.WriteAllText(outputPath, content);
+                    Console.WriteLine($"Subject and body extracted to: {outputPath}");
+                }
+                catch (Exception writeEx)
+                {
+                    Console.Error.WriteLine($"Failed to write output file: {writeEx.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

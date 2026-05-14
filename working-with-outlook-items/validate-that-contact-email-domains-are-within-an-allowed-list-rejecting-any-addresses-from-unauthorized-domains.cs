@@ -1,96 +1,77 @@
-using Aspose.Email.PersonalInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.PersonalInfo;
 
-namespace AsposeEmailDomainValidation
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Define allowed email domains
+            List<string> allowedDomains = new List<string> { "example.com", "contoso.com" };
+
+            // Placeholder connection parameters
+            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against executing with placeholder credentials
+            if (mailboxUri.Contains("example.com"))
             {
-                // Placeholder credentials – replace with real values when running against Gmail.
-                const string accessToken = "YOUR_ACCESS_TOKEN";
-                const string defaultEmail = "user@example.com";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
 
-                // Guard against placeholder credentials to avoid external calls during CI.
-                if (accessToken.StartsWith("YOUR_") || defaultEmail.StartsWith("user@"))
+            // Create and use the Exchange client
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            {
+                try
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping Gmail operations.");
-                    return;
-                }
+                    // Retrieve contacts from the default "Contacts" folder
+                    Contact[] contacts = client.GetContacts("Contacts");
 
-                // Create Gmail client instance.
-                using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
-                {
-                    // Validate client connection.
-                    try
+                    foreach (Contact contact in contacts)
                     {
-                        // Attempt a lightweight operation to ensure credentials are valid.
-                        // This call does not fetch data; it just checks the token.
-                        gmailClient.GetAllContacts();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to authenticate Gmail client: {ex.Message}");
-                        return;
-                    }
+                        // Collect email addresses that are not from allowed domains
+                        List<EmailAddress> toRemove = new List<EmailAddress>();
 
-                    // Define allowed email domains.
-                    var allowedDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        "example.com",
-                        "mydomain.org"
-                    };
-
-                    // Retrieve all contacts.
-                    Contact[] contacts;
-                    try
-                    {
-                        contacts = gmailClient.GetAllContacts();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error retrieving contacts: {ex.Message}");
-                        return;
-                    }
-
-                    // Validate each contact's email addresses.
-                    foreach (var contact in contacts)
-                    {
-                        // The Contact class provides EmailAddresses collection.
-                        // Iterate through each email address associated with the contact.
-                        foreach (var email in contact.EmailAddresses)
+                        foreach (EmailAddress email in contact.EmailAddresses)
                         {
-                            // Extract domain part of the email address.
-                            var atIndex = email.Address?.IndexOf('@') ?? -1;
-                            if (atIndex <= 0 || atIndex == email.Address.Length - 1)
-                            {
-                                Console.WriteLine($"Invalid email format: {email.Address}");
+                            string emailStr = email.Address;
+                            if (string.IsNullOrEmpty(emailStr) || !emailStr.Contains("@"))
                                 continue;
-                            }
 
-                            var domain = email.Address.Substring(atIndex + 1);
-                            if (!allowedDomains.Contains(domain))
+                            string domain = emailStr.Split('@')[1];
+                            if (!allowedDomains.Contains(domain, StringComparer.OrdinalIgnoreCase))
                             {
-                                Console.WriteLine($"Unauthorized domain detected for contact '{contact.DisplayName}': {email.Address}");
-                            }
-                            else
-                            {
-                                Console.WriteLine($"Authorized contact: {contact.DisplayName} <{email.Address}>");
+                                Console.WriteLine($"Unauthorized domain detected: {emailStr} (Contact: {contact.DisplayName})");
+                                toRemove.Add(email);
                             }
                         }
+
+                        // Remove unauthorized email addresses from the contact
+                        foreach (EmailAddress remove in toRemove)
+                        {
+                            contact.EmailAddresses.Remove(remove);
+                        }
+
+                        // Optionally, update the contact on the server if needed
+                        // client.UpdateContact(contact); // Uncomment if UpdateContact is available
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error while processing contacts: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

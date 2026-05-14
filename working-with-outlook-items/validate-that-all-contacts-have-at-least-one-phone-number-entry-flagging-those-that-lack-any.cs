@@ -1,7 +1,6 @@
-using Aspose.Email.PersonalInfo;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.PersonalInfo;
 
 class Program
 {
@@ -9,58 +8,38 @@ class Program
     {
         try
         {
-            // Placeholder credentials – replace with real values or skip execution.
-            string accessToken = "YOUR_ACCESS_TOKEN";
-            string defaultEmail = "user@example.com";
-
-            if (string.IsNullOrWhiteSpace(accessToken) || accessToken == "YOUR_ACCESS_TOKEN")
+            // Create sample contacts
+            Contact contactWithPhone = new Contact();
+            contactWithPhone.DisplayName = "Alice Johnson";
+            PhoneNumber phoneAlice = new PhoneNumber
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping contact validation.");
-                return;
-            }
+                Number = "+1-555-0100",
+                Category = PhoneNumberCategory.Company
+            };
+            contactWithPhone.PhoneNumbers.Add(phoneAlice);
 
-            // Create Gmail client instance.
-            IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail);
+            Contact contactWithoutPhone = new Contact();
+            contactWithoutPhone.DisplayName = "Bob Smith";
 
-            try
+            // Store contacts in an array
+            Contact[] contacts = new Contact[] { contactWithPhone, contactWithoutPhone };
+
+            // Validate that each contact has at least one phone number
+            foreach (Contact currentContact in contacts)
             {
-                // Retrieve all contacts.
-                Contact[] contacts = gmailClient.GetAllContacts();
-
-                if (contacts == null || contacts.Length == 0)
+                if (currentContact.PhoneNumbers.Count == 0)
                 {
-                    Console.WriteLine("No contacts found.");
-                    return;
+                    Console.WriteLine($"Contact \"{currentContact.DisplayName}\" does not have any phone numbers.");
                 }
-
-                // Validate each contact for at least one phone number.
-                foreach (Contact contact in contacts)
+                else
                 {
-                    // PhoneNumbers is a collection of PhoneNumber objects.
-                    int phoneCount = contact.PhoneNumbers?.Count ?? 0;
-
-                    if (phoneCount == 0)
-                    {
-                        Console.WriteLine($"Contact '{contact.DisplayName}' (Email: {contact.EmailAddresses?.ToString() ?? "N/A"}) has no phone numbers.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error while processing contacts: {ex.Message}");
-            }
-            finally
-            {
-                // Ensure the client is disposed.
-                if (gmailClient is IDisposable disposableClient)
-                {
-                    disposableClient.Dispose();
+                    Console.WriteLine($"Contact \"{currentContact.DisplayName}\" has {currentContact.PhoneNumbers.Count} phone number(s).");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

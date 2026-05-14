@@ -1,84 +1,103 @@
-using Aspose.Email.PersonalInfo;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
+using System.Collections.Generic;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.PersonalInfo;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Input PST file containing contacts
             string pstPath = "contacts.pst";
-            // Output CSV file with birthdays in ISO 8601 format
-            string outputCsvPath = "contacts_birthdays.csv";
+            string outputCsv = "exported_contacts.csv";
 
-            // Ensure the PST file exists; create a minimal placeholder if missing
-            if (!File.Exists(pstPath))
+            // Ensure output directory exists
+            try
             {
-                using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputCsv));
+                if (!Directory.Exists(outputDir))
                 {
-                    // Create a Contacts folder so that the PST has a valid structure
-                    createdPst.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
+                    Directory.CreateDirectory(outputDir);
                 }
             }
-
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputCsvPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            catch (Exception ex)
             {
-                Directory.CreateDirectory(outputDirectory);
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                return;
             }
 
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            // Verify PST file existence; if missing, skip gracefully
+            if (!File.Exists(pstPath))
             {
-                // Get the predefined Contacts folder
-                FolderInfo contactsFolder = pst.GetPredefinedFolder(StandardIpmFolder.Contacts);
+                Console.Error.WriteLine($"PST file not found at path: {pstPath}");
+                return;
+            }
 
-                // Open the CSV writer
-                using (StreamWriter writer = new StreamWriter(outputCsvPath))
+            // Open PST and export contacts
+            try
+            {
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    // Write CSV header
-                    writer.WriteLine("DisplayName,Birthday");
+                    // Assume contacts are stored in the Contacts folder
+                    FolderInfo contactsFolder = pst.RootFolder.GetSubFolder("Contacts");
+                    List<string> lines = new List<string>();
+                    lines.Add("DisplayName,BirthdayISO");
 
-                    // Enumerate all messages (contacts) in the folder
-                    foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
+                    foreach (MessageInfo info in contactsFolder.EnumerateMessages())
                     {
-                        // Extract the MAPI message
-                        using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
+                        using (MapiMessage msg = pst.ExtractMessage(info))
                         {
-                            // Process only contact items
-                            if (mapiMessage.SupportedType == MapiItemType.Contact)
+                            // Convert to MapiContact if possible
+                            if (msg.SupportedType == MapiItemType.Contact)
                             {
-                                // Convert to a MapiContact object
-                                MapiContact mapiContact = (MapiContact)mapiMessage.ToMapiMessageItem();
+                                MapiContact contact = (MapiContact)msg.ToMapiMessageItem();
 
-                                // Retrieve display name
-                                string displayName = mapiContact.NameInfo.DisplayName ?? string.Empty;
+                                string displayName = contact.NameInfo?.DisplayName ?? string.Empty;
 
-                                // Retrieve birthday; if not set, DateTime.MinValue is returned
-                                DateTime birthday = mapiContact.Events.Birthday;
-                                string birthdayString = birthday != DateTime.MinValue
-                                    ? birthday.ToString("yyyy-MM-dd")
-                                    : string.Empty;
+                                DateTime birthday = DateTime.MinValue;
+                                bool hasBirthday = contact.TryGetPropertyDateTime(KnownPropertyList.Birthday.Id, ref birthday);
+                                string birthdayIso = hasBirthday ? birthday.ToString("yyyy-MM-dd") : string.Empty;
 
-                                // Write the contact information to CSV
-                                writer.WriteLine($"{displayName},{birthdayString}");
+                                lines.Add($"{EscapeCsv(displayName)},{birthdayIso}");
                             }
                         }
                     }
+
+                    // Write CSV
+                    try
+                    {
+                        File.WriteAllLines(outputCsv, lines);
+                        Console.WriteLine($"Export completed. CSV saved to: {outputCsv}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to write CSV file: {ex.Message}");
+                    }
                 }
             }
-
-            Console.WriteLine("Contacts exported with birthdays in ISO 8601 format.");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
+    }
+
+    // Helper to escape CSV fields
+    private static string EscapeCsv(string field)
+    {
+        if (field.Contains(",") || field.Contains("\"") || field.Contains("\n"))
+        {
+            field = field.Replace("\"", "\"\"");
+            return $"\"{field}\"";
+        }
+        return field;
     }
 }

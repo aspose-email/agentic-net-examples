@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -12,77 +12,81 @@ class Program
     {
         try
         {
-            // Placeholder connection details – replace with real values.
-            string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
-            string username = "username";
-            string password = "password";
+            // Prepare a list of contacts (placeholder data)
+            List<MapiContact> contacts = new List<MapiContact>();
 
-            // Skip execution when placeholder credentials are detected.
-            if (mailboxUri.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase) || password.Equals("password", StringComparison.OrdinalIgnoreCase))
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
-                return;
-            }
+            // Contact 1
+            MapiContact contact1 = new MapiContact();
+            contact1.NameInfo.GivenName = "John";
+            contact1.NameInfo.Surname = "Doe";
+            contact1.NameInfo.DisplayName = "John Doe";
+            contacts.Add(contact1);
 
-            // Ensure the output directory exists.
-            string outputDir = "SortedContacts";
+            // Contact 2
+            MapiContact contact2 = new MapiContact();
+            contact2.NameInfo.GivenName = "Alice";
+            contact2.NameInfo.Surname = "Smith";
+            contact2.NameInfo.DisplayName = "Alice Smith";
+            contacts.Add(contact2);
+
+            // Contact 3
+            MapiContact contact3 = new MapiContact();
+            contact3.NameInfo.GivenName = "Bob";
+            contact3.NameInfo.Surname = "Anderson";
+            contact3.NameInfo.DisplayName = "Bob Anderson";
+            contacts.Add(contact3);
+
+            // Sort contacts by last name (Surname) alphabetically
+            List<MapiContact> sortedContacts = contacts
+                .OrderBy(c => c.NameInfo != null && c.NameInfo.Surname != null ? c.NameInfo.Surname : string.Empty)
+                .ToList();
+
+            // Destination folder for vCard files
+            string outputFolder = Path.Combine(Environment.CurrentDirectory, "SortedContacts");
+
+            // Ensure the output directory exists
             try
             {
-                if (!Directory.Exists(outputDir))
+                if (!Directory.Exists(outputFolder))
                 {
-                    Directory.CreateDirectory(outputDir);
+                    Directory.CreateDirectory(outputFolder);
                 }
             }
-            catch (Exception ex)
+            catch (Exception dirEx)
             {
-                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
                 return;
             }
 
-            // Connect to Exchange and retrieve contacts.
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            // Save each sorted contact to a separate vCard file
+            foreach (MapiContact sortedContact in sortedContacts)
             {
+                // Build file path using the contact's display name (fallback to index if empty)
+                string safeFileName = string.IsNullOrWhiteSpace(sortedContact.NameInfo?.DisplayName)
+                    ? Guid.NewGuid().ToString()
+                    : sortedContact.NameInfo.DisplayName.Replace(' ', '_');
+
+                string vcardPath = Path.Combine(outputFolder, safeFileName + ".vcf");
+
+                // Guard file write operation
                 try
                 {
-                    // Retrieve contacts from the default "Contacts" folder.
-                    Contact[] contacts = client.GetContacts("Contacts");
-
-                    // Sort contacts by last name (Surname) alphabetically.
-                    List<Contact> sortedContacts = contacts
-                        .OrderBy(c => c.Surname ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                        .ThenBy(c => c.GivenName ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-
-                    // Save each contact to a VCF file in the sorted order.
-                    foreach (Contact contact in sortedContacts)
+                    using (MapiContact disposableContact = sortedContact)
                     {
-                        // Build a safe file name.
-                        string safeSurname = string.IsNullOrWhiteSpace(contact.Surname) ? "UnknownSurname" : contact.Surname;
-                        string safeGiven = string.IsNullOrWhiteSpace(contact.GivenName) ? "UnknownGiven" : contact.GivenName;
-                        string fileName = $"{safeSurname}_{safeGiven}.vcf";
-                        string filePath = Path.Combine(outputDir, fileName);
-
-                        try
-                        {
-                            contact.Save(filePath);
-                            Console.WriteLine($"Saved contact: {fileName}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save contact '{contact.FileAs}': {ex.Message}");
-                        }
+                        disposableContact.Save(vcardPath);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception saveEx)
                 {
-                    Console.Error.WriteLine($"Error during Exchange operations: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to save contact '{safeFileName}': {saveEx.Message}");
                 }
             }
+
+            Console.WriteLine("Contacts have been sorted and saved successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,7 +1,7 @@
 using System;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -9,45 +9,52 @@ class Program
     {
         try
         {
-            // Placeholder credentials and endpoint
-            string ewsUrl = "https://ews.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-            string domain = "";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Skip external call when using placeholder values
-            if (ewsUrl.Contains("example.com"))
+            // Ensure input file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine("Placeholder EWS endpoint detected. Skipping external operations.");
-                return;
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder", "This is a placeholder message."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
+                    return;
+                }
             }
 
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password, domain))
+            // Load the message, modify, and save.
+            try
             {
-                // Create a new MAPI message
-                using (MapiMessage message = new MapiMessage(
-                    "sender@example.com",
-                    "recipient@example.com",
-                    "Project Update",
-                    "Please review the attached project update."))
+                using (MapiMessage message = MapiMessage.Load(inputPath))
                 {
-                    // Add "Feedback" voting button
+                    // Add a voting button named "Feedback".
                     FollowUpManager.AddVotingButton(message, "Feedback");
 
-                    // Set follow‑up flag with a one‑week due date
+                    // Set a follow‑up flag with a one‑week due date.
                     DateTime startDate = DateTime.Now;
                     DateTime dueDate = startDate.AddDays(7);
                     FollowUpManager.SetFlag(message, "Please provide feedback", startDate, dueDate);
 
-                    // Create the item in the mailbox
-                    client.CreateItem(message);
+                    // Save the modified message.
+                    message.Save(outputPath);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing message: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

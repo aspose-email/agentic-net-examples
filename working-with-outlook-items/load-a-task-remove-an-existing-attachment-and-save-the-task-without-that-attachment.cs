@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Mapi;
 
 class Program
@@ -10,58 +9,49 @@ class Program
     {
         try
         {
-            // Placeholder credentials – skip actual network call in CI
-            string ewsUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-            string domain = "";
+            string inputPath = "task.msg";
+            string outputPath = "task_without_attachment.msg";
 
-            if (ewsUrl.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
                 return;
             }
 
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password, domain))
+            using (MapiMessage message = MapiMessage.Load(inputPath))
             {
-                // Task URI to load – replace with a real URI when not using placeholders
-                string taskUri = "taskUriPlaceholder";
-
-                if (string.IsNullOrEmpty(taskUri))
+                if (message.SupportedType != MapiItemType.Task)
                 {
-                    Console.Error.WriteLine("Task URI is not provided.");
+                    Console.Error.WriteLine("The provided file is not a task.");
                     return;
                 }
 
-                // Load the task from Exchange
-                ExchangeTask task = client.FetchTask(taskUri);
-                if (task == null)
+                using (MapiTask task = (MapiTask)message.ToMapiMessageItem())
                 {
-                    Console.Error.WriteLine("Failed to fetch the task.");
-                    return;
+                    if (task.Attachments != null && task.Attachments.Count > 0)
+                    {
+                        task.Attachments.Clear();
+                    }
+
+                    task.Save(outputPath, TaskSaveFormat.Msg);
                 }
-
-                // Remove the first attachment if any exist
-                if (task.Attachments != null && task.Attachments.Count > 0)
-                {
-                    // Assuming Attachments implements IList-like collection
-                    task.Attachments.RemoveAt(0);
-                }
-
-                // Define output file path
-                string outputPath = "outputTask.msg";
-
-                // Ensure the output directory exists
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-
-                // Save the modified task without the removed attachment
-                task.Save(outputPath, TaskSaveFormat.Msg);
-                Console.WriteLine($"Task saved without attachment to: {outputPath}");
             }
         }
         catch (Exception ex)

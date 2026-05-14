@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -13,48 +12,36 @@ class Program
             // Define output MSG file path
             string outputPath = "appointment.msg";
 
-            // Ensure the directory for the output file exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Guard file existence (not strictly needed for write, but follows the rule)
-            try
-            {
-                // Create attendees collection
-                MailAddressCollection attendees = new MailAddressCollection();
-                attendees.Add(new MailAddress("person1@domain.com"));
-                attendees.Add(new MailAddress("person2@domain.com"));
-                attendees.Add(new MailAddress("person3@domain.com"));
+            // Create attendees collection
+            MailAddressCollection attendees = new MailAddressCollection();
+            attendees.Add(new MailAddress("person1@domain.com"));
+            attendees.Add(new MailAddress("person2@domain.com"));
 
-                // Create the appointment with a conference room location
-                Appointment appointment = new Appointment(
-                    "Conference Room A",                         // location
-                    new DateTime(2024, 5, 20, 10, 0, 0),        // start time
-                    new DateTime(2024, 5, 20, 11, 0, 0),        // end time
-                    new MailAddress("organizer@domain.com"),    // organizer
-                    attendees);
+            // Create the appointment
+            Appointment appointment = new Appointment(
+                "Conference Room A",
+                new DateTime(2024, 6, 1, 10, 0, 0),
+                new DateTime(2024, 6, 1, 11, 0, 0),
+                new MailAddress("organizer@domain.com"),
+                attendees);
 
-                // Set additional properties
-                appointment.Summary = "Project Kickoff";
-                appointment.Description = "Discuss project goals and timelines.";
+            // Set additional properties
+            appointment.Summary = "Team Sync";
+            appointment.Description = "Weekly team synchronization meeting.";
+            appointment.Location = "Conference Room A";
 
-                // Convert to MAPI message and save as MSG
-                using (MapiMessage mapiMessage = appointment.ToMapiMessage())
-                {
-                    // Save the MSG file
-                    mapiMessage.Save(outputPath);
-                }
+            // Save the appointment as MSG using AppointmentMsgSaveOptions
+            AppointmentMsgSaveOptions saveOptions = new AppointmentMsgSaveOptions();
+            appointment.Save(outputPath, saveOptions);
 
-                Console.WriteLine("Appointment saved to MSG file: " + outputPath);
-            }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine("File operation failed: " + ioEx.Message);
-                return;
-            }
+            Console.WriteLine("Appointment saved to MSG file: " + outputPath);
         }
         catch (Exception ex)
         {

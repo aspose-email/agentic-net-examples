@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.PersonalInfo;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -11,21 +11,30 @@ class Program
     {
         try
         {
+            // Paths and credentials (replace with real values)
             string csvPath = "contacts.csv";
-            string outputDir = "OutputVcards";
+            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Ensure CSV file exists; create a minimal placeholder if missing
+            // Guard against placeholder credentials/hosts
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
+
+            // Ensure CSV file exists
             if (!File.Exists(csvPath))
             {
+                // Create minimal placeholder CSV
                 try
                 {
-                    using (var writer = new StreamWriter(csvPath))
+                    using (StreamWriter writer = new StreamWriter(csvPath))
                     {
-                        // Header: GivenName;Surname;Email;Phone
-                        writer.WriteLine("GivenName;Surname;Email;Phone");
-                        writer.WriteLine("John;Doe;john.doe@example.com;+1234567890");
+                        writer.WriteLine("FirstName;LastName;Email;Phone");
+                        writer.WriteLine("John;Doe;john.doe@example.com;1234567890");
                     }
-                    Console.WriteLine($"Placeholder CSV created at '{csvPath}'.");
                 }
                 catch (Exception ex)
                 {
@@ -34,72 +43,24 @@ class Program
                 }
             }
 
-            // Ensure output directory exists
-            try
-            {
-                if (!Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                return;
-            }
-
-            List<Contact> contacts = new List<Contact>();
-
             // Read and parse CSV
+            List<Contact> contacts = new List<Contact>();
             try
             {
-                using (var reader = new StreamReader(csvPath))
+                using (StreamReader reader = new StreamReader(csvPath))
                 {
                     string headerLine = reader.ReadLine(); // Skip header
-                    if (headerLine == null)
-                    {
-                        Console.Error.WriteLine("CSV file is empty.");
-                        return;
-                    }
-
                     string line;
                     while ((line = reader.ReadLine()) != null)
                     {
-                        if (string.IsNullOrWhiteSpace(line))
-                            continue;
-
                         string[] parts = line.Split(';');
-                        if (parts.Length < 4)
-                            continue; // Skip malformed rows
+                        if (parts.Length < 4) continue; // Skip malformed lines
 
-                        string givenName = parts[0].Trim();
-                        string surname = parts[1].Trim();
-                        string email = parts[2].Trim();
-                        string phone = parts[3].Trim();
-
-                        Contact contact = new Contact
-                        {
-                            GivenName = givenName,
-                            Surname = surname,
-                            DisplayName = $"{givenName} {surname}"
-                        };
-
-                        // Add email address
-                        if (!string.IsNullOrEmpty(email))
-                        {
-                            contact.EmailAddresses.Add(new EmailAddress(email));
-                        }
-
-                        // Add phone number
-                        if (!string.IsNullOrEmpty(phone))
-                        {
-                            contact.PhoneNumbers.Add(new PhoneNumber
-                            {
-                                Number = phone,
-                                Category = PhoneNumberCategory.Company
-                            });
-                        }
-
+                        Contact contact = new Contact();
+                        contact.GivenName = parts[0];
+                        contact.Surname = parts[1];
+                        contact.EmailAddresses.Add(new EmailAddress(parts[2]));
+                        contact.PhoneNumbers.Add(new PhoneNumber { Number = parts[3], Category = PhoneNumberCategory.Company });
                         contacts.Add(contact);
                     }
                 }
@@ -110,24 +71,30 @@ class Program
                 return;
             }
 
-            // Save each contact as a vCard file
-            int index = 1;
-            foreach (Contact contact in contacts)
+            // Create contacts on Exchange server
+            try
             {
-                string vcardPath = Path.Combine(outputDir, $"Contact_{index}.vcf");
-                try
+                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
                 {
-                    // Save using the default vCard format
-                    contact.Save(vcardPath, ContactSaveFormat.VCard);
+                    foreach (Contact contact in contacts)
+                    {
+                        try
+                        {
+                            client.CreateContact(contact);
+                            Console.WriteLine($"Created contact: {contact.GivenName} {contact.Surname}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to create contact {contact.GivenName} {contact.Surname}: {ex.Message}");
+                        }
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save contact '{contact.DisplayName}': {ex.Message}");
-                }
-                index++;
             }
-
-            Console.WriteLine($"Imported {contacts.Count} contacts and saved to '{outputDir}'.");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Exchange client error: {ex.Message}");
+                return;
+            }
         }
         catch (Exception ex)
         {
