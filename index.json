@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 2773,
+  "total_examples": 2917,
   "total_categories": 17,
-  "last_updated": "2026-05-13",
+  "last_updated": "2026-05-20",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -4449,48 +4449,320 @@
     },
     {
       "name": "working-with-smtp-client",
-      "file_count": 15,
+      "file_count": 159,
       "files": [
+        "add-a-custom-reply-to-address-that-differs-from-the-from-address-for-handling-responses.cs",
+        "add-a-custom-x-audit-trail-header-containing-a-json-payload-with-operation-metadata.cs",
+        "add-a-custom-x-campaign-id-header-to-tag-the-email-with-a-marketing-campaign-identifier.cs",
+        "add-a-custom-x-correlation-id-header-to-correlate-the-email-with-related-system-events.cs",
+        "add-a-custom-x-delivery-token-header-containing-a-guid-to-uniquely-identify-each-send-attempt.cs",
+        "add-a-custom-x-environment-header-to-indicate-whether-the-email-is-sent-from-development-staging-or-production.cs",
+        "add-a-custom-x-feedback-id-header-to-capture-user-feedback-identifiers-for-later-analysis.cs",
+        "add-a-custom-x-mail-client-header-indicating-the-version-of-the-sending-application.cs",
+        "add-a-custom-x-mailing-group-header-to-group-related-messages-for-downstream-processing-pipelines.cs",
+        "add-a-custom-x-message-source-header-indicating-the-originating-system-for-traceability-and-debugging.cs",
+        "add-a-custom-x-notification-type-header-to-differentiate-between-alert-and-informational-messages.cs",
+        "add-a-custom-x-priority-header-with-value-1-to-mark-the-email-as-highest-importance.cs",
+        "add-a-custom-x-spam-score-header-based-on-content-analysis-before-transmitting-the-email.cs",
+        "add-a-custom-x-support-ticket-header-linking-the-email-to-a-support-case-identifier.cs",
+        "add-a-custom-x-trace-id-header-generated-from-a-distributed-tracing-system-for-end-to-end-monitoring.cs",
+        "add-a-custom-x-user-id-header-to-associate-the-email-with-an-internal-user-identifier.cs",
+        "add-a-high-priority-header-to-an-outgoing-message-before-transmitting-via-the-smtp-client.cs",
+        "add-a-list-unsubscribe-header-to-enable-recipients-to-opt-out-directly-from-the-email-client.cs",
+        "add-a-read-receipt-request-header-to-the-outgoing-message-to-track-when-recipients-open-it.cs",
+        "adjust-operation-timeout-based-on-network-latency-measurements-to-avoid-unnecessary-email-delivery-delays.cs",
+        "adjust-smtpclient-timeout-dynamically-based-on-email-size-to-prevent-premature-termination.cs",
+        "apply-a-content-filter-that-removes-prohibited-words-from-the-email-body-before-sending.cs",
+        "apply-a-custom-certificate-validation-callback-to-accept-self-signed-certificates-during-tls-handshake.cs",
+        "apply-a-custom-dkim-signing-routine-to-the-message-before-transmitting-via-the-smtp-client.cs",
+        "apply-a-custom-email-address-normalization-routine-to-standardize-case-and-remove-display-names.cs",
+        "apply-a-retry-policy-that-attempts-to-resend-a-failed-message-up-to-three-times-with-exponential-backoff.cs",
+        "attach-a-pdf-document-from-a-memory-stream-to-an-email-and-transmit-it-using-tls-encryption.cs",
+        "authenticate-to-the-smtp-server-using-cram-md5-by-setting-authenticationtype-property.cs",
+        "bind-the-smtp-client-to-a-specific-local-ip-address-using-bindipendpoint.cs",
+        "configure-a-maximum-attachment-size-limit-of-10-mb-and-reject-oversized-files-before-sending.cs",
+        "configure-a-socks-proxy-with-username-and-password-to-authenticate-the-client-before-establishing-smtp-connection.cs",
+        "configure-smtpclient-proxy-with-a-socks5-server-to-route-email-traffic-securely.cs",
+        "configure-smtpclient-to-automatically-select-the-most-secure-authentication-method-from-the-server-supported-list.cs",
+        "configure-smtpclient-to-fallback-to-plain-authentication-if-cram-md5-is-not-supported-by-the-server.cs",
+        "configure-smtpclient-to-use-a-socks-proxy-with-authentication-credentials-for-secure-access.cs",
+        "configure-smtpclient-to-use-cram-md5-authentication-only-when-the-server-advertises-it.cs",
+        "configure-smtpclient-with-a-60-second-operation-timeout-for-large-email-batches.cs",
         "configure-smtpclient-with-host-port-and-security-settings-then-send-an-email-loaded-from-an-msg-file.cs",
+        "configure-socket-timeout-to-30-seconds-to-prevent-hanging-connections-during-smtp-transmission.cs",
+        "configure-the-client-to-automatically-add-a-date-header-with-utc-time-if-missing.cs",
+        "configure-the-client-to-automatically-add-a-list-id-header-for-mailing-list-identification.cs",
+        "configure-the-client-to-automatically-add-a-list-unsubscribe-post-header-for-one-click-unsubscribe-support.cs",
+        "configure-the-client-to-automatically-add-a-message-id-header-if-one-is-not-already-present.cs",
+        "configure-the-client-to-automatically-compress-attachments-larger-than-1-mb-using-gzip-before-sending.cs",
+        "configure-the-client-to-automatically-remove-any-duplicate-recipients-from-the-to-cc-and-bcc-lists.cs",
+        "configure-the-client-to-automatically-remove-any-empty-recipient-fields-to-prevent-smtp-errors-during-send.cs",
+        "configure-the-client-to-automatically-retry-sending-when-encountering-transient-4xx-smtp-error-codes.cs",
+        "configure-the-client-to-automatically-strip-html-tags-from-the-body-when-sending-to-plain-text-only-recipients.cs",
+        "configure-the-client-to-reuse-a-single-smtp-connection-for-sending-a-batch-of-fifty-messages.cs",
+        "configure-the-client-to-use-a-specific-tls-protocol-version-such-as-tls-1-2-for-secure-connections.cs",
+        "configure-the-smtp-client-to-ignore-certificate-revocation-checks-for-testing-environments.cs",
+        "configure-the-smtp-client-to-use-a-connection-timeout-of-10-seconds-and-a-read-timeout-of-30-seconds.cs",
+        "configure-the-smtp-client-to-use-a-custom-dns-resolver-that-prefers-ipv6-over-ipv4-addresses.cs",
+        "configure-the-smtp-client-to-use-a-proxy-server-for-routing-all-email-traffic-securely.cs",
+        "configure-the-smtp-client-to-use-a-specific-authentication-realm-when-connecting-to-the-server.cs",
+        "configure-the-smtp-client-to-use-a-specific-local-ip-address-for-outbound-connections.cs",
+        "configure-the-smtp-client-to-use-a-specific-network-interface-for-outbound-traffic-on-multi-homed-servers.cs",
+        "configure-the-smtp-client-to-use-ntlm-authentication-with-domain-credentials-for-secure-login.cs",
         "configure-the-smtpclient-s-log-level-to-detailed-to-aid-troubleshooting-when-transmitting-msg-format-emails.cs",
         "configure-the-smtpclient-to-log-smtp-operations-by-specifying-a-logfile-path-and-loglevel-during-msg-email-loading.cs",
+        "create-a-template-engine-that-replaces-placeholders-with-user-data-before-sending-the-email.cs",
         "create-an-email-from-an-msg-file-using-mailmessage-then-transmit-it-via-smtpclient.cs",
         "create-an-smtp-client-using-configuration-extracted-from-an-msg-file-and-transmit-the-email.cs",
+        "enable-delivery-status-notifications-for-success-failure-and-delay-events-on-each-outgoing-email.cs",
+        "enable-detailed-smtp-activity-logging-and-write-the-log-entries-to-a-rotating-file-system.cs",
         "enable-smtp-communication-logging-for-email-transmission-specifying-logfile-and-loglevel-settings-with-an-msg-source.cs",
+        "enable-smtp-pipelining-to-send-multiple-commands-without-waiting-for-individual-server-responses.cs",
         "enable-smtp-protocol-logging-and-transmit-an-email-message-loaded-from-an-msg-file.cs",
+        "enable-ssl-tls-encryption-on-smtpclient-by-setting-securityoptions-to-sslexplicit.cs",
+        "enable-starttls-negotiation-on-port-587-to-upgrade-an-insecure-connection-to-a-secure-channel.cs",
+        "enable-tls-1-2-by-setting-securityoptions-to-sslexplicit-and-verify-server-certificate-chain.cs",
         "forward-a-loaded-msg-mailmessage-to-additional-recipients-by-calling-the-mailmessage-forward-method-preserving-original-content.cs",
+        "forward-an-existing-message-to-multiple-recipients-while-preserving-original-headers-and-attachments.cs",
+        "implement-a-callback-that-logs-the-time-taken-for-each-smtp-command-execution.cs",
+        "implement-a-fallback-mechanism-that-switches-to-an-alternate-smtp-host-if-the-primary-server-fails.cs",
+        "implement-a-feature-that-compresses-the-entire-mime-message-using-gzip-before-sending-over-smtp.cs",
+        "implement-a-feature-that-logs-the-size-of-each-attachment-before-it-is-added-to-the-email.cs",
+        "implement-a-feature-that-validates-spf-records-for-the-sending-domain-before-attempting-smtp-delivery.cs",
+        "implement-a-logging-interceptor-that-records-the-size-of-each-email-payload-before-transmission.cs",
+        "implement-a-mechanism-that-encrypts-attachments-using-aes-before-adding-them-to-the-email.cs",
+        "implement-a-mechanism-that-logs-the-smtp-server-banner-message-upon-establishing-the-connection.cs",
+        "implement-a-mechanism-that-pauses-sending-when-the-server-returns-a-421-response-then-resumes-after-delay.cs",
+        "implement-a-mechanism-that-queues-messages-locally-when-the-smtp-server-is-unreachable-then-retries-later.cs",
+        "implement-a-method-that-checks-server-supported-authentication-mechanisms-and-selects-the-strongest-available-option.cs",
+        "implement-a-policy-that-rejects-sending-messages-larger-than-25-mb-to-comply-with-server-limits.cs",
+        "implement-a-progress-reporter-that-updates-after-each-email-is-successfully-transmitted-over-smtp.cs",
+        "implement-a-retry-delay-that-respects-the-smtp-server-retry-after-header-when-present.cs",
+        "implement-a-retry-policy-that-increases-greetingtimeout-after-each-failed-connection-attempt.cs",
+        "implement-a-retry-strategy-that-respects-the-server-retry-after-header-and-backs-off-exponentially.cs",
+        "implement-a-watchdog-that-aborts-the-smtp-send-operation-if-it-exceeds-a-configurable-time-limit.cs",
+        "implement-a-watchdog-that-monitors-smtp-server-response-times-and-raises-alerts-if-they-exceed-thresholds.cs",
+        "implement-asynchronous-email-sending-with-cancellation-token-support-to-allow-graceful-abort-of-the-operation.cs",
+        "implement-credential-validation-logic-that-attempts-a-silent-login-before-sending-any-message-to-ensure-correctness.cs",
+        "implement-dns-cache-to-store-mx-lookup-results-for-ten-minutes-reducing-lookup-latency.cs",
+        "implement-event-handlers-that-log-smtp-server-responses-after-each-command-issued-by-the-client.cs",
+        "implement-parallel-sending-of-a-list-of-messages-using-multiple-smtp-client-instances-for-improved-throughput.cs",
+        "increase-greetingtimeout-to-ten-seconds-for-servers-known-to-have-delayed-initial-responses-during-peak-hours.cs",
         "instantiate-a-mailmessage-populate-from-to-subject-and-body-fields-from-an-msg-template-then-dispatch-using-smtpclient.cs",
         "load-an-msg-file-into-a-mailmessage-instance-and-transmit-it-using-the-smtpclient-send.cs",
         "load-an-msg-file-into-a-mailmessage-object-and-forward-the-message-by-invoking-its-forward-method.cs",
+        "load-credentials-from-an-encrypted-configuration-file-decrypt-them-then-assign-to-smtpclient.cs",
+        "load-smtp-authentication-credentials-from-a-json-configuration-file-using-loadcredentialsfromconfig.cs",
+        "load-smtp-credentials-from-an-xml-file-map-them-to-networkcredential-and-assign-to-smtpclient.cs",
+        "log-each-smtp-command-and-server-response-to-a-database-table-for-audit-purposes.cs",
+        "query-the-smtp-server-for-available-extensions-with-getextensions-and-store-them-for-later-capability-checks.cs",
+        "retrieve-and-display-the-full-list-of-smtp-server-extensions-for-diagnostic-purposes-in-a-console-application.cs",
+        "retrieve-and-log-supported-authentication-methods-from-the-mail-server-using-getsupportedauthenticationmethods.cs",
+        "retrieve-server-extensions-and-conditionally-enable-starttls-if-the-starttls-extension-is-present.cs",
+        "retrieve-server-extensions-and-store-them-in-a-dictionary-for-quick-lookup-during-email-composition.cs",
+        "send-a-calendar-invitation-icalendar-as-an-alternative-view-attached-to-the-email-message.cs",
+        "send-a-message-with-a-custom-mime-boundary-to-satisfy-a-legacy-mail-system-parsing-rules.cs",
+        "send-a-message-with-a-custom-mime-type-application-vnd-custom-json-for-specialized-payload-delivery.cs",
+        "send-a-message-with-a-custom-x-auto-response-suppress-header-to-prevent-automatic-replies.cs",
+        "send-a-message-with-a-custom-x-precedence-header-set-to-bulk-for-mass-mail-campaigns.cs",
+        "send-a-message-with-a-custom-x-priority-level-header-set-to-urgent-for-time-sensitive-notifications.cs",
+        "send-a-message-with-a-custom-x-retention-policy-header-specifying-how-long-the-email-should-be-retained.cs",
+        "send-a-message-with-a-delayed-delivery-time-by-setting-the-date-header-to-a-future-timestamp.cs",
+        "send-a-message-with-a-large-attachment-split-into-multiple-mime-parts-using-the-message-partial-type.cs",
+        "send-a-message-with-a-multipart-mixed-body-that-includes-both-a-text-part-and-a-binary-attachment.cs",
+        "send-a-message-with-a-multipart-related-body-that-includes-an-html-part-and-embedded-css-resources.cs",
+        "send-a-message-with-a-signed-dkim-header-generated-from-a-private-key-stored-in-a-secure-vault.cs",
+        "send-a-message-with-an-attached-csv-file-generated-from-a-datatable-without-writing-to-disk.cs",
+        "send-a-message-with-multiple-bcc-recipients-while-keeping-their-addresses-hidden-from-other-recipients.cs",
+        "send-a-multipart-alternative-email-that-includes-both-plain-text-and-html-versions-for-client-compatibility.cs",
+        "send-a-plain-text-email-through-an-smtp-server-using-explicit-ssl-on-port-465.cs",
+        "send-an-email-with-a-compressed-zip-attachment-ensuring-the-attachment-size-does-not-exceed-5-mb.cs",
+        "send-an-email-with-a-custom-x-language-header-indicating-the-primary-language-of-the-message-content.cs",
+        "send-an-email-with-a-dynamically-generated-pdf-attachment-created-from-html-content-at-runtime.cs",
+        "send-an-email-with-a-dynamically-generated-qr-code-image-embedded-as-an-inline-attachment.cs",
+        "send-an-email-with-a-multipart-alternative-body-that-includes-both-plain-text-and-rtf-versions.cs",
+        "send-an-email-with-a-multipart-mixed-body-that-includes-a-text-part-html-part-and-attachment.cs",
+        "send-an-email-with-a-plain-text-body-encoded-in-iso-8859-1-for-legacy-client-compatibility.cs",
+        "send-an-email-with-a-plain-text-fallback-body-for-clients-that-cannot-render-html-content.cs",
+        "send-an-email-with-a-signed-s-mime-part-to-provide-message-integrity-and-authenticity.cs",
+        "send-an-html-email-containing-inline-images-by-embedding-them-as-linked-resources-in-the-message.cs",
+        "serialize-email-message-to-eml-format-before-sending-to-allow-pre-send-inspection-and-logging.cs",
+        "set-a-custom-greeting-timeout-of-three-seconds-to-speed-up-connections-to-fast-responding-mail-servers.cs",
+        "set-a-custom-operation-timeout-of-two-minutes-for-sending-large-attachments-to-prevent-premature-failures.cs",
+        "set-a-custom-timeout-for-the-authentication-phase-to-avoid-long-waits-on-invalid-credentials.cs",
+        "set-a-custom-x-mailing-id-header-on-each-message-to-facilitate-downstream-tracking.cs",
+        "set-smtpclient-greetingtimeout-to-five-seconds-to-reduce-initial-connection-latency.cs",
+        "set-smtpclient-securityoptions-to-autodetect-to-let-the-client-negotiate-the-best-encryption-protocol-automatically.cs",
+        "set-the-email-body-encoding-to-utf-8-to-support-international-characters-in-the-message-content.cs",
+        "set-the-email-sensitivity-header-to-private-to-indicate-confidential-content-to-recipients.cs",
         "set-the-enablessl-property-on-the-smtp-client-to-enable-ssl-before-transmitting-msg-formatted-messages.cs",
         "set-the-smtp-host-port-and-security-options-on-the-smtpclient-prior-to-transmitting-an-msg-formatted-email.cs",
+        "set-up-an-http-proxy-for-smtpclient-proxy-to-enable-delivery-behind-corporate-firewalls.cs",
+        "specify-a-custom-message-id-generator-that-creates-globally-unique-identifiers-for-each-sent-email.cs",
+        "throttle-email-sending-rate-to-no-more-than-20-messages-per-minute-to-avoid-server-limits.cs",
         "transmit-an-msg-email-file-through-smtp-by-configuring-smtpclient-with-sample-server-and-credential-parameters.cs",
-        "use-smtpclient-to-authenticate-to-the-smtp-server-with-basic-ntlm-or-oauth2-credentials-when-sending-an-msg-email.cs"
+        "use-a-secure-socket-layer-ssl-stream-wrapper-to-encrypt-the-entire-smtp-session.cs",
+        "use-an-http-proxy-that-requires-custom-authentication-headers-and-configure-smtpclient-proxy-accordingly.cs",
+        "use-bindipendpoint-to-select-a-specific-network-interface-for-sending-emails-from-a-multi-homed-server.cs",
+        "use-smtpclient-to-authenticate-to-the-smtp-server-with-basic-ntlm-or-oauth2-credentials-when-sending-an-msg-email.cs",
+        "use-the-smtp-client-to-send-a-message-with-a-multipart-related-structure-containing-inline-images.cs",
+        "validate-credentials-against-the-smtp-server-and-log-detailed-error-messages-for-authentication-failures.cs",
+        "validate-recipient-email-addresses-against-rfc-5322-syntax-before-attempting-to-send-through-smtp.cs",
+        "validate-smtp-credentials-asynchronously-to-improve-ui-responsiveness-in-a-desktop-email-client-application.cs",
+        "validate-smtp-server-credentials-without-sending-an-email-by-calling-validatecredentials.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 15
-        },
-        {
-          "name": "System.IO",
-          "count": 15
+          "count": 159
         },
         {
           "name": "Aspose.Email",
-          "count": 15
+          "count": 158
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
-          "count": 15
+          "count": 129
         },
         {
           "name": "Aspose.Email.Clients",
+          "count": 78
+        },
+        {
+          "name": "System.IO",
+          "count": 52
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 20
+        },
+        {
+          "name": "System.Net",
+          "count": 16
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 11
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.Dav",
+          "count": 10
+        },
+        {
+          "name": "System.Threading",
           "count": 8
         },
         {
+          "name": "System.Text",
+          "count": 8
+        },
+        {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Clients.Google",
+          "count": 4
+        },
+        {
           "name": "Aspose.Email.Mapi",
+          "count": 4
+        },
+        {
+          "name": "System.Net.Security",
           "count": 3
+        },
+        {
+          "name": "System.Security.Cryptography.X509Certificates",
+          "count": 3
+        },
+        {
+          "name": "System.Threading.Tasks",
+          "count": 3
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 2
+        },
+        {
+          "name": "System.IO.Compression",
+          "count": 2
+        },
+        {
+          "name": "System.Linq",
+          "count": 2
+        },
+        {
+          "name": "System.Data",
+          "count": 2
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 2
+        },
+        {
+          "name": "System.Text.Json",
+          "count": 2
+        },
+        {
+          "name": "System.Security.Cryptography",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Clients.DeliveryService.SendGrid",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.AntiSpam",
+          "count": 1
+        },
+        {
+          "name": "System.Net.NetworkInformation",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Base",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Tools.Merging",
+          "count": 1
+        },
+        {
+          "name": "System.Net.Http",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange",
+          "count": 1
+        },
+        {
+          "name": "System.Xml.Linq",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 1
+        },
+        {
+          "name": "var client = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass)",
+          "count": 1
+        },
+        {
+          "name": "var payloadStream = new MemoryStream(payloadBytes)",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Words",
+          "count": 1
+        },
+        {
+          "name": "System.Net.Mime",
+          "count": 1
+        },
+        {
+          "name": "System.Text.RegularExpressions",
+          "count": 1
         }
       ],
       "key_apis": []
