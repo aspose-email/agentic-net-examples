@@ -27,7 +27,7 @@ Examples are organized by feature category:
 - `working-with-outlook-items/` - 492 example(s)
 - `working-with-outlook-storage-files/` - 184 example(s)
 - `working-with-pop3-client/` - 40 example(s)
-- `working-with-smtp-client/` - 15 example(s)
+- `working-with-smtp-client/` - 159 example(s)
 - `zimbra/` - 9 example(s)
 
 Each category contains standalone `.cs` files that can be compiled and run independently.
