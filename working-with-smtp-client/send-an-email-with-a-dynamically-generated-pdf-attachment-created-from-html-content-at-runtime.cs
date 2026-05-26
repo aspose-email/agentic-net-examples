@@ -29,7 +29,8 @@ class Program
             // Convert HTML to PDF using Aspose.Words
             using (MemoryStream htmlStream = new MemoryStream(Encoding.UTF8.GetBytes(htmlContent)))
             {
-                var doc = new Aspose.Words.Document(htmlStream, new Aspose.Words.LoadOptions());
+                var loadOptions = new Aspose.Words.Loading.LoadOptions { LoadFormat = Aspose.Words.LoadFormat.Html };
+                var doc = new Document(htmlStream, loadOptions);
                 using (MemoryStream pdfStream = new MemoryStream())
                 {
                     doc.Save(pdfStream, Aspose.Words.SaveFormat.Pdf);
