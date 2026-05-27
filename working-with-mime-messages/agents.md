@@ -18,19 +18,19 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (343 file(s))
-- `using Aspose.Email;` (343 file(s))
-- `using System.IO;` (302 file(s))
-- `using Aspose.Email.Mapi;` (84 file(s))
-- `using Aspose.Email.Calendar;` (41 file(s))
-- `using Aspose.Email.Mime;` (31 file(s))
+- `using System;` (348 file(s))
+- `using Aspose.Email;` (348 file(s))
+- `using System.IO;` (307 file(s))
+- `using Aspose.Email.Mapi;` (85 file(s))
+- `using Aspose.Email.Calendar;` (42 file(s))
+- `using Aspose.Email.Mime;` (32 file(s))
 - `using System.Collections.Generic;` (29 file(s))
-- `using System.Text;` (26 file(s))
+- `using System.Text;` (28 file(s))
 - `using System.Security.Cryptography.X509Certificates;` (25 file(s))
 - `using Aspose.Email.Clients.Smtp;` (13 file(s))
+- `using System.Security.Cryptography;` (8 file(s))
 - `using Aspose.Email.Clients.Exchange.Dav;` (8 file(s))
 - `using System.Text.RegularExpressions;` (8 file(s))
-- `using System.Security.Cryptography;` (6 file(s))
 - `using System.Net.Mime;` (6 file(s))
 - `using Aspose.Email.Clients;` (6 file(s))
 - `using Aspose.Email.Clients.Exchange;` (5 file(s))
@@ -43,8 +43,11 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - `using Aspose.Email.Storage.Pst;` (2 file(s))
 - `using System.Text.Json;` (2 file(s))
 - `using Aspose.Email.Clients.Imap;` (2 file(s))
+- `using RSA rsa = RSA.Create();` (1 file(s))
+- `using SHA256 sha256 = SHA256.Create();` (1 file(s))
 - `using System.Globalization;` (1 file(s))
 - `using Aspose.Email.Tools;` (1 file(s))
+- `using Aspose.Email.Tools.Verifications;` (1 file(s))
 - `using Aspose.Email.Mapi.Msg;` (1 file(s))
 - `using System.Net.Http;` (1 file(s))
 - `using Aspose.Email.AntiSpam;` (1 file(s))
@@ -79,6 +82,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [add-a-custom-x-workflow-id-header-to-trace-the-email-through-different-processing-stages.cs](./add-a-custom-x-workflow-id-header-to-trace-the-email-through-different-processing-stages.cs) | add a custom x workflow id header to trace the email through different processing stages |
 | [add-a-disclaimer-text-as-a-separate-plain-text-alternateview-appended-to-the-existing-email-body.cs](./add-a-disclaimer-text-as-a-separate-plain-text-alternateview-appended-to-the-existing-email-body.cs) | add a disclaimer text as a separate plain text alternateview appended to the existing email body |
 | [add-a-display-name-to-a-recipient-by-creating-a-mailaddress-with-email-and-name.cs](./add-a-display-name-to-a-recipient-by-creating-a-mailaddress-with-email-and-name.cs) | add a display name to a recipient by creating a mailaddress with email and name |
+| [add-a-dkim-signature-header-using-a-private-key-and-include-the-canonicalized-body-hash.cs](./add-a-dkim-signature-header-using-a-private-key-and-include-the-canonicalized-body-hash.cs) | add a dkim signature header using a private key and include the canonicalized body hash |
 | [add-a-file-attachment-by-constructing-an-attachment-from-a-local-path-and-calling-mailmessage-attachments-add.cs](./add-a-file-attachment-by-constructing-an-attachment-from-a-local-path-and-calling-mailmessage-attachments-add.cs) | add a file attachment by constructing an attachment from a local path and calling mailmessage attachments add |
 | [add-a-file-attachment-to-an-msg-email-by-calling-mailmessage-attachments-add-new-attachment-filepath-during-message-composition.cs](./add-a-file-attachment-to-an-msg-email-by-calling-mailmessage-attachments-add-new-attachment-filepath-during-message-composition.cs) | add a file attachment to an msg email by calling mailmessage attachments add new attachment filepath during message composition |
 | [add-a-linked-resource-to-the-first-alternate-view-of-an-msg-email-by-calling-mailmessage-alternateviews-0-linkedresources-add.cs](./add-a-linked-resource-to-the-first-alternate-view-of-an-msg-email-by-calling-mailmessage-alternateviews-0-linkedresources-add.cs) | add a linked resource to the first alternate view of an msg email by calling mailmessage alternateviews 0 linkedresources add |
@@ -116,6 +120,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [apply-a-spam-filter-rule-that-moves-messages-containing-specific-keywords-to-a-quarantine-folder.cs](./apply-a-spam-filter-rule-that-moves-messages-containing-specific-keywords-to-a-quarantine-folder.cs) | apply a spam filter rule that moves messages containing specific keywords to a quarantine folder |
 | [apply-appropriate-content-transfer-encoding-to-each-attachment-based-on-its-size-for-optimal-delivery.cs](./apply-appropriate-content-transfer-encoding-to-each-attachment-based-on-its-size-for-optimal-delivery.cs) | apply appropriate content transfer encoding to each attachment based on its size for optimal delivery |
 | [apply-custom-encoding-to-a-non-ascii-subject-line-using-rfc-2047-standards-for-email-compatibility.cs](./apply-custom-encoding-to-a-non-ascii-subject-line-using-rfc-2047-standards-for-email-compatibility.cs) | apply custom encoding to a non ascii subject line using rfc 2047 standards for email compatibility |
+| [apply-dkim-signing-to-an-email-using-a-private-key-and-domain-selector-for-authentication.cs](./apply-dkim-signing-to-an-email-using-a-private-key-and-domain-selector-for-authentication.cs) | apply dkim signing to an email using a private key and domain selector for authentication |
 | [apply-encryption-to-an-email-message-saved-in-msg-format-ensuring-secure-storage-and-confidentiality.cs](./apply-encryption-to-an-email-message-saved-in-msg-format-ensuring-secure-storage-and-confidentiality.cs) | apply encryption to an email message saved in msg format ensuring secure storage and confidentiality |
 | [apply-mailmessage-encrypt-cert-to-encrypt-a-msg-email-message-using-a-provided-x-509-certificate-for-secure-transmission.cs](./apply-mailmessage-encrypt-cert-to-encrypt-a-msg-email-message-using-a-provided-x-509-certificate-for-secure-transmission.cs) | apply mailmessage encrypt cert to encrypt a msg email message using a provided x 509 certificate for secure transmission |
 | [apply-x509-certificate-based-encryption-to-a-msg-email-message-to-secure-its-contents-before-transmission.cs](./apply-x509-certificate-based-encryption-to-a-msg-email-message-to-secure-its-contents-before-transmission.cs) | apply x509 certificate based encryption to a msg email message to secure its contents before transmission |
@@ -190,6 +195,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [detect-and-decode-base64-encoded-attachments-then-save-each-decoded-file-to-a-specified-output-directory.cs](./detect-and-decode-base64-encoded-attachments-then-save-each-decoded-file-to-a-specified-output-directory.cs) | detect and decode base64 encoded attachments then save each decoded file to a specified output directory |
 | [detect-and-remove-duplicate-attachments-within-a-single-email-keeping-only-the-first-occurrence.cs](./detect-and-remove-duplicate-attachments-within-a-single-email-keeping-only-the-first-occurrence.cs) | detect and remove duplicate attachments within a single email keeping only the first occurrence |
 | [detect-and-remove-malicious-scripts-from-the-html-body-to-protect-recipients-from-xss-attacks.cs](./detect-and-remove-malicious-scripts-from-the-html-body-to-protect-recipients-from-xss-attacks.cs) | detect and remove malicious scripts from the html body to protect recipients from xss attacks |
+| [detect-malformed-multipart-sections-within-a-mime-message-and-log-detailed-error-information.cs](./detect-malformed-multipart-sections-within-a-mime-message-and-log-detailed-error-information.cs) | detect malformed multipart sections within a mime message and log detailed error information |
 | [detect-mismatched-boundary-delimiters-and-automatically-correct-them-to-ensure-proper-multipart-parsing.cs](./detect-mismatched-boundary-delimiters-and-automatically-correct-them-to-ensure-proper-multipart-parsing.cs) | detect mismatched boundary delimiters and automatically correct them to ensure proper multipart parsing |
 | [determine-the-icalendar-version-of-an-appointment-using-the-version-property-after-loading.cs](./determine-the-icalendar-version-of-an-appointment-using-the-version-property-after-loading.cs) | determine the icalendar version of an appointment using the version property after loading |
 | [digitally-sign-an-msg-email-message-using-a-certificate-to-ensure-authenticity-and-integrity.cs](./digitally-sign-an-msg-email-message-using-a-certificate-to-ensure-authenticity-and-integrity.cs) | digitally sign an msg email message using a certificate to ensure authenticity and integrity |
@@ -281,8 +287,10 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [load-email-messages-from-msg-files-into-memory-for-processing-manipulation-and-programmatic-handling.cs](./load-email-messages-from-msg-files-into-memory-for-processing-manipulation-and-programmatic-handling.cs) | load email messages from msg files into memory for processing manipulation and programmatic handling |
 | [load-the-appointment-from-meeting-ics-into-a-msg-email-message-using-the-appointment-load-api-method.cs](./load-the-appointment-from-meeting-ics-into-a-msg-email-message-using-the-appointment-load-api-method.cs) | load the appointment from meeting ics into a msg email message using the appointment load api method |
 | [log-all-header-names-and-values-from-a-mime-message-to-the-console-for-debugging.cs](./log-all-header-names-and-values-from-a-mime-message-to-the-console-for-debugging.cs) | log all header names and values from a mime message to the console for debugging |
+| [log-any-mime-parsing-errors-to-a-file-with-timestamps-for-later-troubleshooting-and-analysis.cs](./log-any-mime-parsing-errors-to-a-file-with-timestamps-for-later-troubleshooting-and-analysis.cs) | log any mime parsing errors to a file with timestamps for later troubleshooting and analysis |
 | [loop-through-the-attachments-collection-and-write-each-attachment-to-a-msg-file-on-disk.cs](./loop-through-the-attachments-collection-and-write-each-attachment-to-a-msg-file-on-disk.cs) | loop through the attachments collection and write each attachment to a msg file on disk |
 | [manipulate-and-retrieve-msg-email-headers-programmatically-enabling-access-to-metadata-such-as-sender-recipients-and-timestamps.cs](./manipulate-and-retrieve-msg-email-headers-programmatically-enabling-access-to-metadata-such-as-sender-recipients-and-timestamps.cs) | manipulate and retrieve msg email headers programmatically enabling access to metadata such as sender recipients and timestamps |
+| [mark-an-attendee-as-accepted-by-setting-the-partstat-property-to-accepted.cs](./mark-an-attendee-as-accepted-by-setting-the-partstat-property-to-accepted.cs) | mark an attendee as accepted by setting the partstat property to accepted |
 | [mark-an-attendee-as-declined-by-updating-the-partstat-property-to-declined.cs](./mark-an-attendee-as-declined-by-updating-the-partstat-property-to-declined.cs) | mark an attendee as declined by updating the partstat property to declined |
 | [mark-the-mime-message-as-read-to-update-its-status-in-the-mailbox-folder.cs](./mark-the-mime-message-as-read-to-update-its-status-in-the-mailbox-folder.cs) | mark the mime message as read to update its status in the mailbox folder |
 | [measure-and-log-the-processing-time-for-encrypting-a-batch-of-messages-to-assess-performance-impact.cs](./measure-and-log-the-processing-time-for-encrypting-a-batch-of-messages-to-assess-performance-impact.cs) | measure and log the processing time for encrypting a batch of messages to assess performance impact |
@@ -404,7 +412,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [write-the-extracted-email-components-to-msg-file-format-ensuring-proper-mime-structure-and-metadata-preservation.cs](./write-the-extracted-email-components-to-msg-file-format-ensuring-proper-mime-structure-and-metadata-preservation.cs) | write the extracted email components to msg file format ensuring proper mime structure and metadata preservation |
 
 ## Category Statistics
-- Total examples: 343
+- Total examples: 348
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -413,5 +421,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-05-20 | `20260519_180010` | [examples/batch-20260519_180010](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260519_180010) |
+| 2026-05-27 | `20260526_173251` | [examples/batch-20260526_173251](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260526_173251) |
 <!-- AUTOGENERATED:END -->

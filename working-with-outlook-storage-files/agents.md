@@ -18,14 +18,14 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (184 file(s))
-- `using System.IO;` (181 file(s))
-- `using Aspose.Email;` (175 file(s))
-- `using Aspose.Email.Storage.Pst;` (161 file(s))
-- `using Aspose.Email.Mapi;` (116 file(s))
-- `using System.Collections.Generic;` (37 file(s))
+- `using System;` (192 file(s))
+- `using System.IO;` (189 file(s))
+- `using Aspose.Email;` (183 file(s))
+- `using Aspose.Email.Storage.Pst;` (169 file(s))
+- `using Aspose.Email.Mapi;` (121 file(s))
+- `using System.Collections.Generic;` (42 file(s))
 - `using Aspose.Email.Calendar;` (15 file(s))
-- `using Aspose.Email.Storage.Olm;` (10 file(s))
+- `using Aspose.Email.Storage.Olm;` (12 file(s))
 - `using System.Text;` (4 file(s))
 - `using System.Threading.Tasks;` (4 file(s))
 - `using System.Linq;` (3 file(s))
@@ -66,6 +66,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [add-multiple-file-attachments-to-a-mapijournal-using-its-attachments-collection-in-a-loop.cs](./add-multiple-file-attachments-to-a-mapijournal-using-its-attachments-collection-in-a-loop.cs) | add multiple file attachments to a mapijournal using its attachments collection in a loop |
 | [apply-a-custom-filter-to-retrieve-only-calendar-items-with-a-specific-category-before-exporting.cs](./apply-a-custom-filter-to-retrieve-only-calendar-items-with-a-specific-category-before-exporting.cs) | apply a custom filter to retrieve only calendar items with a specific category before exporting |
 | [apply-a-custom-retention-policy-to-delete-messages-older-than-a-configurable-number-of-days.cs](./apply-a-custom-retention-policy-to-delete-messages-older-than-a-configurable-number-of-days.cs) | apply a custom retention policy to delete messages older than a configurable number of days |
+| [apply-custom-category-color-mapping-when-converting-olm-to-pst-ensuring-exact-rgb-values-are-transferred.cs](./apply-custom-category-color-mapping-when-converting-olm-to-pst-ensuring-exact-rgb-values-are-transferred.cs) | apply custom category color mapping when converting olm to pst ensuring exact rgb values are transferred |
 | [apply-password-protection-to-the-pst-file-with-strong-encryption-algorithm-for-enhanced-security.cs](./apply-password-protection-to-the-pst-file-with-strong-encryption-algorithm-for-enhanced-security.cs) | apply password protection to the pst file with strong encryption algorithm for enhanced security |
 | [batch-add-fifty-mapitask-objects-with-incremental-due-dates-to-the-tasks-folder-in-a-single-transaction.cs](./batch-add-fifty-mapitask-objects-with-incremental-due-dates-to-the-tasks-folder-in-a-single-transaction.cs) | batch add fifty mapitask objects with incremental due dates to the tasks folder in a single transaction |
 | [batch-convert-all-olm-files-in-a-directory-to-pst-naming-each-output-file-after-its-source.cs](./batch-convert-all-olm-files-in-a-directory-to-pst-naming-each-output-file-after-its-source.cs) | batch convert all olm files in a directory to pst naming each output file after its source |
@@ -103,6 +104,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [create-manipulate-and-maintain-outlook-pst-storage-files-efficiently-programmatically-using-the-pst-format.cs](./create-manipulate-and-maintain-outlook-pst-storage-files-efficiently-programmatically-using-the-pst-format.cs) | create manipulate and maintain outlook pst storage files efficiently programmatically using the pst format |
 | [create-predefined-calendar-tasks-journals-and-notes-folders-at-the-pst-root-and-confirm-their-creation.cs](./create-predefined-calendar-tasks-journals-and-notes-folders-at-the-pst-root-and-confirm-their-creation.cs) | create predefined calendar tasks journals and notes folders at the pst root and confirm their creation |
 | [create-sub-folders-within-an-outlook-pst-storage-file-by-programmatically-manipulating-its-pst-format-structure.cs](./create-sub-folders-within-an-outlook-pst-storage-file-by-programmatically-manipulating-its-pst-format-structure.cs) | create sub folders within an outlook pst storage file by programmatically manipulating its pst format structure |
+| [delete-the-entire-journals-folder-from-a-pst-and-verify-that-no-journal-items-remain.cs](./delete-the-entire-journals-folder-from-a-pst-and-verify-that-no-journal-items-remain.cs) | delete the entire journals folder from a pst and verify that no journal items remain |
 | [detect-and-flag-encrypted-attachments-within-pst-messages-for-further-manual-review.cs](./detect-and-flag-encrypted-attachments-within-pst-messages-for-further-manual-review.cs) | detect and flag encrypted attachments within pst messages for further manual review |
 | [detect-password-protection-on-multiple-pst-files-in-a-directory-and-generate-a-summary-report.cs](./detect-password-protection-on-multiple-pst-files-in-a-directory-and-generate-a-summary-report.cs) | detect password protection on multiple pst files in a directory and generate a summary report |
 | [detect-standard-ipm-folders-and-skip-them-during-custom-processing.cs](./detect-standard-ipm-folders-and-skip-them-during-custom-processing.cs) | detect standard ipm folders and skip them during custom processing |
@@ -143,6 +145,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [filter-messages-by-a-specific-category-name-using-personalstoragequerybuilder-criteria.cs](./filter-messages-by-a-specific-category-name-using-personalstoragequerybuilder-criteria.cs) | filter messages by a specific category name using personalstoragequerybuilder criteria |
 | [filter-messages-by-sender-domain-copy-matching-items-to-a-new-ost-file-and-preserve-original-timestamps.cs](./filter-messages-by-sender-domain-copy-matching-items-to-a-new-ost-file-and-preserve-original-timestamps.cs) | filter messages by sender domain copy matching items to a new ost file and preserve original timestamps |
 | [filter-messages-containing-attachments-with-specific-file-extensions-and-move-those-messages-to-a-designated-folder.cs](./filter-messages-containing-attachments-with-specific-file-extensions-and-move-those-messages-to-a-designated-folder.cs) | filter messages containing attachments with specific file extensions and move those messages to a designated folder |
+| [filter-pst-messages-by-sender-domain-and-move-matching-items-to-a-designated-folder.cs](./filter-pst-messages-by-sender-domain-and-move-matching-items-to-a-designated-folder.cs) | filter pst messages by sender domain and move matching items to a designated folder |
 | [generate-a-csv-listing-attachment-names-sizes-and-originating-message-ids-for-all-items-in-a-pst.cs](./generate-a-csv-listing-attachment-names-sizes-and-originating-message-ids-for-all-items-in-a-pst.cs) | generate a csv listing attachment names sizes and originating message ids for all items in a pst |
 | [generate-a-csv-summary-of-all-emails-in-the-pst-including-subject-sender-and-size.cs](./generate-a-csv-summary-of-all-emails-in-the-pst-including-subject-sender-and-size.cs) | generate a csv summary of all emails in the pst including subject sender and size |
 | [generate-a-json-representation-of-email-metadata-including-subject-sender-and-timestamps-for-web-service-integration.cs](./generate-a-json-representation-of-email-metadata-including-subject-sender-and-timestamps-for-web-service-integration.cs) | generate a json representation of email metadata including subject sender and timestamps for web service integration |
@@ -158,6 +161,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [implement-outlook-storage-handling-to-receive-update-notifications-about-pst-password-protection-using-pst-files.cs](./implement-outlook-storage-handling-to-receive-update-notifications-about-pst-password-protection-using-pst-files.cs) | implement outlook storage handling to receive update notifications about pst password protection using pst files |
 | [implement-pst-password-protection-handling-for-outlook-storage-files-using-the-pst-file-format.cs](./implement-pst-password-protection-handling-for-outlook-storage-files-using-the-pst-file-format.cs) | implement pst password protection handling for outlook storage files using the pst file format |
 | [import-a-collection-of-msg-files-into-the-pst-preserving-original-timestamps-and-sender-information.cs](./import-a-collection-of-msg-files-into-the-pst-preserving-original-timestamps-and-sender-information.cs) | import a collection of msg files into the pst preserving original timestamps and sender information |
+| [include-search-folders-during-pst-traversal-by-enabling-the-includesearchfolders-flag.cs](./include-search-folders-during-pst-traversal-by-enabling-the-includesearchfolders-flag.cs) | include search folders during pst traversal by enabling the includesearchfolders flag |
 | [insert-email-messages-from-a-specified-folder-into-an-existing-pst-storage-file-using-the-pst-format.cs](./insert-email-messages-from-a-specified-folder-into-an-existing-pst-storage-file-using-the-pst-format.cs) | insert email messages from a specified folder into an existing pst storage file using the pst format |
 | [insert-mapi-calendar-items-into-a-pst-file-using-outlook-storage-file-handling-in-pst-format.cs](./insert-mapi-calendar-items-into-a-pst-file-using-outlook-storage-file-handling-in-pst-format.cs) | insert mapi calendar items into a pst file using outlook storage file handling in pst format |
 | [instantiate-a-mapicalendar-object-set-subject-and-start-time-then-add-it-to-the-calendar-folder.cs](./instantiate-a-mapicalendar-object-set-subject-and-start-time-then-add-it-to-the-calendar-folder.cs) | instantiate a mapicalendar object set subject and start time then add it to the calendar folder |
@@ -194,10 +198,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [process-a-large-pst-using-streaming-mode-to-avoid-memory-overflow-while-extracting-messages.cs](./process-a-large-pst-using-streaming-mode-to-avoid-memory-overflow-while-extracting-messages.cs) | process a large pst using streaming mode to avoid memory overflow while extracting messages |
 | [process-a-pst-larger-than-two-gigabytes-using-stream-based-loading-to-minimize-memory-consumption-during-extraction.cs](./process-a-pst-larger-than-two-gigabytes-using-stream-based-loading-to-minimize-memory-consumption-during-extraction.cs) | process a pst larger than two gigabytes using stream based loading to minimize memory consumption during extraction |
 | [programmatically-delete-specific-email-messages-from-outlook-pst-storage-files-using-the-pst-format.cs](./programmatically-delete-specific-email-messages-from-outlook-pst-storage-files-using-the-pst-format.cs) | programmatically delete specific email messages from outlook pst storage files using the pst format |
+| [programmatically-set-the-importance-flag-of-high-priority-emails-in-the-pst-based-on-keywords.cs](./programmatically-set-the-importance-flag-of-high-priority-emails-in-the-pst-based-on-keywords.cs) | programmatically set the importance flag of high priority emails in the pst based on keywords |
 | [read-an-olm-file-via-olmstorage-fromfile-extract-attachment-names-and-save-to-a-csv-report.cs](./read-an-olm-file-via-olmstorage-fromfile-extract-attachment-names-and-save-to-a-csv-report.cs) | read an olm file via olmstorage fromfile extract attachment names and save to a csv report |
 | [read-distribution-lists-from-pst-outlook-storage-files-programmatically-using-the-pst-file-format.cs](./read-distribution-lists-from-pst-outlook-storage-files-programmatically-using-the-pst-file-format.cs) | read distribution lists from pst outlook storage files programmatically using the pst file format |
 | [read-password-protected-pst-files-from-outlook-storage-using-the-pst-format-handling-capabilities-and-retrieve-mailbox-items.cs](./read-password-protected-pst-files-from-outlook-storage-using-the-pst-format-handling-capabilities-and-retrieve-mailbox-items.cs) | read password protected pst files from outlook storage using the pst format handling capabilities and retrieve mailbox items |
+| [read-the-conversation-thread-id-of-each-email-in-the-pst-and-group-them-accordingly.cs](./read-the-conversation-thread-id-of-each-email-in-the-pst-and-group-them-accordingly.cs) | read the conversation thread id of each email in the pst and group them accordingly |
 | [remove-specified-folders-from-pst-storage-files-programmatically-using-the-pst-file-format-capabilities.cs](./remove-specified-folders-from-pst-storage-files-programmatically-using-the-pst-file-format-capabilities.cs) | remove specified folders from pst storage files programmatically using the pst file format capabilities |
+| [remove-the-password-from-a-protected-pst-file-making-it-accessible-without-authentication.cs](./remove-the-password-from-a-protected-pst-file-making-it-accessible-without-authentication.cs) | remove the password from a protected pst file making it accessible without authentication |
 | [replace-inline-images-in-pst-messages-with-external-references-while-preserving-the-html-body-structure.cs](./replace-inline-images-in-pst-messages-with-external-references-while-preserving-the-html-body-structure.cs) | replace inline images in pst messages with external references while preserving the html body structure |
 | [retrieve-and-log-the-size-of-each-attachment-before-extraction-storing-the-information-in-a-summary-report.cs](./retrieve-and-log-the-size-of-each-attachment-before-extraction-storing-the-information-in-a-summary-report.cs) | retrieve and log the size of each attachment before extraction storing the information in a summary report |
 | [retrieve-category-colors-associated-with-each-message-and-map-them-to-their-respective-categories.cs](./retrieve-category-colors-associated-with-each-message-and-map-them-to-their-respective-categories.cs) | retrieve category colors associated with each message and map them to their respective categories |
@@ -219,6 +226,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [subscribe-to-calendar-management-updates-by-processing-outlook-pst-storage-files-using-the-pst-format.cs](./subscribe-to-calendar-management-updates-by-processing-outlook-pst-storage-files-using-the-pst-format.cs) | subscribe to calendar management updates by processing outlook pst storage files using the pst format |
 | [subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-files-in-pst-format.cs](./subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-files-in-pst-format.cs) | subscribe to updates for pst file operations while handling outlook storage files in pst format |
 | [synchronize-messages-between-an-ost-file-and-a-pst-ensuring-no-duplicate-items-are-created.cs](./synchronize-messages-between-an-ost-file-and-a-pst-ensuring-no-duplicate-items-are-created.cs) | synchronize messages between an ost file and a pst ensuring no duplicate items are created |
+| [transfer-category-colors-from-an-olm-file-to-a-pst-preserving-exact-rgb-values-during-conversion.cs](./transfer-category-colors-from-an-olm-file-to-a-pst-preserving-exact-rgb-values-during-conversion.cs) | transfer category colors from an olm file to a pst preserving exact rgb values during conversion |
 | [transfer-email-items-between-folders-inside-a-pst-storage-file-using-the-pst-format-api.cs](./transfer-email-items-between-folders-inside-a-pst-storage-file-using-the-pst-format-api.cs) | transfer email items between folders inside a pst storage file using the pst format api |
 | [update-message-properties-within-pst-storage-files-by-accessing-outlook-data-using-the-pst-file-format.cs](./update-message-properties-within-pst-storage-files-by-accessing-outlook-data-using-the-pst-file-format.cs) | update message properties within pst storage files by accessing outlook data using the pst file format |
 | [update-the-read-unread-flag-of-selected-emails-in-the-pst-based-on-custom-criteria.cs](./update-the-read-unread-flag-of-selected-emails-in-the-pst-based-on-custom-criteria.cs) | update the read unread flag of selected emails in the pst based on custom criteria |
@@ -238,7 +246,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [validate-the-password-of-an-outlook-pst-file-programmatically-by-accessing-its-storage-structure.cs](./validate-the-password-of-an-outlook-pst-file-programmatically-by-accessing-its-storage-structure.cs) | validate the password of an outlook pst file programmatically by accessing its storage structure |
 
 ## Category Statistics
-- Total examples: 184
+- Total examples: 192
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -247,5 +255,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-05-20 | `20260519_180010` | [examples/batch-20260519_180010](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260519_180010) |
+| 2026-05-27 | `20260526_173251` | [examples/batch-20260526_173251](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260526_173251) |
 <!-- AUTOGENERATED:END -->

@@ -18,17 +18,17 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (44 file(s))
-- `using Aspose.Email;` (44 file(s))
-- `using System.IO;` (36 file(s))
-- `using Aspose.Email.Amp;` (34 file(s))
+- `using System;` (46 file(s))
+- `using Aspose.Email;` (46 file(s))
+- `using System.IO;` (38 file(s))
+- `using Aspose.Email.Amp;` (36 file(s))
+- `using System.Collections.Generic;` (5 file(s))
 - `using Aspose.Email.Clients.Smtp;` (5 file(s))
-- `using System.Collections.Generic;` (4 file(s))
 - `using Aspose.Email.Mapi;` (4 file(s))
 - `using Aspose.Email.Clients;` (3 file(s))
+- `using Aspose.Email.Tools.Verifications;` (3 file(s))
 - `using System.Text.RegularExpressions;` (2 file(s))
 - `using System.Text;` (2 file(s))
-- `using Aspose.Email.Tools.Verifications;` (2 file(s))
 - `using System.Reflection;` (2 file(s))
 - `using Aspose.Email.Clients.Smtp.Models;` (1 file(s))
 - `using System.Net.Mime;` (1 file(s))
@@ -47,6 +47,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [combine-ampimage-ampcarousel-ampaccordion-and-ampform-components-within-a-single-ampmessage-to-create-mixed-content.cs](./combine-ampimage-ampcarousel-ampaccordion-and-ampform-components-within-a-single-ampmessage-to-create-mixed-content.cs) | combine ampimage ampcarousel ampaccordion and ampform components within a single ampmessage to create mixed content |
 | [configure-the-smtp-client-with-authentication-credentials-before-sending-the-amp-email.cs](./configure-the-smtp-client-with-authentication-credentials-before-sending-the-amp-email.cs) | configure the smtp client with authentication credentials before sending the amp email |
 | [create-a-second-ampmessage-add-an-ampimage-component-and-serialize-it-to-a-string.cs](./create-a-second-ampmessage-add-an-ampimage-component-and-serialize-it-to-a-string.cs) | create a second ampmessage add an ampimage component and serialize it to a string |
+| [create-an-ampaccordion-component-with-two-sections-define-header-titles-and-html-content-and-embed-it-in-email.cs](./create-an-ampaccordion-component-with-two-sections-define-header-titles-and-html-content-and-embed-it-in-email.cs) | create an ampaccordion component with two sections define header titles and html content and embed it in email |
 | [create-an-ampimage-component-specify-source-url-alt-text-and-dimensions-then-add-it-to-the-message.cs](./create-an-ampimage-component-specify-source-url-alt-text-and-dimensions-then-add-it-to-the-message.cs) | create an ampimage component specify source url alt text and dimensions then add it to the message |
 | [delete-an-ampaccordion-section-from-the-message-to-test-component-removal.cs](./delete-an-ampaccordion-section-from-the-message-to-test-component-removal.cs) | delete an ampaccordion section from the message to test component removal |
 | [during-msg-file-parsing-examine-each-alternateview-for-mime-type-text-x-amp-html-to-extract-the-amp-content.cs](./during-msg-file-parsing-examine-each-alternateview-for-mime-type-text-x-amp-html-to-extract-the-amp-content.cs) | during msg file parsing examine each alternateview for mime type text x amp html to extract the amp content |
@@ -82,10 +83,11 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [update-the-source-url-and-dimensions-of-an-existing-ampimage-component-inside-the-loaded-ampmessage.cs](./update-the-source-url-and-dimensions-of-an-existing-ampimage-component-inside-the-loaded-ampmessage.cs) | update the source url and dimensions of an existing ampimage component inside the loaded ampmessage |
 | [update-the-subject-line-of-the-loaded-ampmessage-to-reflect-a-new-campaign.cs](./update-the-subject-line-of-the-loaded-ampmessage-to-reflect-a-new-campaign.cs) | update the subject line of the loaded ampmessage to reflect a new campaign |
 | [utilize-smtpclient-to-transmit-an-email-message-saved-in-msg-format-via-the-configured-smtp-server.cs](./utilize-smtpclient-to-transmit-an-email-message-saved-in-msg-format-via-the-configured-smtp-server.cs) | utilize smtpclient to transmit an email message saved in msg format via the configured smtp server |
+| [validate-the-amp-email-again-after-sending-to-ensure-no-structural-changes-occurred.cs](./validate-the-amp-email-again-after-sending-to-ensure-no-structural-changes-occurred.cs) | validate the amp email again after sending to ensure no structural changes occurred |
 | [validate-the-amp-email-structure-against-the-official-amp-specification-and-capture-any-validation-errors.cs](./validate-the-amp-email-structure-against-the-official-amp-specification-and-capture-any-validation-errors.cs) | validate the amp email structure against the official amp specification and capture any validation errors |
 
 ## Category Statistics
-- Total examples: 44
+- Total examples: 46
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -94,5 +96,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-05-20 | `20260519_180010` | [examples/batch-20260519_180010](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260519_180010) |
+| 2026-05-27 | `20260526_173251` | [examples/batch-20260526_173251](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260526_173251) |
 <!-- AUTOGENERATED:END -->

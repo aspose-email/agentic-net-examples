@@ -3,9 +3,9 @@
   "platform": "net",
   "framework": "net8.0",
   "package_version": "26.1.0",
-  "total_examples": 2917,
+  "total_examples": 3166,
   "total_categories": 17,
-  "last_updated": "2026-05-20",
+  "last_updated": "2026-05-27",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -241,7 +241,7 @@
     },
     {
       "name": "convert-thunderbird-mbox-files",
-      "file_count": 182,
+      "file_count": 189,
       "files": [
         "add-a-feature-to-embed-a-custom-comment-in-the-pst-file-properties-for-identification.cs",
         "add-a-feature-to-encrypt-the-resulting-pst-file-using-a-user-provided-password.cs",
@@ -255,10 +255,12 @@
         "add-support-for-logging-split-progress-to-a-csv-file-for-external-monitoring-tools.cs",
         "add-support-for-preserving-calendar-items-embedded-in-email-messages-during-pst-conversion.cs",
         "add-support-for-preserving-custom-x-mail-headers-by-copying-them-into-pst-message-properties.cs",
+        "add-support-for-preserving-email-priority-flags-as-pst-message-importance-levels.cs",
         "add-support-for-preserving-mime-boundary-information-as-custom-metadata-in-pst-messages.cs",
         "add-support-for-preserving-read-receipt-requests-as-custom-properties-in-the-pst-messages.cs",
         "add-unit-tests-for-conversion-options-that-enable-or-disable-attachment-compression.cs",
         "add-unit-tests-for-conversion-options-that-toggle-signature-removal-on-and-off.cs",
+        "add-unit-tests-that-ensure-conversion-respects-the-specified-batch-size-configuration.cs",
         "add-unit-tests-that-verify-correct-handling-of-messages-with-missing-subject-headers.cs",
         "allow-users-to-specify-a-custom-pst-file-password-during-creation-for-added-security.cs",
         "apply-a-custom-filter-to-exclude-messages-older-than-a-specific-date-before-pst-conversion.cs",
@@ -267,6 +269,7 @@
         "apply-a-mailquery-to-filter-messages-sent-after-a-given-date.cs",
         "benchmark-conversion-speed-when-using-ssd-storage-versus-traditional-hdd-for-pst-output.cs",
         "benchmark-memory-usage-when-converting-large-mbox-archives-with-and-without-batch-processing.cs",
+        "benchmark-synchronous-versus-asynchronous-splitting-on-identical-mbox-files-to-compare-execution-times.cs",
         "call-the-asynchronous-splitinto-overload-within-an-async-method-and-await-its-completion.cs",
         "choose-the-appropriate-splitinto-overload-based-on-net-version-and-cancellation-token-requirements.cs",
         "close-the-mboxrdstoragereader-to-release-file-handles-after-processing-completes.cs",
@@ -298,6 +301,7 @@
         "create-a-powershell-script-that-calls-the-net-library-to-split-mbox-files-in-batch-mode.cs",
         "create-a-powershell-script-that-invokes-the-net-conversion-library-with-specified-parameters.cs",
         "create-a-progress-report-listing-each-part-file-name-size-and-creation-timestamp-after-splitting.cs",
+        "create-a-reusable-method-that-accepts-a-mailquery-and-returns-matching-mboxmessageinfo-list.cs",
         "create-a-sample-console-application-demonstrating-end-to-end-mbox-to-pst-conversion-with-configurable-options.cs",
         "create-a-sample-script-that-automates-batch-conversion-of-all-mbox-files-in-a-given-directory.cs",
         "create-a-scheduled-azure-function-that-processes-incoming-mbox-blobs-and-stores-pst-results-in-blob-storage.cs",
@@ -320,6 +324,7 @@
         "export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs",
         "expose-a-rest-api-endpoint-that-accepts-an-uploaded-mbox-file-and-returns-the-generated-pst-stream.cs",
         "expose-an-api-endpoint-that-triggers-asynchronous-mbox-splitting-with-optional-cancellation-token.cs",
+        "expose-configuration-via-appsettings-json-to-allow-runtime-adjustment-of-batch-size-and-signature-removal.cs",
         "extract-a-single-message-by-its-entryid-using-extractmessage-method.cs",
         "extract-and-preserve-email-headers-such-as-from-to-and-date-when-transferring-to-pst.cs",
         "extract-messages-with-specific-priority-level-and-store-their-bodies-in-separate-text-files.cs",
@@ -392,12 +397,14 @@
         "provide-a-configuration-flag-to-disable-automatic-creation-of-pst-subfolders-during-conversion.cs",
         "provide-a-powershell-cmdlet-that-wraps-the-conversion-library-and-returns-the-pst-file-path.cs",
         "provide-a-sample-configuration-json-that-demonstrates-setting-batch-size-signature-removal-and-output-path.cs",
+        "provide-an-option-to-compress-attachments-within-pst-to-reduce-overall-file-size.cs",
         "provide-an-option-to-embed-original-mbox-file-metadata-as-custom-properties-within-pst-messages.cs",
         "provide-an-option-to-exclude-messages-with-empty-bodies-from-pst-during-conversion.cs",
         "provide-an-option-to-skip-messages-that-exceed-a-maximum-size-threshold-during-conversion.cs",
         "provide-documentation-examples-showing-how-to-convert-encrypted-mbox-files-with-password-protection.cs",
         "read-mbox-messages-in-chunks-of-2000-items-to-avoid-excessive-memory-consumption.cs",
         "remove-digital-signatures-from-messages-by-setting-removesignature-flag-ensuring-clean-pst-content.cs",
+        "retrieve-total-message-count-with-getmessagecount-method-for-the-loaded-mbox-file.cs",
         "save-changes-to-the-pst-file-after-processing-a-batch-of-one-thousand-messages-to-manage-memory.cs",
         "schedule-a-background-task-that-monitors-a-directory-and-processes-new-mbox-files-nightly.cs",
         "schedule-automatic-mbox-splitting-using-windows-task-scheduler-to-run-during-off-peak-hours.cs",
@@ -429,59 +436,63 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 182
+          "count": 189
         },
         {
           "name": "Aspose.Email",
-          "count": 175
+          "count": 182
         },
         {
           "name": "System.IO",
-          "count": 174
+          "count": 181
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 114
+          "count": 117
         },
         {
           "name": "Aspose.Email.Storage",
-          "count": 75
+          "count": 77
         },
         {
           "name": "Aspose.Email.Storage.Mbox",
-          "count": 62
+          "count": 66
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 44
+          "count": 46
+        },
+        {
+          "name": "System.Threading",
+          "count": 20
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 20
         },
         {
           "name": "System.Text",
           "count": 19
         },
         {
-          "name": "System.Threading",
-          "count": 19
-        },
-        {
-          "name": "System.Collections.Generic",
-          "count": 17
-        },
-        {
           "name": "System.Threading.Tasks",
-          "count": 12
+          "count": 13
         },
         {
           "name": "System.Diagnostics",
-          "count": 11
+          "count": 12
         },
         {
           "name": "System.Text.Json",
-          "count": 5
+          "count": 6
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 4
+          "count": 5
+        },
+        {
+          "name": "System.Linq",
+          "count": 3
         },
         {
           "name": "Aspose.Email.Clients.Imap",
@@ -500,7 +511,7 @@
           "count": 2
         },
         {
-          "name": "System.Linq",
+          "name": "System.IO.Compression",
           "count": 2
         },
         {
@@ -520,10 +531,6 @@
           "count": 1
         },
         {
-          "name": "System.IO.Compression",
-          "count": 1
-        },
-        {
           "name": "Aspose.Email.Mime",
           "count": 1
         },
@@ -540,8 +547,9 @@
     },
     {
       "name": "programming-email-verification",
-      "file_count": 40,
+      "file_count": 42,
       "files": [
+        "add-command-line-arguments-to-specify-input-file-path-and-output-log-location-for-batch-verification.cs",
         "add-support-for-validating-internationalized-email-addresses-using-unicode-domain-handling-in-emailvalidator.cs",
         "configure-emailvalidator-timeout-settings-to-limit-mail-server-connection-attempts-to-five-seconds.cs",
         "configure-emailvalidator-to-use-a-custom-dns-server-for-domain-verification-in-restricted-networks.cs",
@@ -568,6 +576,7 @@
         "integrate-email-address-validation-into-an-asp-net-core-web-api-endpoint-returning-json-response.cs",
         "integrate-email-verification-into-a-background-worker-service-that-processes-user-registration-queues.cs",
         "log-validation-results-to-a-csv-file-including-email-address-boolean-status-and-timestamp.cs",
+        "use-dependency-injection-to-provide-emailvalidator-instance-to-services-in-an-asp-net-core-application.cs",
         "validate-a-domain-name-s-existence-and-format-using-the-net-verifications-component-s-validation-method.cs",
         "validate-a-mail-server-s-configuration-authentication-and-connectivity-using-the-verifications-library-to-ensure-reliability.cs",
         "validate-an-email-address-by-establishing-a-connection-to-the-mail-server-and-performing-mailserver-verification.cs",
@@ -586,23 +595,23 @@
       "required_namespaces": [
         {
           "name": "System",
+          "count": 42
+        },
+        {
+          "name": "Aspose.Email",
           "count": 40
         },
         {
           "name": "Aspose.Email.Tools.Verifications",
-          "count": 39
-        },
-        {
-          "name": "Aspose.Email",
-          "count": 38
+          "count": 40
         },
         {
           "name": "System.Collections.Generic",
-          "count": 10
+          "count": 11
         },
         {
           "name": "System.IO",
-          "count": 8
+          "count": 9
         },
         {
           "name": "System.Text.Json",
@@ -611,6 +620,10 @@
         {
           "name": "Aspose.Email.Clients.Smtp",
           "count": 2
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 1
         },
         {
           "name": "System.Net",
@@ -637,7 +650,7 @@
     },
     {
       "name": "programming-with-gmail",
-      "file_count": 142,
+      "file_count": 154,
       "files": [
         "access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs",
         "add-a-custom-label-to-all-gmail-messages-received-from-a-specific-domain-using-igmailclient.cs",
@@ -649,6 +662,7 @@
         "authenticate-to-gmail-smtp-using-oauth2-and-send-a-plain-text-email-to-multiple-recipients.cs",
         "authenticate-with-oauth2-refresh-token-and-send-a-calendar-invitation-email-via-gmail-smtp-with-icalendar-attachment.cs",
         "batch-delete-gmail-messages-older-than-one-year-using-imap-and-verify-removal-through-folder-count.cs",
+        "batch-update-google-contacts-organization-fields-based-on-data-from-an-external-json-configuration-file.cs",
         "batch-update-labels-of-multiple-gmail-messages-by-adding-a-reviewed-tag-using-igmailclient.cs",
         "cache-calendar-ids-locally-to-reduce-api-calls-during-frequent-appointment-lookups.cs",
         "capture-the-user-s-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs",
@@ -662,12 +676,16 @@
         "convert-gmail-message-plain-text-bodies-to-utf-8-encoding-and-save-the-converted-files.cs",
         "copy-a-batch-of-messages-from-the-inbox-to-the-archive-folder-using-imapclient-while-preserving-flags.cs",
         "create-a-custom-mime-email-with-multipart-alternative-sections-for-html-and-plain-text-then-send-via-gmail.cs",
+        "create-a-diagnostic-log-entry-each-time-igmailclient-method-throws-an-exception-including-method-name-and-error-code.cs",
         "create-a-draft-gmail-message-add-custom-headers-and-save-it-using-the-api.cs",
+        "create-a-gmail-filter-programmatically-to-automatically-archive-promotional-emails-older-than-thirty-days.cs",
+        "create-a-google-contact-group-add-multiple-contacts-and-assign-a-custom-color-label.cs",
         "create-a-google-contact-with-name-email-and-organization-fields-using-the-api.cs",
         "create-a-nested-folder-structure-projects-2024-alpha-in-gmail-using-imapclient-and-verify-existence.cs",
         "create-a-new-calendar-with-specified-summary-and-time-zone-via-igmailclient-createcalendar.cs",
         "create-a-new-gmail-label-named-projectx-using-imap-and-move-matching-inbox-messages.cs",
         "create-a-new-google-contact-with-name-email-and-organization-fields-using-the-api.cs",
+        "create-an-appointment-with-title-start-and-end-times-in-a-chosen-calendar-via-igmailclient-createappointment.cs",
         "create-and-insert-calendar-events-into-a-google-calendar-account-using-the-appropriate-api-calls.cs",
         "create-and-manipulate-outlook-items-convert-ics-files-to-msg-handle-outlook-storage-files-and-process-smtp-communication.cs",
         "create-and-manipulate-outlook-items-converting-ics-calendar-files-to-msg-email-format-programmatically.cs",
@@ -676,9 +694,13 @@
         "create-update-retrieve-and-delete-google-calendar-appointments-programmatically-using-the-provided-api-endpoints.cs",
         "delete-a-calendar-permanently-by-providing-its-identifier-to-igmailclient-deletecalendar.cs",
         "delete-a-specific-gmail-message-by-id-using-igmailclient-from-the-mailbox.cs",
+        "delete-all-gmail-messages-older-than-30-days-using-igmailclient-batch-delete-operation.cs",
+        "delete-google-contacts-by-email-address-after-confirming-existence-in-the-contact-list.cs",
+        "delete-specific-google-contacts-by-their-email-address-after-confirming-their-existence-in-the-contact-list.cs",
         "deserialize-encrypted-json-back-into-a-googleuser-object-to-re-establish-authenticated-session.cs",
         "detect-and-resolve-conflicting-appointments-by-checking-overlapping-time-ranges-before-creation.cs",
         "develop-programmatic-integrations-with-thunderbird-using-its-apis-for-email-composition-retrieval-and-management.cs",
+        "download-all-attachments-from-gmail-messages-matching-a-specific-subject-line-and-save-them-to-azure-blob-storage.cs",
         "download-all-unread-gmail-messages-mark-them-as-read-and-store-attachments-in-a-local-directory.cs",
         "exchange-authorization-code-for-access-and-refresh-tokens-via-googleoauthhelper-token-request.cs",
         "exchange-the-provided-authorization-code-for-a-refresh-token-using-the-oauth2-authentication-endpoint.cs",
@@ -713,6 +735,7 @@
         "implement-pagination-when-listing-calendars-using-igmailclient-listcalendars-with-page-token.cs",
         "implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs",
         "implement-secure-google-oauth-2-0-authentication-flow-ensuring-token-handling-and-data-transmission-meet-industry-standards.cs",
+        "implement-token-refresh-logic-to-maintain-continuous-oauth-2-0-authentication-for-long-running-gmail-operations.cs",
         "initialize-a-new-cloud-console-project-by-configuring-the-required-settings-and-enabling-necessary-apis.cs",
         "initialize-igmailclient-with-authenticated-googleuser-to-access-gmail-calendar-apis.cs",
         "list-access-control-rules-for-a-specific-calendar-using-igmailclient-listaccessrules.cs",
@@ -766,6 +789,7 @@
         "send-an-email-with-a-pdf-and-an-image-attachment-through-gmail-smtp-using-starttls.cs",
         "send-an-email-with-embedded-inline-images-using-cid-references-through-gmail-smtp-service.cs",
         "send-an-email-with-multiple-attachments-including-pdf-and-image-files-through-gmail-smtp-server.cs",
+        "serialize-googleuser-credentials-to-encrypted-json-for-secure-storage-and-later-deserialization.cs",
         "set-default-reminder-settings-for-a-calendar-via-igmailclient-updatecalendar-defaultreminders-collection.cs",
         "set-up-oauth-2-0-authentication-to-authorize-api-calls-to-google-services-within-your-net-application.cs",
         "specify-load-options-to-control-how-messages-are-read-from-an-mbox-file-during-the-import-process.cs",
@@ -773,6 +797,7 @@
         "synchronize-deleted-gmail-messages-with-a-local-archive-by-moving-them-to-a-deleted-folder-before-removal.cs",
         "synchronize-google-contacts-with-an-internal-crm-system-by-comparing-email-fields-and-updating-differences.cs",
         "transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs",
+        "update-an-existing-appointment-location-or-details-using-igmailclient-updateappointment-method.cs",
         "update-an-existing-calendar-description-or-color-using-igmailclient-updatecalendar-method.cs",
         "update-gmail-client-settings-such-as-default-time-format-using-igmailclient-updateclientsettings.cs",
         "update-google-contact-phone-number-identified-by-its-unique-resource-identifier.cs",
@@ -785,35 +810,39 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 142
+          "count": 154
         },
         {
           "name": "Aspose.Email",
-          "count": 138
+          "count": 150
         },
         {
           "name": "Aspose.Email.Clients.Google",
-          "count": 100
+          "count": 109
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 52
+          "count": 54
         },
         {
           "name": "System.IO",
-          "count": 40
+          "count": 43
         },
         {
           "name": "System.Collections.Generic",
-          "count": 36
+          "count": 41
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 20
+          "count": 22
         },
         {
           "name": "Aspose.Email.Clients.Imap",
           "count": 16
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
+          "count": 13
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
@@ -821,10 +850,6 @@
         },
         {
           "name": "Aspose.Email.Storage.Mbox",
-          "count": 9
-        },
-        {
-          "name": "Aspose.Email.PersonalInfo",
           "count": 9
         },
         {
@@ -837,26 +862,30 @@
         },
         {
           "name": "System.Text",
-          "count": 6
+          "count": 7
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 5
         },
         {
           "name": "Aspose.Email.Mapi",
           "count": 5
         },
         {
+          "name": "System.Text.Json",
+          "count": 4
+        },
+        {
+          "name": "System.Net",
+          "count": 4
+        },
+        {
           "name": "System.Threading",
           "count": 4
         },
         {
-          "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 3
-        },
-        {
           "name": "Aspose.Email.Clients.Imap.Models",
-          "count": 3
-        },
-        {
-          "name": "System.Net",
           "count": 3
         },
         {
@@ -872,7 +901,7 @@
           "count": 3
         },
         {
-          "name": "System.Text.Json",
+          "name": "Aspose.Email.Clients.Exchange",
           "count": 2
         },
         {
@@ -896,6 +925,10 @@
           "count": 1
         },
         {
+          "name": "Aspose.Email.Clients.Graph",
+          "count": 1
+        },
+        {
           "name": "System.Xml",
           "count": 1
         },
@@ -909,6 +942,10 @@
         },
         {
           "name": "System.Diagnostics",
+          "count": 1
+        },
+        {
+          "name": "System.Security.Cryptography",
           "count": 1
         },
         {
@@ -1031,7 +1068,7 @@
     },
     {
       "name": "working-with-amp-html-emails",
-      "file_count": 44,
+      "file_count": 46,
       "files": [
         "add-a-new-ampform-component-with-additional-input-fields-to-the-loaded-message.cs",
         "add-a-second-ampimage-component-with-a-different-source-url-to-demonstrate-multiple-images.cs",
@@ -1041,6 +1078,7 @@
         "combine-ampimage-ampcarousel-ampaccordion-and-ampform-components-within-a-single-ampmessage-to-create-mixed-content.cs",
         "configure-the-smtp-client-with-authentication-credentials-before-sending-the-amp-email.cs",
         "create-a-second-ampmessage-add-an-ampimage-component-and-serialize-it-to-a-string.cs",
+        "create-an-ampaccordion-component-with-two-sections-define-header-titles-and-html-content-and-embed-it-in-email.cs",
         "create-an-ampimage-component-specify-source-url-alt-text-and-dimensions-then-add-it-to-the-message.cs",
         "delete-an-ampaccordion-section-from-the-message-to-test-component-removal.cs",
         "during-msg-file-parsing-examine-each-alternateview-for-mime-type-text-x-amp-html-to-extract-the-amp-content.cs",
@@ -1076,32 +1114,33 @@
         "update-the-source-url-and-dimensions-of-an-existing-ampimage-component-inside-the-loaded-ampmessage.cs",
         "update-the-subject-line-of-the-loaded-ampmessage-to-reflect-a-new-campaign.cs",
         "utilize-smtpclient-to-transmit-an-email-message-saved-in-msg-format-via-the-configured-smtp-server.cs",
+        "validate-the-amp-email-again-after-sending-to-ensure-no-structural-changes-occurred.cs",
         "validate-the-amp-email-structure-against-the-official-amp-specification-and-capture-any-validation-errors.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 44
+          "count": 46
         },
         {
           "name": "Aspose.Email",
-          "count": 44
+          "count": 46
         },
         {
           "name": "System.IO",
-          "count": 36
+          "count": 38
         },
         {
           "name": "Aspose.Email.Amp",
-          "count": 34
+          "count": 36
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 5
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
           "count": 5
-        },
-        {
-          "name": "System.Collections.Generic",
-          "count": 4
         },
         {
           "name": "Aspose.Email.Mapi",
@@ -1112,15 +1151,15 @@
           "count": 3
         },
         {
+          "name": "Aspose.Email.Tools.Verifications",
+          "count": 3
+        },
+        {
           "name": "System.Text.RegularExpressions",
           "count": 2
         },
         {
           "name": "System.Text",
-          "count": 2
-        },
-        {
-          "name": "Aspose.Email.Tools.Verifications",
           "count": 2
         },
         {
@@ -1152,7 +1191,7 @@
     },
     {
       "name": "working-with-exchange-ews-client",
-      "file_count": 556,
+      "file_count": 563,
       "files": [
         "access-another-user-mailbox-by-providing-their-email-address-to-iewsclient-getmailboxinfo-overload.cs",
         "acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs",
@@ -1201,6 +1240,7 @@
         "archive-email-messages-older-than-a-specified-date-into-a-compressed-archive-for-long-term-storage.cs",
         "archive-exchange-email-messages-via-the-ews-api-ensuring-they-are-stored-securely-and-indexed-appropriately.cs",
         "archive-multiple-emails-simultaneously-by-passing-a-collection-of-uniqueuris-to-archiveitem.cs",
+        "archive-only-messages-containing-a-specific-extended-property-value-that-matches-defined-criteria.cs",
         "assign-a-high-importance-flag-to-a-task-and-confirm-it-appears-at-the-top-of-the-view.cs",
         "assign-the-obtained-oauth-token-to-the-exchangeservice-credentials-property-to-enable-authenticated-operations-for-subsequent.cs",
         "attach-a-custom-file-to-a-task-request-message-before-sending-it-through-the-exchange-service.cs",
@@ -1264,6 +1304,7 @@
         "copy-selected-conversation-threads-from-the-inbox-to-the-archive-folder-preserving-read-status.cs",
         "create-a-batch-of-ten-different-mailquery-filters-and-execute-them-sequentially-to-gather-results.cs",
         "create-a-custom-extended-property-definition-of-type-string-with-a-unique-tag.cs",
+        "create-a-custom-imap-folder-move-selected-messages-into-it-and-verify-folder-existence-via-list-command.cs",
         "create-a-distribution-list-add-members-from-an-ldap-query-and-save-it-to-the-exchange-address-book.cs",
         "create-a-distribution-list-and-assign-it-a-custom-attribute-for-department-identification.cs",
         "create-a-distribution-list-and-set-its-membership-approval-requirement-to-manual-for-added-security.cs",
@@ -1318,6 +1359,7 @@
         "create-a-user-defined-folder-programmatically-within-the-mailbox-hierarchy-establishing-its-properties-and-access-permissions.cs",
         "create-an-appointment-entity-with-appropriate-fields-and-persist-it-to-the-calendar-store.cs",
         "create-an-appointment-in-a-secondary-calendar-folder-with-recurrence-pattern-and-location-details.cs",
+        "create-an-appointment-with-a-custom-category-and-verify-it-appears-in-the-category-filter-view.cs",
         "create-an-appointment-with-a-custom-html-body-that-includes-a-table-of-agenda-items.cs",
         "create-an-appointment-with-a-custom-location-field-set-to-a-virtual-conference-url.cs",
         "create-an-appointment-with-a-custom-reminder-interval-and-verify-reminder-triggers-correctly.cs",
@@ -1386,6 +1428,7 @@
         "export-all-email-messages-from-a-folder-to-a-pst-file-while-preserving-folder-hierarchy-and-metadata.cs",
         "export-calendar-items-fetched-with-a-specific-organizer-to-a-csv-file.cs",
         "export-distribution-list-members-and-their-email-addresses-to-an-excel-spreadsheet.cs",
+        "export-task-details-including-attachments-to-a-zip-archive-for-offline-archival.cs",
         "export-the-body-of-fetched-emails-to-plain-text-files-for-archival-and-analysis-purposes.cs",
         "extract-the-plain-text-body-from-an-html-email-and-store-it-in-a-separate-database-column.cs",
         "fetch-a-private-distribution-list-by-its-unique-identifier-and-list-all-member-email-addresses.cs",
@@ -1405,6 +1448,7 @@
         "filter-calendar-items-between-two-dates-and-retrieve-only-those-with-high-importance-flag.cs",
         "filter-email-messages-to-retrieve-those-with-timestamps-earlier-than-the-specified-cutoff-date.cs",
         "filter-listed-messages-by-unread-status-before-processing-to-prioritize-new-email-handling.cs",
+        "filter-tasks-by-priority-high-and-status-inprogress-then-send-reminder-emails-for-each.cs",
         "filter-tasks-by-status-completed-using-exchangequerybuilder-status-and-return-matching-items.cs",
         "find-all-conversation-threads-in-the-inbox-folder-containing-unread-messages-using-ewsclient.cs",
         "generate-a-follow-up-task-based-on-the-current-item-to-track-subsequent-actions-within-the-application-workflow.cs",
@@ -1624,6 +1668,7 @@
         "search-the-mailbox-for-messages-containing-a-specific-keyword-in-the-subject-using-a-filtered-query.cs",
         "send-a-batch-of-20-personalized-emails-asynchronously-each-with-unique-subject-and-body-content.cs",
         "send-a-mailmessage-through-iewsclient-and-capture-the-resulting-sent-item-uri-for-later-reference.cs",
+        "send-a-meeting-invitation-email-with-icalendar-attachment-asynchronously-and-confirm-acceptance-via-response-tracking.cs",
         "send-a-meeting-invitation-that-includes-an-icalendar-attachment-for-cross-platform-compatibility.cs",
         "send-a-meeting-invitation-that-requests-responses-and-automatically-declines-if-the-time-conflicts.cs",
         "send-a-meeting-request-to-multiple-attendees-with-a-custom-agenda-and-reminder-settings.cs",
@@ -1636,6 +1681,7 @@
         "send-an-email-with-a-large-attachment-exceeding-10-mb-to-test-asynchronous-streaming-capabilities.cs",
         "send-an-email-with-a-read-receipt-request-and-delivery-notification-then-log-both-callbacks-after-sending.cs",
         "send-an-email-with-high-importance-flag-set-and-verify-the-flag-appears-in-the-recipient-view.cs",
+        "send-an-html-formatted-email-with-multiple-attachments-using-sendmessageasync-and-verify-delivery-status.cs",
         "send-task-request-messages-to-multiple-recipients-by-loading-a-template-msg-and-customizing-each-recipient-field.cs",
         "set-a-custom-email-address-as-the-reply-to-for-all-messages-sent-from-a-departmental-mailbox.cs",
         "set-a-custom-email-address-as-the-reply-to-for-all-messages-sent-from-a-shared-service-mailbox.cs",
@@ -1714,43 +1760,43 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 556
+          "count": 563
         },
         {
           "name": "Aspose.Email",
-          "count": 516
+          "count": 523
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 488
+          "count": 495
         },
         {
           "name": "System.Net",
-          "count": 316
+          "count": 321
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 277
-        },
-        {
-          "name": "System.IO",
-          "count": 98
+          "count": 280
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 98
+          "count": 102
+        },
+        {
+          "name": "System.IO",
+          "count": 100
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 58
-        },
-        {
-          "name": "System.Collections.Generic",
-          "count": 54
+          "count": 59
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 52
+          "count": 54
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 53
         },
         {
           "name": "Aspose.Email.Mapi",
@@ -1762,11 +1808,11 @@
         },
         {
           "name": "System.Text",
-          "count": 23
+          "count": 24
         },
         {
           "name": "System.Threading.Tasks",
-          "count": 18
+          "count": 19
         },
         {
           "name": "System.Threading",
@@ -1789,16 +1835,16 @@
           "count": 7
         },
         {
+          "name": "System.Collections.Specialized",
+          "count": 5
+        },
+        {
           "name": "System.Text.Json",
           "count": 5
         },
         {
           "name": "Aspose.Email.Mime",
           "count": 5
-        },
-        {
-          "name": "System.Collections.Specialized",
-          "count": 4
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService.Models",
@@ -1817,6 +1863,10 @@
           "count": 3
         },
         {
+          "name": "System.IO.Compression",
+          "count": 2
+        },
+        {
           "name": "System.ComponentModel",
           "count": 2
         },
@@ -1830,10 +1880,6 @@
         },
         {
           "name": "System.Security.Cryptography.X509Certificates",
-          "count": 1
-        },
-        {
-          "name": "System.IO.Compression",
           "count": 1
         },
         {
@@ -1873,10 +1919,11 @@
     },
     {
       "name": "working-with-exchange-webdav-client",
-      "file_count": 156,
+      "file_count": 171,
       "files": [
         "access-and-retrieve-messages-from-a-different-user-s-mailbox-programmatically-handling-authentication-and-permissions.cs",
         "add-an-attachment-created-from-an-in-memory-byte-array-to-a-mailmessage-before-sending-via-exchangeclient.cs",
+        "add-custom-http-headers-to-each-webdav-request-via-exchangeclient-to-transmit-additional-context-required-by-server-e.cs",
         "add-custom-x-custom-header-values-to-the-mailmessage-before-sending-to-provide-application-specific-metadata.cs",
         "add-optional-attendees-to-the-appointment-by-populating-the-optionalattendees-collection-with-additional-email.cs",
         "add-required-attendees-to-the-appointment-by-inserting-their-email-addresses-into-the-requiredattendees-collect.cs",
@@ -1891,6 +1938,7 @@
         "apply-mailquery-or-to-fetch-messages-that-satisfy-either-a-date-range-or-a-recipient-domain-condition.cs",
         "apply-message-filtering-criteria-to-retrieve-or-exclude-specific-email-items-based-on-defined-parameters.cs",
         "apply-specified-criteria-to-filter-email-messages-returning-only-those-that-meet-the-defined-conditions.cs",
+        "archive-emails-older-than-one-year-by-moving-them-to-the-archive-folder-supporting-long-term-storage-policies.cs",
         "assign-a-low-importance-level-to-the-email-to-indicate-that-the-message-is-not-time-critical-for-recipients.cs",
         "attach-a-file-stream-to-mailmessage-attachments-to-include-a-custom-attachment-with-the-meeting-request-it.cs",
         "attach-a-local-file-to-an-email-by-loading-it-into-a-filestream-and-adding-it.cs",
@@ -1902,7 +1950,9 @@
         "combine-unread-status-and-specific-subject-keyword-filters-in-a-single-webdav-query-to-narrow-down-target-email.cs",
         "compose-and-send-email-messages-programmatically-managing-recipients-subject-line-message-body-and-file-attachments.cs",
         "compute-a-sha-256-hash-of-the-entire-email-content-after-download-to-verify-data-integrity-against-the-source.cs",
+        "configure-exchangeclient-to-enforce-ssl-tls-encryption-when-establishing-the-webdav-connection-to-the-exchange-server.cs",
         "configure-exchangeclient-to-route-all-webdav-traffic-through-a-specified-http-proxy-server-for-corporate-networ.cs",
+        "configure-the-webdav-client-to-use-ssl-tls-encryption-and-validate-the-server-certificate-chain.cs",
         "construct-a-webdav-query-string-to-list-messages-whose-subject-contains-the-word-invoice-and-execute-it.cs",
         "construct-advanced-query-expressions-to-retrieve-messages-based-on-multiple-criteria-and-logical-operators-efficiently.cs",
         "create-a-mailquery-object-to-filter-messages-where-the-subject-contains-specific-keywords.cs",
@@ -1932,6 +1982,8 @@
         "establish-a-webdav-connection-to-an-exchange-server-to-retrieve-and-manage-mailbox-items-programmatically.cs",
         "establish-a-webdav-connection-to-the-exchange-server-using-explicit-username-and-password-credentials.cs",
         "export-a-summary-of-message-subjects-and-received-dates-to-a-csv-file-by-iterating-through-listmessages.cs",
+        "export-all-calendar-items-from-a-folder-to-an-icalendar-ics-file-while-preserving-recurrence-rules.cs",
+        "export-all-contacts-from-a-folder-to-a-csv-file-while-preserving-custom-fields-and-photo-data.cs",
         "export-retrieved-calendar-items-to-an-icalendar-ics-file-for-sharing-with-external-calendar-applications.cs",
         "fetch-a-complete-email-using-its-message-id-and-save-the-retrieved-content-as-an-eml-file-on-disk.cs",
         "fetch-an-email-and-download-all-attached-files-storing-each-attachment-in-a-predefined-local-directory.cs",
@@ -1942,6 +1994,7 @@
         "filter-messages-by-sender-domain-example-com-using-a-webdav-query-to-isolate-internal-corporate-communications.cs",
         "filter-messages-sent-on-today-date-by-assigning-the-current-date-to-mailquery-date-property.cs",
         "filter-messages-where-the-body-contains-a-specific-phrase-by-setting-mailquery-bodycontains-criteria-parameter.cs",
+        "flag-an-email-for-follow-up-by-setting-the-flag-status-property-using-webdav-property-update.cs",
         "flag-an-email-for-follow-up-by-setting-the-flagstatus-property-to-the-desired-value-via-exchangeclient.cs",
         "generate-a-json-report-containing-each-email-subject-sender-address-and-size-by-processing-the-messages-list.cs",
         "implement-a-date-range-filter-criterion-to-retrieve-records-occurring-between-specified-start-and-end-dates.cs",
@@ -1954,6 +2007,7 @@
         "implement-functionality-to-serialize-email-messages-into-msg-files-preserving-all-headers-attachments-and-properties.cs",
         "implement-message-filtering-through-webdav-to-retrieve-only-emails-that-satisfy-defined-search-criteria-and-properties.cs",
         "import-contacts-from-a-csv-source-into-a-folder-mapping-columns-to-webdav-contact-properties.cs",
+        "include-the-custom-property-pr-message-flags-in-the-listmessages-result-set-to-examine-flag-states-for-each-email.cs",
         "instantiate-an-exchangeclient-using-the-webdav-server-url-username-and-password-credentials.cs",
         "list-all-messages-in-the-inbox-folder-using-exchangeclient-listmessages-with-default-pagination-and-no-additional-fil.cs",
         "list-all-subfolders-under-the-root-mailbox-using-webdav-propfind-and-display-hierarchical-structure.cs",
@@ -1969,11 +2023,14 @@
         "move-a-processed-email-to-another-folder-using-exchangeclient-movemessage-after-successful-handling-completion.cs",
         "move-an-email-from-inbox-to-archive-using-its-message-id-and-destination-folder-uri.cs",
         "move-email-messages-between-folders-or-mailboxes-programmatically-preserving-all-message-properties-and-metadata-integrity.cs",
+        "move-messages-flagged-as-important-to-the-important-folder-to-create-a-quick-access-collection-for-users.cs",
         "obtain-another-user-mailbox-details-by-calling-getmailboxinfo-with-the-target-email-address-as-a-parameter.cs",
         "obtain-the-size-of-an-email-message-in-advance-without-downloading-its-full-content.cs",
         "obtain-the-uri-of-the-sent-items-folder-so-subsequent-operations-can-target-that-specific-location.cs",
         "perform-a-lightweight-connection-test-using-exchangeclient-connect-to-validate-user-credentials-before-executin.cs",
         "perform-crud-operations-on-an-exchange-mailbox-and-its-messages-utilizing-the-webdav-protocol-for-communication.cs",
+        "pre-fetch-sizes-for-a-batch-of-ten-message-ids-to-estimate-total-download-bandwidth-before-retrieving-full-content.cs",
+        "pre-fetch-the-size-of-a-specific-email-by-providing-its-unique-message-identifier-to-the-prefetchmessagesize-method.cs",
         "programmatically-retrieve-all-email-messages-from-a-specified-exchange-server-mailbox-handling-authentication-and-pagination.cs",
         "provide-a-custom-remotecertificatevalidationcallback-to-exchangeclient-for-validating-the-server-certificate-du.cs",
         "register-for-release-notifications-to-receive-automatic-updates-about-new-library-features-and-enhancements.cs",
@@ -1983,6 +2040,7 @@
         "rename-an-existing-exchange-folder-by-sending-a-webdav-proppatch-request-with-the-new-display-name.cs",
         "retrieve-a-collection-of-email-messages-from-the-store-by-supplying-their-unique-identifier-values.cs",
         "retrieve-a-collection-of-plain-text-email-messages-and-present-them-as-a-simple-list.cs",
+        "retrieve-all-mailbox-messages-by-calling-exchangeclient-listmessages-without-any-filter-criteria-applied.cs",
         "retrieve-an-email-and-count-its-attachments-without-downloading-the-attachment-data.cs",
         "retrieve-an-email-and-extract-any-embedded-calendar-invite-components-to-allow-automatic-scheduling-in-client-a.cs",
         "retrieve-an-email-html-body-using-fetchmessage-and-write-the-markup-to-a-separate-html-file.cs",
@@ -2006,6 +2064,7 @@
         "search-contacts-containing-a-specific-domain-using-webdav-query-filters-and-return-matching-entries.cs",
         "search-for-a-unique-message-using-its-messageid-by-populating-mailquery-messageid-with-the-identifier.cs",
         "search-mail-items-in-a-folder-containing-a-keyword-in-the-subject-using-webdav-search-request.cs",
+        "select-messages-larger-than-five-megabytes-by-adding-a-size-filter-to-the-webdav-request-for-bulk-processing.cs",
         "send-a-simple-mailmessage-through-exchangeclient-to-a-single-recipient-with-subject-and-plain-text-body.cs",
         "send-an-email-and-capture-the-server-generated-item-identifier-returned-by-exchangeclient-for-later-reference-o.cs",
         "send-an-email-to-multiple-primary-recipients-including-additional-cc-and-bcc-addresses-for-broader-distribution.cs",
@@ -2017,6 +2076,8 @@
         "set-a-custom-request-timeout-of-ninety-seconds-on-exchangeclient-to-accommodate-slower-network-conditions-durin.cs",
         "set-delivery-notification-options-on-the-email-to-receive-alerts-when-the-message-fails-to-deliver.cs",
         "set-exchangeclient-timeout-to-a-higher-value-to-accommodate-long-running-mailbox-queries-without-premature-term.cs",
+        "set-folder-level-access-rights-for-a-user-by-modifying-acl-entries-through-a-webdav-acl-request.cs",
+        "set-mailmessage-importance-to-high-to-mark-the-meeting-request-as-high-importance-for-recipients.cs",
         "set-mailmessage-priority-to-high-for-urgent-meeting-invitations-requiring-immediate-attention-recipients.cs",
         "set-reminder-minutes-on-the-appointment-to-trigger-an-alert-ten-minutes-before-the-start-time.cs",
         "set-the-appointment-isallday-flag-to-true-for-creating-all-day-events-on-the-exchange-calendar-system.cs",
@@ -2035,27 +2096,27 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 156
+          "count": 171
         },
         {
           "name": "Aspose.Email",
-          "count": 148
+          "count": 163
         },
         {
           "name": "Aspose.Email.Clients.Exchange.Dav",
-          "count": 113
+          "count": 127
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 80
+          "count": 91
         },
         {
           "name": "System.Net",
-          "count": 41
+          "count": 44
         },
         {
           "name": "System.IO",
-          "count": 37
+          "count": 40
         },
         {
           "name": "Aspose.Email.Tools.Search",
@@ -2067,11 +2128,11 @@
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 11
+          "count": 13
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 9
+          "count": 12
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
@@ -2087,11 +2148,19 @@
         },
         {
           "name": "System.Collections.Generic",
-          "count": 4
+          "count": 5
         },
         {
           "name": "System.Text",
-          "count": 2
+          "count": 3
+        },
+        {
+          "name": "System.Net.Security",
+          "count": 3
+        },
+        {
+          "name": "System.Security.Cryptography.X509Certificates",
+          "count": 3
         },
         {
           "name": "Aspose.Email.Clients",
@@ -2102,16 +2171,16 @@
           "count": 2
         },
         {
-          "name": "System.Net.Security",
-          "count": 2
-        },
-        {
-          "name": "System.Security.Cryptography.X509Certificates",
-          "count": 2
-        },
-        {
           "name": "System.Linq",
           "count": 2
+        },
+        {
+          "name": "System.Collections.Specialized",
+          "count": 1
+        },
+        {
+          "name": "System.Reflection",
+          "count": 1
         },
         {
           "name": "System.Security.Cryptography",
@@ -2138,7 +2207,7 @@
     },
     {
       "name": "working-with-ibm-notes",
-      "file_count": 64,
+      "file_count": 65,
       "files": [
         "add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs",
         "call-enumeratemessages-to-obtain-an-iterator-over-all-messages-in-the-nsf-file.cs",
@@ -2148,6 +2217,7 @@
         "construct-a-new-email-object-using-the-contents-of-an-input-msg-file-preserving-all-original-message-properties.cs",
         "create-a-batch-process-that-scans-a-folder-for-nsf-files-and-processes-each-one.cs",
         "create-a-reusable-library-method-that-returns-a-list-of-message-objects-from-an-nsf-file.cs",
+        "create-a-summary-report-that-lists-each-nsf-file-and-the-count-of-extracted-attachments.cs",
         "design-a-user-interface-form-that-accepts-msg-files-as-input-directly-for-processing.cs",
         "detect-lz1-compression-in-the-nsf-file-and-log-a-warning-if-unsupported.cs",
         "detect-whether-a-given-file-is-in-nsf-format-before-opening-it.cs",
@@ -2208,15 +2278,15 @@
       "required_namespaces": [
         {
           "name": "System",
+          "count": 65
+        },
+        {
+          "name": "System.IO",
           "count": 64
         },
         {
           "name": "Aspose.Email",
           "count": 64
-        },
-        {
-          "name": "System.IO",
-          "count": 63
         },
         {
           "name": "Aspose.Email.Mapi",
@@ -2291,10 +2361,11 @@
     },
     {
       "name": "working-with-imap-client",
-      "file_count": 303,
+      "file_count": 321,
       "files": [
         "activate-client-side-logging-by-setting-the-loggingenabled-boolean-property-to-true-on-the-client-instance.cs",
         "activate-detailed-imap-activity-logging-to-capture-all-client-server-interactions-for-diagnostics-and-auditing.cs",
+        "activate-multiconnection-mode-during-restore-to-accelerate-loading-of-thousands-of-messages.cs",
         "add-a-custom-imap-flag-to-messages-matching-a-subject-pattern-asynchronously-for-later-categorization.cs",
         "add-custom-flag-important-to-a-message-identified-by-its-unique-id-using-addmessageflags.cs",
         "add-custom-flag-to-all-messages-returned-by-a-mailquery-that-matches-particular-subject-pattern.cs",
@@ -2303,6 +2374,7 @@
         "append-a-draft-email-to-the-drafts-folder-asynchronously-preserving-its-original-flags.cs",
         "append-a-newly-composed-email-to-the-sent-folder-asynchronously-without-blocking-the-ui-thread.cs",
         "append-archived-eml-files-back-to-the-mailbox-asynchronously-without-blocking-other-operations.cs",
+        "append-messages-from-a-backup-archive-while-preserving-original-internal-dates-asynchronously.cs",
         "append-system-generated-notifications-to-a-dedicated-notifications-folder-asynchronously-for-monitoring.cs",
         "apply-a-custom-date-range-filter-in-mailquery-asynchronously-to-retrieve-messages-sent-between-two-dates.cs",
         "apply-a-custom-flag-to-messages-after-processing-by-using-imapclient-store-to-set-the-flagged-attribute.cs",
@@ -2311,7 +2383,9 @@
         "apply-a-custom-label-to-messages-asynchronously-by-setting-a-user-defined-imap-flag-after-download.cs",
         "apply-a-custom-retention-policy-asynchronously-by-moving-messages-older-than-a-threshold-to-an-archive-folder.cs",
         "apply-a-custom-spam-detection-rule-asynchronously-moving-flagged-messages-to-the-spam-folder.cs",
+        "apply-a-custom-user-defined-imap-flag-asynchronously-to-categorize-messages-after-download.cs",
         "apply-a-date-range-filter-using-listmessages-and-searchquery-to-select-messages-received-between-two-dates.cs",
+        "apply-a-size-threshold-filter-asynchronously-to-skip-processing-messages-smaller-than-1-kb.cs",
         "apply-addmessageflags-to-assign-both-todo-and-review-custom-flags-to-batch-of-messages-identified-by-uids.cs",
         "apply-an-async-filter-to-select-only-messages-with-a-specific-x-priority-header-value-for-priority-handling.cs",
         "apply-changemessageflags-with-deleted-operation-to-mark-selected-messages-for-removal-without-immediate-expunge.cs",
@@ -2331,6 +2405,7 @@
         "backup-messages-to-a-network-share-path-ensuring-proper-unc-formatting-and-access-permissions.cs",
         "backup-messages-while-preserving-original-folder-hierarchy-by-creating-subfolders-in-backup-location-matching-server-struc.cs",
         "build-a-mailquerybuilder-combining-sender-address-and-subject-keyword-using-and-method.cs",
+        "calculate-the-average-size-of-emails-received-in-the-last-month-asynchronously-for-reporting.cs",
         "calculate-the-distribution-of-email-domains-among-senders-asynchronously-for-statistical-reporting.cs",
         "calculate-the-time-difference-between-received-and-sent-dates-for-each-message-asynchronously-for-latency-analysis.cs",
         "call-listmessages-to-obtain-an-imapmessageinfocollection-containing-basic-message-data.cs",
@@ -2395,6 +2470,7 @@
         "enable-compression-on-the-asynchronous-imap-connection-to-reduce-data-transfer-size.cs",
         "enable-detailed-imap-activity-logging-to-capture-protocol-exchanges-for-troubleshooting-connection-issues.cs",
         "enable-imap-activity-logging-to-a-rotating-file-system-to-avoid-unlimited-log-growth.cs",
+        "enable-imapclient-keepalive-to-maintain-persistent-connection-during-long-operations.cs",
         "enable-logging-on-imapclient-to-capture-detailed-protocol-communication-for-debugging-flag-manipulation-issues.cs",
         "enable-multiconnection-mode-and-backup-large-mailboxes-efficiently-with-parallel-streaming.cs",
         "enable-multiconnection-option-on-imapclient-and-list-messages-in-parallel-to-improve-performance.cs",
@@ -2419,10 +2495,12 @@
         "fetch-message-flags-asynchronously-and-synchronize-them-with-a-redis-cache-for-quick-status-lookup.cs",
         "fetch-message-flags-asynchronously-for-each-email-and-update-a-status-column-in-an-external-system.cs",
         "fetch-message-headers-asynchronously-and-extract-the-message-id-to-detect-duplicate-emails.cs",
+        "fetch-message-size-asynchronously-for-each-email-and-log-oversized-messages-for-investigation.cs",
         "fetch-messages-asynchronously-and-download-all-attachments-preserving-original-filenames-in-a-local-directory.cs",
         "fetch-messages-asynchronously-and-encrypt-their-attachments-before-saving-them-to-local-storage-for-compliance.cs",
         "fetch-messages-asynchronously-using-the-idle-command-simulation-to-receive-real-time-new-mail-notifications.cs",
         "fetch-messages-internally-stored-after-a-specific-imap-internal-date-using-mailquery-internaldate-criteria.cs",
+        "fetch-only-the-first-ten-unseen-messages-asynchronously-to-provide-a-quick-preview.cs",
         "fetch-server-capabilities-asynchronously-and-adjust-client-features-such-as-compression-and-idle-support.cs",
         "fetchmessages-with-selected-imapmessageinfo-objects-to-download-complete-mailmessage-instances.cs",
         "filter-messages-asynchronously-by-attachment-presence-then-download-those-attachments-to-cloud-storage.cs",
@@ -2472,12 +2550,14 @@
         "list-all-mailboxes-asynchronously-and-filter-out-system-folders-before-presenting-to-the-user.cs",
         "list-all-unread-messages-asynchronously-by-constructing-a-mailquery-filtering-on-the-unseen-flag.cs",
         "list-available-mail-folders-after-successful-credential-validation-to-confirm-access-permissions.cs",
+        "list-messages-asynchronously-received-within-the-last-seven-days-ordering-results-by-internal-date-descending.cs",
         "list-unread-messages-only-by-applying-the-unseen-flag-filter-in-listmessages.cs",
         "log-detailed-imap-command-and-response-strings-for-each-asynchronous-call-to-aid-troubleshooting.cs",
         "log-each-asynchronous-imap-command-with-timestamps-to-a-structured-json-file-for-audit-trails.cs",
         "log-each-server-response-code-after-executing-an-imap-command-to-assist-debugging-communication-issues.cs",
         "log-the-duration-of-each-asynchronous-imap-call-using-a-stopwatch-and-write-results-to-diagnostics.cs",
         "log-the-size-of-each-fetched-mailmessage-in-kilobytes-to-monitor-bandwidth-usage.cs",
+        "log-validation-results-to-a-structured-json-file-for-integration-with-monitoring-tools.cs",
         "mark-a-set-of-messages-as-seen-asynchronously-after-successful-processing-to-prevent-re-processing.cs",
         "mark-selected-messages-as-read-after-confirming-successful-retrieval-of-their-unique-identifiers.cs",
         "measure-round-trip-time-for-listmessages-calls-and-record-latency-for-server-responsiveness-evaluation.cs",
@@ -2499,6 +2579,7 @@
         "process-and-interpret-validation-results-to-determine-compliance-and-manage-any-reported-errors-accordingly.cs",
         "programmatically-delete-all-flag-attributes-from-email-messages-to-clear-status-indicators-and-reset-processing-state.cs",
         "programmatically-transfer-the-specified-email-message-to-a-target-folder-by-invoking-client-movemessage-message.cs",
+        "purge-messages-older-than-a-configurable-retention-period-asynchronously-to-free-server-storage.cs",
         "read-email-messages-from-the-sent-folder-and-export-them-to-csv-for-reporting-purposes.cs",
         "recover-mailbox-data-from-backups-into-the-mail-system-while-preserving-all-folder-hierarchy-and-metadata.cs",
         "remove-a-specific-email-message-by-invoking-the-client-object-s-deletemessage-method-with-the-target-message.cs",
@@ -2513,8 +2594,11 @@
         "remove-the-flagged-flag-from-a-message-by-calling-client-removemessageflags-message-imapmessageflags-flagged.cs",
         "remove-the-specified-directory-from-the-file-system-ensuring-all-contained-files-are-permanently-deleted.cs",
         "rename-an-existing-imap-folder-asynchronously-then-confirm-the-rename-by-fetching-the-updated-list.cs",
+        "restore-messages-and-recreate-original-folder-hierarchy-on-the-server-using-imapclient-createfolder-for-missing-direc.cs",
         "restore-messages-from-a-memory-stream-directly-into-the-mailbox-without-intermediate-files.cs",
+        "restore-messages-from-a-network-location-by-providing-unc-path-to-imapclient-restore.cs",
         "restore-messages-in-batches-while-preserving-original-folder-hierarchy-using-imapclient-createfolder-as-needed.cs",
+        "restore-previously-backed-up-eml-files-into-corresponding-imap-folders-while-preserving-message-flags.cs",
         "restore-previously-backed-up-messages-from-a-pst-file-into-the-target-mailbox-using-imapclient-restore.cs",
         "retrieve-a-message-by-its-sequence-number-after-modifying-flags-to-verify-persistence.cs",
         "retrieve-a-single-email-message-asynchronously-by-its-unique-identifier-and-save-as-eml.cs",
@@ -2525,6 +2609,8 @@
         "retrieve-email-messages-from-an-imap-server-using-appropriate-authentication-and-mailbox-selection-parameters.cs",
         "retrieve-message-body-previews-asynchronously-limiting-each-preview-to-the-first-200-characters.cs",
         "retrieve-message-envelope-information-asynchronously-to-obtain-sender-recipients-and-subject.cs",
+        "retrieve-message-mime-structure-asynchronously-to-identify-nested-parts-before-processing-attachments.cs",
+        "retrieve-message-thread-hierarchy-asynchronously-to-build-conversation-view-in-the-client-application.cs",
         "retrieve-message-uid-values-asynchronously-and-store-them-in-a-local-database-for-synchronization.cs",
         "retrieve-message-unique-identifiers-after-flag-updates-by-calling-listmessages-with-fetchuid-option.cs",
         "retrieve-messages-addressed-to-a-specific-recipient-asynchronously-using-mailquery-to-filter-the-to-header.cs",
@@ -2532,6 +2618,7 @@
         "retrieve-messages-asynchronously-in-batches-of-fifty-processing-each-batch-sequentially-for-pagination.cs",
         "retrieve-only-message-headers-by-accessing-imapmessageinfo-header-fields-without-downloading-full-bodies.cs",
         "retrieve-only-messages-larger-than-five-megabytes-asynchronously-to-identify-potential-large-attachments.cs",
+        "retrieve-only-messages-larger-than-five-megabytes-using-listmessages-with-a-size-filter-for-archival-analysis.cs",
         "retrieve-only-messages-that-contain-image-jpeg-attachments-asynchronously-using-a-custom-mailquery.cs",
         "retrieve-only-unseen-messages-by-creating-mailquery-with-unseen-flag-criterion-and-executing-listmessages.cs",
         "retrieve-the-mime-messageid-property-from-imapmessageinfo-to-correlate-messages-without-full-download.cs",
@@ -2540,6 +2627,7 @@
         "search-for-emails-containing-specific-keywords-in-the-body-using-imap-server-side-search.cs",
         "search-for-messages-asynchronously-using-a-mailquery-that-filters-by-sender-address-and-date-range.cs",
         "select-the-inbox-folder-before-performing-any-backup-or-delete-operations-on-the-mailbox.cs",
+        "send-a-read-receipt-asynchronously-after-processing-a-message-using-the-original-reply-to-address.cs",
         "send-a-webhook-asynchronously-after-each-message-download-with-subject-and-sender-metadata.cs",
         "send-an-email-message-asynchronously-through-iasyncimapclient-specifying-recipient-subject-and-html-body.cs",
         "set-a-custom-thirty-second-timeout-for-each-asynchronous-imap-operation.cs",
@@ -2600,51 +2688,51 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 303
+          "count": 321
         },
         {
           "name": "Aspose.Email",
-          "count": 281
+          "count": 299
         },
         {
           "name": "Aspose.Email.Clients.Imap",
-          "count": 265
+          "count": 283
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 195
+          "count": 204
         },
         {
           "name": "System.Threading.Tasks",
-          "count": 107
+          "count": 117
         },
         {
           "name": "System.Collections.Generic",
-          "count": 83
+          "count": 89
         },
         {
           "name": "System.Threading",
-          "count": 80
+          "count": 87
         },
         {
           "name": "System.IO",
-          "count": 73
+          "count": 81
         },
         {
           "name": "Aspose.Email.Tools.Search",
-          "count": 58
+          "count": 59
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 36
+          "count": 41
         },
         {
           "name": "Aspose.Email.Clients.Imap.Models",
-          "count": 27
+          "count": 28
         },
         {
           "name": "System.Linq",
-          "count": 19
+          "count": 20
         },
         {
           "name": "System.Text",
@@ -2667,6 +2755,14 @@
           "count": 4
         },
         {
+          "name": "Aspose.Email.Mime",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 3
+        },
+        {
           "name": "System.Diagnostics",
           "count": 3
         },
@@ -2675,7 +2771,7 @@
           "count": 3
         },
         {
-          "name": "Aspose.Email.Mime",
+          "name": "System.Text.Json",
           "count": 3
         },
         {
@@ -2691,15 +2787,7 @@
           "count": 2
         },
         {
-          "name": "Aspose.Email.Mapi",
-          "count": 2
-        },
-        {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 2
-        },
-        {
-          "name": "System.Text.Json",
           "count": 2
         },
         {
@@ -2747,7 +2835,7 @@
     },
     {
       "name": "working-with-microsoft-graph-client",
-      "file_count": 38,
+      "file_count": 44,
       "files": [
         "assign-a-category-named-important-to-a-message-using-client-messages-addcategory-method.cs",
         "authenticate-with-azure-active-directory-via-microsoft-graph-client-using-office-credentials-extracted-from-an-msg-file.cs",
@@ -2768,7 +2856,12 @@
         "enable-public-client-authentication-flows-for-msg-files-using-the-microsoft-graph-client-library.cs",
         "generate-an-application-key-from-an-msg-file-using-the-microsoft-graph-client-library.cs",
         "generate-an-attachment-from-an-msg-file-using-microsoft-graph-client-ensuring-proper-mime-type-and-content-encoding.cs",
+        "handle-token-expiration-automatically-by-implementing-itokenprovider-refreshtoken-method-with-msal-net-logic.cs",
         "implement-a-microsoft-graph-client-loop-that-iterates-until-pageinfo-lastpage-is-false-appending-msg-format-messages-via.cs",
+        "implement-itokenprovider-to-acquire-access-tokens-using-msal-net-client-credentials-flow.cs",
+        "install-microsoft-identity-client-nuget-package-msal-net-in-your-project-for-token-acquisition.cs",
+        "mark-multiple-messages-as-read-using-client-messages-batchupdate-request-in-a-single-operation.cs",
+        "remove-a-category-from-a-message-using-client-messages-removecategory-method-for-cleanup.cs",
         "remove-an-attachment-from-an-msg-file-programmatically-using-the-microsoft-graph-client-api.cs",
         "retrieve-a-calendar-event-from-an-msg-file-using-the-microsoft-graph-client-api.cs",
         "retrieve-a-task-stored-in-msg-format-programmatically-using-the-microsoft-graph-client-api.cs",
@@ -2776,6 +2869,7 @@
         "retrieve-an-msg-formatted-email-message-using-the-microsoft-graph-client-api-and-process-its-contents.cs",
         "retrieve-message-rules-from-an-msg-file-by-utilizing-the-microsoft-graph-client-api.cs",
         "retrieve-the-tasks-list-embedded-within-an-msg-file-using-the-microsoft-graph-client-api.cs",
+        "update-an-existing-onenote-page-content-by-providing-html-body-to-client-pages-updatepage.cs",
         "update-the-subject-line-of-a-message-using-client-messages-updatemessage-method.cs",
         "use-microsoft-graph-client-to-enumerate-steps-for-creating-an-azure-ad-admin-center-project-from-an-msg-file.cs",
         "utilize-microsoft-graph-client-to-add-the-msal-net-package-and-install-the-microsoft-identity-client-nuget-containing.cs",
@@ -2791,19 +2885,19 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 38
+          "count": 44
         },
         {
           "name": "Aspose.Email",
-          "count": 38
+          "count": 43
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 34
+          "count": 39
         },
         {
           "name": "Aspose.Email.Clients.Graph",
-          "count": 34
+          "count": 39
         },
         {
           "name": "System.IO",
@@ -2815,11 +2909,11 @@
         },
         {
           "name": "Aspose.Email.Clients.Exchange",
-          "count": 5
+          "count": 6
         },
         {
           "name": "System.Collections.Generic",
-          "count": 3
+          "count": 5
         },
         {
           "name": "Aspose.Email.Clients.Exchange.Dav",
@@ -2827,6 +2921,10 @@
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 1
+        },
+        {
+          "name": "System.Net.Http",
           "count": 1
         },
         {
@@ -2842,7 +2940,7 @@
     },
     {
       "name": "working-with-mime-messages",
-      "file_count": 343,
+      "file_count": 348,
       "files": [
         "access-the-htmlbody-property-of-an-msg-email-object-to-obtain-its-html-message-content.cs",
         "add-a-custom-header-containing-the-checksum-of-each-attachment-for-integrity-verification.cs",
@@ -2864,6 +2962,7 @@
         "add-a-custom-x-workflow-id-header-to-trace-the-email-through-different-processing-stages.cs",
         "add-a-disclaimer-text-as-a-separate-plain-text-alternateview-appended-to-the-existing-email-body.cs",
         "add-a-display-name-to-a-recipient-by-creating-a-mailaddress-with-email-and-name.cs",
+        "add-a-dkim-signature-header-using-a-private-key-and-include-the-canonicalized-body-hash.cs",
         "add-a-file-attachment-by-constructing-an-attachment-from-a-local-path-and-calling-mailmessage-attachments-add.cs",
         "add-a-file-attachment-to-an-msg-email-by-calling-mailmessage-attachments-add-new-attachment-filepath-during-message-composition.cs",
         "add-a-linked-resource-to-the-first-alternate-view-of-an-msg-email-by-calling-mailmessage-alternateviews-0-linkedresources-add.cs",
@@ -2901,6 +3000,7 @@
         "apply-a-spam-filter-rule-that-moves-messages-containing-specific-keywords-to-a-quarantine-folder.cs",
         "apply-appropriate-content-transfer-encoding-to-each-attachment-based-on-its-size-for-optimal-delivery.cs",
         "apply-custom-encoding-to-a-non-ascii-subject-line-using-rfc-2047-standards-for-email-compatibility.cs",
+        "apply-dkim-signing-to-an-email-using-a-private-key-and-domain-selector-for-authentication.cs",
         "apply-encryption-to-an-email-message-saved-in-msg-format-ensuring-secure-storage-and-confidentiality.cs",
         "apply-mailmessage-encrypt-cert-to-encrypt-a-msg-email-message-using-a-provided-x-509-certificate-for-secure-transmission.cs",
         "apply-x509-certificate-based-encryption-to-a-msg-email-message-to-secure-its-contents-before-transmission.cs",
@@ -2975,6 +3075,7 @@
         "detect-and-decode-base64-encoded-attachments-then-save-each-decoded-file-to-a-specified-output-directory.cs",
         "detect-and-remove-duplicate-attachments-within-a-single-email-keeping-only-the-first-occurrence.cs",
         "detect-and-remove-malicious-scripts-from-the-html-body-to-protect-recipients-from-xss-attacks.cs",
+        "detect-malformed-multipart-sections-within-a-mime-message-and-log-detailed-error-information.cs",
         "detect-mismatched-boundary-delimiters-and-automatically-correct-them-to-ensure-proper-multipart-parsing.cs",
         "determine-the-icalendar-version-of-an-appointment-using-the-version-property-after-loading.cs",
         "digitally-sign-an-msg-email-message-using-a-certificate-to-ensure-authenticity-and-integrity.cs",
@@ -3066,8 +3167,10 @@
         "load-email-messages-from-msg-files-into-memory-for-processing-manipulation-and-programmatic-handling.cs",
         "load-the-appointment-from-meeting-ics-into-a-msg-email-message-using-the-appointment-load-api-method.cs",
         "log-all-header-names-and-values-from-a-mime-message-to-the-console-for-debugging.cs",
+        "log-any-mime-parsing-errors-to-a-file-with-timestamps-for-later-troubleshooting-and-analysis.cs",
         "loop-through-the-attachments-collection-and-write-each-attachment-to-a-msg-file-on-disk.cs",
         "manipulate-and-retrieve-msg-email-headers-programmatically-enabling-access-to-metadata-such-as-sender-recipients-and-timestamps.cs",
+        "mark-an-attendee-as-accepted-by-setting-the-partstat-property-to-accepted.cs",
         "mark-an-attendee-as-declined-by-updating-the-partstat-property-to-declined.cs",
         "mark-the-mime-message-as-read-to-update-its-status-in-the-mailbox-folder.cs",
         "measure-and-log-the-processing-time-for-encrypting-a-batch-of-messages-to-assess-performance-impact.cs",
@@ -3191,27 +3294,27 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 343
+          "count": 348
         },
         {
           "name": "Aspose.Email",
-          "count": 343
+          "count": 348
         },
         {
           "name": "System.IO",
-          "count": 302
+          "count": 307
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 84
+          "count": 85
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 41
+          "count": 42
         },
         {
           "name": "Aspose.Email.Mime",
-          "count": 31
+          "count": 32
         },
         {
           "name": "System.Collections.Generic",
@@ -3219,7 +3322,7 @@
         },
         {
           "name": "System.Text",
-          "count": 26
+          "count": 28
         },
         {
           "name": "System.Security.Cryptography.X509Certificates",
@@ -3230,16 +3333,16 @@
           "count": 13
         },
         {
+          "name": "System.Security.Cryptography",
+          "count": 8
+        },
+        {
           "name": "Aspose.Email.Clients.Exchange.Dav",
           "count": 8
         },
         {
           "name": "System.Text.RegularExpressions",
           "count": 8
-        },
-        {
-          "name": "System.Security.Cryptography",
-          "count": 6
         },
         {
           "name": "System.Net.Mime",
@@ -3290,11 +3393,23 @@
           "count": 2
         },
         {
+          "name": "RSA rsa = RSA.Create()",
+          "count": 1
+        },
+        {
+          "name": "SHA256 sha256 = SHA256.Create()",
+          "count": 1
+        },
+        {
           "name": "System.Globalization",
           "count": 1
         },
         {
           "name": "Aspose.Email.Tools",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Tools.Verifications",
           "count": 1
         },
         {
@@ -3342,7 +3457,7 @@
     },
     {
       "name": "working-with-outlook-items",
-      "file_count": 492,
+      "file_count": 514,
       "files": [
         "access-the-files-collection-from-the-cast-drageventargs-to-obtain-dropped-items.cs",
         "add-a-cancel-voting-button-and-ensure-it-appears-correctly-in-the-outlook-client-preview.cs",
@@ -3351,13 +3466,16 @@
         "add-a-custom-mapi-property-to-each-email-in-a-pst-folder-to-track-processing-status.cs",
         "add-a-custom-mapi-property-to-track-processing-timestamps-for-each-message.cs",
         "add-a-custom-property-to-calendar-items-indicating-the-project-code-and-save-changes.cs",
+        "add-a-custom-sound-file-as-an-audio-reminder-ensuring-the-file-format-is-supported-by-the-api.cs",
         "add-a-custom-voting-button-labeled-needs-review-to-an-existing-msg-file-programmatically.cs",
+        "add-a-custom-x-property-to-a-calendar-item-save-as-msg-and-verify-the-property-appears-in-raw-data.cs",
         "add-a-finalize-voting-button-and-set-a-follow-up-flag-with-a-due-date-of-next-monday.cs",
         "add-a-pdf-attachment-to-a-mapitask-before-saving-the-task-to-msg-format.cs",
         "add-a-proceed-voting-button-and-automatically-set-a-follow-up-flag-with-a-two-day-due-date.cs",
         "add-a-recurring-daily-task-with-an-end-date-then-confirm-the-recurrence-stops-after-that-date.cs",
         "add-a-recurring-weekly-task-that-occurs-on-fridays-only-then-export-it-to-mht-for-preview.cs",
         "add-a-reference-to-aspose-outlook-control-in-the-net-project.cs",
+        "add-a-reminder-that-triggers-five-minutes-before-start-then-test-that-the-reminder-fires-during-a-run.cs",
         "add-a-thumbs-up-reaction-to-an-msg-message-for-a-specific-user-programmatically.cs",
         "add-a-timestamp-to-each-exported-contact-file-name-to-uniquely-identify-generation-time.cs",
         "add-a-voting-button-set-to-an-email-message-and-save-the-updated-version.cs",
@@ -3389,6 +3507,7 @@
         "automatically-assign-a-follow-up-flag-to-messages-containing-the-word-urgent-for-priority-handling.cs",
         "automatically-clear-voting-buttons-after-the-voting-deadline-has-passed-to-maintain-data-integrity.cs",
         "batch-convert-a-collection-of-msg-task-files-to-html-preserving-each-task-fields-in-separate-files.cs",
+        "batch-convert-a-folder-of-msg-calendar-files-to-individual-ics-files-while-preserving-each-file-original-product-iden.cs",
         "batch-convert-msg-files-to-eml-and-generate-a-summary-csv-listing-conversion-success-or-failure.cs",
         "batch-generate-html-files-for-tasks-naming-each-file-after-the-task-subject-with-safe-characters.cs",
         "batch-job-processes-msg-files-adds-voting-buttons-and-moves-them-to-a-processed-folder.cs",
@@ -3439,15 +3558,18 @@
         "convert-contact-photo-streams-to-png-format-during-export-to-ensure-compatibility-with-most-image-viewers.cs",
         "convert-contacts-to-a-proprietary-crm-xml-schema-mapping-fields-to-match-the-target-system-requirements.cs",
         "create-a-backup-of-all-contacts-by-compressing-them-into-a-zip-archive-with-timestamped-filename.cs",
+        "create-a-calendar-item-with-a-category-then-query-the-item-to-confirm-the-category-is-stored-correctly.cs",
         "create-a-calendar-item-with-multiple-attendees-assign-each-attendee-a-different-response-status-and-save-as-msg.cs",
         "create-a-custom-contact-view-that-hides-private-fields-displaying-only-public-information-to-end-users.cs",
         "create-a-daily-recurrence-that-excludes-weekends-by-setting-the-pattern-dayofweekmask-accordingly.cs",
+        "create-a-daily-recurrence-with-an-interval-of-three-days-set-end-after-twenty-occurrences-and-generate-the-rrule-stri.cs",
         "create-a-mapicalendartimezone-from-the-system-timezoneinfo-for-pacific-standard-time-and-assign-it-to-an-event.cs",
         "create-a-mapimessage-from-a-byte-array-add-a-custom-property-and-persist-the-message-as-msg.cs",
         "create-a-mapimessage-from-a-byte-array-set-a-custom-header-and-save-as-msg.cs",
         "create-a-mapimessage-from-a-file-and-embed-an-inline-image-within-the-email-body.cs",
         "create-a-mapimessage-from-a-file-modify-its-importance-flag-and-save-the-changes-back-to-msg.cs",
         "create-a-mapinote-with-a-specific-subject-and-multiline-body-then-save-it-as-msg.cs",
+        "create-a-meeting-request-with-a-location-url-add-a-reminder-and-verify-the-url-appears-in-the-msg-file.cs",
         "create-a-monthly-recurrence-on-the-third-tuesday-of-each-month-and-generate-its-corresponding-rrule-string.cs",
         "create-a-new-distribution-list-from-selected-contacts-and-assign-a-descriptive-name-programmatically.cs",
         "create-a-new-mapicalendar-set-subject-and-location-and-save-it-as-an-ics-file.cs",
@@ -3470,7 +3592,9 @@
         "create-a-utility-that-scans-msg-files-for-missing-follow-up-flag-due-dates-and-assigns-a-default-date.cs",
         "create-a-weekly-recurrence-for-a-task-that-occurs-on-mondays-and-wednesdays-with-a-two-week-interval.cs",
         "create-a-weekly-recurrence-on-monday-wednesday-and-friday-then-export-its-rule-as-an-rrule-string.cs",
+        "create-a-weekly-recurrence-on-tuesday-wednesday-and-friday-then-export-its-rule-as-an-rrule-string.cs",
         "create-a-weekly-recurrence-that-includes-only-friday-set-the-end-type-to-neverend-and-generate-its-rrule.cs",
+        "create-a-weekly-recurrence-that-repeats-every-two-weeks-on-tuesday-and-thursday-then-generate-its-rrule-string.cs",
         "create-a-yearly-recurrence-on-february-29th-handling-leap-year-considerations-and-generate-its-rrule-representation.cs",
         "create-a-yearly-recurrence-on-the-first-monday-of-september-and-assign-a-custom-description-to-each-occurrence.cs",
         "create-an-appointment-with-a-custom-html-body-then-convert-the-eml-representation-to-msg-preserving-the-html.cs",
@@ -3552,6 +3676,7 @@
         "generate-vcard-3-0-files-for-each-contact-and-store-them-in-a-designated-output-directory.cs",
         "group-contacts-by-city-and-generate-separate-output-files-for-each-city-group.cs",
         "handle-any-exceptions-thrown-by-file-save-and-notify-the-user-of-save-failures.cs",
+        "identify-and-remove-duplicate-contacts-across-several-files-keeping-the-most-recently-modified-record.cs",
         "implement-a-check-that-prevents-adding-duplicate-voting-buttons-using-case-insensitive-comparison.cs",
         "implement-a-utility-that-lists-all-msg-files-in-a-directory-and-reports-their-contained-task-subjects.cs",
         "implement-asynchronous-loading-of-msg-data-from-a-network-stream-using-async-await-pattern.cs",
@@ -3566,13 +3691,18 @@
         "import-contacts-from-a-vcard-collection-file-containing-multiple-entries-handling-each-entry-individually.cs",
         "import-contacts-from-an-excel-spreadsheet-using-column-mapping-to-align-spreadsheet-fields-with-contact-properties.cs",
         "import-contacts-from-an-ldap-directory-into-a-pst-file-mapping-ldap-attributes-to-outlook-contact-fields.cs",
+        "import-contacts-from-an-msg-file-and-convert-them-into-a-standardized-contactlist-object.cs",
         "import-distribution-list-members-from-a-json-array-mapping-json-fields-to-contact-properties-during-load.cs",
         "in-the-dragdrop-handler-cast-the-generic-drageventargs-to-aspose-outlookcontrol-drageventargs.cs",
         "in-the-dragenter-handler-set-e-effect-to-dragdropeffects-copy-for-outlook-items.cs",
         "integrate-the-aspose-outlook-control-into-the-windows-forms-project-toolbox-for-design-time-use.cs",
         "iterate-through-all-notes-in-a-directory-logging-each-note-creation-date-and-subject.cs",
         "iterate-through-the-files-collection-using-a-foreach-loop-efficiently.cs",
+        "load-a-calendar-from-an-eml-file-add-a-reminder-and-save-as-an-ics-file-preserving-data.cs",
+        "load-a-calendar-from-an-msg-file-change-its-time-zone-to-eastern-time-and-save-as-ics.cs",
+        "load-a-calendar-from-an-msg-file-duplicate-the-appointment-modify-the-duplicate-start-time-and-save-both.cs",
         "load-a-calendar-from-an-msg-file-enumerate-attendees-and-output-their-email-addresses-to-a-text-file.cs",
+        "load-a-calendar-from-an-msg-file-update-its-subject-line-and-save-the-changes-without-altering-properties.cs",
         "load-a-distribution-list-from-a-pst-file-and-enumerate-its-member-entries-programmatically.cs",
         "load-a-folder-of-msg-files-add-a-review-voting-button-to-each-and-save-changes.cs",
         "load-a-msg-note-file-change-its-body-text-and-overwrite-the-original-file.cs",
@@ -3587,6 +3717,7 @@
         "load-an-existing-msg-task-file-into-a-mapimessage-and-cast-it-to-mapitask-for-inspection.cs",
         "load-an-ics-file-change-its-product-identifier-to-a-custom-value-and-save-the-updated-file.cs",
         "load-an-ics-file-remove-its-product-identifier-and-save-the-modified-calendar-back-to-the-same-location.cs",
+        "load-an-msg-calendar-add-a-display-reminder-and-export-it-to-a-new-msg.cs",
         "load-an-msg-calendar-remove-all-attachments-and-save-the-modified-item-back-to-the-original-file.cs",
         "load-an-msg-file-add-a-new-attachment-and-save-the-message-in-msg-format.cs",
         "load-an-msg-file-and-add-a-read-receipt-request-header-to-request-notification-upon-opening.cs",
@@ -3662,6 +3793,8 @@
         "load-contacts-using-a-custom-stream-that-decrypts-data-on-the-fly-eliminating-the-need-for-temporary-files.cs",
         "load-contacts-using-a-memory-stream-to-avoid-temporary-files-and-improve-processing-speed.cs",
         "load-msg-files-from-a-zip-stream-extract-attachments-and-save-them-to-a-folder.cs",
+        "load-multiple-ics-files-from-a-directory-combine-their-appointments-into-a-single-msg-calendar-and-save.cs",
+        "load-multiple-msg-calendar-files-extract-their-start-dates-and-generate-a-chronological-report-in-csv-format.cs",
         "load-multiple-msg-files-and-detect-duplicate-attachment-filenames-across-the-collection.cs",
         "load-multiple-notes-from-a-directory-concatenate-their-bodies-and-write-the-combined-text-to-a-file.cs",
         "map-custom-mapi-properties-to-user-defined-fields-during-contact-import-to-retain-additional-metadata.cs",
@@ -3699,6 +3832,7 @@
         "read-and-modify-the-sensitivity-level-of-emails-in-an-eml-collection-according-to-policy.cs",
         "read-distribution-list-data-from-a-vcf-file-and-convert-members-into-contact-objects.cs",
         "read-follow-up-flag-status-and-due-date-from-an-msg-file-and-log-the-information.cs",
+        "read-outlook-contacts-stored-in-a-vcf-file-and-map-them-to-custom-data-models.cs",
         "read-the-flag-status-of-tasks-in-a-pst-and-generate-a-completion-percentage-report.cs",
         "read-the-importance-level-of-each-email-and-sort-messages-into-high-normal-and-low-folders.cs",
         "read-the-transport-headers-of-an-email-and-log-any-unexpected-routing-information.cs",
@@ -3770,9 +3904,11 @@
         "set-follow-up-flags-with-different-reminder-intervals-for-high-priority-and-low-priority-messages.cs",
         "set-reminderminutesbeforestart-to-fifteen-minutes-for-an-appointment-and-verify-the-reminder-triggers-correctly.cs",
         "set-the-appointment-busy-status-to-free-and-verify-the-change-appears-correctly-in-the-exported-icalendar-file.cs",
+        "set-the-appointment-end-time-one-hour-after-start-and-confirm-duration-equals-sixty-minutes-in-saved-file.cs",
         "set-the-appointment-importance-level-to-high-and-verify-the-flag-appears-in-the-exported-icalendar-file.cs",
         "set-the-appointment-location-property-to-a-conference-room-name-and-include-it-in-the-exported-msg-file.cs",
         "set-the-appointment-privacy-flag-to-confidential-and-confirm-the-flag-is-retained-after-converting-to-msg.cs",
+        "set-the-appointment-start-and-end-times-using-datetime-objects-in-a-time-zone-and-save-as-msg.cs",
         "set-the-delivery-receipt-request-flag-on-emails-that-contain-confidential-information.cs",
         "set-the-panel-backcolor-property-to-the-desired-ui-color.cs",
         "set-the-percentcomplete-property-to-75-percent-on-a-loaded-task-and-update-the-msg-file.cs",
@@ -3813,6 +3949,7 @@
         "use-regular-expressions-to-extract-domain-parts-from-contact-email-addresses-for-domain-level-analysis.cs",
         "use-the-outlook-control-to-receive-drageventargs-confirming-proper-integration.cs",
         "utilize-the-asynchronous-api-to-load-contacts-without-blocking-the-ui-thread-in-a-desktop-application.cs",
+        "validate-each-recipient-in-a-meeting-request-responded-by-checking-the-responsestatus-property-of-the-recipients-coll.cs",
         "validate-email-address-format-for-all-contacts-flagging-any-entries-that-fail-standard-regex-checks.cs",
         "validate-msg-file-integrity-before-processing-to-ensure-no-corruption-occurs-during-loading.cs",
         "validate-that-a-distribution-list-does-not-contain-duplicate-email-addresses-before-saving-to-the-target-format.cs",
@@ -3840,27 +3977,27 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 492
+          "count": 514
         },
         {
           "name": "Aspose.Email",
-          "count": 485
+          "count": 507
         },
         {
           "name": "System.IO",
-          "count": 411
+          "count": 427
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 322
+          "count": 337
         },
         {
           "name": "System.Collections.Generic",
-          "count": 110
+          "count": 114
         },
         {
           "name": "Aspose.Email.PersonalInfo",
-          "count": 68
+          "count": 70
         },
         {
           "name": "Aspose.Email.Storage.Pst",
@@ -3868,10 +4005,18 @@
         },
         {
           "name": "Aspose.Email.Calendar",
-          "count": 34
+          "count": 40
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
+          "count": 29
+        },
+        {
+          "name": "Aspose.Email.Calendar.Recurrences",
+          "count": 28
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange",
           "count": 27
         },
         {
@@ -3879,16 +4024,8 @@
           "count": 27
         },
         {
-          "name": "Aspose.Email.Clients.Exchange",
-          "count": 26
-        },
-        {
-          "name": "Aspose.Email.Calendar.Recurrences",
-          "count": 24
-        },
-        {
           "name": "System.Text",
-          "count": 22
+          "count": 23
         },
         {
           "name": "System.Text.Json",
@@ -4047,7 +4184,7 @@
     },
     {
       "name": "working-with-outlook-storage-files",
-      "file_count": 184,
+      "file_count": 192,
       "files": [
         "access-the-standard-rss-feeds-folder-and-list-all-feed-items-contained-within.cs",
         "add-a-default-category-to-messages-lacking-any-category-then-save-the-updated-pst-with-changes.cs",
@@ -4063,6 +4200,7 @@
         "add-multiple-file-attachments-to-a-mapijournal-using-its-attachments-collection-in-a-loop.cs",
         "apply-a-custom-filter-to-retrieve-only-calendar-items-with-a-specific-category-before-exporting.cs",
         "apply-a-custom-retention-policy-to-delete-messages-older-than-a-configurable-number-of-days.cs",
+        "apply-custom-category-color-mapping-when-converting-olm-to-pst-ensuring-exact-rgb-values-are-transferred.cs",
         "apply-password-protection-to-the-pst-file-with-strong-encryption-algorithm-for-enhanced-security.cs",
         "batch-add-fifty-mapitask-objects-with-incremental-due-dates-to-the-tasks-folder-in-a-single-transaction.cs",
         "batch-convert-all-olm-files-in-a-directory-to-pst-naming-each-output-file-after-its-source.cs",
@@ -4100,6 +4238,7 @@
         "create-manipulate-and-maintain-outlook-pst-storage-files-efficiently-programmatically-using-the-pst-format.cs",
         "create-predefined-calendar-tasks-journals-and-notes-folders-at-the-pst-root-and-confirm-their-creation.cs",
         "create-sub-folders-within-an-outlook-pst-storage-file-by-programmatically-manipulating-its-pst-format-structure.cs",
+        "delete-the-entire-journals-folder-from-a-pst-and-verify-that-no-journal-items-remain.cs",
         "detect-and-flag-encrypted-attachments-within-pst-messages-for-further-manual-review.cs",
         "detect-password-protection-on-multiple-pst-files-in-a-directory-and-generate-a-summary-report.cs",
         "detect-standard-ipm-folders-and-skip-them-during-custom-processing.cs",
@@ -4140,6 +4279,7 @@
         "filter-messages-by-a-specific-category-name-using-personalstoragequerybuilder-criteria.cs",
         "filter-messages-by-sender-domain-copy-matching-items-to-a-new-ost-file-and-preserve-original-timestamps.cs",
         "filter-messages-containing-attachments-with-specific-file-extensions-and-move-those-messages-to-a-designated-folder.cs",
+        "filter-pst-messages-by-sender-domain-and-move-matching-items-to-a-designated-folder.cs",
         "generate-a-csv-listing-attachment-names-sizes-and-originating-message-ids-for-all-items-in-a-pst.cs",
         "generate-a-csv-summary-of-all-emails-in-the-pst-including-subject-sender-and-size.cs",
         "generate-a-json-representation-of-email-metadata-including-subject-sender-and-timestamps-for-web-service-integration.cs",
@@ -4155,6 +4295,7 @@
         "implement-outlook-storage-handling-to-receive-update-notifications-about-pst-password-protection-using-pst-files.cs",
         "implement-pst-password-protection-handling-for-outlook-storage-files-using-the-pst-file-format.cs",
         "import-a-collection-of-msg-files-into-the-pst-preserving-original-timestamps-and-sender-information.cs",
+        "include-search-folders-during-pst-traversal-by-enabling-the-includesearchfolders-flag.cs",
         "insert-email-messages-from-a-specified-folder-into-an-existing-pst-storage-file-using-the-pst-format.cs",
         "insert-mapi-calendar-items-into-a-pst-file-using-outlook-storage-file-handling-in-pst-format.cs",
         "instantiate-a-mapicalendar-object-set-subject-and-start-time-then-add-it-to-the-calendar-folder.cs",
@@ -4191,10 +4332,13 @@
         "process-a-large-pst-using-streaming-mode-to-avoid-memory-overflow-while-extracting-messages.cs",
         "process-a-pst-larger-than-two-gigabytes-using-stream-based-loading-to-minimize-memory-consumption-during-extraction.cs",
         "programmatically-delete-specific-email-messages-from-outlook-pst-storage-files-using-the-pst-format.cs",
+        "programmatically-set-the-importance-flag-of-high-priority-emails-in-the-pst-based-on-keywords.cs",
         "read-an-olm-file-via-olmstorage-fromfile-extract-attachment-names-and-save-to-a-csv-report.cs",
         "read-distribution-lists-from-pst-outlook-storage-files-programmatically-using-the-pst-file-format.cs",
         "read-password-protected-pst-files-from-outlook-storage-using-the-pst-format-handling-capabilities-and-retrieve-mailbox-items.cs",
+        "read-the-conversation-thread-id-of-each-email-in-the-pst-and-group-them-accordingly.cs",
         "remove-specified-folders-from-pst-storage-files-programmatically-using-the-pst-file-format-capabilities.cs",
+        "remove-the-password-from-a-protected-pst-file-making-it-accessible-without-authentication.cs",
         "replace-inline-images-in-pst-messages-with-external-references-while-preserving-the-html-body-structure.cs",
         "retrieve-and-log-the-size-of-each-attachment-before-extraction-storing-the-information-in-a-summary-report.cs",
         "retrieve-category-colors-associated-with-each-message-and-map-them-to-their-respective-categories.cs",
@@ -4216,6 +4360,7 @@
         "subscribe-to-calendar-management-updates-by-processing-outlook-pst-storage-files-using-the-pst-format.cs",
         "subscribe-to-updates-for-pst-file-operations-while-handling-outlook-storage-files-in-pst-format.cs",
         "synchronize-messages-between-an-ost-file-and-a-pst-ensuring-no-duplicate-items-are-created.cs",
+        "transfer-category-colors-from-an-olm-file-to-a-pst-preserving-exact-rgb-values-during-conversion.cs",
         "transfer-email-items-between-folders-inside-a-pst-storage-file-using-the-pst-format-api.cs",
         "update-message-properties-within-pst-storage-files-by-accessing-outlook-data-using-the-pst-file-format.cs",
         "update-the-read-unread-flag-of-selected-emails-in-the-pst-based-on-custom-criteria.cs",
@@ -4237,27 +4382,27 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 184
+          "count": 192
         },
         {
           "name": "System.IO",
-          "count": 181
+          "count": 189
         },
         {
           "name": "Aspose.Email",
-          "count": 175
+          "count": 183
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 161
+          "count": 169
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 116
+          "count": 121
         },
         {
           "name": "System.Collections.Generic",
-          "count": 37
+          "count": 42
         },
         {
           "name": "Aspose.Email.Calendar",
@@ -4265,7 +4410,7 @@
         },
         {
           "name": "Aspose.Email.Storage.Olm",
-          "count": 10
+          "count": 12
         },
         {
           "name": "System.Text",
@@ -4360,22 +4505,88 @@
     },
     {
       "name": "working-with-pop3-client",
-      "file_count": 40,
+      "file_count": 174,
       "files": [
+        "access-messagecount-property-from-pop3mailboxinfo-to-report-number-of-available-messages.cs",
+        "add-a-pop3diagnosticlog-entry-to-appsettings-json-to-configure-pop3-activity-logging.cs",
+        "add-a-safeguard-that-prevents-deletemessage-execution-when-the-pop3-client-is-not-connected.cs",
+        "add-a-subject-filter-containing-newsletter-and-combine-it-with-the-date-filter-using-and.cs",
+        "apply-a-case-sensitive-subject-filter-for-the-exact-match-invoice-during-message-retrieval.cs",
+        "apply-a-mailquery-to-filter-messages-from-a-particular-sender-address-asynchronously.cs",
+        "apply-a-mailquery-to-filter-messages-with-attachment-sizes-greater-than-a-defined-threshold.cs",
+        "apply-a-mailquery-to-filter-unread-messages-asynchronously-for-focused-processing.cs",
+        "apply-custom-saveoptions-to-preserve-original-mime-headers-when-saving-a-mailmessage-to-an-eml-file.cs",
+        "build-a-mailquery-to-select-messages-from-a-specific-sender-email-address-and-retrieve-them.cs",
+        "build-the-mailquery-from-the-builder-and-retrieve-messages-filtered-by-today-date.cs",
+        "call-fetchmessage-with-sequence-number-five-to-download-the-full-email-as-a-mailmessage-object.cs",
+        "call-getmailboxsize-on-an-authenticated-pop3client-to-retrieve-total-mailbox-size-in-bytes.cs",
+        "call-undeletemessages-after-bulk-deletion-to-cancel-pending-removals-before-ending-the-session.cs",
+        "cancel-an-ongoing-asynchronous-pop3-operation-by-triggering-the-associated-cancellation-token.cs",
+        "catch-and-log-pop3exception-details-for-any-errors-occurring-during-asynchronous-pop3-calls.cs",
+        "catch-pop3exception-during-operations-and-examine-its-statuscode-to-identify-the-error.cs",
+        "catch-pop3exception-to-handle-server-disconnections-and-attempt-automatic-reconnection.cs",
+        "combine-a-sender-email-filter-and-a-subject-keyword-filter-using-or-to-retrieve-alternatives.cs",
+        "combine-credential-validation-and-extension-retrieval-in-a-single-workflow-after-establishing-the-connection.cs",
+        "combine-mailquery-criteria-using-logical-or-to-broaden-asynchronous-message-retrieval-scope.cs",
+        "combine-multiple-mailquery-criteria-using-logical-and-to-narrow-down-asynchronous-message-selection.cs",
+        "compare-performance-metrics-of-synchronous-versus-asynchronous-pop3-retrieval-in-a-benchmark-test.cs",
+        "configure-a-generic-proxy-by-setting-proxyhost-proxyport-proxyusername-and-proxypassword-on-the-client.cs",
+        "configure-an-http-proxy-by-setting-httpproxyhost-and-httpproxyport-before-establishing-the-connection.cs",
         "configure-logging-for-the-pop3-client-to-capture-connection-and-authentication-details-during-email-retrieval.cs",
+        "configure-mailquerybuilder-to-filter-messages-by-sender-domain-example-com-and-execute-the-query.cs",
+        "configure-pop3client-with-server-address-port-username-and-password-before-asynchronous-operations.cs",
+        "configure-the-client-to-use-a-proxy-server-for-asynchronous-pop3-communication-when-necessary.cs",
         "configure-the-pop3-client-by-assigning-appropriate-property-values-to-control-its-behavior-and-connection-settings.cs",
         "configure-the-pop3-client-to-record-all-pop3-operations-and-generate-detailed-activity-logs-for-troubleshooting.cs",
         "configure-the-pop3-client-with-the-appropriate-username-and-password-to-authenticate-the-email-session.cs",
+        "connect-asynchronously-to-the-pop3-server-using-provided-credentials-and-a-cancellation-token.cs",
+        "connect-to-a-pop3-server-with-explicit-credentials-and-set-a-custom-timeout-of-thirty-seconds.cs",
+        "connect-to-the-pop3-server-and-call-listmessages-to-obtain-all-messages.cs",
+        "connect-to-the-pop3-server-using-an-ipv6-address-by-supplying-the-host-in-ipv6-format.cs",
+        "construct-a-complex-mailquery-with-date-range-sender-domain-and-subject-contains-conditions-using-and.cs",
+        "convert-a-retrieved-email-to-a-mime-string-asynchronously-to-integrate-with-other-messaging-systems.cs",
+        "create-a-function-accepting-a-list-of-sender-email-addresses-and-returning-all-matching-messages.cs",
+        "create-a-mailquerybuilder-and-add-a-date-filter-for-messages-received-today.cs",
+        "create-a-unit-test-confirming-mailquerybuilder-correctly-combines-filters-using-both-and-and-or.cs",
+        "define-a-custom-operation-timeout-by-assigning-a-millisecond-value-to-the-timeout-property.cs",
+        "define-a-pop3diagnosticlog-key-in-app-config-with-a-valid-file-path-to-enable-logging.cs",
+        "delete-a-single-message-by-its-positive-index-after-confirming-the-index-is-greater-than-zero.cs",
         "delete-selected-emails-from-a-pop3-server-using-the-pop3-client-api-ensuring-proper-session-handling.cs",
+        "detect-and-handle-corrupted-messages-during-asynchronous-fetch-by-skipping-and-logging-them.cs",
+        "develop-a-method-that-marks-messages-for-deletion-but-commits-only-when-undeletemessages-is-not-called.cs",
+        "develop-a-unit-test-ensuring-deletemessage-throws-an-exception-for-zero-or-negative-indices.cs",
+        "dispose-pop3client-properly-after-completing-all-mailbox-operations-to-release-network-resources.cs",
+        "dispose-the-pop3client-instance-after-completing-all-asynchronous-operations-to-release-resources.cs",
+        "enable-apop-authentication-by-setting-useapop-to-true-prior-to-calling-connect.cs",
+        "enable-explicit-tls-stls-after-a-plain-connection-asynchronously-to-upgrade-security.cs",
+        "enable-multiconnection-mode-by-setting-pop3client-usemulticonnection-to-true-before-fetching-messages.cs",
+        "enable-pop3-activity-logging-by-setting-enablelogging-to-true-before-connecting.cs",
+        "ensure-pop3client-implements-idisposable-correctly-by-testing-disposal-after-asynchronous-operations-in-unit-tests.cs",
+        "ensure-the-pop3-diagnostic-log-file-is-created-and-records-connection-timestamps-after-client-initialization.cs",
+        "ensure-undeletemessages-restores-messages-after-deletemessage-is-called-but-before-the-session-ends.cs",
+        "enumerate-supported-extensions-through-the-extensions-property-once-the-client-is-connected.cs",
         "establish-a-pop3-client-connection-list-mailbox-messages-retrieve-a-chosen-email-and-close-the-session.cs",
         "establish-a-pop3-client-connection-to-a-mail-server-using-net-apis-with-appropriate-authentication.cs",
+        "establish-a-secure-ssl-tls-connection-asynchronously-prior-to-authenticating-with-the-pop3-server.cs",
+        "expose-a-wrapper-method-that-returns-messages-matching-a-dynamically-built-mailquery-from-user-input.cs",
+        "gracefully-close-the-pop3-session-by-calling-disconnect-after-processing-messages.cs",
+        "handle-taskcanceledexception-gracefully-when-an-asynchronous-pop3-operation-is-interrupted.cs",
+        "implement-a-function-that-retrieves-messages-where-the-recipient-address-matches-a-specified-domain.cs",
+        "implement-a-helper-method-that-returns-true-when-validatecredentials-succeeds-otherwise-false.cs",
+        "implement-a-method-that-returns-true-if-any-today-received-message-contains-the-keyword-urgent.cs",
         "implement-a-pop3-client-operation-that-removes-messages-from-the-server-whose-subject-matches-a-given-pattern.cs",
         "implement-a-pop3-client-to-connect-to-a-mail-server-fetch-messages-and-perform-standard-management-operations.cs",
+        "implement-a-progress-reporter-that-updates-after-each-message-is-successfully-retrieved-from-the-pop3-server.cs",
+        "implement-an-email-archiving-workflow-that-moves-asynchronously-retrieved-messages-to-archive-storage.cs",
         "implement-asynchronous-email-retrieval-processing-and-deletion-using-the-pop3-client-class-pop3client-in-net-applications.cs",
+        "implement-parallel-fetching-of-message-headers-with-parallel-foreach-while-multiconnection-mode-is-enabled.cs",
         "implement-pop3-client-callback-handling-to-process-server-events-and-responses-appropriately-within-an-asynchronous-workflow.cs",
         "implement-pop3-client-functionality-to-connect-to-a-mail-server-and-fetch-email-messages.cs",
         "implement-pop3-client-functionality-to-filter-retrieved-messages-based-on-specified-criteria-and-process-them-accordingly.cs",
         "implement-pop3-client-functionality-to-remove-specified-email-messages-from-the-server-mailbox-based-on-unique-identifiers.cs",
+        "implement-retry-logic-that-reconnects-to-the-pop3-server-when-a-timeout-exception-occurs.cs",
+        "implement-retry-logic-with-exponential-backoff-for-transient-pop3-connection-failures-during-asynchronous-calls.cs",
+        "initialize-a-pop3client-instance-and-connect-securely-to-a-pop3-server-using-ssl-on-port-995.cs",
         "initialize-asynchronous-pop3-client-operations-to-retrieve-or-manage-email-messages-without-blocking-execution.cs",
         "initiate-asynchronous-pop3-operations-by-calling-beginconnect-handling-connectcompleted-then-asynchronously-list-and-retrieve.cs",
         "instantiate-a-pop3-client-by-creating-a-pop3client-object-configured-for-server-connection-using-appropriate-credentials.cs",
@@ -4383,16 +4594,73 @@
         "instantiate-a-pop3-client-object-using-the-appropriate-client-class-for-pop3-communication-within-your-application.cs",
         "instantiate-a-pop3-client-object-using-the-library-s-pop3-client-class-for-net-applications.cs",
         "instantiate-and-configure-a-pop3-client-to-establish-an-initial-connection-with-a-pop3-server.cs",
+        "instantiate-pop3client-and-connect-to-a-pop3-server-with-host-port-username-and-password.cs",
+        "instantiate-pop3client-with-server-credentials-and-retrieve-all-mailbox-messages.cs",
+        "invoke-fetchheaders-with-sequence-number-three-to-retrieve-headers-of-the-third-email.cs",
         "invoke-the-pop3-client-s-disconnect-method-to-terminate-the-session-and-release-underlying-network-resources.cs",
         "invoke-the-pop3-client-s-validatecredentials-method-to-programmatically-verify-user-authentication-against-the-mail-server.cs",
+        "iterate-over-stored-message-identifiers-and-download-each-message-sequentially-applying-the-configured-timeout.cs",
+        "iterate-over-the-filtered-collection-and-log-each-message-from-subject-and-receiveddate-properties.cs",
+        "list-all-messages-asynchronously-from-the-mailbox-without-applying-any-search-filters.cs",
+        "list-all-unique-message-identifiers-by-enumerating-results-of-getmessagesummarybyid-across-the-mailbox.cs",
+        "list-messages-asynchronously-with-a-mailquery-filtering-subjects-containing-a-specific-keyword.cs",
+        "list-messages-asynchronously-with-a-mailquery-selecting-emails-received-within-a-defined-date-range.cs",
+        "log-both-connection-attempts-and-retrieved-extensions-to-a-file-by-enabling-logging-before-connect.cs",
+        "log-each-successful-message-fetch-with-its-sequence-number-and-timestamp-to-the-diagnostic-log.cs",
+        "log-the-total-number-of-messages-retrieved-after-applying-a-mailquery-filter-for-debugging-purposes.cs",
+        "log-timestamps-of-each-asynchronous-pop3-operation-to-create-an-audit-trail-for-debugging.cs",
+        "loop-through-sequence-numbers-ten-to-twenty-and-call-fetchheaders-to-retrieve-each-header-batch.cs",
+        "measure-the-round-trip-time-of-the-connect-call-by-recording-timestamps-before-and-after-the-method.cs",
+        "mock-mailquery-results-for-listmessagesasync-in-unit-tests-to-simulate-filtered-message-sets.cs",
+        "monitor-progress-of-asynchronous-message-retrieval-using-iprogress-t-to-update-ui-elements.cs",
+        "obtain-mailbox-statistics-asynchronously-including-total-message-count-and-overall-mailbox-size.cs",
+        "parallelize-message-downloads-using-task-whenall-while-ensuring-only-one-pop3client-instance-accesses-the-server-at-a.cs",
+        "parse-a-mime-string-asynchronously-to-extract-embedded-images-after-email-download.cs",
+        "parse-a-retrieved-mailmessage-to-extract-attachments-before-saving-it-to-a-designated-folder.cs",
+        "perform-batch-retrieval-of-the-first-ten-messages-asynchronously-to-process-recent-emails-quickly.cs",
+        "perform-bulk-deletion-by-iterating-filtered-messages-and-invoking-deletemessage-for-each-valid-index.cs",
         "process-validation-results-using-the-pop3-client-ensuring-appropriate-handling-of-server-responses-and-error-conditions.cs",
         "programmatically-establish-a-pop3-client-connection-to-a-mail-server-for-retrieving-email-messages.cs",
+        "provide-cancellation-support-for-asynchronous-credential-validation-by-passing-a-cancellationtoken-parameter.cs",
+        "read-occupiedsize-property-from-pop3mailboxinfo-to-determine-mailbox-storage-usage.cs",
+        "record-the-duration-of-each-pop3-command-execution-in-the-diagnostic-log-for-performance-analysis.cs",
         "register-asynchronous-event-handlers-on-the-pop3-client-to-receive-real-time-notifications-of-mailbox-changes.cs",
+        "retrieve-a-concise-message-summary-using-getmessagesummarybyid-for-a-specific-unique-identifier.cs",
         "retrieve-a-message-list-via-pop3-download-a-selected-email-remove-it-from-the-server-and-close-the-connection.cs",
+        "retrieve-a-message-using-the-uidl-command-asynchronously-for-unique-identifier-based-retrieval.cs",
+        "retrieve-a-single-email-message-asynchronously-by-its-sequence-number-from-the-mailbox.cs",
+        "retrieve-all-attachments-from-an-email-asynchronously-and-process-each-attachment-stream-individually.cs",
+        "retrieve-all-message-identifiers-with-listmessages-and-store-them-in-a-local-collection-for-later-processing.cs",
+        "retrieve-an-email-message-asynchronously-using-its-unique-identifier-uid-for-precise-selection.cs",
         "retrieve-an-email-message-from-a-mailbox-using-the-pop3-client-interface-with-appropriate-authentication.cs",
         "retrieve-and-display-a-list-of-email-messages-from-a-pop3-server-using-the-client-interface.cs",
+        "retrieve-mailbox-size-and-message-count-concurrently-using-asynchronous-methods-for-efficient-reporting.cs",
+        "retrieve-only-email-headers-asynchronously-to-minimize-bandwidth-usage-for-large-messages.cs",
+        "retrieve-server-extensions-by-invoking-getextensions-after-successful-authentication-call.cs",
         "retrieve-the-list-of-email-messages-from-a-pop3-server-using-the-client-api.cs",
+        "retrieve-the-plain-text-body-of-an-email-asynchronously-for-content-analysis-purposes.cs",
+        "reuse-an-existing-pop3client-connection-to-fetch-multiple-messages-without-re-authenticating-each-time.cs",
+        "save-a-fetched-mailmessage-to-disk-in-eml-format-without-parsing-using-saveoptions-defaulteml.cs",
+        "save-each-asynchronously-retrieved-attachment-to-a-local-file-path-while-preserving-original-filenames.cs",
+        "schedule-a-nightly-task-that-connects-to-pop3-and-deletes-messages-older-than-thirty-days.cs",
+        "serialize-a-retrieved-email-to-an-in-memory-eml-format-asynchronously-for-further-processing.cs",
+        "set-a-custom-client-timeout-of-fifteen-seconds-to-prevent-long-running-pop3-operations-from-hanging.cs",
+        "set-a-custom-network-timeout-for-asynchronous-pop3-methods-to-avoid-indefinite-waiting-periods.cs",
+        "set-enablessl-to-true-before-connect-to-establish-a-secure-ssl-tls-pop3-session.cs",
+        "set-pop3client-connectionsquantity-to-five-to-configure-the-number-of-concurrent-pop3-connections.cs",
+        "set-pop3client-diagnosticlog-property-in-code-to-enable-pop3-client-logging-programmatically.cs",
+        "set-servicepointmanager-securityprotocol-to-tls-1-2-before-connecting-to-enforce-tls-1-2-usage.cs",
         "set-the-pop3-client-s-logfilepath-property-before-connecting-to-enable-activity-logging-during-the-session.cs",
+        "specify-a-non-standard-pop3-port-number-when-calling-connect-to-accommodate-custom-server-configurations.cs",
+        "specify-an-absolute-path-for-pop3diagnosticlog-to-store-logs-on-a-network-shared-drive.cs",
+        "store-retrieved-email-metadata-asynchronously-in-a-database-for-indexing-and-search-capabilities.cs",
+        "stream-attachment-content-directly-to-a-memory-buffer-without-writing-to-disk-during-asynchronous-fetch.cs",
+        "update-message-status-flag-asynchronously-after-processing-such-as-marking-the-message-as-read.cs",
+        "use-a-using-statement-to-automatically-dispose-pop3client-after-completing-asynchronous-tasks.cs",
+        "use-a-using-statement-to-automatically-dispose-pop3client-after-completing-pop3-interactions.cs",
+        "use-deletemessages-to-remove-all-emails-from-the-pop3-mailbox-in-a-single-call.cs",
+        "use-getmailboxinfo-to-obtain-mailbox-details-including-message-count-and-occupied-size.cs",
+        "use-pagination-with-listmessagesasync-by-skipping-a-specific-number-of-messages-and-taking-the-next-set.cs",
         "use-the-pop3-client-api-to-locate-and-permanently-delete-a-targeted-email-message-from-the-mailbox.cs",
         "utilize-a-pop3-client-to-execute-standard-pop3-commands-for-retrieving-and-managing-email-messages.cs",
         "utilize-a-pop3-client-to-retrieve-and-filter-messages-from-a-mail-server-based-on-specified-criteria.cs",
@@ -4400,60 +4668,104 @@
         "utilize-the-pop3-client-to-remove-processed-messages-from-the-mailbox-ensuring-the-server-remains-tidy.cs",
         "utilize-the-pop3-client-to-retrieve-and-analyze-server-log-output-for-troubleshooting-purposes.cs",
         "utilize-the-pop3-client-to-retrieve-and-handle-messages-that-meet-specified-filter-criteria.cs",
+        "validate-credentials-asynchronously-using-validatecredentialsasync-and-await-the-resulting-task.cs",
+        "validate-credentials-synchronously-using-validatecredentials-without-sending-any-email-message.cs",
         "validate-pop3-server-credentials-by-connecting-with-a-pop3-client-and-authenticating-the-provided-credentials.cs",
-        "validate-required-conditions-by-connecting-with-a-pop3-client-before-proceeding-with-email-operations.cs"
+        "validate-required-conditions-by-connecting-with-a-pop3-client-before-proceeding-with-email-operations.cs",
+        "validate-required-email-headers-asynchronously-after-retrieval-to-ensure-message-integrity-before-processing.cs",
+        "validate-that-deletemessages-removes-all-messages-by-confirming-the-mailbox-is-empty-afterward.cs",
+        "validate-that-fetched-mailmessage-objects-contain-a-non-empty-subject-header-before-saving-to-disk.cs",
+        "validate-the-message-index-before-calling-deletemessage-to-avoid-an-argumentexception.cs",
+        "verify-server-capabilities-asynchronously-before-establishing-a-pop3-session-to-ensure-feature-support.cs",
+        "verify-that-each-retrieved-message-uid-remains-unique-across-multiple-asynchronous-fetches.cs",
+        "verify-that-undeletemessages-fails-gracefully-when-the-pop3-connection-is-unexpectedly-closed.cs",
+        "write-a-unit-test-for-getmessageasync-using-a-mock-pop3-server-to-verify-correct-behavior.cs",
+        "write-code-that-filters-messages-whose-subject-starts-with-re-using-a-case-sensitive-comparison.cs"
       ],
       "required_namespaces": [
         {
           "name": "System",
-          "count": 40
+          "count": 174
         },
         {
           "name": "Aspose.Email.Clients.Pop3",
-          "count": 40
+          "count": 166
         },
         {
           "name": "Aspose.Email",
-          "count": 29
+          "count": 162
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 24
-        },
-        {
-          "name": "System.IO",
-          "count": 13
-        },
-        {
-          "name": "Aspose.Email.Tools.Search",
-          "count": 8
-        },
-        {
-          "name": "System.Threading.Tasks",
-          "count": 4
-        },
-        {
-          "name": "System.Net",
-          "count": 3
+          "count": 137
         },
         {
           "name": "System.Threading",
-          "count": 3
+          "count": 59
+        },
+        {
+          "name": "System.Threading.Tasks",
+          "count": 59
+        },
+        {
+          "name": "System.IO",
+          "count": 30
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 20
         },
         {
           "name": "System.Collections.Generic",
+          "count": 9
+        },
+        {
+          "name": "System.Net",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.Clients.Pop3.Models",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 4
+        },
+        {
+          "name": "System.Linq",
           "count": 2
+        },
+        {
+          "name": "System.Diagnostics",
+          "count": 2
+        },
+        {
+          "name": "System.Text.Json",
+          "count": 1
+        },
+        {
+          "name": "System.Text.Json.Nodes",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.Dav",
+          "count": 1
+        },
+        {
+          "name": "System.Text",
+          "count": 1
         }
       ],
       "key_apis": []
     },
     {
       "name": "working-with-smtp-client",
-      "file_count": 159,
+      "file_count": 169,
       "files": [
         "add-a-custom-reply-to-address-that-differs-from-the-from-address-for-handling-responses.cs",
         "add-a-custom-x-audit-trail-header-containing-a-json-payload-with-operation-metadata.cs",
         "add-a-custom-x-campaign-id-header-to-tag-the-email-with-a-marketing-campaign-identifier.cs",
+        "add-a-custom-x-compliance-tag-header-to-indicate-regulatory-compliance-category-for-the-email.cs",
         "add-a-custom-x-correlation-id-header-to-correlate-the-email-with-related-system-events.cs",
         "add-a-custom-x-delivery-token-header-containing-a-guid-to-uniquely-identify-each-send-attempt.cs",
         "add-a-custom-x-environment-header-to-indicate-whether-the-email-is-sent-from-development-staging-or-production.cs",
@@ -4480,6 +4792,7 @@
         "attach-a-pdf-document-from-a-memory-stream-to-an-email-and-transmit-it-using-tls-encryption.cs",
         "authenticate-to-the-smtp-server-using-cram-md5-by-setting-authenticationtype-property.cs",
         "bind-the-smtp-client-to-a-specific-local-ip-address-using-bindipendpoint.cs",
+        "bind-the-smtp-client-to-the-ipv6-address-of-the-host-machine-for-dual-stack-compatibility.cs",
         "configure-a-maximum-attachment-size-limit-of-10-mb-and-reject-oversized-files-before-sending.cs",
         "configure-a-socks-proxy-with-username-and-password-to-authenticate-the-client-before-establishing-smtp-connection.cs",
         "configure-smtpclient-proxy-with-a-socks5-server-to-route-email-traffic-securely.cs",
@@ -4500,10 +4813,12 @@
         "configure-the-client-to-automatically-retry-sending-when-encountering-transient-4xx-smtp-error-codes.cs",
         "configure-the-client-to-automatically-strip-html-tags-from-the-body-when-sending-to-plain-text-only-recipients.cs",
         "configure-the-client-to-reuse-a-single-smtp-connection-for-sending-a-batch-of-fifty-messages.cs",
+        "configure-the-client-to-use-a-connection-pool-with-a-maximum-of-five-simultaneous-smtp-sessions.cs",
         "configure-the-client-to-use-a-specific-tls-protocol-version-such-as-tls-1-2-for-secure-connections.cs",
         "configure-the-smtp-client-to-ignore-certificate-revocation-checks-for-testing-environments.cs",
         "configure-the-smtp-client-to-use-a-connection-timeout-of-10-seconds-and-a-read-timeout-of-30-seconds.cs",
         "configure-the-smtp-client-to-use-a-custom-dns-resolver-that-prefers-ipv6-over-ipv4-addresses.cs",
+        "configure-the-smtp-client-to-use-a-custom-retry-interval-of-15-seconds-between-each-resend-attempt.cs",
         "configure-the-smtp-client-to-use-a-proxy-server-for-routing-all-email-traffic-securely.cs",
         "configure-the-smtp-client-to-use-a-specific-authentication-realm-when-connecting-to-the-server.cs",
         "configure-the-smtp-client-to-use-a-specific-local-ip-address-for-outbound-connections.cs",
@@ -4516,6 +4831,7 @@
         "create-an-smtp-client-using-configuration-extracted-from-an-msg-file-and-transmit-the-email.cs",
         "enable-delivery-status-notifications-for-success-failure-and-delay-events-on-each-outgoing-email.cs",
         "enable-detailed-smtp-activity-logging-and-write-the-log-entries-to-a-rotating-file-system.cs",
+        "enable-keep-alive-on-the-smtp-connection-to-reduce-handshake-overhead-for-consecutive-messages.cs",
         "enable-smtp-communication-logging-for-email-transmission-specifying-logfile-and-loglevel-settings-with-an-msg-source.cs",
         "enable-smtp-pipelining-to-send-multiple-commands-without-waiting-for-individual-server-responses.cs",
         "enable-smtp-protocol-logging-and-transmit-an-email-message-loaded-from-an-msg-file.cs",
@@ -4531,6 +4847,7 @@
         "implement-a-feature-that-validates-spf-records-for-the-sending-domain-before-attempting-smtp-delivery.cs",
         "implement-a-logging-interceptor-that-records-the-size-of-each-email-payload-before-transmission.cs",
         "implement-a-mechanism-that-encrypts-attachments-using-aes-before-adding-them-to-the-email.cs",
+        "implement-a-mechanism-that-encrypts-the-smtp-session-using-starttls-only-after-verifying-server-certificate-fingerpri.cs",
         "implement-a-mechanism-that-logs-the-smtp-server-banner-message-upon-establishing-the-connection.cs",
         "implement-a-mechanism-that-pauses-sending-when-the-server-returns-a-421-response-then-resumes-after-delay.cs",
         "implement-a-mechanism-that-queues-messages-locally-when-the-smtp-server-is-unreachable-then-retries-later.cs",
@@ -4576,11 +4893,13 @@
         "send-a-message-with-multiple-bcc-recipients-while-keeping-their-addresses-hidden-from-other-recipients.cs",
         "send-a-multipart-alternative-email-that-includes-both-plain-text-and-html-versions-for-client-compatibility.cs",
         "send-a-plain-text-email-through-an-smtp-server-using-explicit-ssl-on-port-465.cs",
+        "send-an-email-with-a-compressed-pdf-attachment-generated-on-the-fly-from-html-using-a-third-party-library.cs",
         "send-an-email-with-a-compressed-zip-attachment-ensuring-the-attachment-size-does-not-exceed-5-mb.cs",
         "send-an-email-with-a-custom-x-language-header-indicating-the-primary-language-of-the-message-content.cs",
         "send-an-email-with-a-dynamically-generated-pdf-attachment-created-from-html-content-at-runtime.cs",
         "send-an-email-with-a-dynamically-generated-qr-code-image-embedded-as-an-inline-attachment.cs",
         "send-an-email-with-a-multipart-alternative-body-that-includes-both-plain-text-and-rtf-versions.cs",
+        "send-an-email-with-a-multipart-mixed-body-that-includes-a-json-payload-attachment-for-api-integration.cs",
         "send-an-email-with-a-multipart-mixed-body-that-includes-a-text-part-html-part-and-attachment.cs",
         "send-an-email-with-a-plain-text-body-encoded-in-iso-8859-1-for-legacy-client-compatibility.cs",
         "send-an-email-with-a-plain-text-fallback-body-for-clients-that-cannot-render-html-content.cs",
@@ -4601,8 +4920,10 @@
         "specify-a-custom-message-id-generator-that-creates-globally-unique-identifiers-for-each-sent-email.cs",
         "throttle-email-sending-rate-to-no-more-than-20-messages-per-minute-to-avoid-server-limits.cs",
         "transmit-an-msg-email-file-through-smtp-by-configuring-smtpclient-with-sample-server-and-credential-parameters.cs",
+        "use-a-custom-dns-resolver-to-locate-mx-records-for-the-recipient-domain-before-sending.cs",
         "use-a-secure-socket-layer-ssl-stream-wrapper-to-encrypt-the-entire-smtp-session.cs",
         "use-an-http-proxy-that-requires-custom-authentication-headers-and-configure-smtpclient-proxy-accordingly.cs",
+        "use-an-http-proxy-with-ntlm-authentication-to-send-emails-from-a-windows-domain-joined-environment.cs",
         "use-bindipendpoint-to-select-a-specific-network-interface-for-sending-emails-from-a-multi-homed-server.cs",
         "use-smtpclient-to-authenticate-to-the-smtp-server-with-basic-ntlm-or-oauth2-credentials-when-sending-an-msg-email.cs",
         "use-the-smtp-client-to-send-a-message-with-a-multipart-related-structure-containing-inline-images.cs",
@@ -4614,47 +4935,47 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 159
+          "count": 169
         },
         {
           "name": "Aspose.Email",
-          "count": 158
+          "count": 168
         },
         {
           "name": "Aspose.Email.Clients.Smtp",
-          "count": 129
+          "count": 138
         },
         {
           "name": "Aspose.Email.Clients",
-          "count": 78
+          "count": 86
         },
         {
           "name": "System.IO",
-          "count": 52
+          "count": 55
         },
         {
           "name": "System.Collections.Generic",
-          "count": 20
+          "count": 21
         },
         {
           "name": "System.Net",
-          "count": 16
+          "count": 19
+        },
+        {
+          "name": "Aspose.Email.Clients.Exchange.Dav",
+          "count": 11
         },
         {
           "name": "Aspose.Email.Mime",
           "count": 11
         },
         {
-          "name": "Aspose.Email.Clients.Exchange.Dav",
-          "count": 10
-        },
-        {
           "name": "System.Threading",
-          "count": 8
+          "count": 9
         },
         {
           "name": "System.Text",
-          "count": 8
+          "count": 9
         },
         {
           "name": "Aspose.Email.Clients.Imap",
@@ -4665,15 +4986,23 @@
           "count": 4
         },
         {
+          "name": "System.Net.Security",
+          "count": 4
+        },
+        {
           "name": "Aspose.Email.Mapi",
           "count": 4
         },
         {
-          "name": "System.Net.Security",
+          "name": "System.Security.Cryptography.X509Certificates",
           "count": 3
         },
         {
-          "name": "System.Security.Cryptography.X509Certificates",
+          "name": "System.IO.Compression",
+          "count": 3
+        },
+        {
+          "name": "System.Security.Cryptography",
           "count": 3
         },
         {
@@ -4682,10 +5011,6 @@
         },
         {
           "name": "Aspose.Email.Clients.Exchange.WebService",
-          "count": 2
-        },
-        {
-          "name": "System.IO.Compression",
           "count": 2
         },
         {
@@ -4705,7 +5030,7 @@
           "count": 2
         },
         {
-          "name": "System.Security.Cryptography",
+          "name": "Aspose.Words",
           "count": 2
         },
         {
@@ -4721,11 +5046,19 @@
           "count": 1
         },
         {
+          "name": "System.Net.Sockets",
+          "count": 1
+        },
+        {
           "name": "Aspose.Email.Clients.Base",
           "count": 1
         },
         {
           "name": "Aspose.Email.Tools.Merging",
+          "count": 1
+        },
+        {
+          "name": "Aspose.Email.Clients.Smtp.Models",
           "count": 1
         },
         {
@@ -4750,10 +5083,6 @@
         },
         {
           "name": "var payloadStream = new MemoryStream(payloadBytes)",
-          "count": 1
-        },
-        {
-          "name": "Aspose.Words",
           "count": 1
         },
         {
