@@ -1,4 +1,3 @@
-using Aspose.Email.Calendar;
 using System;
 using System.IO;
 using System.Text;
@@ -7,47 +6,33 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Input and output file paths
             string inputPath = "calendar.msg";
             string outputPath = "calendar_updated.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
+            // Ensure input file exists; create a minimal placeholder if missing
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    // Create a minimal calendar message
-                    using (MapiMessage placeholder = new MapiMessage("from@example.com", "to@example.com", "Placeholder Calendar", "Placeholder body"))
+                    using (MapiMessage placeholder = new MapiMessage("from@example.com", "to@example.com", "Placeholder Calendar", "Body"))
                     {
-                        // Set the message class to indicate a calendar item
-                        placeholder.MessageClass = "IPM.Appointment";
-
-                        // Ensure the directory for the input file exists
-                        string inputDir = Path.GetDirectoryName(inputPath);
-                        if (!string.IsNullOrEmpty(inputDir) && !Directory.Exists(inputDir))
-                        {
-                            Directory.CreateDirectory(inputDir);
-                        }
-
-                        // Save the placeholder message
                         placeholder.Save(inputPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder input file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder file: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the message from file
+            // Load the message and verify it is a calendar item
             using (MapiMessage msg = MapiMessage.Load(inputPath))
             {
-                // Verify that the loaded message is a calendar item
                 if (msg.SupportedType != MapiItemType.Calendar)
                 {
                     string placeholderIcsPath = Path.ChangeExtension(outputPath, ".ics");
@@ -61,39 +46,39 @@ class Program
                         Console.Error.WriteLine($"Error writing placeholder ICS: {ex.Message}");
                     }
                     return;
-
-                    Console.Error.WriteLine("The provided file is not a calendar item.");
-                    return;
                 }
 
                 // Convert to MapiCalendar
-                using (MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem())
+                MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
+
+                // Add custom property for project code
+                const string projectCode = "PRJ123";
+                byte[] projectCodeBytes = Encoding.Unicode.GetBytes(projectCode);
+                const long customTag = 0x8000; // Example custom property tag
+                calendar.SetProperty(new MapiProperty(customTag, projectCodeBytes));
+
+                // Ensure output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
-                    // Access the underlying MapiMessage to add a custom property
-                    MapiMessage underlyingMessage = calendar.GetUnderlyingMessage();
+                    Directory.CreateDirectory(outputDir);
+                }
 
-                    // Define the custom property value (project code)
-                    string projectCode = "PRJ123";
-                    byte[] projectCodeBytes = Encoding.Unicode.GetBytes(projectCode);
-
-                    // Add the custom property named "ProjectCode"
-                    underlyingMessage.AddCustomProperty(MapiPropertyType.PT_UNICODE, projectCodeBytes, "ProjectCode");
-
-                    // Ensure the output directory exists
-                    string outputDir = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-
-                    // Save the updated calendar as a MSG file using default MSG save options
-                    calendar.Save(outputPath, MapiCalendarSaveOptions.DefaultMsg);
+                // Save the updated calendar
+                try
+                {
+                    calendar.Save(outputPath);
+                    Console.WriteLine($"Calendar saved with custom property to '{outputPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save updated calendar: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
