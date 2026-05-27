@@ -1,87 +1,76 @@
+using Aspose.Email.Clients.Exchange;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
+
+            // Skip execution when placeholder credentials are detected
+            if (serviceUrl.Contains("example.com") || username == "username")
             {
-                // Placeholder connection settings
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "username";
-                string password = "password";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                return;
+            }
 
-                // Guard against placeholder credentials to avoid real network calls during CI
-                if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
-                {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
-                    return;
-                }
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // Email address of the existing distribution list
+                string dlEmail = "team@example.com";
 
-                // Create and connect the EWS client
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                // Prepare a minimal ExchangeDistributionList instance with the identifier
+                ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                distributionList.Id = dlEmail;
+
+                // Fetch current members of the distribution list
+                MailAddressCollection existingMembers = client.FetchDistributionList(distributionList);
+
+                // Define new contacts to add
+                MailAddressCollection newMembers = new MailAddressCollection();
+                newMembers.Add(new MailAddress("alice@example.com"));
+                newMembers.Add(new MailAddress("bob@example.com"));
+
+                // Determine which new members are not already present
+                MailAddressCollection membersToAdd = new MailAddressCollection();
+                foreach (MailAddress candidate in newMembers)
                 {
-                    try
+                    bool alreadyExists = false;
+                    foreach (MailAddress existing in existingMembers)
                     {
-                        // Identify the existing distribution list (replace with a real Id)
-                        ExchangeDistributionList distributionList = new ExchangeDistributionList();
-                        distributionList.Id = "distribution-list-id";
-
-                        // Fetch current members of the distribution list
-                        MailAddressCollection existingMembers = client.FetchDistributionList(distributionList);
-
-                        // Prepare the list of contacts to add
-                        MailAddressCollection contactsToAdd = new MailAddressCollection();
-                        contactsToAdd.Add(new MailAddress("alice@example.com"));
-                        contactsToAdd.Add(new MailAddress("bob@example.com"));
-                        contactsToAdd.Add(new MailAddress("carol@example.com"));
-
-                        // Build a collection containing only non‑duplicate members
-                        MailAddressCollection membersToAdd = new MailAddressCollection();
-                        foreach (MailAddress newMember in contactsToAdd)
+                        if (string.Equals(existing.Address, candidate.Address, StringComparison.OrdinalIgnoreCase))
                         {
-                            bool alreadyExists = false;
-                            foreach (MailAddress existing in existingMembers)
-                            {
-                                if (string.Equals(existing.Address, newMember.Address, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    alreadyExists = true;
-                                    break;
-                                }
-                            }
-                            if (!alreadyExists)
-                            {
-                                membersToAdd.Add(newMember);
-                            }
-                        }
-
-                        // Add the non‑duplicate members to the distribution list
-                        if (membersToAdd.Count > 0)
-                        {
-                            client.AddToDistributionList(distributionList, membersToAdd);
-                            Console.WriteLine("Added {0} new member(s) to the distribution list.", membersToAdd.Count);
-                        }
-                        else
-                        {
-                            Console.WriteLine("No new members to add; all contacts are already members.");
+                            alreadyExists = true;
+                            break;
                         }
                     }
-                    catch (Exception ex)
+                    if (!alreadyExists)
                     {
-                        Console.Error.WriteLine("Exchange operation failed: " + ex.Message);
-                        return;
+                        membersToAdd.Add(candidate);
                     }
                 }
+
+                // Add only the non‑duplicate members
+                if (membersToAdd.Count > 0)
+                {
+                    client.AddToDistributionList(distributionList, membersToAdd);
+                    Console.WriteLine($"Added {membersToAdd.Count} new member(s) to the distribution list.");
+                }
+                else
+                {
+                    Console.WriteLine("No new members to add; all candidates are already members.");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
