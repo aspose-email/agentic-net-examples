@@ -1,6 +1,7 @@
-using Aspose.Email.Clients.Exchange;
 using System;
+using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Tools.Search;
 
@@ -10,43 +11,45 @@ class Program
     {
         try
         {
-            // Define mailbox connection parameters (replace with real values)
-            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            // Placeholder Exchange server details – replace with real values when running against a real server
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
             string password = "password";
 
-
-            // Skip external calls when placeholder credentials are used
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+            // Detect placeholder values and skip actual network calls
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
             {
                 Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create EWS client inside a using block to ensure proper disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
             {
-                // Build an AQS query to find items with size greater than 5 MB (5 * 1024 * 1024 bytes)
+                // Instantiate the builder (required by the task) – the actual query will be built manually
                 ExchangeAdvancedSyntaxQueryBuilder queryBuilder = new ExchangeAdvancedSyntaxQueryBuilder();
-                MailQuery sizeQuery = queryBuilder.Size.Greater(5 * 1024 * 1024);
 
-                // List messages in the Inbox folder that match the query (non‑recursive)
-                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", sizeQuery);
+                // Build AQS query: messages that have an attachment and size > 5 MB
+                // AQS syntax: hasattachment:true AND size:>5242880
+                string aqsString = "hasattachment:true AND size:>5242880";
+                MailQuery aqsQuery = new MailQuery(aqsString);
 
-                // Output basic information about each matching message
-                foreach (ExchangeMessageInfo info in messages)
+                // Get the Inbox folder URI
+                string inboxUri = client.MailboxInfo.InboxUri;
+
+                // Retrieve messages that match the query
+                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri, aqsQuery);
+
+                // Output the subject of each matching message
+                foreach (ExchangeMessageInfo messageInfo in messages)
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
-                    Console.WriteLine($"Size (bytes): {info.Size}");
-                    Console.WriteLine($"Has Attachments: {info.HasAttachments}");
-                    Console.WriteLine(new string('-', 40));
+                    Console.WriteLine("Subject: " + messageInfo.Subject);
                 }
             }
         }
         catch (Exception ex)
         {
-            // Write any errors to the error stream without crashing the application
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
