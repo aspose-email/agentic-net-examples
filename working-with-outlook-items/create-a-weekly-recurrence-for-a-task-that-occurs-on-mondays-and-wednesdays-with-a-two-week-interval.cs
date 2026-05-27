@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Calendar;
+using Aspose.Email.Calendar.Recurrences;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,40 +12,37 @@ class Program
         try
         {
             // Output file path for the task
-            string outputPath = "task.msg";
+            string outputPath = "WeeklyTask.msg";
 
-            // Ensure the directory exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Ensure the output directory exists
+            string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            // Create a new MapiTask
-            using (MapiTask task = new MapiTask())
+            // Create a task and configure its basic properties
+            using (ExchangeTask task = new ExchangeTask())
             {
-                task.Subject = "Weekly Task";
+                task.Subject = "Bi‑weekly Task";
                 task.StartDate = DateTime.Today;
                 task.DueDate = DateTime.Today.AddDays(1);
+                task.Body = "Aspose.Email.Calendar.Task occurs every Monday and Wednesday with a two‑week interval.";
 
-                // Configure weekly recurrence: Mondays and Wednesdays, every 2 weeks
-                MapiCalendarWeeklyRecurrencePattern weeklyPattern = new MapiCalendarWeeklyRecurrencePattern();
-                weeklyPattern.DayOfWeek = MapiCalendarDayOfWeek.Monday | MapiCalendarDayOfWeek.Wednesday;
-                weeklyPattern.Period = 2; // two‑week interval
-                weeklyPattern.StartDate = DateTime.Today;
+                // Create a weekly recurrence pattern with a 2‑week interval
+                WeeklyRecurrencePattern recurrence = new WeeklyRecurrencePattern(DateTime.Today, 2);
+                // Optional: set an end date or occurrence count
+                // recurrence.EndDate = DateTime.Today.AddMonths(3);
 
-                // Assign the recurrence pattern to the task
-                task.Recurrence = weeklyPattern;
+                task.RecurrencePattern = recurrence;
 
                 // Save the task to a MSG file
-                task.Save(outputPath, TaskSaveFormat.Msg);
+                task.Save(outputPath);
             }
-
-            Console.WriteLine("Task with weekly recurrence saved to " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }
