@@ -4,74 +4,62 @@ using System.Threading;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 
-class Program
+namespace ImapIdleExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials detection – avoid real network calls in CI.
-            string host = "imap.example.com";
-            string username = "username";
-            string password = "password";
-
-            if (host.Contains("example.com"))
+            try
             {
-                Console.Error.WriteLine("Placeholder IMAP host detected. Skipping real connection.");
-                return;
-            }
+                // Placeholder connection settings
+                string host = "imap.example.com";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create and connect the IMAP client.
-            using (ImapClient client = new ImapClient(host, username, password, SecurityOptions.Auto))
+                // Guard against placeholder credentials to avoid real network calls
+                if (host.Contains("example.com") || username.Contains("example.com"))
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping IMAP connection.");
+                    return;
+                }
+
+                // Timeout for idle monitoring (in milliseconds)
+                int idleTimeout = 30000; // 30 seconds
+
+                using (ImapClient client = new ImapClient(host, username, password, SecurityOptions.Auto))
+                {
+                    // Start monitoring for new messages in the Inbox folder
+                    ImapMonitoringEventHandler newMessageHandler = (object sender, ImapMonitoringEventArgs e) =>
+                    {
+                        ImapMessageInfo[] newMessages = e.NewMessages;
+                        if (newMessages != null)
+                        {
+                            foreach (ImapMessageInfo messageInfo in newMessages)
+                            {
+                                Console.WriteLine($"New message received: Subject = {messageInfo.Subject}");
+                            }
+                        }
+                    };
+
+                    ImapMonitoringErrorEventHandler errorHandler = (object sender, ImapMonitoringErrorEventArgs e) =>
+                    {
+                        Console.Error.WriteLine($"Monitoring error: {e}");
+                    };
+
+                    client.StartMonitoring(newMessageHandler, errorHandler, "Inbox");
+
+                    // Wait for the specified timeout period
+                    Thread.Sleep(idleTimeout);
+
+                    // Stop monitoring after timeout
+                    client.StopMonitoring();
+                }
+            }
+            catch (Exception ex)
             {
-                try
-                {
-                    // Start monitoring the INBOX folder for new messages.
-                    client.StartMonitoring(OnNewMail, OnMonitoringError, "INBOX");
-
-                    Console.WriteLine("Monitoring started. Press Enter to stop...");
-                    Console.ReadLine(); // Keep the application alive until user decides to stop.
-                }
-                catch (ImapException imapEx)
-                {
-                    Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                }
-                finally
-                {
-                    // Ensure monitoring is stopped before disposing the client.
-                    try
-                    {
-                        client.StopMonitoring("INBOX");
-                    }
-                    catch
-                    {
-                        // Ignored – best effort cleanup.
-                    }
-                }
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Fatal error: {ex.Message}");
-        }
-    }
-
-    // Callback invoked when new messages are detected.
-    private static void OnNewMail(object sender, ImapMonitoringEventArgs e)
-    {
-        foreach (ImapMessageInfo newMessage in e.NewMessages)
-        {
-            Console.WriteLine($"New message detected - UID: {newMessage.UniqueId}, Subject: {newMessage.Subject}");
-        }
-    }
-
-    // Callback invoked when a monitoring error occurs.
-    private static void OnMonitoringError(object sender, ImapMonitoringErrorEventArgs e)
-    {
-        Console.Error.WriteLine($"Monitoring error: {e.Error.Message}");
     }
 }
