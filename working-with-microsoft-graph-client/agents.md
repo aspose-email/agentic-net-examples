@@ -18,16 +18,17 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (38 file(s))
-- `using Aspose.Email;` (38 file(s))
-- `using Aspose.Email.Clients;` (34 file(s))
-- `using Aspose.Email.Clients.Graph;` (34 file(s))
+- `using System;` (44 file(s))
+- `using Aspose.Email;` (43 file(s))
+- `using Aspose.Email.Clients;` (39 file(s))
+- `using Aspose.Email.Clients.Graph;` (39 file(s))
 - `using System.IO;` (25 file(s))
 - `using Aspose.Email.Mapi;` (24 file(s))
-- `using Aspose.Email.Clients.Exchange;` (5 file(s))
-- `using System.Collections.Generic;` (3 file(s))
+- `using Aspose.Email.Clients.Exchange;` (6 file(s))
+- `using System.Collections.Generic;` (5 file(s))
 - `using Aspose.Email.Clients.Exchange.Dav;` (2 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
+- `using System.Net.Http;` (1 file(s))
 - `using Aspose.Email.Calendar;` (1 file(s))
 - `using System.Text.Json;` (1 file(s))
 
@@ -53,7 +54,12 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [enable-public-client-authentication-flows-for-msg-files-using-the-microsoft-graph-client-library.cs](./enable-public-client-authentication-flows-for-msg-files-using-the-microsoft-graph-client-library.cs) | enable public client authentication flows for msg files using the microsoft graph client library |
 | [generate-an-application-key-from-an-msg-file-using-the-microsoft-graph-client-library.cs](./generate-an-application-key-from-an-msg-file-using-the-microsoft-graph-client-library.cs) | generate an application key from an msg file using the microsoft graph client library |
 | [generate-an-attachment-from-an-msg-file-using-microsoft-graph-client-ensuring-proper-mime-type-and-content-encoding.cs](./generate-an-attachment-from-an-msg-file-using-microsoft-graph-client-ensuring-proper-mime-type-and-content-encoding.cs) | generate an attachment from an msg file using microsoft graph client ensuring proper mime type and content encoding |
+| [handle-token-expiration-automatically-by-implementing-itokenprovider-refreshtoken-method-with-msal-net-logic.cs](./handle-token-expiration-automatically-by-implementing-itokenprovider-refreshtoken-method-with-msal-net-logic.cs) | handle token expiration automatically by implementing itokenprovider refreshtoken method with msal net logic |
 | [implement-a-microsoft-graph-client-loop-that-iterates-until-pageinfo-lastpage-is-false-appending-msg-format-messages-via.cs](./implement-a-microsoft-graph-client-loop-that-iterates-until-pageinfo-lastpage-is-false-appending-msg-format-messages-via.cs) | implement a microsoft graph client loop that iterates until pageinfo lastpage is false appending msg format messages via |
+| [implement-itokenprovider-to-acquire-access-tokens-using-msal-net-client-credentials-flow.cs](./implement-itokenprovider-to-acquire-access-tokens-using-msal-net-client-credentials-flow.cs) | implement itokenprovider to acquire access tokens using msal net client credentials flow |
+| [install-microsoft-identity-client-nuget-package-msal-net-in-your-project-for-token-acquisition.cs](./install-microsoft-identity-client-nuget-package-msal-net-in-your-project-for-token-acquisition.cs) | install microsoft identity client nuget package msal net in your project for token acquisition |
+| [mark-multiple-messages-as-read-using-client-messages-batchupdate-request-in-a-single-operation.cs](./mark-multiple-messages-as-read-using-client-messages-batchupdate-request-in-a-single-operation.cs) | mark multiple messages as read using client messages batchupdate request in a single operation |
+| [remove-a-category-from-a-message-using-client-messages-removecategory-method-for-cleanup.cs](./remove-a-category-from-a-message-using-client-messages-removecategory-method-for-cleanup.cs) | remove a category from a message using client messages removecategory method for cleanup |
 | [remove-an-attachment-from-an-msg-file-programmatically-using-the-microsoft-graph-client-api.cs](./remove-an-attachment-from-an-msg-file-programmatically-using-the-microsoft-graph-client-api.cs) | remove an attachment from an msg file programmatically using the microsoft graph client api |
 | [retrieve-a-calendar-event-from-an-msg-file-using-the-microsoft-graph-client-api.cs](./retrieve-a-calendar-event-from-an-msg-file-using-the-microsoft-graph-client-api.cs) | retrieve a calendar event from an msg file using the microsoft graph client api |
 | [retrieve-a-task-stored-in-msg-format-programmatically-using-the-microsoft-graph-client-api.cs](./retrieve-a-task-stored-in-msg-format-programmatically-using-the-microsoft-graph-client-api.cs) | retrieve a task stored in msg format programmatically using the microsoft graph client api |
@@ -61,6 +67,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [retrieve-an-msg-formatted-email-message-using-the-microsoft-graph-client-api-and-process-its-contents.cs](./retrieve-an-msg-formatted-email-message-using-the-microsoft-graph-client-api-and-process-its-contents.cs) | retrieve an msg formatted email message using the microsoft graph client api and process its contents |
 | [retrieve-message-rules-from-an-msg-file-by-utilizing-the-microsoft-graph-client-api.cs](./retrieve-message-rules-from-an-msg-file-by-utilizing-the-microsoft-graph-client-api.cs) | retrieve message rules from an msg file by utilizing the microsoft graph client api |
 | [retrieve-the-tasks-list-embedded-within-an-msg-file-using-the-microsoft-graph-client-api.cs](./retrieve-the-tasks-list-embedded-within-an-msg-file-using-the-microsoft-graph-client-api.cs) | retrieve the tasks list embedded within an msg file using the microsoft graph client api |
+| [update-an-existing-onenote-page-content-by-providing-html-body-to-client-pages-updatepage.cs](./update-an-existing-onenote-page-content-by-providing-html-body-to-client-pages-updatepage.cs) | update an existing onenote page content by providing html body to client pages updatepage |
 | [update-the-subject-line-of-a-message-using-client-messages-updatemessage-method.cs](./update-the-subject-line-of-a-message-using-client-messages-updatemessage-method.cs) | update the subject line of a message using client messages updatemessage method |
 | [use-microsoft-graph-client-to-enumerate-steps-for-creating-an-azure-ad-admin-center-project-from-an-msg-file.cs](./use-microsoft-graph-client-to-enumerate-steps-for-creating-an-azure-ad-admin-center-project-from-an-msg-file.cs) | use microsoft graph client to enumerate steps for creating an azure ad admin center project from an msg file |
 | [utilize-microsoft-graph-client-to-add-the-msal-net-package-and-install-the-microsoft-identity-client-nuget-containing.cs](./utilize-microsoft-graph-client-to-add-the-msal-net-package-and-install-the-microsoft-identity-client-nuget-containing.cs) | utilize microsoft graph client to add the msal net package and install the microsoft identity client nuget containing |
@@ -74,7 +81,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [utilize-the-microsoft-graph-client-to-retrieve-and-display-the-newly-registered-applications-blade-from-msg-format.cs](./utilize-the-microsoft-graph-client-to-retrieve-and-display-the-newly-registered-applications-blade-from-msg-format.cs) | utilize the microsoft graph client to retrieve and display the newly registered applications blade from msg format |
 
 ## Category Statistics
-- Total examples: 38
+- Total examples: 44
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -83,5 +90,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-05-20 | `20260519_180010` | [examples/batch-20260519_180010](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260519_180010) |
+| 2026-05-27 | `20260526_173251` | [examples/batch-20260526_173251](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260526_173251) |
 <!-- AUTOGENERATED:END -->

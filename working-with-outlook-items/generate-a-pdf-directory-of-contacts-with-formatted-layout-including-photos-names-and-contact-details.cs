@@ -86,11 +86,12 @@ class Program
                 htmlBuilder.AppendLine("</body></html>");
 
                 // Convert HTML to PDF using Aspose.Words.
-                string tempHtmlPath = Path.Combine(Path.GetTempPath(), "ContactDirectory.html");
-                File.WriteAllText(tempHtmlPath, htmlBuilder.ToString(), Encoding.UTF8);
-
-                Document doc = new Document(tempHtmlPath);
-                doc.Save(outputPath, new PdfSaveOptions());
+                byte[] htmlBytes = Encoding.UTF8.GetBytes(htmlBuilder.ToString());
+                using (MemoryStream htmlStream = new MemoryStream(htmlBytes))
+                {
+                    Document doc = new Document(htmlStream, new Aspose.Words.LoadOptions());
+                    doc.Save(outputPath, new Aspose.Words.Saving.PdfSaveOptions());
+                }
 
                 Console.WriteLine($"PDF directory saved to: {outputPath}");
             }

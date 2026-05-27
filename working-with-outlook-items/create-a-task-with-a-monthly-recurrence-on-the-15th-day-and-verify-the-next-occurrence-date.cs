@@ -1,5 +1,6 @@
-using System;
 using Aspose.Email;
+using System;
+using System.Collections.Generic;
 using Aspose.Email.Calendar.Recurrences;
 
 class Program
@@ -8,22 +9,26 @@ class Program
     {
         try
         {
-            // Create a monthly recurrence that occurs on the 15th day of each month
-            CalendarRecurrence recurrence = new CalendarRecurrence("FREQ=MONTHLY;BYMONTHDAY=15");
-            // Generate the next occurrence date
-            var nextOccurrences = recurrence.GenerateOccurrences(1);
-            if (nextOccurrences.Count > 0)
+            // Define a monthly recurrence on the 15th day using an iCalendar RRULE string
+            string rrule = "RRULE:FREQ=MONTHLY;BYMONTHDAY=15";
+            CalendarRecurrence recurrence = CalendarRecurrence.FromiCalendar(rrule);
+
+            // Set the start date for the recurrence (today)
+            // Generate the next occurrence (first occurrence after the start date)
+            List<DateTime> occurrences = recurrence.GenerateOccurrences(1);
+            if (occurrences.Count > 0)
             {
-                Console.WriteLine("Next occurrence date: " + nextOccurrences[0].ToString("yyyy-MM-dd"));
+                DateTime nextOccurrence = occurrences[0];
+                Console.WriteLine($"Next occurrence date: {nextOccurrence:yyyy-MM-dd}");
             }
             else
             {
-                Console.WriteLine("No occurrences generated.");
+                Console.WriteLine("No occurrences were generated.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

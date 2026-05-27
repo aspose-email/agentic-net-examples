@@ -1,6 +1,5 @@
 using Aspose.Email;
 using System;
-using System.Collections.Generic;
 using Aspose.Email.Calendar.Recurrences;
 
 class Program
@@ -9,28 +8,34 @@ class Program
     {
         try
         {
-            // Define a recurrence that could generate many occurrences.
-            CalendarRecurrence recurrence = new CalendarRecurrence();
-            recurrence.EndDate = DateTime.Today.AddYears(10); // far future end date
+            // Outlook's maximum allowed occurrences for a recurrence pattern
+            const int OutlookMaxOccurrences = 9999;
 
-            // Outlook limits the number of occurrences (commonly 999).
-            int outlookMaxOccurrences = 999;
+            // Desired recurrence settings
+            int desiredOccurrences = 12000; // Example value exceeding the limit
+            int intervalDays = 1; // Every day
 
-            // Generate a large number of occurrences to test the limit.
-            List<DateTime> occurrences = recurrence.GenerateOccurrences(2000);
+            // Create a daily recurrence pattern using the constructor that accepts occurrences and interval
+            DailyRecurrencePattern dailyPattern = new DailyRecurrencePattern(desiredOccurrences, intervalDays);
 
-            if (occurrences.Count > outlookMaxOccurrences)
+            // Validate against Outlook's maximum
+            if (dailyPattern.Occurs > OutlookMaxOccurrences)
             {
-                Console.WriteLine($"Recurrence exceeds Outlook maximum of {outlookMaxOccurrences} occurrences. Generated: {occurrences.Count}");
+                Console.WriteLine($"Recurrence exceeds Outlook's limit of {OutlookMaxOccurrences} occurrences. Truncating to the maximum allowed.");
+                dailyPattern.Occurs = OutlookMaxOccurrences;
             }
             else
             {
-                Console.WriteLine($"Recurrence is within Outlook limit. Generated: {occurrences.Count}");
+                Console.WriteLine("Recurrence is within Outlook's allowed limits.");
             }
+
+            // Display the final recurrence settings
+            Console.WriteLine($"Occurrences: {dailyPattern.Occurs}");
+            Console.WriteLine($"Interval (days): {dailyPattern.Interval}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

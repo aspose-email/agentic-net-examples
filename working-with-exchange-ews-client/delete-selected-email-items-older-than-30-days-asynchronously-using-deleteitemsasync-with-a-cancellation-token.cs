@@ -4,7 +4,6 @@ using System.Net;
 using System.Threading;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -13,7 +12,7 @@ class Program
         try
         {
             // Mailbox connection settings
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
 
             // Skip external calls when placeholder credentials are used
             if (mailboxUri.Contains("example.com"))
@@ -22,56 +21,47 @@ class Program
                 return;
             }
 
-            ICredentials credentials = new NetworkCredential("username", "password");
+            NetworkCredential credentials = new NetworkCredential("username", "password");
 
-            // Create a cancellation token (not used by sync API but shown for completeness)
-            using (CancellationTokenSource cts = new CancellationTokenSource())
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
-                // Create the EWS client
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                // Folder to process (Inbox)
+                string inboxUri = client.MailboxInfo.InboxUri;
+
+                // Retrieve all item URIs from the Inbox
+                string[] itemUris = client.ListItems(inboxUri);
+
+                // Determine the cutoff date (30 days ago)
+                DateTime cutoffDate = DateTime.UtcNow.AddDays(-30);
+                List<string> oldItemUris = new List<string>();
+
+                // Filter items older than the cutoff date
+                foreach (string uri in itemUris)
                 {
-                    try
+                    MailMessage message = client.FetchMessage(uri);
+                    if (message.Date < cutoffDate)
                     {
-                        // Get the Inbox folder URI
-                        string inboxUri = client.MailboxInfo.InboxUri;
-
-                        // Retrieve all messages in the Inbox
-                        IEnumerable<ExchangeMessageInfo> messages = client.ListMessages(inboxUri);
-
-                        // Select messages older than 30 days
-                        List<string> oldMessageUris = new List<string>();
-                        DateTime cutoffDate = DateTime.Now.AddDays(-30);
-                        foreach (ExchangeMessageInfo msgInfo in messages)
-                        {
-                            if (msgInfo.InternalDate < cutoffDate)
-                            {
-                                oldMessageUris.Add(msgInfo.UniqueUri);
-                            }
-                        }
-
-                        if (oldMessageUris.Count > 0)
-                        {
-                            // Delete the selected messages (move to Deleted Items)
-                            DeletionOptions deleteOptions = new DeletionOptions(DeletionType.MoveToDeletedItems);
-                            client.DeleteItems(oldMessageUris, deleteOptions);
-                            Console.WriteLine($"{oldMessageUris.Count} message(s) older than 30 days were deleted.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("No messages older than 30 days were found.");
-                        }
+                        oldItemUris.Add(uri);
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
-                        return;
-                    }
+                }
+
+                if (oldItemUris.Count > 0)
+                {
+                    // Delete the selected items (move to Deleted Items)
+                    DeletionOptions deleteOptions = new DeletionOptions(DeletionType.MoveToDeletedItems);
+                    client.DeleteItems(oldItemUris, deleteOptions);
+                    Console.WriteLine($"{oldItemUris.Count} items older than 30 days were deleted.");
+                }
+                else
+                {
+                    Console.WriteLine("No items older than 30 days were found.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,8 +1,8 @@
+using Aspose.Email.Clients.Exchange;
 using System;
-using System.IO;
 using System.Text.RegularExpressions;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,53 +10,50 @@ class Program
     {
         try
         {
-            string msgPath = "distributionList.msg";
+            // Placeholder credentials – replace with real values.
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            if (!File.Exists(msgPath))
+            // Guard against running with placeholder credentials.
+            if (serviceUrl.Contains("example.com") || username == "username")
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                Console.Error.WriteLine("Placeholder Exchange credentials detected. Skipping execution.");
                 return;
             }
 
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Create the Exchange Web Services client.
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                if (msg.SupportedType != MapiItemType.DistList)
+                // Define the distribution list to inspect.
+                ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                distributionList.DisplayName = "Sample Distribution List";
+
+                // Fetch members of the distribution list.
+                MailAddressCollection members = client.FetchDistributionList(distributionList);
+
+                // Regular expression for a simple international phone number validation.
+                Regex phoneRegex = new Regex(@"^\+?\d{10,15}$");
+
+                bool anyInvalid = false;
+
+                // Iterate through members and validate phone numbers.
+                foreach (MailAddress member in members)
                 {
-                    Console.Error.WriteLine("The provided MSG file is not a distribution list.");
-                    return;
+                    // For demonstration, assume the phone number is stored in the DisplayName.
+                    // In real scenarios, retrieve the contact and its PhoneNumbers collection.
+                    string phoneNumber = member.DisplayName?.Trim() ?? string.Empty;
+
+                    if (!phoneRegex.IsMatch(phoneNumber))
+                    {
+                        anyInvalid = true;
+                        Console.WriteLine($"Invalid phone number for member '{member.Address}': '{phoneNumber}'");
+                    }
                 }
 
-                MapiDistributionList distributionList = (MapiDistributionList)msg.ToMapiMessageItem();
-
-                // Simple regex for a 10‑digit phone number (adjust as needed)
-                Regex phoneRegex = new Regex(@"\b\d{10}\b", RegexOptions.Compiled);
-
-                foreach (MapiDistributionListMember member in distributionList.Members)
+                if (!anyInvalid)
                 {
-                    // Example assumes the phone number may be embedded in the DisplayName.
-                    // Adjust the extraction logic based on actual data source.
-                    Match match = phoneRegex.Match(member.DisplayName ?? string.Empty);
-                    if (!match.Success)
-                    {
-                        Console.WriteLine($"Member '{member.DisplayName}' has an invalid or missing phone number.");
-                    }
+                    Console.WriteLine("All distribution list members have valid phone numbers.");
                 }
             }
         }
