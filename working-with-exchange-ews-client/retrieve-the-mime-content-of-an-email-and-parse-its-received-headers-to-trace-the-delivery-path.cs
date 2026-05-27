@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -11,53 +9,52 @@ class Program
     {
         try
         {
-            // Define connection parameters (replace with real values)
+            // Exchange server connection details (replace with real values)
             string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") ||
+                username.Contains("example.com") ||
+                password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
+
             // Create EWS client
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Define the message URI to fetch (replace with a real URI)
-                string messageUri = "/ews/items/AAAkAD...";
-
-
-                // Skip external calls when placeholder credentials are used
-                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+                // Retrieve messages from the default Inbox folder
+                ExchangeMessageInfoCollection messages = client.ListMessages();
+                if (messages == null || messages.Count == 0)
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    Console.WriteLine("No messages found in the mailbox.");
                     return;
                 }
 
-                // Fetch the mail message from the server
-                MailMessage mailMessage = client.FetchMessage(messageUri);
+                // Use the first message's unique URI
+                string messageUri = messages[0].UniqueUri;
 
-                // Convert MailMessage to MapiMessage to access raw MIME headers
-                MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
+                // Fetch the full MailMessage
+                MailMessage mail = client.FetchMessage(messageUri);
 
-                // Get the raw transport headers (includes all Received headers)
-                string rawHeaders = mapiMessage.TransportMessageHeaders;
-
-                // Parse Received headers
-                List<string> receivedHeaders = new List<string>();
-                if (!string.IsNullOrEmpty(rawHeaders))
+                // Output all 'Received' headers to trace delivery path
+                Console.WriteLine("Received headers:");
+                foreach (string key in mail.Headers.AllKeys)
                 {
-                    string[] headerLines = rawHeaders.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                    foreach (string line in headerLines)
+                    if (key.Equals("Received", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (line.StartsWith("Received:", StringComparison.OrdinalIgnoreCase))
+                        string[] values = mail.Headers.GetValues(key);
+                        if (values != null)
                         {
-                            receivedHeaders.Add(line.Trim());
+                            foreach (string value in values)
+                            {
+                                Console.WriteLine(value);
+                            }
                         }
                     }
-                }
-
-                // Output the delivery path
-                Console.WriteLine("Received headers (delivery path):");
-                foreach (string received in receivedHeaders)
-                {
-                    Console.WriteLine(received);
                 }
             }
         }
