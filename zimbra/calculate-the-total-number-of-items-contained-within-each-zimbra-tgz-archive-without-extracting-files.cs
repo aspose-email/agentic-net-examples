@@ -1,47 +1,43 @@
+using Aspose.Email;
 using System;
 using System.IO;
 using Aspose.Email.Storage.Zimbra;
 
-namespace ZimbraTgzItemCounter
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Define the paths to the Zimbra TGZ archives.
+            string[] tgzPaths = new string[]
             {
-                if (args == null || args.Length == 0)
+                "archive1.tgz",
+                "archive2.tgz"
+                // Add more archive paths as needed.
+            };
+
+            foreach (string tgzPath in tgzPaths)
+            {
+                // Guard against missing files.
+                if (!File.Exists(tgzPath))
                 {
-                    Console.Error.WriteLine("No archive paths provided.");
-                    return;
+                    Console.Error.WriteLine($"File not found: {tgzPath}");
+                    continue;
                 }
 
-                foreach (string archivePath in args)
+                // Open the TGZ archive and retrieve the total items count.
+                using (TgzReader reader = new TgzReader(tgzPath))
                 {
-                    if (!File.Exists(archivePath))
-                    {
-                        Console.Error.WriteLine($"Error: File not found – {archivePath}");
-                        continue;
-                    }
-
-                    try
-                    {
-                        using (TgzReader tgzReader = new TgzReader(archivePath))
-                        {
-                            int totalItems = tgzReader.GetTotalItemsCount();
-                            Console.WriteLine($"Archive: {Path.GetFileName(archivePath)} – Total items: {totalItems}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error processing '{archivePath}': {ex.Message}");
-                    }
+                    int totalItems = reader.GetTotalItemsCount();
+                    Console.WriteLine($"Archive: {tgzPath}");
+                    Console.WriteLine($"Total items: {totalItems}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
