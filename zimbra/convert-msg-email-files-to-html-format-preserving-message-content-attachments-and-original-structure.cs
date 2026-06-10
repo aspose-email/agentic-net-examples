@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,24 +9,22 @@ class Program
         try
         {
             // Input MSG file path
-            string msgFilePath = "sample.msg";
+            string inputMsgPath = "sample.msg";
             // Output HTML file path
-            string htmlOutputPath = "sample.html";
-            // Directory to save extracted attachments
-            string attachmentsDirectory = "attachments";
+            string outputHtmlPath = "sample.html";
 
-            // Guard input file existence
-            if (!File.Exists(msgFilePath))
+            // Verify input file exists
+            if (!File.Exists(inputMsgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgFilePath);
+                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
@@ -36,69 +33,41 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {msgFilePath}");
+                Console.Error.WriteLine($"Input file '{inputMsgPath}' does not exist.");
                 return;
             }
 
-            // Ensure attachments directory exists
-            try
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputHtmlPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(attachmentsDirectory);
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Error: Unable to create attachments directory – {dirEx.Message}");
-                return;
-            }
-
-            // Load the MSG file and convert to MailMessage
-            using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
-            {
-                MailConversionOptions conversionOptions = new MailConversionOptions();
-                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+                try
                 {
-                    // Save as HTML with embedded resources
-                    HtmlSaveOptions htmlOptions = new HtmlSaveOptions
-                    {
-                        ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
-                    };
-
-                    try
-                    {
-                        mailMessage.Save(htmlOutputPath, htmlOptions);
-                    }
-                    catch (Exception saveEx)
-                    {
-                        Console.Error.WriteLine($"Error: Unable to save HTML – {saveEx.Message}");
-                        return;
-                    }
+                    Directory.CreateDirectory(outputDirectory);
                 }
-
-                // Extract and save attachments
-                foreach (MapiAttachment attachment in mapiMessage.Attachments)
+                catch (Exception dirEx)
                 {
-                    string attachmentFileName = attachment.FileName;
-                    if (string.IsNullOrEmpty(attachmentFileName))
-                    {
-                        attachmentFileName = "attachment.bin";
-                    }
-
-                    string attachmentPath = Path.Combine(attachmentsDirectory, attachmentFileName);
-                    try
-                    {
-                        attachment.Save(attachmentPath);
-                    }
-                    catch (Exception attEx)
-                    {
-                        Console.Error.WriteLine($"Warning: Failed to save attachment '{attachmentFileName}' – {attEx.Message}");
-                        // Continue with other attachments
-                    }
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
                 }
             }
+
+            // Load the MSG file and convert to HTML
+            using (MailMessage mailMessage = MailMessage.Load(inputMsgPath))
+            {
+                HtmlSaveOptions htmlOptions = new HtmlSaveOptions
+                {
+                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                };
+
+                mailMessage.Save(outputHtmlPath, htmlOptions);
+            }
+
+            Console.WriteLine($"Message successfully converted to HTML: {outputHtmlPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

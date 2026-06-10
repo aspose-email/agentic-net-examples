@@ -18,22 +18,23 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (159 file(s))
-- `using Aspose.Email;` (158 file(s))
-- `using Aspose.Email.Clients.Smtp;` (129 file(s))
-- `using Aspose.Email.Clients;` (78 file(s))
-- `using System.IO;` (52 file(s))
-- `using System.Collections.Generic;` (20 file(s))
-- `using System.Net;` (16 file(s))
+- `using System;` (167 file(s))
+- `using Aspose.Email;` (166 file(s))
+- `using Aspose.Email.Clients.Smtp;` (136 file(s))
+- `using Aspose.Email.Clients;` (84 file(s))
+- `using System.IO;` (54 file(s))
+- `using System.Collections.Generic;` (21 file(s))
+- `using System.Net;` (19 file(s))
+- `using Aspose.Email.Clients.Exchange.Dav;` (11 file(s))
 - `using Aspose.Email.Mime;` (11 file(s))
-- `using Aspose.Email.Clients.Exchange.Dav;` (10 file(s))
-- `using System.Threading;` (8 file(s))
+- `using System.Threading;` (9 file(s))
 - `using System.Text;` (8 file(s))
 - `using Aspose.Email.Clients.Imap;` (5 file(s))
 - `using Aspose.Email.Clients.Google;` (4 file(s))
+- `using System.Net.Security;` (4 file(s))
 - `using Aspose.Email.Mapi;` (4 file(s))
-- `using System.Net.Security;` (3 file(s))
 - `using System.Security.Cryptography.X509Certificates;` (3 file(s))
+- `using System.Security.Cryptography;` (3 file(s))
 - `using System.Threading.Tasks;` (3 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService;` (2 file(s))
 - `using System.IO.Compression;` (2 file(s))
@@ -41,12 +42,13 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 - `using System.Data;` (2 file(s))
 - `using System.Diagnostics;` (2 file(s))
 - `using System.Text.Json;` (2 file(s))
-- `using System.Security.Cryptography;` (2 file(s))
 - `using Aspose.Email.Clients.DeliveryService.SendGrid;` (1 file(s))
 - `using Aspose.Email.AntiSpam;` (1 file(s))
 - `using System.Net.NetworkInformation;` (1 file(s))
+- `using System.Net.Sockets;` (1 file(s))
 - `using Aspose.Email.Clients.Base;` (1 file(s))
 - `using Aspose.Email.Tools.Merging;` (1 file(s))
+- `using Aspose.Email.Clients.Smtp.Models;` (1 file(s))
 - `using System.Net.Http;` (1 file(s))
 - `using Aspose.Email.Clients.Exchange;` (1 file(s))
 - `using System.Xml.Linq;` (1 file(s))
@@ -63,6 +65,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [add-a-custom-reply-to-address-that-differs-from-the-from-address-for-handling-responses.cs](./add-a-custom-reply-to-address-that-differs-from-the-from-address-for-handling-responses.cs) | add a custom reply to address that differs from the from address for handling responses |
 | [add-a-custom-x-audit-trail-header-containing-a-json-payload-with-operation-metadata.cs](./add-a-custom-x-audit-trail-header-containing-a-json-payload-with-operation-metadata.cs) | add a custom x audit trail header containing a json payload with operation metadata |
 | [add-a-custom-x-campaign-id-header-to-tag-the-email-with-a-marketing-campaign-identifier.cs](./add-a-custom-x-campaign-id-header-to-tag-the-email-with-a-marketing-campaign-identifier.cs) | add a custom x campaign id header to tag the email with a marketing campaign identifier |
+| [add-a-custom-x-compliance-tag-header-to-indicate-regulatory-compliance-category-for-the-email.cs](./add-a-custom-x-compliance-tag-header-to-indicate-regulatory-compliance-category-for-the-email.cs) | add a custom x compliance tag header to indicate regulatory compliance category for the email |
 | [add-a-custom-x-correlation-id-header-to-correlate-the-email-with-related-system-events.cs](./add-a-custom-x-correlation-id-header-to-correlate-the-email-with-related-system-events.cs) | add a custom x correlation id header to correlate the email with related system events |
 | [add-a-custom-x-delivery-token-header-containing-a-guid-to-uniquely-identify-each-send-attempt.cs](./add-a-custom-x-delivery-token-header-containing-a-guid-to-uniquely-identify-each-send-attempt.cs) | add a custom x delivery token header containing a guid to uniquely identify each send attempt |
 | [add-a-custom-x-environment-header-to-indicate-whether-the-email-is-sent-from-development-staging-or-production.cs](./add-a-custom-x-environment-header-to-indicate-whether-the-email-is-sent-from-development-staging-or-production.cs) | add a custom x environment header to indicate whether the email is sent from development staging or production |
@@ -89,6 +92,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [attach-a-pdf-document-from-a-memory-stream-to-an-email-and-transmit-it-using-tls-encryption.cs](./attach-a-pdf-document-from-a-memory-stream-to-an-email-and-transmit-it-using-tls-encryption.cs) | attach a pdf document from a memory stream to an email and transmit it using tls encryption |
 | [authenticate-to-the-smtp-server-using-cram-md5-by-setting-authenticationtype-property.cs](./authenticate-to-the-smtp-server-using-cram-md5-by-setting-authenticationtype-property.cs) | authenticate to the smtp server using cram md5 by setting authenticationtype property |
 | [bind-the-smtp-client-to-a-specific-local-ip-address-using-bindipendpoint.cs](./bind-the-smtp-client-to-a-specific-local-ip-address-using-bindipendpoint.cs) | bind the smtp client to a specific local ip address using bindipendpoint |
+| [bind-the-smtp-client-to-the-ipv6-address-of-the-host-machine-for-dual-stack-compatibility.cs](./bind-the-smtp-client-to-the-ipv6-address-of-the-host-machine-for-dual-stack-compatibility.cs) | bind the smtp client to the ipv6 address of the host machine for dual stack compatibility |
 | [configure-a-maximum-attachment-size-limit-of-10-mb-and-reject-oversized-files-before-sending.cs](./configure-a-maximum-attachment-size-limit-of-10-mb-and-reject-oversized-files-before-sending.cs) | configure a maximum attachment size limit of 10 mb and reject oversized files before sending |
 | [configure-a-socks-proxy-with-username-and-password-to-authenticate-the-client-before-establishing-smtp-connection.cs](./configure-a-socks-proxy-with-username-and-password-to-authenticate-the-client-before-establishing-smtp-connection.cs) | configure a socks proxy with username and password to authenticate the client before establishing smtp connection |
 | [configure-smtpclient-proxy-with-a-socks5-server-to-route-email-traffic-securely.cs](./configure-smtpclient-proxy-with-a-socks5-server-to-route-email-traffic-securely.cs) | configure smtpclient proxy with a socks5 server to route email traffic securely |
@@ -113,6 +117,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [configure-the-smtp-client-to-ignore-certificate-revocation-checks-for-testing-environments.cs](./configure-the-smtp-client-to-ignore-certificate-revocation-checks-for-testing-environments.cs) | configure the smtp client to ignore certificate revocation checks for testing environments |
 | [configure-the-smtp-client-to-use-a-connection-timeout-of-10-seconds-and-a-read-timeout-of-30-seconds.cs](./configure-the-smtp-client-to-use-a-connection-timeout-of-10-seconds-and-a-read-timeout-of-30-seconds.cs) | configure the smtp client to use a connection timeout of 10 seconds and a read timeout of 30 seconds |
 | [configure-the-smtp-client-to-use-a-custom-dns-resolver-that-prefers-ipv6-over-ipv4-addresses.cs](./configure-the-smtp-client-to-use-a-custom-dns-resolver-that-prefers-ipv6-over-ipv4-addresses.cs) | configure the smtp client to use a custom dns resolver that prefers ipv6 over ipv4 addresses |
+| [configure-the-smtp-client-to-use-a-custom-retry-interval-of-15-seconds-between-each-resend-attempt.cs](./configure-the-smtp-client-to-use-a-custom-retry-interval-of-15-seconds-between-each-resend-attempt.cs) | configure the smtp client to use a custom retry interval of 15 seconds between each resend attempt |
 | [configure-the-smtp-client-to-use-a-proxy-server-for-routing-all-email-traffic-securely.cs](./configure-the-smtp-client-to-use-a-proxy-server-for-routing-all-email-traffic-securely.cs) | configure the smtp client to use a proxy server for routing all email traffic securely |
 | [configure-the-smtp-client-to-use-a-specific-authentication-realm-when-connecting-to-the-server.cs](./configure-the-smtp-client-to-use-a-specific-authentication-realm-when-connecting-to-the-server.cs) | configure the smtp client to use a specific authentication realm when connecting to the server |
 | [configure-the-smtp-client-to-use-a-specific-local-ip-address-for-outbound-connections.cs](./configure-the-smtp-client-to-use-a-specific-local-ip-address-for-outbound-connections.cs) | configure the smtp client to use a specific local ip address for outbound connections |
@@ -125,6 +130,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [create-an-smtp-client-using-configuration-extracted-from-an-msg-file-and-transmit-the-email.cs](./create-an-smtp-client-using-configuration-extracted-from-an-msg-file-and-transmit-the-email.cs) | create an smtp client using configuration extracted from an msg file and transmit the email |
 | [enable-delivery-status-notifications-for-success-failure-and-delay-events-on-each-outgoing-email.cs](./enable-delivery-status-notifications-for-success-failure-and-delay-events-on-each-outgoing-email.cs) | enable delivery status notifications for success failure and delay events on each outgoing email |
 | [enable-detailed-smtp-activity-logging-and-write-the-log-entries-to-a-rotating-file-system.cs](./enable-detailed-smtp-activity-logging-and-write-the-log-entries-to-a-rotating-file-system.cs) | enable detailed smtp activity logging and write the log entries to a rotating file system |
+| [enable-keep-alive-on-the-smtp-connection-to-reduce-handshake-overhead-for-consecutive-messages.cs](./enable-keep-alive-on-the-smtp-connection-to-reduce-handshake-overhead-for-consecutive-messages.cs) | enable keep alive on the smtp connection to reduce handshake overhead for consecutive messages |
 | [enable-smtp-communication-logging-for-email-transmission-specifying-logfile-and-loglevel-settings-with-an-msg-source.cs](./enable-smtp-communication-logging-for-email-transmission-specifying-logfile-and-loglevel-settings-with-an-msg-source.cs) | enable smtp communication logging for email transmission specifying logfile and loglevel settings with an msg source |
 | [enable-smtp-pipelining-to-send-multiple-commands-without-waiting-for-individual-server-responses.cs](./enable-smtp-pipelining-to-send-multiple-commands-without-waiting-for-individual-server-responses.cs) | enable smtp pipelining to send multiple commands without waiting for individual server responses |
 | [enable-smtp-protocol-logging-and-transmit-an-email-message-loaded-from-an-msg-file.cs](./enable-smtp-protocol-logging-and-transmit-an-email-message-loaded-from-an-msg-file.cs) | enable smtp protocol logging and transmit an email message loaded from an msg file |
@@ -140,6 +146,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [implement-a-feature-that-validates-spf-records-for-the-sending-domain-before-attempting-smtp-delivery.cs](./implement-a-feature-that-validates-spf-records-for-the-sending-domain-before-attempting-smtp-delivery.cs) | implement a feature that validates spf records for the sending domain before attempting smtp delivery |
 | [implement-a-logging-interceptor-that-records-the-size-of-each-email-payload-before-transmission.cs](./implement-a-logging-interceptor-that-records-the-size-of-each-email-payload-before-transmission.cs) | implement a logging interceptor that records the size of each email payload before transmission |
 | [implement-a-mechanism-that-encrypts-attachments-using-aes-before-adding-them-to-the-email.cs](./implement-a-mechanism-that-encrypts-attachments-using-aes-before-adding-them-to-the-email.cs) | implement a mechanism that encrypts attachments using aes before adding them to the email |
+| [implement-a-mechanism-that-encrypts-the-smtp-session-using-starttls-only-after-verifying-server-certificate-fingerpri.cs](./implement-a-mechanism-that-encrypts-the-smtp-session-using-starttls-only-after-verifying-server-certificate-fingerpri.cs) | implement a mechanism that encrypts the smtp session using starttls only after verifying server certificate fingerpri |
 | [implement-a-mechanism-that-logs-the-smtp-server-banner-message-upon-establishing-the-connection.cs](./implement-a-mechanism-that-logs-the-smtp-server-banner-message-upon-establishing-the-connection.cs) | implement a mechanism that logs the smtp server banner message upon establishing the connection |
 | [implement-a-mechanism-that-pauses-sending-when-the-server-returns-a-421-response-then-resumes-after-delay.cs](./implement-a-mechanism-that-pauses-sending-when-the-server-returns-a-421-response-then-resumes-after-delay.cs) | implement a mechanism that pauses sending when the server returns a 421 response then resumes after delay |
 | [implement-a-mechanism-that-queues-messages-locally-when-the-smtp-server-is-unreachable-then-retries-later.cs](./implement-a-mechanism-that-queues-messages-locally-when-the-smtp-server-is-unreachable-then-retries-later.cs) | implement a mechanism that queues messages locally when the smtp server is unreachable then retries later |
@@ -190,6 +197,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [send-an-email-with-a-dynamically-generated-pdf-attachment-created-from-html-content-at-runtime.cs](./send-an-email-with-a-dynamically-generated-pdf-attachment-created-from-html-content-at-runtime.cs) | send an email with a dynamically generated pdf attachment created from html content at runtime |
 | [send-an-email-with-a-dynamically-generated-qr-code-image-embedded-as-an-inline-attachment.cs](./send-an-email-with-a-dynamically-generated-qr-code-image-embedded-as-an-inline-attachment.cs) | send an email with a dynamically generated qr code image embedded as an inline attachment |
 | [send-an-email-with-a-multipart-alternative-body-that-includes-both-plain-text-and-rtf-versions.cs](./send-an-email-with-a-multipart-alternative-body-that-includes-both-plain-text-and-rtf-versions.cs) | send an email with a multipart alternative body that includes both plain text and rtf versions |
+| [send-an-email-with-a-multipart-mixed-body-that-includes-a-json-payload-attachment-for-api-integration.cs](./send-an-email-with-a-multipart-mixed-body-that-includes-a-json-payload-attachment-for-api-integration.cs) | send an email with a multipart mixed body that includes a json payload attachment for api integration |
 | [send-an-email-with-a-multipart-mixed-body-that-includes-a-text-part-html-part-and-attachment.cs](./send-an-email-with-a-multipart-mixed-body-that-includes-a-text-part-html-part-and-attachment.cs) | send an email with a multipart mixed body that includes a text part html part and attachment |
 | [send-an-email-with-a-plain-text-body-encoded-in-iso-8859-1-for-legacy-client-compatibility.cs](./send-an-email-with-a-plain-text-body-encoded-in-iso-8859-1-for-legacy-client-compatibility.cs) | send an email with a plain text body encoded in iso 8859 1 for legacy client compatibility |
 | [send-an-email-with-a-plain-text-fallback-body-for-clients-that-cannot-render-html-content.cs](./send-an-email-with-a-plain-text-fallback-body-for-clients-that-cannot-render-html-content.cs) | send an email with a plain text fallback body for clients that cannot render html content |
@@ -210,8 +218,10 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [specify-a-custom-message-id-generator-that-creates-globally-unique-identifiers-for-each-sent-email.cs](./specify-a-custom-message-id-generator-that-creates-globally-unique-identifiers-for-each-sent-email.cs) | specify a custom message id generator that creates globally unique identifiers for each sent email |
 | [throttle-email-sending-rate-to-no-more-than-20-messages-per-minute-to-avoid-server-limits.cs](./throttle-email-sending-rate-to-no-more-than-20-messages-per-minute-to-avoid-server-limits.cs) | throttle email sending rate to no more than 20 messages per minute to avoid server limits |
 | [transmit-an-msg-email-file-through-smtp-by-configuring-smtpclient-with-sample-server-and-credential-parameters.cs](./transmit-an-msg-email-file-through-smtp-by-configuring-smtpclient-with-sample-server-and-credential-parameters.cs) | transmit an msg email file through smtp by configuring smtpclient with sample server and credential parameters |
+| [use-a-custom-dns-resolver-to-locate-mx-records-for-the-recipient-domain-before-sending.cs](./use-a-custom-dns-resolver-to-locate-mx-records-for-the-recipient-domain-before-sending.cs) | use a custom dns resolver to locate mx records for the recipient domain before sending |
 | [use-a-secure-socket-layer-ssl-stream-wrapper-to-encrypt-the-entire-smtp-session.cs](./use-a-secure-socket-layer-ssl-stream-wrapper-to-encrypt-the-entire-smtp-session.cs) | use a secure socket layer ssl stream wrapper to encrypt the entire smtp session |
 | [use-an-http-proxy-that-requires-custom-authentication-headers-and-configure-smtpclient-proxy-accordingly.cs](./use-an-http-proxy-that-requires-custom-authentication-headers-and-configure-smtpclient-proxy-accordingly.cs) | use an http proxy that requires custom authentication headers and configure smtpclient proxy accordingly |
+| [use-an-http-proxy-with-ntlm-authentication-to-send-emails-from-a-windows-domain-joined-environment.cs](./use-an-http-proxy-with-ntlm-authentication-to-send-emails-from-a-windows-domain-joined-environment.cs) | use an http proxy with ntlm authentication to send emails from a windows domain joined environment |
 | [use-bindipendpoint-to-select-a-specific-network-interface-for-sending-emails-from-a-multi-homed-server.cs](./use-bindipendpoint-to-select-a-specific-network-interface-for-sending-emails-from-a-multi-homed-server.cs) | use bindipendpoint to select a specific network interface for sending emails from a multi homed server |
 | [use-smtpclient-to-authenticate-to-the-smtp-server-with-basic-ntlm-or-oauth2-credentials-when-sending-an-msg-email.cs](./use-smtpclient-to-authenticate-to-the-smtp-server-with-basic-ntlm-or-oauth2-credentials-when-sending-an-msg-email.cs) | use smtpclient to authenticate to the smtp server with basic ntlm or oauth2 credentials when sending an msg email |
 | [use-the-smtp-client-to-send-a-message-with-a-multipart-related-structure-containing-inline-images.cs](./use-the-smtp-client-to-send-a-message-with-a-multipart-related-structure-containing-inline-images.cs) | use the smtp client to send a message with a multipart related structure containing inline images |
@@ -221,7 +231,7 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 | [validate-smtp-server-credentials-without-sending-an-email-by-calling-validatecredentials.cs](./validate-smtp-server-credentials-without-sending-an-email-by-calling-validatecredentials.cs) | validate smtp server credentials without sending an email by calling validatecredentials |
 
 ## Category Statistics
-- Total examples: 159
+- Total examples: 167
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -230,5 +240,5 @@ See the root [agents.md](../agents.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-05-20 | `20260519_180010` | [examples/batch-20260519_180010](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260519_180010) |
+| 2026-06-10 | `20260610_113049_697459_fa54355f` | [examples/batch-20260610_113049_697459_fa54355f](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260610_113049_697459_fa54355f) |
 <!-- AUTOGENERATED:END -->
