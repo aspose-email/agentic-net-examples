@@ -1,0 +1,34 @@
+# Aspose.Email for .NET Examples
+
+> Build-validated, standalone C# examples for Aspose.Email for .NET and .NET 8.
+
+- Examples: 3076
+- Categories: 17
+- Coding-agent instructions: ./AGENTS.md
+- Structured index: ./index.json
+- Product documentation: https://docs.aspose.com/email/net/
+- API reference: https://reference.aspose.com/email/net/
+
+## Categories
+- [convert-between-formats](./convert-between-formats/): 135 standalone examples; instructions in [AGENTS.md](./convert-between-formats/AGENTS.md)
+- [convert-thunderbird-mbox-files](./convert-thunderbird-mbox-files/): 182 standalone examples; instructions in [AGENTS.md](./convert-thunderbird-mbox-files/AGENTS.md)
+- [programming-email-verification](./programming-email-verification/): 40 standalone examples; instructions in [AGENTS.md](./programming-email-verification/AGENTS.md)
+- [programming-with-gmail](./programming-with-gmail/): 142 standalone examples; instructions in [AGENTS.md](./programming-with-gmail/AGENTS.md)
+- [read-and-export-zimbra-tgz-files](./read-and-export-zimbra-tgz-files/): 30 standalone examples; instructions in [AGENTS.md](./read-and-export-zimbra-tgz-files/AGENTS.md)
+- [working-with-amp-html-emails](./working-with-amp-html-emails/): 44 standalone examples; instructions in [AGENTS.md](./working-with-amp-html-emails/AGENTS.md)
+- [working-with-exchange-ews-client](./working-with-exchange-ews-client/): 557 standalone examples; instructions in [AGENTS.md](./working-with-exchange-ews-client/AGENTS.md)
+- [working-with-exchange-webdav-client](./working-with-exchange-webdav-client/): 156 standalone examples; instructions in [AGENTS.md](./working-with-exchange-webdav-client/AGENTS.md)
+- [working-with-ibm-notes](./working-with-ibm-notes/): 64 standalone examples; instructions in [AGENTS.md](./working-with-ibm-notes/AGENTS.md)
+- [working-with-imap-client](./working-with-imap-client/): 303 standalone examples; instructions in [AGENTS.md](./working-with-imap-client/AGENTS.md)
+- [working-with-microsoft-graph-client](./working-with-microsoft-graph-client/): 38 standalone examples; instructions in [AGENTS.md](./working-with-microsoft-graph-client/AGENTS.md)
+- [working-with-mime-messages](./working-with-mime-messages/): 343 standalone examples; instructions in [AGENTS.md](./working-with-mime-messages/AGENTS.md)
+- [working-with-outlook-items](./working-with-outlook-items/): 511 standalone examples; instructions in [AGENTS.md](./working-with-outlook-items/AGENTS.md)
+- [working-with-outlook-storage-files](./working-with-outlook-storage-files/): 189 standalone examples; instructions in [AGENTS.md](./working-with-outlook-storage-files/AGENTS.md)
+- [working-with-pop3-client](./working-with-pop3-client/): 166 standalone examples; instructions in [AGENTS.md](./working-with-pop3-client/AGENTS.md)
+- [working-with-smtp-client](./working-with-smtp-client/): 167 standalone examples; instructions in [AGENTS.md](./working-with-smtp-client/AGENTS.md)
+- [zimbra](./zimbra/): 9 standalone examples; instructions in [AGENTS.md](./zimbra/AGENTS.md)
+
+## Related Agentic .NET Repositories
+- Aspose.Words: https://github.com/aspose-words/agentic-net-examples
+- Aspose.Slides: https://github.com/aspose-slides/agentic-net-examples
+- Aspose.HTML: https://github.com/aspose-html/agentic-net-examples
