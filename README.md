@@ -1,9 +1,9 @@
 # Aspose.Email for .NET Examples
 
-AI-friendly repository containing validated C# examples for Aspose.Email for .NET API.
+Build-validated C# examples for Aspose.Email for .NET, organized for developers, AI coding agents, and LLM-based development tools.
 
 ## About
-Agent-generated C# examples for Aspose.Email for .NET — compiled, executed, and validated by an agentic pipeline. Includes an [agents.md](./agents.md) guide for AI coding agents.
+Agent-generated C# examples for Aspose.Email for .NET, compiled, executed, and validated by an agentic pipeline. See [AGENTS.md](./AGENTS.md) for coding-agent instructions and [llms.txt](./llms.txt) for a machine-readable repository map.
 
 [products.aspose.com/email/net/](https://products.aspose.com/email/net/)
 
@@ -89,10 +89,16 @@ catch (Exception ex)
 - [Aspose.Email for .NET Documentation](https://docs.aspose.com/email/net/)
 - [API Reference](https://reference.aspose.com/email/net/)
 - [Aspose Forum](https://forum.aspose.com/c/email/12)
-- [AI Agent Guide](./agents.md) - For AI agents and code generation tools
+- [Coding Agent Guide](./AGENTS.md) - Instructions for AI coding agents and code-generation tools
+- [LLM Repository Map](./llms.txt) - Compact machine-readable navigation
+
+## Related Agentic .NET Example Repositories
+- [Aspose.Words](https://github.com/aspose-words/agentic-net-examples)
+- [Aspose.Slides](https://github.com/aspose-slides/agentic-net-examples)
+- [Aspose.HTML](https://github.com/aspose-html/agentic-net-examples)
 
 ## License
 All examples use Aspose.Email for .NET and require a valid license for production use. See [licensing](https://purchase.aspose.com/).
 
 ---
-*This repository is maintained by automated code generation. For AI-friendly guidance, see [agents.md](./agents.md).*
+*This repository is maintained by automated code generation. For coding-agent guidance, see [AGENTS.md](./AGENTS.md).*
