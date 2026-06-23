@@ -1,10 +1,9 @@
-using Aspose.Email.Clients;
+using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange.Dav;
 using System;
 using System.IO;
-using System.Threading;
 using Aspose.Email;
-using Aspose.Email.Clients.Graph;
-using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -15,28 +14,52 @@ class Program
             // Path to the MSG file
             string msgPath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing
+            // Verify the MSG file exists; create a placeholder if it does not
             if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage("from@example.com", "to@example.com", "Subject", "Body"))
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
                         placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
             }
 
-            // Load the MSG file
-            MapiMessage mapiMessage;
+            // Load the MSG file into a MailMessage
+            MailMessage message;
             try
             {
-                mapiMessage = MapiMessage.Load(msgPath);
+                message = MailMessage.Load(msgPath);
             }
             catch (Exception ex)
             {
@@ -44,82 +67,38 @@ class Program
                 return;
             }
 
-            using (mapiMessage)
+            // Schedule the message to be sent 2 hours later by adding the appropriate header
+            DateTime deferredTime = DateTime.Now.AddHours(2);
+            // Outlook respects the "Deferred-Delivery-Time" header (RFC 822 style)
+            message.Headers.Add("Deferred-Delivery-Time", deferredTime.ToString("r"));
+
+            // Placeholder Exchange server credentials
+            string exchangeUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard against placeholder credentials – skip actual sending
+            if (exchangeUri.Contains("example.com") ||
+                username.Contains("example.com") ||
+                password == "password")
             {
-                // Convert to MailMessage for Graph API
-                MailMessage mailMessage;
-                try
+                Console.WriteLine("Placeholder credentials detected. Skipping actual send operation.");
+                return;
+            }
+
+            // Send the scheduled message via Exchange
+            try
+            {
+                using (ExchangeClient client = new ExchangeClient(exchangeUri, username, password))
                 {
-                    mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions());
+                    client.Send(message);
+                    Console.WriteLine("Message scheduled for later delivery.");
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to convert MSG to MailMessage: {ex.Message}");
-                    return;
-                }
-
-                using (mailMessage)
-                {
-                    // Placeholder credentials – replace with real values for actual execution
-                    string tenantId = "";
-                    string clientId = "";
-                    string clientSecret = "";
-
-                    // Skip external calls when placeholders are present
-                    if (string.IsNullOrWhiteSpace(tenantId) ||
-                        string.IsNullOrWhiteSpace(clientId) ||
-                        string.IsNullOrWhiteSpace(clientSecret))
-                    {
-                        Console.WriteLine("Placeholder credentials detected; skipping Outlook scheduling.");
-                        return;
-                    }
-
-                    // Create Graph client (no real token provider used in this placeholder example)
-                    IGraphClient graphClient;
-                    try
-                    {
-                        graphClient = GraphClient.GetClient((Aspose.Email.Clients.ITokenProvider)null, tenantId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to create Graph client: {ex.Message}");
-                        return;
-                    }
-
-                    using (graphClient)
-                    {
-                        // Create a draft message in the Drafts folder (folder id "drafts" is illustrative)
-                        string draftFolderId = "drafts";
-                        MailMessage draftMessage;
-                        try
-                        {
-                            draftMessage = graphClient.CreateMessage(draftFolderId, mailMessage);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to create draft message: {ex.Message}");
-                            return;
-                        }
-
-                        // The draft's MessageId can be used to send later
-                        string draftMessageId = draftMessage.MessageId;
-
-                        // Simulate scheduling by waiting (e.g., 5 seconds) before sending
-                        Console.WriteLine("Message scheduled. Waiting before sending...");
-                        Thread.Sleep(5000);
-
-                        // Send the previously created draft
-                        try
-                        {
-                            graphClient.Send(draftMessageId);
-                            Console.WriteLine("Scheduled message sent successfully.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to send scheduled message: {ex.Message}");
-                        }
-                    }
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to send message: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
