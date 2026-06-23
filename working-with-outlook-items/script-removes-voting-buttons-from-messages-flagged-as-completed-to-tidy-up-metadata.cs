@@ -1,7 +1,6 @@
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Mapi;
 
 class Program
@@ -10,46 +9,56 @@ class Program
     {
         try
         {
-            // Placeholder credentials detection – avoid real network calls in CI
-            string host = "exchange.example.com";
-            string username = "user@example.com";
-            string password = "password";
+            // Path to the message file (MSG). Adjust as needed.
+            string msgPath = "sample.msg";
 
-            if (host.Contains("example.com"))
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
-
-            // Create Exchange client (DAV)
-            using (ExchangeClient client = new ExchangeClient(host, username, password))
+            // Ensure the file exists; if not, create a minimal placeholder message.
+            if (!File.Exists(msgPath))
             {
                 try
                 {
-                    // List messages in the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
-
-                    foreach (var msgInfo in messages)
+                    // Create a simple MAPI message with a voting button for demonstration.
+                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Sample Subject", "Sample body"))
                     {
-                        // Fetch the full MAPI message using its unique URI
-                        using (MapiMessage mapiMessage = client.FetchMapiMessage(msgInfo.UniqueUri))
-                        {
-                            // Remove any voting buttons from the message
-                            FollowUpManager.ClearVotingButtons(mapiMessage);
-                            // (Optional) Persist changes back to the server if needed
-                            // client.UpdateItem(mapiMessage, msgInfo.UniqueUri);
-                        }
+                        // Add a voting button so we have something to clear later.
+                        FollowUpManager.AddVotingButton(placeholder, "Approve");
+                        // Save the placeholder message.
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error processing messages: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder message: {ex.Message}");
+                    return;
                 }
             }
+
+            // Load the message, mark it as completed, and remove voting buttons.
+            try
+            {
+                using (MapiMessage message = MapiMessage.Load(msgPath))
+                {
+                    // Mark the message as completed (sets the follow‑up flag status).
+                    FollowUpManager.MarkAsCompleted(message);
+
+                    // Remove all voting buttons from the completed message.
+                    FollowUpManager.ClearVotingButtons(message);
+
+                    // Save the updated message back to the same file.
+                    message.Save(msgPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing message: {ex.Message}");
+                return;
+            }
+
+            Console.WriteLine("Voting buttons removed from completed message successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
