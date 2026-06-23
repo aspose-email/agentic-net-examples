@@ -18,27 +18,27 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (511 file(s))
-- `using Aspose.Email;` (504 file(s))
-- `using System.IO;` (425 file(s))
-- `using Aspose.Email.Mapi;` (335 file(s))
-- `using System.Collections.Generic;` (113 file(s))
-- `using Aspose.Email.PersonalInfo;` (70 file(s))
+- `using System;` (513 file(s))
+- `using Aspose.Email;` (506 file(s))
+- `using System.IO;` (428 file(s))
+- `using Aspose.Email.Mapi;` (336 file(s))
+- `using System.Collections.Generic;` (115 file(s))
+- `using Aspose.Email.PersonalInfo;` (71 file(s))
 - `using Aspose.Email.Storage.Pst;` (43 file(s))
-- `using Aspose.Email.Calendar;` (40 file(s))
+- `using Aspose.Email.Calendar;` (41 file(s))
 - `using Aspose.Email.Calendar.Recurrences;` (27 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService;` (27 file(s))
 - `using Aspose.Email.Clients.Exchange.Dav;` (27 file(s))
 - `using Aspose.Email.Clients.Exchange;` (26 file(s))
 - `using System.Text;` (23 file(s))
 - `using System.Text.Json;` (21 file(s))
-- `using Aspose.Email.Clients;` (17 file(s))
+- `using Aspose.Email.Clients;` (16 file(s))
 - `using Aspose.Email.Clients.Google;` (16 file(s))
 - `using System.Net;` (14 file(s))
 - `using Aspose.Email.Clients.Imap;` (12 file(s))
 - `using System.Linq;` (12 file(s))
 - `using System.IO.Compression;` (10 file(s))
-- `using System.Threading;` (9 file(s))
+- `using System.Threading;` (8 file(s))
 - `using Aspose.Email.Mime;` (7 file(s))
 - `using System.Text.RegularExpressions;` (7 file(s))
 - `using Aspose.Email.Clients.Pop3;` (7 file(s))
@@ -61,7 +61,6 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - `using EmailTask = Aspose.Email.Calendar.Task;` (1 file(s))
 - `using System.Runtime.InteropServices;` (1 file(s))
 - `using Aspose.Email.Tools;` (1 file(s))
-- `using Aspose.Email.Clients.Graph;` (1 file(s))
 - `using System.Net.Http;` (1 file(s))
 - `using System.Security.AccessControl;` (1 file(s))
 - `using System.Security.Principal;` (1 file(s))
@@ -289,6 +288,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [generate-vcard-3-0-files-for-each-contact-and-store-them-in-a-designated-output-directory.cs](./generate-vcard-3-0-files-for-each-contact-and-store-them-in-a-designated-output-directory.cs) | generate vcard 3 0 files for each contact and store them in a designated output directory |
 | [group-contacts-by-city-and-generate-separate-output-files-for-each-city-group.cs](./group-contacts-by-city-and-generate-separate-output-files-for-each-city-group.cs) | group contacts by city and generate separate output files for each city group |
 | [handle-any-exceptions-thrown-by-file-save-and-notify-the-user-of-save-failures.cs](./handle-any-exceptions-thrown-by-file-save-and-notify-the-user-of-save-failures.cs) | handle any exceptions thrown by file save and notify the user of save failures |
+| [identify-and-remove-duplicate-contacts-across-several-files-keeping-the-most-recently-modified-record.cs](./identify-and-remove-duplicate-contacts-across-several-files-keeping-the-most-recently-modified-record.cs) | identify and remove duplicate contacts across several files keeping the most recently modified record |
 | [implement-a-check-that-prevents-adding-duplicate-voting-buttons-using-case-insensitive-comparison.cs](./implement-a-check-that-prevents-adding-duplicate-voting-buttons-using-case-insensitive-comparison.cs) | implement a check that prevents adding duplicate voting buttons using case insensitive comparison |
 | [implement-a-utility-that-lists-all-msg-files-in-a-directory-and-reports-their-contained-task-subjects.cs](./implement-a-utility-that-lists-all-msg-files-in-a-directory-and-reports-their-contained-task-subjects.cs) | implement a utility that lists all msg files in a directory and reports their contained task subjects |
 | [implement-asynchronous-loading-of-msg-data-from-a-network-stream-using-async-await-pattern.cs](./implement-asynchronous-loading-of-msg-data-from-a-network-stream-using-async-await-pattern.cs) | implement asynchronous loading of msg data from a network stream using async await pattern |
@@ -496,6 +496,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [save-contacts-as-msg-files-one-file-per-contact-using-default-outlook-formatting.cs](./save-contacts-as-msg-files-one-file-per-contact-using-default-outlook-formatting.cs) | save contacts as msg files one file per contact using default outlook formatting |
 | [save-contacts-directly-to-a-network-share-ensuring-proper-file-permissions-are-applied-during-write-operation.cs](./save-contacts-directly-to-a-network-share-ensuring-proper-file-permissions-are-applied-during-write-operation.cs) | save contacts directly to a network share ensuring proper file permissions are applied during write operation |
 | [save-contacts-to-a-temporary-file-process-it-and-then-securely-delete-the-file-after-completion.cs](./save-contacts-to-a-temporary-file-process-it-and-then-securely-delete-the-file-after-completion.cs) | save contacts to a temporary file process it and then securely delete the file after completion |
+| [save-contacts-to-azure-blob-storage-setting-appropriate-metadata-and-access-tiers-for-efficient-retrieval.cs](./save-contacts-to-azure-blob-storage-setting-appropriate-metadata-and-access-tiers-for-efficient-retrieval.cs) | save contacts to azure blob storage setting appropriate metadata and access tiers for efficient retrieval |
 | [save-contacts-while-preserving-original-mapi-property-values-to-maintain-fidelity-during-format-conversion.cs](./save-contacts-while-preserving-original-mapi-property-values-to-maintain-fidelity-during-format-conversion.cs) | save contacts while preserving original mapi property values to maintain fidelity during format conversion |
 | [script-removes-voting-buttons-from-messages-flagged-as-completed-to-tidy-up-metadata.cs](./script-removes-voting-buttons-from-messages-flagged-as-completed-to-tidy-up-metadata.cs) | script removes voting buttons from messages flagged as completed to tidy up metadata |
 | [select-distribution-list-members-whose-email-domain-matches-a-pattern-and-export-them-to-json.cs](./select-distribution-list-members-whose-email-domain-matches-a-pattern-and-export-them-to-json.cs) | select distribution list members whose email domain matches a pattern and export them to json |
@@ -586,7 +587,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [write-documentation-describing-best-practices-for-preserving-embedded-messages-during-conversion.cs](./write-documentation-describing-best-practices-for-preserving-embedded-messages-during-conversion.cs) | write documentation describing best practices for preserving embedded messages during conversion |
 
 ## Category Statistics
-- Total examples: 511
+- Total examples: 513
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -595,5 +596,5 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-06-14 | `20260610_113049_697459_fa54355f` | [examples/batch-20260610_113049_697459_fa54355f](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260610_113049_697459_fa54355f) |
+| 2026-06-23 | `20260623_135846_290675_1e48662f` | [examples/batch-20260623_135846_290675_1e48662f](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260623_135846_290675_1e48662f) |
 <!-- AUTOGENERATED:END -->
