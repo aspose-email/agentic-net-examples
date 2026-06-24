@@ -18,30 +18,30 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (182 file(s))
-- `using Aspose.Email;` (175 file(s))
-- `using System.IO;` (174 file(s))
-- `using Aspose.Email.Storage.Pst;` (114 file(s))
-- `using Aspose.Email.Storage;` (75 file(s))
-- `using Aspose.Email.Storage.Mbox;` (62 file(s))
-- `using Aspose.Email.Mapi;` (44 file(s))
+- `using System;` (189 file(s))
+- `using Aspose.Email;` (182 file(s))
+- `using System.IO;` (181 file(s))
+- `using Aspose.Email.Storage.Pst;` (117 file(s))
+- `using Aspose.Email.Storage;` (77 file(s))
+- `using Aspose.Email.Storage.Mbox;` (66 file(s))
+- `using Aspose.Email.Mapi;` (46 file(s))
+- `using System.Threading;` (20 file(s))
+- `using System.Collections.Generic;` (20 file(s))
 - `using System.Text;` (19 file(s))
-- `using System.Threading;` (19 file(s))
-- `using System.Collections.Generic;` (17 file(s))
-- `using System.Threading.Tasks;` (12 file(s))
-- `using System.Diagnostics;` (11 file(s))
-- `using System.Text.Json;` (5 file(s))
-- `using Aspose.Email.Tools.Search;` (4 file(s))
+- `using System.Threading.Tasks;` (13 file(s))
+- `using System.Diagnostics;` (12 file(s))
+- `using System.Text.Json;` (6 file(s))
+- `using Aspose.Email.Tools.Search;` (5 file(s))
+- `using System.Linq;` (3 file(s))
 - `using Aspose.Email.Clients.Imap;` (3 file(s))
 - `using Aspose.Email.Clients.Exchange.Dav;` (3 file(s))
 - `using System.Security.Cryptography;` (2 file(s))
 - `using Aspose.Email.Clients.Pop3;` (2 file(s))
-- `using System.Linq;` (2 file(s))
+- `using System.IO.Compression;` (2 file(s))
 - `using Aspose.Email.Clients;` (2 file(s))
 - `using Aspose.Email.Clients.Exchange;` (1 file(s))
 - `using System.Runtime.InteropServices;` (1 file(s))
 - `using System.Text.RegularExpressions;` (1 file(s))
-- `using System.IO.Compression;` (1 file(s))
 - `using Aspose.Email.Mime;` (1 file(s))
 - `using System.Reflection;` (1 file(s))
 - `using Aspose.Email.Calendar;` (1 file(s))
@@ -61,10 +61,12 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [add-support-for-logging-split-progress-to-a-csv-file-for-external-monitoring-tools.cs](./add-support-for-logging-split-progress-to-a-csv-file-for-external-monitoring-tools.cs) | add support for logging split progress to a csv file for external monitoring tools |
 | [add-support-for-preserving-calendar-items-embedded-in-email-messages-during-pst-conversion.cs](./add-support-for-preserving-calendar-items-embedded-in-email-messages-during-pst-conversion.cs) | add support for preserving calendar items embedded in email messages during pst conversion |
 | [add-support-for-preserving-custom-x-mail-headers-by-copying-them-into-pst-message-properties.cs](./add-support-for-preserving-custom-x-mail-headers-by-copying-them-into-pst-message-properties.cs) | add support for preserving custom x mail headers by copying them into pst message properties |
+| [add-support-for-preserving-email-priority-flags-as-pst-message-importance-levels.cs](./add-support-for-preserving-email-priority-flags-as-pst-message-importance-levels.cs) | add support for preserving email priority flags as pst message importance levels |
 | [add-support-for-preserving-mime-boundary-information-as-custom-metadata-in-pst-messages.cs](./add-support-for-preserving-mime-boundary-information-as-custom-metadata-in-pst-messages.cs) | add support for preserving mime boundary information as custom metadata in pst messages |
 | [add-support-for-preserving-read-receipt-requests-as-custom-properties-in-the-pst-messages.cs](./add-support-for-preserving-read-receipt-requests-as-custom-properties-in-the-pst-messages.cs) | add support for preserving read receipt requests as custom properties in the pst messages |
 | [add-unit-tests-for-conversion-options-that-enable-or-disable-attachment-compression.cs](./add-unit-tests-for-conversion-options-that-enable-or-disable-attachment-compression.cs) | add unit tests for conversion options that enable or disable attachment compression |
 | [add-unit-tests-for-conversion-options-that-toggle-signature-removal-on-and-off.cs](./add-unit-tests-for-conversion-options-that-toggle-signature-removal-on-and-off.cs) | add unit tests for conversion options that toggle signature removal on and off |
+| [add-unit-tests-that-ensure-conversion-respects-the-specified-batch-size-configuration.cs](./add-unit-tests-that-ensure-conversion-respects-the-specified-batch-size-configuration.cs) | add unit tests that ensure conversion respects the specified batch size configuration |
 | [add-unit-tests-that-verify-correct-handling-of-messages-with-missing-subject-headers.cs](./add-unit-tests-that-verify-correct-handling-of-messages-with-missing-subject-headers.cs) | add unit tests that verify correct handling of messages with missing subject headers |
 | [allow-users-to-specify-a-custom-pst-file-password-during-creation-for-added-security.cs](./allow-users-to-specify-a-custom-pst-file-password-during-creation-for-added-security.cs) | allow users to specify a custom pst file password during creation for added security |
 | [apply-a-custom-filter-to-exclude-messages-older-than-a-specific-date-before-pst-conversion.cs](./apply-a-custom-filter-to-exclude-messages-older-than-a-specific-date-before-pst-conversion.cs) | apply a custom filter to exclude messages older than a specific date before pst conversion |
@@ -73,6 +75,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [apply-a-mailquery-to-filter-messages-sent-after-a-given-date.cs](./apply-a-mailquery-to-filter-messages-sent-after-a-given-date.cs) | apply a mailquery to filter messages sent after a given date |
 | [benchmark-conversion-speed-when-using-ssd-storage-versus-traditional-hdd-for-pst-output.cs](./benchmark-conversion-speed-when-using-ssd-storage-versus-traditional-hdd-for-pst-output.cs) | benchmark conversion speed when using ssd storage versus traditional hdd for pst output |
 | [benchmark-memory-usage-when-converting-large-mbox-archives-with-and-without-batch-processing.cs](./benchmark-memory-usage-when-converting-large-mbox-archives-with-and-without-batch-processing.cs) | benchmark memory usage when converting large mbox archives with and without batch processing |
+| [benchmark-synchronous-versus-asynchronous-splitting-on-identical-mbox-files-to-compare-execution-times.cs](./benchmark-synchronous-versus-asynchronous-splitting-on-identical-mbox-files-to-compare-execution-times.cs) | benchmark synchronous versus asynchronous splitting on identical mbox files to compare execution times |
 | [call-the-asynchronous-splitinto-overload-within-an-async-method-and-await-its-completion.cs](./call-the-asynchronous-splitinto-overload-within-an-async-method-and-await-its-completion.cs) | call the asynchronous splitinto overload within an async method and await its completion |
 | [choose-the-appropriate-splitinto-overload-based-on-net-version-and-cancellation-token-requirements.cs](./choose-the-appropriate-splitinto-overload-based-on-net-version-and-cancellation-token-requirements.cs) | choose the appropriate splitinto overload based on net version and cancellation token requirements |
 | [close-the-mboxrdstoragereader-to-release-file-handles-after-processing-completes.cs](./close-the-mboxrdstoragereader-to-release-file-handles-after-processing-completes.cs) | close the mboxrdstoragereader to release file handles after processing completes |
@@ -104,6 +107,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [create-a-powershell-script-that-calls-the-net-library-to-split-mbox-files-in-batch-mode.cs](./create-a-powershell-script-that-calls-the-net-library-to-split-mbox-files-in-batch-mode.cs) | create a powershell script that calls the net library to split mbox files in batch mode |
 | [create-a-powershell-script-that-invokes-the-net-conversion-library-with-specified-parameters.cs](./create-a-powershell-script-that-invokes-the-net-conversion-library-with-specified-parameters.cs) | create a powershell script that invokes the net conversion library with specified parameters |
 | [create-a-progress-report-listing-each-part-file-name-size-and-creation-timestamp-after-splitting.cs](./create-a-progress-report-listing-each-part-file-name-size-and-creation-timestamp-after-splitting.cs) | create a progress report listing each part file name size and creation timestamp after splitting |
+| [create-a-reusable-method-that-accepts-a-mailquery-and-returns-matching-mboxmessageinfo-list.cs](./create-a-reusable-method-that-accepts-a-mailquery-and-returns-matching-mboxmessageinfo-list.cs) | create a reusable method that accepts a mailquery and returns matching mboxmessageinfo list |
 | [create-a-sample-console-application-demonstrating-end-to-end-mbox-to-pst-conversion-with-configurable-options.cs](./create-a-sample-console-application-demonstrating-end-to-end-mbox-to-pst-conversion-with-configurable-options.cs) | create a sample console application demonstrating end to end mbox to pst conversion with configurable options |
 | [create-a-sample-script-that-automates-batch-conversion-of-all-mbox-files-in-a-given-directory.cs](./create-a-sample-script-that-automates-batch-conversion-of-all-mbox-files-in-a-given-directory.cs) | create a sample script that automates batch conversion of all mbox files in a given directory |
 | [create-a-scheduled-azure-function-that-processes-incoming-mbox-blobs-and-stores-pst-results-in-blob-storage.cs](./create-a-scheduled-azure-function-that-processes-incoming-mbox-blobs-and-stores-pst-results-in-blob-storage.cs) | create a scheduled azure function that processes incoming mbox blobs and stores pst results in blob storage |
@@ -126,6 +130,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs](./export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs) | export conversion logs to a json file for downstream analysis and troubleshooting |
 | [expose-a-rest-api-endpoint-that-accepts-an-uploaded-mbox-file-and-returns-the-generated-pst-stream.cs](./expose-a-rest-api-endpoint-that-accepts-an-uploaded-mbox-file-and-returns-the-generated-pst-stream.cs) | expose a rest api endpoint that accepts an uploaded mbox file and returns the generated pst stream |
 | [expose-an-api-endpoint-that-triggers-asynchronous-mbox-splitting-with-optional-cancellation-token.cs](./expose-an-api-endpoint-that-triggers-asynchronous-mbox-splitting-with-optional-cancellation-token.cs) | expose an api endpoint that triggers asynchronous mbox splitting with optional cancellation token |
+| [expose-configuration-via-appsettings-json-to-allow-runtime-adjustment-of-batch-size-and-signature-removal.cs](./expose-configuration-via-appsettings-json-to-allow-runtime-adjustment-of-batch-size-and-signature-removal.cs) | expose configuration via appsettings json to allow runtime adjustment of batch size and signature removal |
 | [extract-a-single-message-by-its-entryid-using-extractmessage-method.cs](./extract-a-single-message-by-its-entryid-using-extractmessage-method.cs) | extract a single message by its entryid using extractmessage method |
 | [extract-and-preserve-email-headers-such-as-from-to-and-date-when-transferring-to-pst.cs](./extract-and-preserve-email-headers-such-as-from-to-and-date-when-transferring-to-pst.cs) | extract and preserve email headers such as from to and date when transferring to pst |
 | [extract-messages-with-specific-priority-level-and-store-their-bodies-in-separate-text-files.cs](./extract-messages-with-specific-priority-level-and-store-their-bodies-in-separate-text-files.cs) | extract messages with specific priority level and store their bodies in separate text files |
@@ -198,12 +203,14 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [provide-a-configuration-flag-to-disable-automatic-creation-of-pst-subfolders-during-conversion.cs](./provide-a-configuration-flag-to-disable-automatic-creation-of-pst-subfolders-during-conversion.cs) | provide a configuration flag to disable automatic creation of pst subfolders during conversion |
 | [provide-a-powershell-cmdlet-that-wraps-the-conversion-library-and-returns-the-pst-file-path.cs](./provide-a-powershell-cmdlet-that-wraps-the-conversion-library-and-returns-the-pst-file-path.cs) | provide a powershell cmdlet that wraps the conversion library and returns the pst file path |
 | [provide-a-sample-configuration-json-that-demonstrates-setting-batch-size-signature-removal-and-output-path.cs](./provide-a-sample-configuration-json-that-demonstrates-setting-batch-size-signature-removal-and-output-path.cs) | provide a sample configuration json that demonstrates setting batch size signature removal and output path |
+| [provide-an-option-to-compress-attachments-within-pst-to-reduce-overall-file-size.cs](./provide-an-option-to-compress-attachments-within-pst-to-reduce-overall-file-size.cs) | provide an option to compress attachments within pst to reduce overall file size |
 | [provide-an-option-to-embed-original-mbox-file-metadata-as-custom-properties-within-pst-messages.cs](./provide-an-option-to-embed-original-mbox-file-metadata-as-custom-properties-within-pst-messages.cs) | provide an option to embed original mbox file metadata as custom properties within pst messages |
 | [provide-an-option-to-exclude-messages-with-empty-bodies-from-pst-during-conversion.cs](./provide-an-option-to-exclude-messages-with-empty-bodies-from-pst-during-conversion.cs) | provide an option to exclude messages with empty bodies from pst during conversion |
 | [provide-an-option-to-skip-messages-that-exceed-a-maximum-size-threshold-during-conversion.cs](./provide-an-option-to-skip-messages-that-exceed-a-maximum-size-threshold-during-conversion.cs) | provide an option to skip messages that exceed a maximum size threshold during conversion |
 | [provide-documentation-examples-showing-how-to-convert-encrypted-mbox-files-with-password-protection.cs](./provide-documentation-examples-showing-how-to-convert-encrypted-mbox-files-with-password-protection.cs) | provide documentation examples showing how to convert encrypted mbox files with password protection |
 | [read-mbox-messages-in-chunks-of-2000-items-to-avoid-excessive-memory-consumption.cs](./read-mbox-messages-in-chunks-of-2000-items-to-avoid-excessive-memory-consumption.cs) | read mbox messages in chunks of 2000 items to avoid excessive memory consumption |
 | [remove-digital-signatures-from-messages-by-setting-removesignature-flag-ensuring-clean-pst-content.cs](./remove-digital-signatures-from-messages-by-setting-removesignature-flag-ensuring-clean-pst-content.cs) | remove digital signatures from messages by setting removesignature flag ensuring clean pst content |
+| [retrieve-total-message-count-with-getmessagecount-method-for-the-loaded-mbox-file.cs](./retrieve-total-message-count-with-getmessagecount-method-for-the-loaded-mbox-file.cs) | retrieve total message count with getmessagecount method for the loaded mbox file |
 | [save-changes-to-the-pst-file-after-processing-a-batch-of-one-thousand-messages-to-manage-memory.cs](./save-changes-to-the-pst-file-after-processing-a-batch-of-one-thousand-messages-to-manage-memory.cs) | save changes to the pst file after processing a batch of one thousand messages to manage memory |
 | [schedule-a-background-task-that-monitors-a-directory-and-processes-new-mbox-files-nightly.cs](./schedule-a-background-task-that-monitors-a-directory-and-processes-new-mbox-files-nightly.cs) | schedule a background task that monitors a directory and processes new mbox files nightly |
 | [schedule-automatic-mbox-splitting-using-windows-task-scheduler-to-run-during-off-peak-hours.cs](./schedule-automatic-mbox-splitting-using-windows-task-scheduler-to-run-during-off-peak-hours.cs) | schedule automatic mbox splitting using windows task scheduler to run during off peak hours |
@@ -233,7 +240,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [write-integration-tests-that-verify-end-to-end-conversion-from-a-sample-mbox-to-a-valid-pst-file.cs](./write-integration-tests-that-verify-end-to-end-conversion-from-a-sample-mbox-to-a-valid-pst-file.cs) | write integration tests that verify end to end conversion from a sample mbox to a valid pst file |
 
 ## Category Statistics
-- Total examples: 182
+- Total examples: 189
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -242,5 +249,5 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-06-14 | `20260610_113049_697459_fa54355f` | [examples/batch-20260610_113049_697459_fa54355f](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260610_113049_697459_fa54355f) |
+| 2026-06-23 | `20260623_163422_590290_7c4847fe` | [examples/batch-20260623_163422_590290_7c4847fe](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260623_163422_590290_7c4847fe) |
 <!-- AUTOGENERATED:END -->
