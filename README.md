@@ -14,20 +14,20 @@ This repository provides working code examples demonstrating Aspose.Email for .N
 Examples are organized by feature category:
 - `convert-between-formats/` - 135 example(s)
 - `convert-thunderbird-mbox-files/` - 189 example(s)
-- `programming-email-verification/` - 40 example(s)
-- `programming-with-gmail/` - 142 example(s)
+- `programming-email-verification/` - 42 example(s)
+- `programming-with-gmail/` - 154 example(s)
 - `read-and-export-zimbra-tgz-files/` - 30 example(s)
-- `working-with-amp-html-emails/` - 44 example(s)
-- `working-with-exchange-ews-client/` - 557 example(s)
-- `working-with-exchange-webdav-client/` - 156 example(s)
-- `working-with-ibm-notes/` - 64 example(s)
-- `working-with-imap-client/` - 303 example(s)
-- `working-with-microsoft-graph-client/` - 38 example(s)
-- `working-with-mime-messages/` - 343 example(s)
-- `working-with-outlook-items/` - 511 example(s)
-- `working-with-outlook-storage-files/` - 189 example(s)
-- `working-with-pop3-client/` - 166 example(s)
-- `working-with-smtp-client/` - 167 example(s)
+- `working-with-amp-html-emails/` - 46 example(s)
+- `working-with-exchange-ews-client/` - 568 example(s)
+- `working-with-exchange-webdav-client/` - 175 example(s)
+- `working-with-ibm-notes/` - 65 example(s)
+- `working-with-imap-client/` - 322 example(s)
+- `working-with-microsoft-graph-client/` - 49 example(s)
+- `working-with-mime-messages/` - 348 example(s)
+- `working-with-outlook-items/` - 514 example(s)
+- `working-with-outlook-storage-files/` - 194 example(s)
+- `working-with-pop3-client/` - 176 example(s)
+- `working-with-smtp-client/` - 174 example(s)
 - `zimbra/` - 9 example(s)
 
 Each category contains standalone `.cs` files that can be compiled and run independently.
@@ -128,4 +128,4 @@ Other Aspose products with agentic, build-validated example repositories:
 All examples use [Aspose.Email for .NET](https://products.aspose.com/email/net/) and require a valid license for production use. See [licensing options](https://purchase.aspose.com/buy).
 
 ---
-*Maintained by an [agentic example generation workflow](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-06-23*
+*Maintained by an [agentic example generation workflow](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-07-03*
