@@ -1,82 +1,58 @@
-using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Mapi;
 
-class Program
+namespace ConvertMboxToPst
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string emlPath = "sample.eml";
+            // Author note: Simple console app that converts a Thunderbird MBOX file to a PST file
+            // and adds each converted message to the root folder of the PST.
+
+            string mboxPath = "input.mbox";
             string pstPath = "output.pst";
 
-            // Verify input EML file exists
-            if (!File.Exists(emlPath))
+            // Guard file I/O
+            if (!File.Exists(mboxPath))
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine($"Input file '{emlPath}' not found.");
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // If a PST file already exists, attempt to delete it
-            if (File.Exists(pstPath))
+            try
             {
-                try
+                // Create a new PST file (Unicode format)
+                using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                 {
-                    File.Delete(pstPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unable to delete existing PST file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the MailMessage from the EML file
-            using (MailMessage mailMessage = MailMessage.Load(emlPath))
-            {
-                // Convert MailMessage to MapiMessage
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
-                {
-                    // Create a new PST file (Unicode format)
-                    using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    // Open the MBOX storage for reading
+                    using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
                     {
-                        try
+                        // Iterate through each message in the MBOX file
+                        foreach (MboxMessageInfo mboxInfo in mboxReader.EnumerateMessageInfo())
                         {
+                            // Extract the full MIME message as a MailMessage object
+                            MailMessage mailMessage = mboxReader.ExtractMessage(mboxInfo.EntryId, new EmlLoadOptions());
+
+                            // Convert MailMessage to MapiMessage (required for PST storage)
+                            MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
+
                             // Add the converted message to the root folder of the PST
-                            string entryId = pst.RootFolder.AddMessage(mapiMessage);
-                            Console.WriteLine($"Message added to PST. EntryId: {entryId}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to add message to PST: {ex.Message}");
+                            pst.RootFolder.AddMessage(mapiMessage);
                         }
                     }
+
+                    // PST is saved automatically when disposed
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            }
         }
     }
 }
