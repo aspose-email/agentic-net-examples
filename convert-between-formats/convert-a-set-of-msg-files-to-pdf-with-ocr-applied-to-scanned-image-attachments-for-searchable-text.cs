@@ -1,133 +1,77 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 using Aspose.Words;
 using Aspose.Words.Saving;
 
-class Program
+namespace ConvertMsgToPdfWithOcr
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Input and output directories (adjust as needed)
-            string inputFolder = @"C:\InputMsg";
-            string outputFolder = @"C:\OutputPdf";
-
-            // Ensure input folder exists
-            if (!Directory.Exists(inputFolder))
-            {
-                Console.Error.WriteLine($"Input folder does not exist: {inputFolder}");
-                return;
-            }
-
-            // Ensure output folder exists or create it
-            if (!Directory.Exists(outputFolder))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputFolder);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output folder: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Get all MSG files in the input folder
-            string[] msgFiles;
             try
             {
-                msgFiles = Directory.GetFiles(inputFolder, "*.msg");
+                // Define input and output directories
+                string inputDir = Path.Combine(Directory.GetCurrentDirectory(), "InputMsgs");
+                string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "OutputPdfs");
+
+                // Ensure input directory exists
+                if (!Directory.Exists(inputDir))
+                {
+                    Console.Error.WriteLine($"Input directory not found: {inputDir}");
+                    return;
+                }
+
+                // Ensure output directory exists
+                Directory.CreateDirectory(outputDir);
+
+                // Process each MSG file in the input directory
+                foreach (string msgPath in Directory.GetFiles(inputDir, "*.msg"))
+                {
+                    try
+                    {
+                        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(msgPath);
+                        string tempMhtmlPath = Path.Combine(Path.GetTempPath(), fileNameWithoutExt + ".mhtml");
+                        string pdfPath = Path.Combine(outputDir, fileNameWithoutExt + ".pdf");
+
+                        // Load the MSG file
+                        MapiMessage mapMsg = MapiMessage.Load(msgPath);
+
+                        // Convert to MailMessage and save as MHTML (visual representation)
+                        using (MailMessage mailMessage = mapMsg.ToMailMessage(new MailConversionOptions()))
+                        {
+                            mailMessage.Save(tempMhtmlPath, Aspose.Email.SaveOptions.DefaultMhtml);
+                        }
+
+                        // Load the MHTML into Aspose.Words Document
+                        Document doc = new Document(tempMhtmlPath);
+
+                        // Prepare PDF save options (OCR settings are not available in this version)
+                        Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions();
+
+                        // Save as PDF
+                        doc.Save(pdfPath, pdfOptions);
+
+                        // Clean up temporary MHTML file
+                        if (File.Exists(tempMhtmlPath))
+                        {
+                            File.Delete(tempMhtmlPath);
+                        }
+
+                        Console.WriteLine($"Converted '{msgPath}' to PDF successfully.");
+                    }
+                    catch (Exception exFile)
+                    {
+                        Console.Error.WriteLine($"Error processing file '{msgPath}': {exFile.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to enumerate MSG files: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-
-            foreach (string msgPath in msgFiles)
-            {
-                // Guard against missing file
-                if (!File.Exists(msgPath))
-                {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                    Console.Error.WriteLine($"File not found: {msgPath}");
-                    continue;
-                }
-
-                try
-                {
-                    // Load the MSG file
-                    using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
-                    {
-                        // Convert to MailMessage (needed for MHTML export)
-                        MailConversionOptions conversionOptions = new MailConversionOptions();
-                        using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
-                        {
-                            // Export to MHTML in memory
-                            using (MemoryStream mhtmlStream = new MemoryStream())
-                            {
-                                mailMessage.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
-                                mhtmlStream.Position = 0;
-
-                                // Load MHTML into Aspose.Words Document
-                                Document doc = new Document(mhtmlStream);
-
-                                // Placeholder: OCR processing of image attachments would occur here.
-                                // Since Aspose.Email does not provide OCR, this step is omitted.
-                                // If an OCR library were available, you would extract each image attachment,
-                                // run OCR, and insert the recognized text into the document.
-
-                                // Save the document as PDF
-                                string pdfFileName = Path.GetFileNameWithoutExtension(msgPath) + ".pdf";
-                                string pdfPath = Path.Combine(outputFolder, pdfFileName);
-                                doc.Save(pdfPath, Aspose.Words.SaveFormat.Pdf);
-                            }
-                        }
-
-                        // Optional: Process image attachments for OCR (not implemented)
-                        foreach (MapiAttachment attachment in mapiMessage.Attachments)
-                        {
-                            // Simple check for common image extensions
-                            string ext = Path.GetExtension(attachment.FileName)?.ToLowerInvariant();
-                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tif" || ext == ".tiff")
-                            {
-                                // Attachment data can be accessed via attachment.Save(stream) if needed.
-                                // OCR logic would be placed here.
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing '{msgPath}': {ex.Message}");
-                    // Continue with next file
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
