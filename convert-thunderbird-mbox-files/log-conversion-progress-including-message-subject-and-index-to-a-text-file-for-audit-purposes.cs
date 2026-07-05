@@ -1,8 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Mbox;
 
 class Program
 {
@@ -10,66 +9,76 @@ class Program
     {
         try
         {
-            string pstFilePath = "input.pst";
-            string logFilePath = "conversion_audit.txt";
+            const string mboxPath = "storage.mbox";
+            const string outputDir = "output";
+            const string logFileName = "conversion_log.txt";
+            string logPath = Path.Combine(outputDir, logFileName);
 
-            // Verify PST file exists
-            if (!File.Exists(pstFilePath))
+            // Verify the MBOX file exists.
+            if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"PST file not found: {pstFilePath}");
+                Console.Error.WriteLine($"Input file not found: {mboxPath}");
                 return;
             }
 
-            // Ensure the directory for the log file exists
-            string logDirectory = Path.GetDirectoryName(logFilePath);
-            if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
+            // Ensure the output directory exists.
+            if (!Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(logDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create log directory: {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Open PST and log file within using blocks for proper disposal
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
-            using (StreamWriter logWriter = new StreamWriter(logFilePath, false))
+            // Ensure the log file exists (create if missing).
+            try
             {
-                int messageIndex = 0;
-
-                // Iterate through all subfolders recursively
-                foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
+                using (FileStream fs = new FileStream(logPath, FileMode.OpenOrCreate, FileAccess.Write))
                 {
-                    ProcessFolder(folder, ref messageIndex, logWriter);
+                    // No action needed; just ensure the file is created.
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create log file: {ex.Message}");
+                return;
+            }
+
+            // Open the MBOX storage.
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            {
+                int index = 0;
+
+                // Open the log file for appending.
+                using (StreamWriter logWriter = new StreamWriter(logPath, append: true))
+                {
+                    // Iterate through each message info object.
+                    foreach (MboxMessageInfo mboxMessageInfo in mbox.EnumerateMessageInfo())
+                    {
+                        index++;
+
+                        // Log progress.
+                        logWriter.WriteLine($"Index: {index}, Subject: {mboxMessageInfo.Subject}");
+
+                        // Extract the full MIME message.
+                        MailMessage eml = mbox.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions());
+
+                        // Sanitize filename (remove invalid characters).
+                        string safeSubject = string.IsNullOrWhiteSpace(eml.Subject) ? $"Message_{index}" : eml.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        string emlFileName = $"{safeSubject}.eml";
+                        string emlPath = Path.Combine(outputDir, emlFileName);
+
+                        // Save the extracted message.
+                        eml.Save(emlPath);
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
-        }
-    }
-
-    private static void ProcessFolder(FolderInfo folder, ref int messageIndex, StreamWriter logWriter)
-    {
-        // Process messages in the current folder
-        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-        {
-            messageIndex++;
-            string subject = messageInfo.Subject ?? "<no subject>";
-            string logEntry = $"Index: {messageIndex}, Subject: {subject}";
-            logWriter.WriteLine(logEntry);
-            Console.WriteLine(logEntry);
-        }
-
-        // Recursively process subfolders
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            ProcessFolder(subFolder, ref messageIndex, logWriter);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
