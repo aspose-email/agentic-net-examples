@@ -8,71 +8,64 @@ class Program
     {
         try
         {
-            string inputDirectory = "InputMhtml";
-            string outputDirectory = "OutputEml";
+            // Input directory containing MHTML files
+            string inputDir = "MhtmlFiles";
+            // Output directory for generated EML files
+            string outputDir = "EmlOutput";
 
-            if (!Directory.Exists(inputDirectory))
+            // Verify input directory exists
+            if (!Directory.Exists(inputDir))
             {
-                Console.Error.WriteLine($"Input directory '{inputDirectory}' does not exist.");
+                Console.Error.WriteLine($"Input directory '{inputDir}' does not exist.");
                 return;
             }
 
-            if (!Directory.Exists(outputDirectory))
+            // Ensure output directory exists
+            if (!Directory.Exists(outputDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    Directory.CreateDirectory(outputDir);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory '{outputDir}': {ex.Message}");
                     return;
                 }
             }
 
-            string[] mhtmlFiles = Directory.GetFiles(inputDirectory, "*.mht");
+            // Get all .mht and .mhtml files
+            string[] mhtmlFiles = Directory.GetFiles(inputDir, "*.mht");
+            string[] mhtmlFilesAlt = Directory.GetFiles(inputDir, "*.mhtml");
+            string[] allFiles = new string[mhtmlFiles.Length + mhtmlFilesAlt.Length];
+            mhtmlFiles.CopyTo(allFiles, 0);
+            mhtmlFilesAlt.CopyTo(allFiles, mhtmlFiles.Length);
 
-            foreach (string mhtmlPath in mhtmlFiles)
+            foreach (string mhtmlPath in allFiles)
             {
                 try
                 {
-                    if (!File.Exists(mhtmlPath))
+                    // Preserve original file timestamps
+                    DateTime originalWriteTime = File.GetLastWriteTime(mhtmlPath);
+
+                    // Load MHTML file into MailMessage
+                    using (MailMessage message = MailMessage.Load(mhtmlPath))
                     {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(mhtmlPath, SaveOptions.DefaultEml);
+                        // Set the message Date header to the original file timestamp
+                        message.Date = originalWriteTime;
+
+                        // Determine output file name with .eml extension
+                        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(mhtmlPath);
+                        string emlPath = Path.Combine(outputDir, fileNameWithoutExt + ".eml");
+
+                        // Save as EML; format inferred from extension
+                        message.Save(emlPath);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception exFile)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                        Console.Error.WriteLine($"File not found: {mhtmlPath}");
-                        continue;
-                    }
-
-                    FileInfo fileInfo = new FileInfo(mhtmlPath);
-                    using (MailMessage mailMessage = MailMessage.Load(mhtmlPath))
-                    {
-                        mailMessage.Date = fileInfo.LastWriteTime;
-
-                        string emlFileName = Path.GetFileNameWithoutExtension(mhtmlPath) + ".eml";
-                        string emlPath = Path.Combine(outputDirectory, emlFileName);
-
-                        mailMessage.Save(emlPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing '{mhtmlPath}': {ex.Message}");
+                    Console.Error.WriteLine($"Error processing '{mhtmlPath}': {exFile.Message}");
+                    // Continue with next file
                 }
             }
         }
