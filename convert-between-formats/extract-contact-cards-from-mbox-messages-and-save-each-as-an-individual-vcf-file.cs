@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
+using Aspose.Email.PersonalInfo.VCard;
 
 class Program
 {
@@ -9,12 +10,10 @@ class Program
     {
         try
         {
-            // Input MBOX file path
-            string mboxPath = "input.mbox";
-            // Output directory for VCF files
-            string outputDir = "vcf_output";
+            const string mboxPath = "storage.mbox";
+            const string outputFolder = "ExtractedVCards";
 
-            // Guard input file existence
+            // Verify input MBOX file exists
             if (!File.Exists(mboxPath))
             {
                 Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
@@ -22,69 +21,70 @@ class Program
             }
 
             // Ensure output directory exists
-            if (!Directory.Exists(outputDir))
+            try
             {
-                try
+                if (!Directory.Exists(outputFolder))
                 {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
+                    Directory.CreateDirectory(outputFolder);
                 }
             }
-
-            // Open the MBOX reader
-            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            catch (Exception ex)
             {
-                while (true)
-                {
-                    // Read next message; returns null when no more messages
-                    MailMessage message = mboxReader.ReadNextMessage();
-                    if (message == null)
-                        break;
+                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                return;
+            }
 
-                    // Process attachments that are VCF files
-                    foreach (Attachment attachment in message.Attachments)
+            // Create MBOX reader with load options
+            MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
+
+            // Iterate through messages using ReadNextMessage()
+            while (true)
+            {
+                MailMessage mailMessage = mboxReader.ReadNextMessage();
+                if (mailMessage == null)
+                {
+                    break; // No more messages
+                }
+
+                try
+                {
+                    // Process each attachment that is a VCF file
+                    foreach (Attachment attachment in mailMessage.Attachments)
                     {
                         if (attachment.Name != null && attachment.Name.EndsWith(".vcf", StringComparison.OrdinalIgnoreCase))
                         {
-                            string vcfPath = Path.Combine(outputDir, attachment.Name);
-                            try
+                            // Load VCardContact from attachment stream
+                            using (Stream vcardStream = attachment.ContentStream)
                             {
-                                // Save the attachment directly to file
-                                attachment.Save(vcfPath);
-                                Console.WriteLine($"Saved VCF: {vcfPath}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to save VCF '{vcfPath}': {ex.Message}");
-                            }
-                        }
-                    }
+                                VCardContact vcard = VCardContact.Load(vcardStream);
+                                // Determine output file path
+                                string safeFileName = Path.GetFileNameWithoutExtension(attachment.Name);
+                                if (string.IsNullOrWhiteSpace(safeFileName))
+                                {
+                                    safeFileName = Guid.NewGuid().ToString();
+                                }
+                                string outputPath = Path.Combine(outputFolder, safeFileName + ".vcf");
 
-                    // Optionally, handle inline vCard content in the body (if present)
-                    if (!string.IsNullOrEmpty(message.Body) && message.Body.TrimStart().StartsWith("BEGIN:VCARD", StringComparison.OrdinalIgnoreCase))
-                    {
-                        string vcfFileName = $"message_{Guid.NewGuid()}.vcf";
-                        string vcfPath = Path.Combine(outputDir, vcfFileName);
-                        try
-                        {
-                            File.WriteAllText(vcfPath, message.Body);
-                            Console.WriteLine($"Saved inline VCF: {vcfPath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to write inline VCF '{vcfPath}': {ex.Message}");
+                                // Save VCardContact as VCF file
+                                vcard.Save(outputPath);
+                                Console.WriteLine($"Saved VCF: {outputPath}");
+                            }
                         }
                     }
                 }
+                finally
+                {
+                    // Dispose the mail message
+                    mailMessage.Dispose();
+                }
             }
+
+            // Dispose the MBOX reader
+            mboxReader.Dispose();
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
