@@ -2,98 +2,97 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using Aspose.Email;
-using Aspose.Words;
-using Aspose.Words.Saving;
 
-class Program
+namespace BatchEmlToPdfArchive
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string emlFolderPath = "InputEmls";
-            string tempFolderPath = "TempProcessing";
-            string outputFolderPath = "OutputArchives";
-
-            // Verify input folder exists
-            if (!Directory.Exists(emlFolderPath))
+            try
             {
-                Console.Error.WriteLine($"Input folder does not exist: {emlFolderPath}");
-                return;
-            }
+                // Author note: This sample processes EML files, converts them to PDF, and archives them.
+                string inputFolder = "InputEml";
+                string tempPdfFolder = Path.Combine(Path.GetTempPath(), "EmlPdfTemp");
+                string outputFolder = "OutputArchive";
 
-            // Ensure temporary and output folders exist
-            Directory.CreateDirectory(tempFolderPath);
-            Directory.CreateDirectory(outputFolderPath);
+                // Verify input folder exists
+                if (!Directory.Exists(inputFolder))
+                {
+                    Console.Error.WriteLine($"Input folder '{inputFolder}' does not exist.");
+                    return;
+                }
 
-            // Create timestamped archive name
-            string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-            string archivePath = Path.Combine(outputFolderPath, $"Archive_{timestamp}.zip");
+                // Ensure temporary and output directories exist
+                Directory.CreateDirectory(tempPdfFolder);
+                Directory.CreateDirectory(outputFolder);
 
-            // Create zip archive
-            using (FileStream zipStream = new FileStream(archivePath, FileMode.Create))
-            using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Update))
-            {
-                // Process each EML file
-                foreach (string emlFilePath in Directory.GetFiles(emlFolderPath, "*.eml"))
+                // Process each EML file in the input folder
+                foreach (string emlPath in Directory.GetFiles(inputFolder, "*.eml"))
                 {
                     try
                     {
-                        // Load EML message
-                        using (MailMessage message = MailMessage.Load(emlFilePath))
+                        // Load the EML message with desired options
+                        EmlLoadOptions loadOptions = new EmlLoadOptions()
                         {
-                            // Prepare temporary HTML and PDF paths
-                            string fileNameWithoutExt = Path.GetFileNameWithoutExtension(emlFilePath);
-                            string htmlPath = Path.Combine(tempFolderPath, $"{fileNameWithoutExt}.html");
-                            string pdfPath = Path.Combine(tempFolderPath, $"{fileNameWithoutExt}.pdf");
+                            PreserveEmbeddedMessageFormat = true,
+                            PreserveTnefAttachments = true
+                        };
 
-                            // Save as HTML with embedded resources
-                            Aspose.Email.HtmlSaveOptions htmlOptions = new Aspose.Email.HtmlSaveOptions
-                            {
-                                ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
-                            };
-                            message.Save(htmlPath, htmlOptions);
+                        using (MailMessage message = MailMessage.Load(emlPath, loadOptions))
+                        {
+                            // Determine PDF output path
+                            string pdfFileName = Path.GetFileNameWithoutExtension(emlPath) + ".pdf";
+                            string pdfPath = Path.Combine(tempPdfFolder, pdfFileName);
 
-                            // Convert HTML to PDF using Aspose.Words
-                            Document doc = new Document(htmlPath);
-            {
-                                doc.Save(pdfPath, Aspose.Words.SaveFormat.Pdf);
-                            }
-
-                            // Add PDF to zip archive
-                            archive.CreateEntryFromFile(pdfPath, Path.GetFileName(pdfPath), System.IO.Compression.CompressionLevel.Optimal);
-
-                            // Clean up temporary files
-                            File.Delete(htmlPath);
-                            File.Delete(pdfPath);
+                            // Save the message as PDF (extension infers format)
+                            message.Save(pdfPath);
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to process '{emlFilePath}': {ex.Message}");
-                        // Continue with next file
+                        Console.Error.WriteLine($"Failed to convert '{emlPath}': {ex.Message}");
                     }
                 }
-            }
 
-            // Clean up temporary folder if empty
-            try
-            {
-                if (Directory.GetFiles(tempFolderPath).Length == 0)
+                // Create a timestamped ZIP archive of the generated PDFs
+                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                string zipPath = Path.Combine(outputFolder, $"Archive_{timestamp}.zip");
+
+                try
                 {
-                    Directory.Delete(tempFolderPath, true);
+                    using (FileStream zipStream = new FileStream(zipPath, FileMode.Create))
+                    using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Create))
+                    {
+                        foreach (string pdfFile in Directory.GetFiles(tempPdfFolder, "*.pdf"))
+                        {
+                            string entryName = Path.GetFileName(pdfFile);
+                            archive.CreateEntryFromFile(pdfFile, entryName);
+                        }
+                    }
                 }
-            }
-            catch
-            {
-                // Ignore cleanup errors
-            }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create archive: {ex.Message}");
+                    return;
+                }
 
-            Console.WriteLine($"Archive created at: {archivePath}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                // Clean up temporary PDF files
+                try
+                {
+                    Directory.Delete(tempPdfFolder, true);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to clean temporary files: {ex.Message}");
+                }
+
+                Console.WriteLine($"Archive created successfully at: {zipPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
