@@ -1,7 +1,8 @@
+// Author: Aspose.Email conversion sample
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,11 +10,20 @@ class Program
     {
         try
         {
-            string inputPath = "input.mht";
-            string outputPath = "output.html";
+            // Define file paths
+            string emlInputPath = "input.eml";
+            string msgOutputPath = "output.msg";
+            
+            string outputDir = Path.GetDirectoryName(msgOutputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+string msgInputPath = "input.msg";
+            string emlOutputPath = "output.eml";
 
-            // Verify input file exists
-            if (!File.Exists(inputPath))
+            // Convert EML to MSG
+            if (!File.Exists(emlInputPath))
             {
                 try
                 {
@@ -23,7 +33,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                        placeholder.Save(emlInputPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -32,59 +42,74 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
+                Console.Error.WriteLine($"EML input file not found: {emlInputPath}");
             }
-
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            else
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    EmlLoadOptions emlLoadOptions = new EmlLoadOptions()
+                    {
+                        PreserveTnefAttachments = true,
+                        PreserveEmbeddedMessageFormat = true
+                    };
+                    using (MailMessage emlMessage = MailMessage.Load(emlInputPath, emlLoadOptions))
+                    {
+                        emlMessage.Save(msgOutputPath, SaveOptions.DefaultMsg);
+                    }
+                    Console.WriteLine($"Converted EML to MSG: {msgOutputPath}");
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    Console.Error.WriteLine($"Error converting EML to MSG: {ex.Message}");
                     return;
                 }
             }
 
-            try
+            // Convert MSG to EML
+            if (!File.Exists(msgInputPath))
             {
-                // Load the MHTML message
-                MhtmlLoadOptions loadOptions = new MhtmlLoadOptions();
-                using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
+                try
                 {
-                    // Get the HTML body
-                    string htmlBody = message.HtmlBody ?? string.Empty;
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgInputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
 
-                    // Remove all <script>...</script> tags
-                    string cleanedHtml = Regex.Replace(
-                        htmlBody,
-                        "<script[^>]*?>.*?</script>",
-                        string.Empty,
-                        RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
-                    // Update the message body
-                    message.HtmlBody = cleanedHtml;
-
-                    // Save as cleaned HTML
-                    HtmlSaveOptions saveOptions = new HtmlSaveOptions();
-                    saveOptions.MailMessageSaveType = MailMessageSaveType.HtmlFormat;
-                    message.Save(outputPath, saveOptions);
+                Console.Error.WriteLine($"MSG input file not found: {msgInputPath}");
+            }
+            else
+            {
+                try
+                {
+                    MapiMessage mapiMsg = MapiMessage.Load(msgInputPath);
+                    MailConversionOptions convOptions = new MailConversionOptions();
+                    using (MailMessage mailMsg = mapiMsg.ToMailMessage(convOptions))
+                    {
+                        mailMsg.Save(emlOutputPath);
+                    }
+                    Console.WriteLine($"Converted MSG to EML: {emlOutputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error converting MSG to EML: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing the message: {ex.Message}");
-                return;
-            }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {e.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
