@@ -8,10 +8,13 @@ class Program
     {
         try
         {
-            string inputPath = "input.mht";
-            string outputPath = "output.emlx";
+            // Author note: This example converts an MHTML (.mht) email to EMLX format,
+            // ensuring that embedded images are saved as separate attachments.
 
-            if (!File.Exists(inputPath))
+            const string inputFile = "message.mht";
+
+            // Verify input file exists
+            if (!File.Exists(inputFile))
             {
                 try
                 {
@@ -21,7 +24,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                        placeholder.Save(inputFile, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -30,40 +33,39 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                Console.Error.WriteLine($"Input file '{inputFile}' not found.");
                 return;
             }
 
-            MailMessage message;
-            try
+            // Load the MHTML message
+            using (MailMessage mailMessage = MailMessage.Load(inputFile))
             {
-                message = MailMessage.Load(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MHTML message: {ex.Message}");
-                return;
-            }
+                // Prepare EMLX save options
+                var emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlxFormat)
+                {
+                    // Preserve the original format of any embedded messages (if present)
+                    PreserveEmbeddedMessageFormat = true
+                };
 
-            try
-            {
-                // Save as EMLX; embedded images become separate attachments automatically
-                message.Save(outputPath, SaveOptions.DefaultEmlx);
-                Console.WriteLine($"Conversion successful: {outputPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save EMLX file: {ex.Message}");
-            }
-            finally
-            {
-                if (message != null)
-                    message.Dispose();
+                // Determine output path
+                string outputFile = Path.ChangeExtension(inputFile, ".emlx");
+
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(outputFile);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Save as EMLX; embedded images will be stored as separate attachments
+                mailMessage.Save(outputFile, emlSaveOptions);
+
+                Console.WriteLine($"Conversion successful. EMLX saved to: {outputFile}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
