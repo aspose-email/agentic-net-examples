@@ -1,3 +1,4 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
@@ -5,58 +6,67 @@ using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace MboxToPstConversion
 {
-    static void Main()
+    // Author: Aspose.Email example – converts an MBOX file to PST by iterating each message.
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define input MBOX file and output PST file paths
-            string mboxFilePath = "input.mbox";
-            string pstFilePath = "output.pst";
-
-            // Verify that the input MBOX file exists
-            if (!File.Exists(mboxFilePath))
+            try
             {
-                Console.Error.WriteLine($"Input MBOX file not found: {mboxFilePath}");
-                return;
-            }
+                // Input and output file paths – adjust as needed.
+                string mboxFilePath = "input.mbox";
+                string pstFilePath = "output.pst";
 
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstFilePath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                try
+                // Guard file system access.
+                if (!File.Exists(mboxFilePath))
                 {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create directory for PST file: {dirEx.Message}");
+                    Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
                     return;
                 }
-            }
 
-            // Configure conversion options (example: remove signatures)
-            MboxToPstConversionOptions conversionOptions = new MboxToPstConversionOptions
-            {
-                RemoveSignature = false
-            };
+                // Delete existing PST to avoid IOException.
+                if (File.Exists(pstFilePath))
+                {
+                    try
+                    {
+                        File.Delete(pstFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Unable to delete existing PST file: {ex.Message}");
+                        return;
+                    }
+                }
 
-            // Open the MBOX file for reading using a reader
-            using (FileStream mboxStream = File.OpenRead(mboxFilePath))
-            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxStream, new MboxLoadOptions()))
-            // Create a new PST file (Unicode format) for writing
-            using (PersonalStorage pst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
-            {
-                // Convert all messages from the MBOX reader into the PST under the "Inbox" folder
-                MailStorageConverter.MboxToPst(mboxReader, pst, "Inbox", conversionOptions);
+                // Create the PST storage.
+                using (PersonalStorage pst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
+                {
+                    // Create or get the target folder inside PST.
+                    const string pstFolderName = "ImportedMbox";
+                    FolderInfo pstFolder = pst.RootFolder.GetSubFolder(pstFolderName) ??
+                                          pst.RootFolder.AddSubFolder(pstFolderName);
+
+                    // Create the MBOX reader with required options.
+                    using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
+                    {
+                        // Iterate through each message in the MBOX file.
+                        MailMessage message;
+                        while ((message = mboxReader.ReadNextMessage()) != null)
+                        {
+                            // Add the message to the PST folder.
+                            pstFolder.AddMessage(MapiMessage.FromMailMessage(message));
+                        }
+                    }
+                }
+
                 Console.WriteLine("MBOX to PST conversion completed successfully.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
