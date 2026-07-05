@@ -1,7 +1,7 @@
+using Aspose.Email;
 using System;
 using System.IO;
 using System.IO.Compression;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
@@ -10,23 +10,12 @@ class Program
     {
         try
         {
-            // Input MSG file path
-            string msgPath = "sample.msg";
+            // Author note: This example extracts all attachments from a MSG file and stores them in a ZIP archive.
+            string msgFilePath = "input.msg";
+            string zipFilePath = "attachments.zip";
 
-            // Directory to hold extracted attachments temporarily
-            string attachmentsDir = "Attachments";
-
-            // Output ZIP archive path
-            string zipPath = "attachments.zip";
-
-            // Ensure the attachments directory exists
-            if (!Directory.Exists(attachmentsDir))
-            {
-                Directory.CreateDirectory(attachmentsDir);
-            }
-
-            // Verify the MSG file exists
-            if (!File.Exists(msgPath))
+            // Verify input MSG file exists
+            if (!File.Exists(msgFilePath))
             {
                 try
                 {
@@ -36,7 +25,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath);
+                        placeholder.Save(msgFilePath);
                     }
                 }
                 catch (Exception ex)
@@ -45,36 +34,60 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
                 return;
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Ensure the directory for the ZIP file exists
+            string zipDirectory = Path.GetDirectoryName(zipFilePath);
+            if (!string.IsNullOrEmpty(zipDirectory) && !Directory.Exists(zipDirectory))
             {
-                // Create or overwrite the ZIP archive
-                using (FileStream zipStream = new FileStream(zipPath, FileMode.Create))
-                using (ZipArchive archive = new ZipArchive(zipStream, ZipArchiveMode.Update))
+                try
                 {
-                    // Extract each attachment and add it to the ZIP
-                    foreach (MapiAttachment attachment in msg.Attachments)
-                    {
-                        // Save attachment to a temporary file
-                        string tempFilePath = Path.Combine(attachmentsDir, attachment.FileName);
-                        attachment.Save(tempFilePath);
-
-                        // Add the temporary file to the ZIP archive
-                        ZipArchiveEntry entry = archive.CreateEntry(attachment.FileName, CompressionLevel.Optimal);
-                        using (FileStream fileStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.Read))
-                        using (Stream entryStream = entry.Open())
-                        {
-                            fileStream.CopyTo(entryStream);
-                        }
-                    }
+                    Directory.CreateDirectory(zipDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create directory '{zipDirectory}': {dirEx.Message}");
+                    return;
                 }
             }
 
-            Console.WriteLine($"All attachments have been saved to '{zipPath}'.");
+            // Load the Outlook MSG file
+            MapiMessage msg = MapiMessage.Load(msgFilePath);
+
+            // Create the ZIP archive and add each attachment
+            using (FileStream zipStream = new FileStream(zipFilePath, FileMode.Create, FileAccess.Write))
+            using (ZipArchive zipArchive = new ZipArchive(zipStream, ZipArchiveMode.Create, leaveOpen: false))
+            {
+                foreach (MapiAttachment attachment in msg.Attachments)
+                {
+                    string attachmentFileName = attachment.FileName;
+                    if (string.IsNullOrEmpty(attachmentFileName))
+                    {
+                        // Fallback to a generic name if the attachment has no filename
+                        attachmentFileName = "unnamed_attachment";
+                    }
+
+                    // Save attachment to a memory stream
+                    using (MemoryStream attachmentStream = new MemoryStream())
+                    {
+                        attachment.Save(attachmentStream);
+                        attachmentStream.Position = 0;
+
+                        // Create a new entry in the ZIP archive
+                        ZipArchiveEntry zipEntry = zipArchive.CreateEntry(attachmentFileName, CompressionLevel.Optimal);
+                        using (Stream entryStream = zipEntry.Open())
+                        {
+                            attachmentStream.CopyTo(entryStream);
+                        }
+                    }
+
+                    Console.WriteLine($"Added attachment: {attachmentFileName}");
+                }
+            }
+
+            Console.WriteLine($"All attachments have been saved to '{zipFilePath}'.");
         }
         catch (Exception ex)
         {
