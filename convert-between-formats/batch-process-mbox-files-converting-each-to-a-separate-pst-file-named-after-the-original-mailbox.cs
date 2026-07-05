@@ -1,101 +1,63 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Storage;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        try
+        // Directory containing MBOX files
+        string mboxDirectory = "MboxFiles";
+
+        // Ensure the directory exists
+        if (!Directory.Exists(mboxDirectory))
         {
-            // Define input and output directories
-            string inputDirectory = "MboxFiles";
-            string outputDirectory = "PstFiles";
-
-            // Ensure input directory exists
-            try
-            {
-                if (!Directory.Exists(inputDirectory))
-                {
-                    Directory.CreateDirectory(inputDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare input directory '{inputDirectory}': {ex.Message}");
-                return;
-            }
-
-            // Ensure output directory exists
-            try
-            {
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare output directory '{outputDirectory}': {ex.Message}");
-                return;
-            }
-
-            // Get all .mbox files in the input directory
-            string[] mboxFiles;
-            try
-            {
-                mboxFiles = Directory.GetFiles(inputDirectory, "*.mbox");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to enumerate .mbox files: {ex.Message}");
-                return;
-            }
-
-            // Process each MBOX file
-            foreach (string mboxFilePath in mboxFiles)
-            {
-                // Verify the MBOX file exists; if not, create a minimal placeholder
-                if (!File.Exists(mboxFilePath))
-                {
-                    try
-                    {
-                        string placeholderMessage = "From - Mon Jan 01 00:00:00 2000\r\nSubject: Placeholder\r\n\r\nThis is a placeholder message.\r\n";
-                        File.WriteAllText(mboxFilePath, placeholderMessage);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to create placeholder for missing file '{mboxFilePath}': {ex.Message}");
-                        continue;
-                    }
-                }
-
-                // Determine PST output path
-                string pstFileName = Path.GetFileNameWithoutExtension(mboxFilePath) + ".pst";
-                string pstFilePath = Path.Combine(outputDirectory, pstFileName);
-
-                // Convert MBOX to PST
-                try
-                {
-                    using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath))
-                    {
-                        // Conversion succeeded; optionally you can work with 'pst' here
-                    }
-
-                    Console.WriteLine($"Converted '{mboxFilePath}' to '{pstFilePath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to convert '{mboxFilePath}' to PST: {ex.Message}");
-                }
-            }
+            Console.Error.WriteLine($"Directory not found: {mboxDirectory}");
+            return;
         }
-        catch (Exception ex)
+
+        // Process each .mbox file in the directory
+        foreach (string mboxPath in Directory.GetFiles(mboxDirectory, "*.mbox"))
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            try
+            {
+                // Verify the MBOX file exists
+                if (!File.Exists(mboxPath))
+                {
+                    Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                    continue;
+                }
+
+                // Determine PST file name (same base name, .pst extension)
+                string pstPath = Path.Combine(mboxDirectory, Path.GetFileNameWithoutExtension(mboxPath) + ".pst");
+
+                // Create MBOX reader with required options
+                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                // Create PST storage
+                using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                {
+                    // Create a folder in PST (named after the MBOX file)
+                    string pstFolderName = Path.GetFileNameWithoutExtension(mboxPath);
+                    FolderInfo pstFolder = pst.RootFolder.AddSubFolder(pstFolderName);
+
+                    // Read each message from MBOX and add to PST folder
+                    MailMessage mailMessage;
+                    while ((mailMessage = mboxReader.ReadNextMessage()) != null)
+                    {
+                        pstFolder.AddMessage(MapiMessage.FromMailMessage(mailMessage));
+                    }
+
+                    Console.WriteLine($"Converted '{mboxPath}' to '{pstPath}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing '{mboxPath}': {ex.Message}");
+            }
         }
     }
 }
