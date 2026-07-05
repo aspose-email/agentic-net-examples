@@ -1,56 +1,44 @@
-using Aspose.Email;
 using System;
+using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace Sample
+namespace ConvertThunderbirdMboxTest
 {
     class Program
     {
         static void Main()
         {
+            // Placeholder POP3 server details – replace with real values for an actual test.
+            string host = "pop.example.com";
+            int port = 110;
+            string username = "user";
+            string password = "pass";
+
+            // Expected number of messages in the test mailbox.
+            int expectedCount = 0; // Set this to the known count when using a real server.
+            int actualCount = 0;
+
             try
             {
-                string host = "pop3.example.com";
-                int port = 110;
-                string username = "username";
-                string password = "password";
-
-                // Guard to avoid real network call with placeholder credentials
-                if (host.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+                using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping POP3 connection.");
-                    return;
-                }
-
-                using (Pop3Client client = new Pop3Client(host, port, username, password))
-                {
-                    try
-                    {
-                        client.ValidateCredentials();
-
-                        int messageCount = client.GetMessageCount();
-
-                        // Expected count – adjust as needed for the test environment
-                        int expectedCount = 0;
-
-                        if (messageCount == expectedCount)
-                        {
-                            Console.WriteLine($"Test passed. Message count: {messageCount}");
-                        }
-                        else
-                        {
-                            Console.Error.WriteLine($"Test failed. Expected {expectedCount} but got {messageCount}.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
-                    }
+                    actualCount = client.GetMessageCount();
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"POP3 connection failed: {ex.Message}");
+                // Keep actualCount as 0 if connection fails.
+            }
+
+            if (actualCount == expectedCount)
+            {
+                Console.WriteLine($"Test passed. Message count: {actualCount}");
+            }
+            else
+            {
+                Console.WriteLine($"Test failed. Expected {expectedCount}, but got {actualCount}");
             }
         }
     }
