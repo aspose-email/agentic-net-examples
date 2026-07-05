@@ -1,48 +1,54 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using System.Text;
-using System.Collections.Generic;
-using Aspose.Email;
 using Aspose.Email.Mapi;
+using Aspose.Words;
 
-class Program
+namespace EmailMetadataPdfReport
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Input directory containing MSG files
-            string inputDir = "msg_files";
-            // Output PDF report path (plain text saved with .pdf extension)
-            string outputPdf = "EmailReport.pdf";
+            // This example extracts metadata from MSG files and creates a PDF report using Aspose.Email and Aspose.Words.
 
-            // Ensure input directory exists
-            if (!Directory.Exists(inputDir))
+            string inputFolder = "InputMsgs";
+            string outputPdfPath = "EmailReport.pdf";
+
+            // Verify input folder exists
+            if (!Directory.Exists(inputFolder))
             {
-                Console.Error.WriteLine($"Input directory '{inputDir}' does not exist.");
+                Console.Error.WriteLine($"Input folder '{inputFolder}' does not exist.");
                 return;
             }
 
-            // Guard output directory existence
-            string outputDir = Path.GetDirectoryName(outputPdf);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputPdfPath));
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    Directory.CreateDirectory(outputDirectory);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory '{outputDirectory}': {ex.Message}");
                     return;
                 }
             }
 
-            // Collect MSG files
+            // Create a new Word document for the report
+            Document reportDocument = new Document();
+            DocumentBuilder builder = new DocumentBuilder(reportDocument);
+
+            builder.Writeln("Email Metadata Report");
+            builder.Writeln($"Generated on: {DateTime.Now}");
+            builder.Writeln();
+
             string[] msgFiles;
             try
             {
-                msgFiles = Directory.GetFiles(inputDir, "*.msg");
+                msgFiles = Directory.GetFiles(inputFolder, "*.msg");
             }
             catch (Exception ex)
             {
@@ -50,87 +56,36 @@ class Program
                 return;
             }
 
-            if (msgFiles.Length == 0)
+            foreach (string msgFilePath in msgFiles)
             {
-                Console.Error.WriteLine("No MSG files found in the input directory.");
-                return;
-            }
-
-            // Build report content
-            var reportLines = new List<string>();
-            reportLines.Add("Email Metadata Report");
-            reportLines.Add("=====================");
-            reportLines.Add(string.Empty);
-
-            foreach (string msgPath in msgFiles)
-            {
-                if (!File.Exists(msgPath))
-                {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgPath);
-                    }
+                    // Load the MSG file
+                    MapiMessage msg = MapiMessage.Load(msgFilePath);
+
+                    builder.Writeln($"File: {Path.GetFileName(msgFilePath)}");
+                    builder.Writeln($"Subject: {msg.Subject}");
+                    builder.Writeln($"From: {msg.SenderName}");
+                    builder.Writeln($"Sent: {msg.ClientSubmitTime}");
+                    builder.Writeln(); // Blank line between entries
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                    Console.Error.WriteLine($"File not found: {msgPath}");
-                    continue;
-                }
-
-                try
-                {
-                    using (MapiMessage msg = MapiMessage.Load(msgPath))
-                    {
-                        string subject = msg.Subject ?? "(no subject)";
-                        string sender = msg.SenderName ?? msg.SenderEmailAddress ?? "(unknown sender)";
-                        string received = msg.DeliveryTime != DateTime.MinValue
-                            ? msg.DeliveryTime.ToString("u")
-                            : "(unknown date)";
-
-                        reportLines.Add($"File: {Path.GetFileName(msgPath)}");
-                        reportLines.Add($"Subject: {subject}");
-                        reportLines.Add($"Sender: {sender}");
-                        reportLines.Add($"Received: {received}");
-                        reportLines.Add(string.Empty);
-                    }
-                }
-                catch (AsposeException aex)
-                {
-                    Console.Error.WriteLine($"Aspose error processing '{msgPath}': {aex.Message}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing '{msgPath}': {ex.Message}");
+                    Console.Error.WriteLine($"Failed to process '{msgFilePath}': {ex.Message}");
+                    // Continue with next file
                 }
             }
 
-            // Combine lines into a single string
-            string reportContent = string.Join(Environment.NewLine, reportLines);
-
-            // Write the report to a file with .pdf extension (plain text placeholder)
+            // Save the report as PDF
             try
             {
-                File.WriteAllText(outputPdf, reportContent, Encoding.UTF8);
-                Console.WriteLine($"Report generated: {outputPdf}");
+                reportDocument.Save(outputPdfPath, Aspose.Words.SaveFormat.Pdf);
+                Console.WriteLine($"PDF report saved to '{outputPdfPath}'.");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to write report: {ex.Message}");
+                Console.Error.WriteLine($"Failed to save PDF report: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
