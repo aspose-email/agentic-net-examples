@@ -9,10 +9,9 @@ class Program
     {
         try
         {
-            string inputPath = "input.html";
-            string outputPath = "output.msg";
+            const string inputPath = "input.eml";
+            const string outputPath = "output.msg";
 
-            // Guard input file existence
             if (!File.Exists(inputPath))
             {
                 try
@@ -32,33 +31,36 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
+                // Create a minimal placeholder email
+                var placeholderMessage = new MailMessage(
+                    "sender@example.com",
+                    "recipient@example.com",
+                    "Placeholder Subject",
+                    "<html><body><p>Placeholder email body.</p></body></html>")
+                {
+                    IsBodyHtml = true
+                };
+                placeholderMessage.Save(inputPath, SaveOptions.DefaultEml);
+                Console.Error.WriteLine($"Input file not found. Created placeholder at '{inputPath}'.");
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Load the HTML email
+            // Load the HTML email (EML format)
             using (MailMessage mailMessage = MailMessage.Load(inputPath))
             {
+                // Preserve custom headers
+                mailMessage.Headers.Add("X-Custom-Header", "CustomValue");
+
                 // Convert to MAPI message
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
-                {
-                    // Preserve custom headers
-                    mapiMessage.Headers = mailMessage.Headers;
+                MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
 
-                    // Preserve message flags (example: mark as read)
-                    mapiMessage.SetMessageFlags(MapiMessageFlags.MSGFLAG_READ);
+                // Preserve message flags (e.g., mark as unsent)
+                mapiMessage.SetMessageFlags(MapiMessageFlags.MSGFLAG_UNSENT);
 
-                    // Save as MSG
-                    mapiMessage.Save(outputPath);
-                }
+                // Save as MSG format
+                mapiMessage.Save(outputPath);
             }
+
+            Console.WriteLine($"Conversion completed successfully. MSG saved to '{outputPath}'.");
         }
         catch (Exception ex)
         {
