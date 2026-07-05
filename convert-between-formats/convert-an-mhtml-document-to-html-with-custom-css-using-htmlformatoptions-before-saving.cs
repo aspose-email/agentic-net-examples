@@ -4,14 +4,14 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
+        // Author note: Simple console app converting MHTML to HTML with custom CSS.
         try
         {
-            string inputPath = "input.mht";
+            string inputPath = "input.mhtml";
             string outputPath = "output.html";
 
-            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
@@ -31,47 +31,23 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                Console.Error.WriteLine($"Input file '{inputPath}' not found.");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
+                HtmlSaveOptions saveOptions = new HtmlSaveOptions();
+                saveOptions.CssStyles = "body { font-family: Arial, sans-serif; color: #333; }";
+
+                message.Save(outputPath, saveOptions);
             }
 
-            // Load the MHTML document
-            using (MailMessage message = MailMessage.Load(inputPath, new MhtmlLoadOptions()))
-            {
-                // Prepare HTML save options with custom CSS
-                HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
-                htmlOptions.CssStyles = "body { font-family: Arial, sans-serif; margin: 20px; }";
-
-                // Save as HTML
-                try
-                {
-                    message.Save(outputPath, htmlOptions);
-                    Console.WriteLine($"Conversion succeeded. HTML saved to: {outputPath}");
-                }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Error saving HTML: {saveEx.Message}");
-                }
-            }
+            Console.WriteLine($"Conversion completed. HTML saved to '{outputPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
