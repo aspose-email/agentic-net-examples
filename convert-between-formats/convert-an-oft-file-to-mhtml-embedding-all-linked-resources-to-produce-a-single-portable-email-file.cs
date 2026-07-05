@@ -9,10 +9,13 @@ class Program
     {
         try
         {
-            string oftPath = "template.oft";
-            string mhtmlPath = "output.mhtml";
+            // Input OFT file path
+            const string inputPath = "template.oft";
+            // Output MHTML file path
+            const string outputPath = "output.mhtml";
 
-            if (!File.Exists(oftPath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
                 try
                 {
@@ -22,7 +25,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(oftPath);
+                        placeholder.Save(inputPath);
                     }
                 }
                 catch (Exception ex)
@@ -31,27 +34,23 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {oftPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            using (MapiMessage mapiMessage = MapiMessage.Load(oftPath))
-            {
-                using (MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions()))
-                {
-                    MhtSaveOptions saveOptions = new MhtSaveOptions
-                    {
-                        // Ensure linked resources are embedded in the MHTML output
-                        ExtractHTMLBodyResourcesAsAttachments = false
-                    };
+            // Load the Outlook template (OFT) as a MAPI message
+            MapiMessage mapMsg = MapiMessage.Load(inputPath);
 
-                    mailMessage.Save(mhtmlPath, saveOptions);
-                }
-            }
+            // Convert MAPI message to MailMessage for saving
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            MailMessage mailMsg = mapMsg.ToMailMessage(conversionOptions);
+
+            // Save as MHTML with embedded resources (default options embed resources)
+            mailMsg.Save(outputPath, SaveOptions.DefaultMhtml);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
