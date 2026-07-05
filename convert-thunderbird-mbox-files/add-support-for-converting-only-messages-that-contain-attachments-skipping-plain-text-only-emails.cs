@@ -1,116 +1,68 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Mbox;
 
-namespace AsposeEmailAttachmentConverter
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Input MBOX file path
+            string mboxPath = "source.mbox";
+            // Output directory for messages that have attachments
+            string outputDir = "output";
+
+            // Verify input file exists
+            if (!File.Exists(mboxPath))
             {
-                // Define input and output directories
-                string inputDirectory = "InputMessages";
-                string outputDirectory = "OutputMessages";
+                Console.Error.WriteLine($"Input file not found: {mboxPath}");
+                return;
+            }
 
-                // Ensure input directory exists
-                if (!Directory.Exists(inputDirectory))
-                {
-                    Console.Error.WriteLine($"Input directory does not exist: {inputDirectory}");
-                    return;
-                }
+            // Ensure output directory exists
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
 
-                // Ensure output directory exists or create it
-                if (!Directory.Exists(outputDirectory))
+            // Create MBOX reader
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            {
+                foreach (MboxMessageInfo mboxMessageInfo in mbox.EnumerateMessageInfo())
                 {
-                    try
+                    // Extract the full MIME message
+                    using (MailMessage message = mbox.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions()))
                     {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                        return;
-                    }
-                }
-
-                // Process each .msg file in the input directory
-                string[] msgFiles;
-                try
-                {
-                    msgFiles = Directory.GetFiles(inputDirectory, "*.msg");
-                }
-                catch (Exception fileEx)
-                {
-                    Console.Error.WriteLine($"Failed to enumerate files: {fileEx.Message}");
-                    return;
-                }
-
-                foreach (string msgFilePath in msgFiles)
-                {
-                    // Guard against missing file (should not happen after enumeration)
-                    if (!File.Exists(msgFilePath))
-                    {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgFilePath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                        Console.Error.WriteLine($"File not found, skipping: {msgFilePath}");
-                        continue;
-                    }
-
-                    try
-                    {
-                        // Load the Outlook message
-                        using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+                        // Process only messages that contain at least one attachment
+                        if (message.Attachments.Count > 0)
                         {
-                            // Skip messages without attachments
-                            if (mapiMessage.Attachments == null || mapiMessage.Attachments.Count == 0)
-                            {
-                                Console.WriteLine($"No attachments found, skipping: {Path.GetFileName(msgFilePath)}");
-                                continue;
-                            }
+                            // Build a safe file name for the output message
+                            string safeFileName = $"{Guid.NewGuid()}.eml";
+                            string outPath = Path.Combine(outputDir, safeFileName);
 
-                            // Convert to MailMessage
-                            MailConversionOptions conversionOptions = new MailConversionOptions();
-                            using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+                            // Preserve embedded message format while saving
+                            EmlSaveOptions saveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat)
                             {
-                                // Build output file path (same name with .eml extension)
-                                string outputFileName = Path.GetFileNameWithoutExtension(msgFilePath) + ".eml";
-                                string outputPath = Path.Combine(outputDirectory, outputFileName);
+                                PreserveEmbeddedMessageFormat = true
+                            };
 
-                                // Save as EML
-                                mailMessage.Save(outputPath, SaveOptions.DefaultEml);
-                                Console.WriteLine($"Converted with attachments: {outputFileName}");
-                            }
+                            // Save the message
+                            message.Save(outPath, saveOptions);
+                            Console.WriteLine($"Saved message with attachments: {outPath}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Skipped plain‑text message: {mboxMessageInfo.Subject}");
                         }
                     }
-                    catch (Exception msgEx)
-                    {
-                        Console.Error.WriteLine($"Error processing file '{msgFilePath}': {msgEx.Message}");
-                        // Continue with next file
-                    }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
