@@ -1,10 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
-using Aspose.Email.Storage.Mbox;
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -12,75 +9,101 @@ class Program
     {
         try
         {
-            string mboxPath = "test.mbox";
-            string pstPath = "output.pst";
+            // Define temporary directory for test files
+            string tempDir = Path.Combine(Path.GetTempPath(), "AsposeEmailLargeAttachmentTest");
+            if (!Directory.Exists(tempDir))
+            {
+                Directory.CreateDirectory(tempDir);
+            }
 
-            // Ensure the directory for the files exists
+            // Paths for the intermediate EML and final MSG files
+            string emlPath = Path.Combine(tempDir, "LargeAttachment.eml");
+            string msgPath = Path.Combine(tempDir, "LargeAttachment.msg");
+
+            // Simulate a large Base64 attachment (e.g., ~5 MB)
+            int sizeInBytes = 5 * 1024 * 1024; // 5 MB
+            byte[] randomData = new byte[sizeInBytes];
+            new Random().NextBytes(randomData);
+            string base64Content = Convert.ToBase64String(randomData);
+
+            // Create a MailMessage with a large Base64 attachment
+            MailMessage message = new MailMessage();
+            message.From = "sender@example.com";
+            message.To = "receiver@example.com";
+            message.Subject = "Test message with large Base64 attachment";
+            message.Body = "This email contains a large Base64 encoded attachment.";
+
+            // Create attachment from the Base64 string
+            // Content type "application/octet-stream" is generic binary
+            Attachment largeAttachment = Attachment.CreateAttachmentFromString(base64Content, "application/octet-stream");
+            largeAttachment.Name = "large.bin";
+            message.Attachments.Add(largeAttachment);
+
+            // Save the message as EML
             try
             {
-                string directory = Path.GetDirectoryName(Path.GetFullPath(mboxPath));
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+                message.Save(emlPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to ensure directory exists: {ex.Message}");
+                Console.Error.WriteLine($"Failed to save EML file: {ex.Message}");
                 return;
             }
 
-            // Create a placeholder MBOX file with a large base64 attachment if it does not exist
-            if (!File.Exists(mboxPath))
+            // Ensure the EML file exists before loading
+            if (!File.Exists(emlPath))
             {
                 try
                 {
-                    // Generate large random data (5 MB)
-                    byte[] largeData = new byte[5 * 1024 * 1024];
-                    new Random().NextBytes(largeData);
-
-                    using (FileStream mboxFileStream = new FileStream(mboxPath, FileMode.Create, FileAccess.Write))
-                    using (MboxrdStorageWriter mboxWriter = new MboxrdStorageWriter(mboxFileStream, new MboxSaveOptions()))
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        using (MemoryStream attachmentStream = new MemoryStream(largeData))
-                        {
-                            Attachment attachment = new Attachment(attachmentStream, "large.bin", "application/octet-stream");
-                            MailMessage message = new MailMessage("sender@example.com", "receiver@example.com", "Test Message", "This is a test message with a large attachment.");
-                            message.Attachments.Add(attachment);
-                            mboxWriter.WriteMessage(message);
-                        }
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine("EML file was not created.");
+                return;
+            }
+
+            // Load the EML with options to preserve attachments
+            EmlLoadOptions emlLoadOptions = new EmlLoadOptions()
+            {
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
+            };
+
+            using (MailMessage loadedMessage = MailMessage.Load(emlPath, emlLoadOptions))
+            {
+                // Convert and save as MSG
+                try
+                {
+                    loadedMessage.Save(msgPath, SaveOptions.DefaultMsg);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
                     return;
                 }
             }
 
-            // Convert the MBOX to PST using the correct overload (string, string)
-            try
+            // Verify MSG file creation
+            if (File.Exists(msgPath))
             {
-                PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxPath, pstPath);
-                // Verify conversion by enumerating messages in the PST
-                using (PersonalStorage pst = pstStorage)
-                {
-                    FolderInfo rootFolder = pst.RootFolder;
-                    foreach (MessageInfo messageInfo in rootFolder.EnumerateMessages())
-                    {
-                        Console.WriteLine($"Message EntryId: {messageInfo.EntryId}");
-                        using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
-                        {
-                            Console.WriteLine($"Subject: {mapiMessage.Subject}");
-                            Console.WriteLine($"Attachment count: {mapiMessage.Attachments.Count}");
-                        }
-                    }
-                }
+                Console.WriteLine("Conversion succeeded. MSG file created at:");
+                Console.WriteLine(msgPath);
             }
-            catch (Exception ex)
+            else
             {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                return;
+                Console.Error.WriteLine("MSG file was not created.");
             }
         }
         catch (Exception ex)
