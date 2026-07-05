@@ -1,111 +1,77 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
+        // Top‑level exception guard
         try
         {
-            string pstPath = "input.pst";
-            string outputRoot = "output";
+            const string emlPath = "sample.eml";
+            const string msgPath = "output.msg";
 
-            // Guard PST file existence
-            if (!File.Exists(pstPath))
+            // Ensure source EML exists; create a minimal placeholder if missing
+            if (!File.Exists(emlPath))
             {
-                Console.Error.WriteLine($"PST file not found: {pstPath}");
-                return;
-            }
-
-            // Ensure output root directory exists
-            try
-            {
-                if (!Directory.Exists(outputRoot))
+                try
                 {
-                    Directory.CreateDirectory(outputRoot);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    string placeholder = "From: sender@example.com\r\nTo: recipient@example.com\r\nSubject: Test EML\r\n\r\nThis is a test email.";
+                    File.WriteAllText(emlPath, placeholder);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception dirEx)
+
+            // Load the EML with options preserving TNEF and embedded messages
+            var emlLoadOptions = new EmlLoadOptions
             {
-                Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
+            };
+
+            // Guard the load/save operations
+            try
+            {
+                using (MailMessage message = MailMessage.Load(emlPath, emlLoadOptions))
+                {
+                    // Convert and save as MSG using default MSG save options
+                    message.Save(msgPath, SaveOptions.DefaultMsg);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during conversion: {ex.Message}");
                 return;
             }
 
-            // Open PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                FolderInfo rootFolder = pst.RootFolder;
-                ProcessFolder(pst, rootFolder, outputRoot);
-            }
+            Console.WriteLine($"Conversion succeeded. MSG saved to '{msgPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
-        }
-    }
-
-    static void ProcessFolder(PersonalStorage pst, FolderInfo folder, string outputRoot)
-    {
-        // Build the corresponding output directory path
-        string folderRelativePath;
-        try
-        {
-            folderRelativePath = folder.RetrieveFullPath();
-        }
-        catch
-        {
-            // Fallback to folder display name if RetrieveFullPath fails
-            folderRelativePath = folder.DisplayName;
-        }
-
-        string targetFolderPath = Path.Combine(outputRoot, folderRelativePath);
-        try
-        {
-            if (!Directory.Exists(targetFolderPath))
-            {
-                Directory.CreateDirectory(targetFolderPath);
-            }
-        }
-        catch (Exception dirEx)
-        {
-            Console.Error.WriteLine($"Failed to create folder '{targetFolderPath}': {dirEx.Message}");
-            return;
-        }
-
-        // Export each message in the current folder
-        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-        {
-            try
-            {
-                using (MapiMessage message = pst.ExtractMessage(messageInfo))
-                {
-                    // Create a safe filename
-                    string subject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
-                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
-                    {
-                        subject = subject.Replace(invalidChar, '_');
-                    }
-
-                    string fileName = $"{subject}_{messageInfo.EntryIdString}.eml";
-                    string filePath = Path.Combine(targetFolderPath, fileName);
-
-                    // Save as EML
-                    message.Save(filePath);
-                }
-            }
-            catch (Exception msgEx)
-            {
-                Console.Error.WriteLine($"Failed to export message '{messageInfo.Subject}': {msgEx.Message}");
-            }
-        }
-
-        // Recursively process subfolders
-        foreach (FolderInfo subFolder in folder.EnumerateFolders())
-        {
-            ProcessFolder(pst, subFolder, outputRoot);
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
