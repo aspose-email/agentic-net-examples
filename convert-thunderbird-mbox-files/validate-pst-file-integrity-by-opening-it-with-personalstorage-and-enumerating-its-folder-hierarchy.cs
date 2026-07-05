@@ -1,57 +1,94 @@
-using Aspose.Email;
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
-class Program
+namespace PSTIntegrityCheck
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string pstPath = "sample.pst";
-
-            // Ensure the PST file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(pstPath))
+            try
             {
-                try
+                // Path to the PST file
+                string pstPath = "storage.pst";
+
+                // Verify that the PST file exists before attempting to open it
+                if (!File.Exists(pstPath))
                 {
-                    // Create a new Unicode PST file.
-                    PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    // Add a default folder to make the PST usable.
-                    createdPst.RootFolder.AddSubFolder("Inbox");
-                    createdPst.Dispose();
-                    Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
+                    Console.Error.WriteLine($"PST file not found: {pstPath}");
                     return;
                 }
-            }
 
-            // Open the PST file and enumerate its folder hierarchy.
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                // Directory where extracted messages will be saved
+                string outputDir = "ExtractedMessages";
+                Directory.CreateDirectory(outputDir);
+
+                // Open the PST file
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    // Retrieve and display the total number of items in the root folder
+                    int totalItemsCount = pst.RootFolder.ContentCount;
+                    Console.WriteLine($"Total items in root folder: {totalItemsCount}");
+
+                    // Iterate through each subfolder of the root folder
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                    {
+                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                        Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                        Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                        // Enumerate messages within the current folder
+                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        {
+                            Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                            // Extract the full message as a MapiMessage
+                            using (MapiMessage mapiMsg = pst.ExtractMessage(messageInfo))
+                            {
+                                // Convert to MailMessage for easier handling
+                                MailMessage mailMsg = mapiMsg.ToMailMessage(new MailConversionOptions());
+
+                                // Prepare a safe filename based on the message subject
+                                string subject = string.IsNullOrWhiteSpace(mailMsg.Subject) ? "NoSubject" : mailMsg.Subject;
+                                foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                                {
+                                    subject = subject.Replace(invalidChar, '_');
+                                }
+
+                                // Truncate if filename is too long
+                                const int maxFileNameLength = 200;
+                                if (subject.Length > maxFileNameLength)
+                                {
+                                    subject = subject.Substring(0, maxFileNameLength);
+                                }
+
+                                // Ensure unique filename
+                                string outputFile;
+                                int duplicateIndex = 0;
+                                do
+                                {
+                                    string fileName = duplicateIndex == 0
+                                        ? $"{subject}.eml"
+                                        : $"{subject}_{duplicateIndex}.eml";
+                                    outputFile = Path.Combine(outputDir, fileName);
+                                    duplicateIndex++;
+                                } while (File.Exists(outputFile));
+
+                                // Save the message as an .eml file
+                                mailMsg.Save(outputFile);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
             {
-                Console.WriteLine($"Opened PST: {pstPath}");
-                EnumerateFolder(pst.RootFolder, 0);
+                // Log any unexpected errors without crashing the application
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
-        }
-    }
-
-    static void EnumerateFolder(FolderInfo folder, int indentLevel)
-    {
-        string indent = new string(' ', indentLevel * 2);
-        Console.WriteLine($"{indent}Folder: {folder.DisplayName}");
-        Console.WriteLine($"{indent}  Items: {folder.ContentCount}, Unread: {folder.ContentUnreadCount}");
-
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            EnumerateFolder(subFolder, indentLevel + 1);
         }
     }
 }
