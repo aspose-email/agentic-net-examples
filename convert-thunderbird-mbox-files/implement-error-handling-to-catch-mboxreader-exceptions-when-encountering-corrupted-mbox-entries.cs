@@ -3,65 +3,71 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace MboxReaderExample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string mboxPath = "sample.mbox";
-
-            // Guard file existence
-            if (!File.Exists(mboxPath))
-            {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
-                return;
-            }
-
             try
             {
-                // Create the MBOX reader with load options
-                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                string mboxPath = "storage.mbox";
+
+                if (!File.Exists(mboxPath))
+                {
+                    Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                    return;
+                }
+
+                string outputDir = "output";
+                Directory.CreateDirectory(outputDir);
+
+                using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
                 {
                     int messageIndex = 0;
-
                     while (true)
                     {
                         MailMessage message = null;
-
-                        // Read each message and handle possible corruption
                         try
                         {
-                            message = mboxReader.ReadNextMessage();
+                            message = reader.ReadNextMessage();
+                            if (message == null)
+                                break;
                         }
-                        catch (Exception readEx)
+                        catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Error reading message #{messageIndex + 1}: {readEx.Message}");
-                            // Skip to next message
+                            Console.Error.WriteLine($"Error reading message #{messageIndex}: {ex.Message}");
                             continue;
                         }
 
-                        // End of file
-                        if (message == null)
-                            break;
-
-                        // Process the message
                         using (message)
                         {
-                            Console.WriteLine($"Message {++messageIndex}: {message.Subject}");
+                            string subject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                                subject = subject.Replace(c, '_');
+
+                            string safeFileName = $"{subject}_{messageIndex}.eml";
+                            string fullPath = Path.Combine(outputDir, safeFileName);
+
+                            try
+                            {
+                                message.Save(fullPath);
+                                Console.WriteLine($"Saved: {fullPath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to save message #{messageIndex}: {ex.Message}");
+                            }
                         }
+
+                        messageIndex++;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to open MBOX reader: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
