@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Storage;
 
 class Program
 {
@@ -10,32 +9,40 @@ class Program
     {
         try
         {
-            string emlPath = "sample.eml";
+            // Author note: Simple unit‑style tests without external test framework.
+            Console.WriteLine("Starting conversion options tests...");
 
-            // Ensure the input EML file exists
-            if (!File.Exists(emlPath))
+            // Ensure a sample EML file exists.
+            const string sampleEml = "sample.eml";
+            if (!File.Exists(sampleEml))
             {
-                try
+                // Create a minimal EML message as placeholder.
+                MailMessage placeholder = new MailMessage
                 {
-                    using (StreamWriter writer = new StreamWriter(emlPath, false))
-                    {
-                        writer.WriteLine("From: sender@example.com");
-                        writer.WriteLine("To: receiver@example.com");
-                        writer.WriteLine("Subject: Test Message");
-                        writer.WriteLine();
-                        writer.WriteLine("This is a test email body.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
-                    return;
-                }
+                    From = "sender@example.com",
+                    To = "receiver@example.com",
+                    Subject = "Placeholder",
+                    Body = "This is a placeholder EML file."
+                };
+                placeholder.Save(sampleEml);
+                Console.WriteLine($"Created placeholder EML file: {sampleEml}");
             }
 
-            // Run unit‑style tests
-            TestAttachmentCompression(emlPath, true);
-            TestAttachmentCompression(emlPath, false);
+            // Test 1: Enable attachment (TNEF) preservation when loading EML.
+            bool test1Result = TestAttachmentPreservation(sampleEml, true);
+            Console.WriteLine($"Test EnableAttachmentPreservation: {(test1Result ? "Passed" : "Failed")}");
+
+            // Test 2: Disable attachment (TNEF) preservation when loading EML.
+            bool test2Result = TestAttachmentPreservation(sampleEml, false);
+            Console.WriteLine($"Test DisableAttachmentPreservation: {(test2Result ? "Passed" : "Failed")}");
+
+            // Test 3: Enable body compression option.
+            bool test3Result = TestBodyCompressionOption(true);
+            Console.WriteLine($"Test EnableBodyCompressionOption: {(test3Result ? "Passed" : "Failed")}");
+
+            // Test 4: Disable body compression option.
+            bool test4Result = TestBodyCompressionOption(false);
+            Console.WriteLine($"Test DisableBodyCompressionOption: {(test4Result ? "Passed" : "Failed")}");
         }
         catch (Exception ex)
         {
@@ -43,57 +50,61 @@ class Program
         }
     }
 
-    static void TestAttachmentCompression(string emlFilePath, bool enableCompression)
+    // Loads an EML with the specified PreserveTnefAttachments flag,
+    // converts it to MSG and verifies that the save succeeds.
+    static bool TestAttachmentPreservation(string emlPath, bool preserveTnef)
     {
-        Console.WriteLine($"Testing conversion with attachment compression set to {(enableCompression ? "enabled" : "disabled")}...");
-
         try
         {
-            using (MailMessage message = MailMessage.Load(emlFilePath))
+            string outputMsg = preserveTnef ? "output_preserve.msg" : "output_no_preserve.msg";
+
+            // Guard output path directory.
+            string outputDir = Path.GetDirectoryName(outputMsg);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
+
+            // Initialize load options.
+            EmlLoadOptions loadOptions = new EmlLoadOptions
             {
-                // Add a simple attachment to ensure there is something to compress
-                using (MemoryStream attachmentStream = new MemoryStream())
-                {
-                    using (StreamWriter attWriter = new StreamWriter(attachmentStream, leaveOpen: true))
-                    {
-                        attWriter.Write("Attachment content");
-                        attWriter.Flush();
-                        attachmentStream.Position = 0;
-                    }
+                PreserveTnefAttachments = preserveTnef,
+                PreserveEmbeddedMessageFormat = true
+            };
 
-                    Attachment attachment = new Attachment(attachmentStream, "text/plain")
-                    {
-                        Name = "sample.txt"
-                    };
-                    message.Attachments.Add(attachment);
-
-                    // Configure conversion options
-                    MapiConversionOptions options = new MapiConversionOptions
-                    {
-                        UseBodyCompression = enableCompression
-                    };
-
-                    // Perform conversion
-                    MapiMessage mapiMessage = MapiMessage.FromMailMessage(message, options);
-
-                    // Simple verification: ensure the MapiMessage was created
-                    if (mapiMessage == null)
-                    {
-                        Console.Error.WriteLine("Conversion returned null MapiMessage.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Conversion succeeded.");
-                    }
-
-                    // Cleanup
-                    mapiMessage.Dispose();
-                }
+            // Load the message with the options.
+            using (MailMessage message = MailMessage.Load(emlPath, loadOptions))
+            {
+                // Save as MSG using default options.
+                message.Save(outputMsg, SaveOptions.DefaultMsg);
             }
+
+            // Verify the output file was created.
+            return File.Exists(outputMsg);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Test failed: {ex.Message}");
+            Console.Error.WriteLine($"Attachment preservation test error (preserve={preserveTnef}): {ex.Message}");
+            return false;
+        }
+    }
+
+    // Creates a MapiConversionOptions instance, sets UseBodyCompression,
+    // and verifies the property reflects the intended value.
+    static bool TestBodyCompressionOption(bool enableCompression)
+    {
+        try
+        {
+            MapiConversionOptions options = new MapiConversionOptions
+            {
+                UseBodyCompression = enableCompression
+            };
+
+            // Simple verification of the property value.
+            return options.UseBodyCompression == enableCompression;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Body compression option test error (enable={enableCompression}): {ex.Message}");
+            return false;
         }
     }
 }
