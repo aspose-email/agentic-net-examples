@@ -1,100 +1,82 @@
-using System;
-using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
+using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Mbox;
 using Aspose.Email.Storage.Pst;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
-class Program
+namespace MboxToPstConsole
 {
-    static void Main()
+    class Program
     {
-        try
+        private const string MboxFilePath = "sample.mbox";
+        private const string PstFilePath = "output.pst";
+
+        static async Task Main(string[] args)
         {
-            string emlPath = "sample.eml";
-            string msgPath = "output.msg";
-
-            // Ensure input EML file exists
-            if (!File.Exists(emlPath))
-            {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    using (var writer = new StreamWriter(emlPath))
-                    {
-                        writer.WriteLine("From: sender@example.com");
-                        writer.WriteLine("To: recipient@example.com");
-                        writer.WriteLine("Subject: Test Email");
-                        writer.WriteLine();
-                        writer.WriteLine("This is a placeholder email.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder EML: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the EML file
-            MailMessage mailMessage;
             try
             {
-                mailMessage = MailMessage.Load(emlPath);
+                await StartConversionAsync();
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load EML file: {ex.Message}");
+                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            }
+        }
+
+        private static async Task StartConversionAsync()
+        {
+            if (!File.Exists(MboxFilePath))
+            {
+                Console.Error.WriteLine($"Input MBOX file not found: {MboxFilePath}");
                 return;
             }
 
-            // Prepare save options with a progress handler
-            var saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+            string pstDirectory = Path.GetDirectoryName(PstFilePath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
-                PreserveOriginalDates = true,
-                CustomProgressHandler = info =>
+                Directory.CreateDirectory(pstDirectory);
+            }
+
+            IProgress<int> progress = new Progress<int>(percent =>
+            {
+                Console.Write($"\rProgress: {percent}%   ");
+            });
+
+            await Task.Run(() => ConvertMboxToPst(MboxFilePath, PstFilePath, progress));
+            Console.WriteLine("\nConversion completed successfully.");
+        }
+
+        private static void ConvertMboxToPst(string mboxPath, string pstPath, IProgress<int> progress)
+        {
+            using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+            {
+                FolderInfo rootFolder = pst.RootFolder;
+
+                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
                 {
-                    if (info.TotalMimePartCount > 0)
+                    List<MboxMessageInfo> messageInfos = mboxReader.EnumerateMessageInfo().ToList();
+                    int totalMessages = messageInfos.Count;
+                    if (totalMessages == 0)
                     {
-                        int percent = (int)((info.SavedMimePartCount / (double)info.TotalMimePartCount) * 100);
-                        Console.Write($"\rSaving... {percent}%");
+                        return;
+                    }
+
+                    int processed = 0;
+                    foreach (MboxMessageInfo info in messageInfos)
+                    {
+                        MailMessage eml = mboxReader.ExtractMessage(info.EntryId, new EmlLoadOptions());
+                        rootFolder.AddMessage(MapiMessage.FromMailMessage(eml));
+
+                        processed++;
+                        int percent = (int)((processed / (double)totalMessages) * 100);
+                        progress.Report(percent);
                     }
                 }
-            };
-
-            // Save as MSG with progress reporting
-            try
-            {
-                mailMessage.Save(msgPath, saveOptions);
-                Console.WriteLine("\nConversion completed successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-            }
-            finally
-            {
-                mailMessage.Dispose();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
