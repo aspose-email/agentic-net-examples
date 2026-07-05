@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -10,92 +10,61 @@ class Program
     {
         try
         {
-            // Input folder containing MHTML files
-            string inputFolderPath = "InputMhtml";
+            // Input directory containing MHTML files
+            string inputFolder = "InputMhtml";
             // Output PST file path
-            string outputPstPath = "Converted.pst";
+            string outputPstPath = "Output\\Converted.pst";
 
             // Verify input folder exists
-            if (!Directory.Exists(inputFolderPath))
+            if (!Directory.Exists(inputFolder))
             {
-                Console.Error.WriteLine($"Input folder does not exist: {inputFolderPath}");
+                Console.Error.WriteLine($"Input folder does not exist: {inputFolder}");
                 return;
             }
 
-            // Ensure the directory for the PST file exists
+            // Ensure output directory exists
             string outputDirectory = Path.GetDirectoryName(outputPstPath);
             if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Create a new PST file (Unicode format)
+            // Create a new PST file (Unicode version)
             using (PersonalStorage pst = PersonalStorage.Create(outputPstPath, FileFormatVersion.Unicode))
             {
-                // Get all .mht and .mhtml files in the input folder
-                string[] mhtmlFiles = Directory.GetFiles(inputFolderPath, "*.mht");
-                string[] mhtmlAltFiles = Directory.GetFiles(inputFolderPath, "*.mhtml");
-                string[] allFiles = new string[mhtmlFiles.Length + mhtmlAltFiles.Length];
-                mhtmlFiles.CopyTo(allFiles, 0);
-                mhtmlAltFiles.CopyTo(allFiles, mhtmlFiles.Length);
-
-                foreach (string filePath in allFiles)
+                // Enumerate all .mht (MHTML) files in the input folder
+                foreach (string mhtmlFilePath in Directory.EnumerateFiles(inputFolder, "*.mht"))
                 {
                     try
                     {
-                        if (!File.Exists(filePath))
-                        {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(filePath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                            Console.Error.WriteLine($"File not found, skipping: {filePath}");
-                            continue;
-                        }
-
                         // Load the MHTML file into a MailMessage
-                        using (MailMessage mailMessage = MailMessage.Load(filePath))
+                        MailMessage mailMessage = MailMessage.Load(mhtmlFilePath);
+
+                        // Convert MailMessage to MapiMessage for PST storage
+                        MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
+
+                        // Determine folder name based on the file name (without extension)
+                        string folderName = Path.GetFileNameWithoutExtension(mhtmlFilePath);
+
+                        // Get existing subfolder or create a new one under the PST root
+                        FolderInfo targetFolder = pst.RootFolder.GetSubFolder(folderName);
+                        if (targetFolder == null)
                         {
-                            // Convert MailMessage to MapiMessage
-                            using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
-                            {
-                                // Determine folder name based on file name (without extension)
-                                string folderName = Path.GetFileNameWithoutExtension(filePath);
-                                // Create subfolder under the PST root
-                                FolderInfo targetFolder = pst.RootFolder.AddSubFolder(folderName);
-                                // Add the message to the created folder
-                                targetFolder.AddMessage(mapiMessage);
-                            }
+                            targetFolder = pst.RootFolder.AddSubFolder(folderName);
                         }
+
+                        // Add the message to the target folder
+                        targetFolder.AddMessage(mapiMessage);
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error processing file '{filePath}': {ex.Message}");
+                        Console.Error.WriteLine($"Failed to process '{mhtmlFilePath}': {ex.Message}");
                         // Continue with next file
                     }
                 }
             }
+
+            Console.WriteLine("Conversion completed successfully.");
         }
         catch (Exception ex)
         {
