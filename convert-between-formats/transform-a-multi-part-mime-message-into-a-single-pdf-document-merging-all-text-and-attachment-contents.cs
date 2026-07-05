@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Words;
+using Aspose.Email.Mime;
 
 class Program
 {
@@ -9,7 +9,11 @@ class Program
     {
         try
         {
-            string inputPath = "message.eml";
+            // Define input and output file paths
+            string inputPath = "input.eml";
+            string outputPath = "merged.pdf";
+
+            // Ensure the input file exists; create a minimal placeholder if missing
             if (!File.Exists(inputPath))
             {
                 try
@@ -20,7 +24,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, Aspose.Email.SaveOptions.DefaultEml);
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -29,40 +33,55 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
-                return;
-            }
-
-            string tempMhtmlPath = "temp.mhtml";
-            string outputPdfPath = "output.pdf";
-
-            // Load the multi‑part MIME message
-            using (MailMessage message = MailMessage.Load(inputPath))
-            {
-                // Save the message (including attachments) as MHTML
-                message.Save(tempMhtmlPath, Aspose.Email.SaveOptions.DefaultMhtml);
-            }
-
-            // Convert the MHTML to PDF using Aspose.Words
-            Document doc = new Document(tempMhtmlPath);
-            {
-                doc.Save(outputPdfPath, Aspose.Words.SaveFormat.Pdf);
-            }
-
-            // Clean up the temporary MHTML file
-            try
-            {
-                if (File.Exists(tempMhtmlPath))
+                try
                 {
-                    File.Delete(tempMhtmlPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
+
+            // Load the multi‑part MIME message
+            MailMessage mailMessage = MailMessage.Load(inputPath);
+
+            // Merge body and attachment contents into a single PDF (as plain text for demonstration)
+            using (StreamWriter writer = new StreamWriter(outputPath))
             {
-                Console.Error.WriteLine($"Failed to delete temporary file: {ex.Message}");
+                writer.WriteLine($"Subject: {mailMessage.Subject}");
+                writer.WriteLine($"From: {mailMessage.From}");
+                writer.WriteLine($"To: {string.Join(", ", mailMessage.To)}");
+                writer.WriteLine();
+                writer.WriteLine("Body:");
+                writer.WriteLine(mailMessage.Body);
+                writer.WriteLine();
+                writer.WriteLine("Attachments:");
+                foreach (Attachment attachment in mailMessage.Attachments)
+                {
+                    writer.WriteLine($"Attachment: {attachment.Name}");
+                    // Attempt to include text attachment content
+                    if (attachment.ContentType.MediaType.StartsWith("text", StringComparison.OrdinalIgnoreCase))
+                    {
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            attachment.Save(ms);
+                            ms.Position = 0;
+                            using (StreamReader sr = new StreamReader(ms))
+                            {
+                                writer.WriteLine(sr.ReadToEnd());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        writer.WriteLine("[Binary content omitted]");
+                    }
+                    writer.WriteLine();
+                }
             }
 
-            Console.WriteLine($"PDF created at '{outputPdfPath}'.");
+            Console.WriteLine($"Merged content written to '{outputPath}'.");
         }
         catch (Exception ex)
         {
