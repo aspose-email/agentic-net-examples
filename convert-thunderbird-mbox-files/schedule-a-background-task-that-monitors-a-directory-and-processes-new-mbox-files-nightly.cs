@@ -1,130 +1,104 @@
 using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    // Directory to watch for new MBOX files
-    private const string WatchDirectory = "MboxInbox";
-    // Directory where extracted messages will be saved
-    private const string OutputDirectory = "ExtractedMessages";
-
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Ensure required directories exist
-            if (!Directory.Exists(WatchDirectory))
+            string inputDirectory = "MboxInput";
+            string outputDirectory = "EmlOutput";
+            string archiveDirectory = "MboxArchive";
+
+            Directory.CreateDirectory(inputDirectory);
+            Directory.CreateDirectory(outputDirectory);
+            Directory.CreateDirectory(archiveDirectory);
+
+            var cts = new CancellationTokenSource();
+
+            Task.Run(async () =>
             {
-                Console.Error.WriteLine($"Watch directory '{WatchDirectory}' does not exist. Creating it.");
-                Directory.CreateDirectory(WatchDirectory);
-            }
-
-            if (!Directory.Exists(OutputDirectory))
-            {
-                Directory.CreateDirectory(OutputDirectory);
-            }
-
-            // Schedule the nightly processing task (runs once every 24 hours)
-            Timer timer = new Timer(
-                callback: state => ProcessPendingMboxFiles(),
-                state: null,
-                dueTime: GetInitialDelay(),
-                period: TimeSpan.FromHours(24).Milliseconds);
-
-            // Keep the application running
-            Console.WriteLine("MBOX monitor started. Press Enter to exit.");
-            Console.ReadLine();
-
-            // Dispose timer before exit
-            timer.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    // Calculates the delay until the next midnight (or a chosen nightly time)
-    private static int GetInitialDelay()
-    {
-        DateTime now = DateTime.Now;
-        DateTime nextRun = now.Date.AddDays(1).AddHours(2); // 02:00 AM next day
-        TimeSpan delay = nextRun - now;
-        return (int)delay.TotalMilliseconds;
-    }
-
-    // Scans the watch directory for *.mbox files and processes each one
-    private static void ProcessPendingMboxFiles()
-    {
-        try
-        {
-            string[] mboxFiles = Directory.GetFiles(WatchDirectory, "*.mbox");
-            foreach (string mboxFilePath in mboxFiles)
-            {
-                ProcessMboxFile(mboxFilePath);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error while scanning directory: {ex.Message}");
-        }
-    }
-
-    // Reads an MBOX file sequentially and saves each message as an .eml file
-    private static void ProcessMboxFile(string mboxFilePath)
-    {
-        if (!File.Exists(mboxFilePath))
-        {
-            Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
-            return;
-        }
-
-        try
-        {
-            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
-            {
-                MailMessage message;
-                while ((message = reader.ReadNextMessage()) != null)
+                while (!cts.Token.IsCancellationRequested)
                 {
                     try
                     {
-                        string safeSubject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
-                        // Replace invalid filename characters
-                        foreach (char invalidChar in Path.GetInvalidFileNameChars())
-                        {
-                            safeSubject = safeSubject.Replace(invalidChar, '_');
-                        }
-
-                        string emlFileName = Path.Combine(OutputDirectory, $"{safeSubject}_{Guid.NewGuid()}.eml");
-                        using (MailMessage disposableMessage = message)
-                        {
-                            disposableMessage.Save(emlFileName);
-                        }
-
-                        Console.WriteLine($"Extracted message to: {emlFileName}");
+                        ProcessPendingMboxFiles(inputDirectory, outputDirectory, archiveDirectory);
                     }
-                    catch (Exception msgEx)
+                    catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to save a message from '{mboxFilePath}': {msgEx.Message}");
+                        Console.Error.WriteLine($"Error during MBOX processing: {ex.Message}");
                     }
-                }
-            }
 
-            // Optionally move processed MBOX file to an archive folder
-            string archiveDir = Path.Combine(WatchDirectory, "Processed");
-            if (!Directory.Exists(archiveDir))
-            {
-                Directory.CreateDirectory(archiveDir);
-            }
-            string destPath = Path.Combine(archiveDir, Path.GetFileName(mboxFilePath));
-            File.Move(mboxFilePath, destPath);
+                    await Task.Delay(TimeSpan.FromHours(24), cts.Token).ConfigureAwait(false);
+                }
+            }, cts.Token);
+
+            Console.WriteLine("MBOX monitor started. Press any key to exit...");
+            Console.ReadKey();
+            cts.Cancel();
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error processing MBOX file '{mboxFilePath}': {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+        }
+    }
+
+    private static void ProcessPendingMboxFiles(string inputDir, string outputDir, string archiveDir)
+    {
+        string[] mboxFiles = Directory.GetFiles(inputDir, "*.mbox", SearchOption.TopDirectoryOnly);
+        foreach (string mboxPath in mboxFiles)
+        {
+            try
+            {
+                if (!File.Exists(mboxPath))
+                {
+                    Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                    continue;
+                }
+
+                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                {
+                    int messageIndex = 0;
+                    while (true)
+                    {
+                        MailMessage emlMessage = mboxReader.ReadNextMessage();
+                        if (emlMessage == null)
+                            break;
+
+                        try
+                        {
+                            string safeSubject = string.IsNullOrWhiteSpace(emlMessage.Subject) ? "NoSubject" : emlMessage.Subject;
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                                safeSubject = safeSubject.Replace(c, '_');
+
+                            string emlFileName = $"{safeSubject}_{messageIndex}.eml";
+                            string emlPath = Path.Combine(outputDir, emlFileName);
+
+                            emlMessage.Save(emlPath);
+                        }
+                        catch (Exception exMsg)
+                        {
+                            Console.Error.WriteLine($"Failed to process message #{messageIndex} in {Path.GetFileName(mboxPath)}: {exMsg.Message}");
+                        }
+
+                        messageIndex++;
+                    }
+                }
+
+                string archivePath = Path.Combine(archiveDir, Path.GetFileName(mboxPath));
+                if (File.Exists(archivePath))
+                    File.Delete(archivePath);
+                File.Move(mboxPath, archivePath);
+            }
+            catch (Exception exFile)
+            {
+                Console.Error.WriteLine($"Failed to process MBOX file {mboxPath}: {exFile.Message}");
+            }
         }
     }
 }
