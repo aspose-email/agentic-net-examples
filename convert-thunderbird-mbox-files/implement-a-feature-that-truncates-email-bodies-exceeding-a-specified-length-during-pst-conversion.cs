@@ -1,65 +1,76 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
+    // Author: Aspose.Email example - PST conversion with body truncation
     static void Main()
     {
         try
         {
-            const string inputMboxPath = "input.mbox";
-            const string outputPstPath = "output.pst";
-            const int maxBodyLength = 1000;
+            const string pstPath = "storage.pst";
+            const int maxBodyLength = 500; // characters
 
-            // Verify that the input MBOX file exists.
-            if (!File.Exists(inputMboxPath))
+            // Verify PST file exists
+            if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine($"Input MBOX file not found: {inputMboxPath}");
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
                 return;
             }
 
-            // Ensure the output directory exists.
-            string outputDirectory = Path.GetDirectoryName(outputPstPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
-            }
+            // Ensure output directory exists
+            string outputDir = "ExtractedMessages";
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
 
-            // Handler that truncates message bodies exceeding the specified length.
-            MailStorageConverter.MailHandler handler = delegate (MailMessage message)
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                if (message.Body != null && message.Body.Length > maxBodyLength)
+                // Iterate through each subfolder of the root folder
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    string truncated = message.Body.Substring(0, maxBodyLength) + "...";
-                    message.Body = truncated;
-                }
-            };
+                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
 
-            // Convert the MBOX to PST using the handler.
-            try
-            {
-                MailStorageConverter.MboxToPst(inputMboxPath, outputPstPath, handler);
-                Console.WriteLine("Conversion completed successfully.");
-            }
-            catch (Exception convEx)
-            {
-                Console.Error.WriteLine($"Conversion failed: {convEx.Message}");
-                return;
+                    // Enumerate messages in the current folder
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                    {
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                        // Extract the full message as MapiMessage
+                        MapiMessage msg = pst.ExtractMessage(messageInfo);
+
+                        // Truncate body if it exceeds the specified length
+                        if (!string.IsNullOrEmpty(msg.Body) && msg.Body.Length > maxBodyLength)
+                        {
+                            msg.Body = msg.Body.Substring(0, maxBodyLength) + "...";
+                        }
+
+                        // Build a safe filename from the subject
+                        string safeSubject = string.IsNullOrWhiteSpace(msg.Subject) ? "NoSubject" : msg.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            safeSubject = safeSubject.Replace(c, '_');
+
+                        // Ensure filename is not too long
+                        int maxFileNameLength = 200;
+                        if (safeSubject.Length > maxFileNameLength)
+                            safeSubject = safeSubject.Substring(0, maxFileNameLength);
+
+                        string outputPath = Path.Combine(outputDir, $"{safeSubject}.msg");
+
+                        // Save the message as .msg
+                        msg.Save(outputPath);
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
