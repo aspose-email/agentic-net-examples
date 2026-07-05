@@ -13,7 +13,7 @@ This repository provides working code examples demonstrating Aspose.Email for .N
 ## Repository Structure
 Examples are organized by feature category:
 - `convert-between-formats/` - 135 example(s)
-- `convert-thunderbird-mbox-files/` - 189 example(s)
+- `convert-thunderbird-mbox-files/` - 191 example(s)
 - `programming-email-verification/` - 40 example(s)
 - `programming-with-gmail/` - 142 example(s)
 - `read-and-export-zimbra-tgz-files/` - 30 example(s)
@@ -128,4 +128,4 @@ Other Aspose products with agentic, build-validated example repositories:
 All examples use [Aspose.Email for .NET](https://products.aspose.com/email/net/) and require a valid license for production use. See [licensing options](https://purchase.aspose.com/buy).
 
 ---
-*Maintained by an [agentic example generation workflow](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-06-23*
+*Maintained by an [agentic example generation workflow](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-07-05*
