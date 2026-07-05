@@ -1,8 +1,7 @@
-using Aspose.Email;
 using System;
 using System.Diagnostics;
 using System.IO;
-using Aspose.Email.Storage;
+using Aspose.Email;
 
 class Program
 {
@@ -10,102 +9,78 @@ class Program
     {
         try
         {
-            // Paths for input MBOX and output PST
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
+            // Author: Example to measure disk I/O throughput during EML to MSG conversion.
 
-            // Ensure the input MBOX file exists; create a minimal placeholder if it does not
-            if (!File.Exists(mboxPath))
+            string inputPath = "TestEml.eml";
+            string outputPath = "output.msg";
+
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    string placeholderMessage = "From - Mon Jan 01 00:00:00 2020\r\nSubject: Placeholder\r\n\r\nThis is a placeholder message.\r\n";
-                    using (FileStream fs = new FileStream(mboxPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                    using (StreamWriter writer = new StreamWriter(fs))
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        writer.Write(placeholderMessage);
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
                     }
-                    Console.WriteLine($"Created placeholder MBOX file at '{mboxPath}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
-            }
 
-            // Ensure the directory for the PST file exists
-            try
-            {
-                string pstDirectory = Path.GetDirectoryName(pstPath);
-                if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-                {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare PST directory: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Measure file sizes before conversion
-            long mboxSizeBytes;
-            try
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                FileInfo mboxInfo = new FileInfo(mboxPath);
-                mboxSizeBytes = mboxInfo.Length;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unable to get size of MBOX file: {ex.Message}");
-                return;
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Perform the conversion while timing it
-            Stopwatch stopwatch = new Stopwatch();
-            try
+            // Prepare load options
+            EmlLoadOptions emlLoadOptions = new EmlLoadOptions()
             {
-                stopwatch.Start();
-                // Convert MBOX to PST
-                MailStorageConverter.MboxToPst(mboxPath, pstPath);
-                stopwatch.Stop();
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                return;
-            }
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
+            };
 
-            // Measure PST size after conversion
-            long pstSizeBytes;
-            try
+            // Measure load time
+            Stopwatch loadTimer = Stopwatch.StartNew();
+            using (MailMessage message = MailMessage.Load(inputPath, emlLoadOptions))
             {
-                FileInfo pstInfo = new FileInfo(pstPath);
-                pstSizeBytes = pstInfo.Length;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unable to get size of PST file: {ex.Message}");
-                return;
-            }
+                loadTimer.Stop();
 
-            // Calculate throughput (bytes per second)
-            double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
-            if (elapsedSeconds <= 0)
-            {
-                elapsedSeconds = 0.001; // avoid division by zero
-            }
-            double totalBytes = mboxSizeBytes + pstSizeBytes;
-            double throughput = totalBytes / elapsedSeconds;
+                FileInfo inputInfo = new FileInfo(inputPath);
+                long inputBytes = inputInfo.Length;
+                double loadSeconds = loadTimer.Elapsed.TotalSeconds;
+                double readThroughput = loadSeconds > 0 ? inputBytes / loadSeconds : 0;
 
-            Console.WriteLine($"Conversion completed in {elapsedSeconds:F2} seconds.");
-            Console.WriteLine($"MBOX size: {mboxSizeBytes} bytes, PST size: {pstSizeBytes} bytes.");
-            Console.WriteLine($"Overall I/O throughput: {throughput:F2} bytes/second.");
+                Console.WriteLine($"Loaded {inputBytes} bytes in {loadSeconds:F3}s (Read throughput: {readThroughput / 1024 / 1024:F2} MB/s)");
+
+                // Measure save time
+                Stopwatch saveTimer = Stopwatch.StartNew();
+                message.Save(outputPath, SaveOptions.DefaultMsg);
+                saveTimer.Stop();
+
+                FileInfo outputInfo = new FileInfo(outputPath);
+                long outputBytes = outputInfo.Length;
+                double saveSeconds = saveTimer.Elapsed.TotalSeconds;
+                double writeThroughput = saveSeconds > 0 ? outputBytes / saveSeconds : 0;
+
+                Console.WriteLine($"Saved {outputBytes} bytes in {saveSeconds:F3}s (Write throughput: {writeThroughput / 1024 / 1024:F2} MB/s)");
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
