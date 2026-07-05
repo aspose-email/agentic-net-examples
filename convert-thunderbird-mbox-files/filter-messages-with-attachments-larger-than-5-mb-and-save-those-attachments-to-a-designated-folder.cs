@@ -2,73 +2,86 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Mime;
 
 class Program
 {
     static void Main()
     {
+        const string mboxPath = "input.mbox";
+        const string outputFolder = "LargeAttachments";
+        const long sizeThreshold = 5L * 1024 * 1024; // 5 MB
+
+        // Verify input MBOX file exists
+        if (!File.Exists(mboxPath))
+        {
+            Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+            return;
+        }
+
+        // Ensure output directory exists
         try
         {
-            // Paths for the source MBOX file and the destination folder.
-            string mboxPath = "input.mbox";
-            string outputFolder = "LargeAttachments";
-
-            // Verify that the MBOX file exists.
-            if (!File.Exists(mboxPath))
-            {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
-                return;
-            }
-
-            // Ensure the output directory exists.
             if (!Directory.Exists(outputFolder))
-            {
                 Directory.CreateDirectory(outputFolder);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to create output folder '{outputFolder}': {ex.Message}");
+            return;
+        }
 
-            // Open the MBOX storage for reading.
-            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+        try
+        {
+            // Open the MBOX storage
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                // Iterate through each message in the MBOX file.
-                foreach (MailMessage message in mboxReader.EnumerateMessages())
+                foreach (MboxMessageInfo mboxMessageInfo in mbox.EnumerateMessageInfo())
                 {
-                    // Iterate through each attachment of the current message.
-                    foreach (Attachment attachment in message.Attachments)
+                    // Extract the full MIME message
+                    using (MailMessage message = mbox.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions()))
                     {
-                        // Some attachments may not have a content stream; skip those.
-                        if (attachment.ContentStream == null)
-                            continue;
-
-                        // Check if the attachment size exceeds 5 MB.
-                        const long FiveMegabytes = 5L * 1024 * 1024;
-                        if (attachment.ContentStream.Length > FiveMegabytes)
+                        // Process each attachment
+                        foreach (Attachment attachment in message.Attachments)
                         {
-                            // Determine a safe file name for the attachment.
-                            string safeFileName = Path.GetFileName(attachment.Name);
-                            if (string.IsNullOrEmpty(safeFileName))
-                                safeFileName = "attachment.bin";
-
-                            string destinationPath = Path.Combine(outputFolder, safeFileName);
-
-                            // Save the attachment to the designated folder.
-                            using (FileStream fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write))
+                            long attachmentSize = 0;
+                            if (attachment.ContentStream != null && attachment.ContentStream.CanSeek)
                             {
-                                attachment.ContentStream.Position = 0;
-                                attachment.ContentStream.CopyTo(fileStream);
+                                attachmentSize = attachment.ContentStream.Length;
                             }
 
-                            Console.WriteLine($"Saved large attachment: {destinationPath}");
+                            if (attachmentSize > sizeThreshold)
+                            {
+                                string safeFileName = !string.IsNullOrEmpty(attachment.Name) ? attachment.Name : "attachment.bin";
+
+                                string targetPath = Path.Combine(outputFolder, safeFileName);
+                                int duplicateIndex = 1;
+                                while (File.Exists(targetPath))
+                                {
+                                    string fileNameOnly = Path.GetFileNameWithoutExtension(safeFileName);
+                                    string extension = Path.GetExtension(safeFileName);
+                                    targetPath = Path.Combine(outputFolder, $"{fileNameOnly}_{duplicateIndex}{extension}");
+                                    duplicateIndex++;
+                                }
+
+                                try
+                                {
+                                    attachment.Save(targetPath);
+                                    Console.WriteLine($"Saved large attachment: {targetPath} ({attachmentSize} bytes)");
+                                }
+                                catch (Exception saveEx)
+                                {
+                                    Console.Error.WriteLine($"Failed to save attachment '{safeFileName}': {saveEx.Message}");
+                                }
+                            }
                         }
                     }
-
-                    // Dispose the message after processing.
-                    message.Dispose();
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Error processing MBOX file: {ex.Message}");
         }
     }
 }
