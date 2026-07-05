@@ -10,54 +10,69 @@ class Program
     {
         try
         {
-            string mboxPath = "sample.mbox";
+            string mboxPath = "storage.mbox";
 
-            // Ensure the MBOX file exists; create a minimal placeholder if missing
             if (!File.Exists(mboxPath))
             {
-                try
-                {
-                    using (FileStream placeholderStream = new FileStream(mboxPath, FileMode.Create, FileAccess.Write))
-                    {
-                        string placeholderMessage = "From - Mon Jan 01 00:00:00 2020\r\nSubject: Placeholder\r\n\r\nThis is a placeholder message.\r\n";
-                        byte[] bytes = Encoding.UTF8.GetBytes(placeholderMessage);
-                        placeholderStream.Write(bytes, 0, bytes.Length);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                return;
             }
 
             // Configure load options with UTF-8 encoding
-            MboxLoadOptions loadOptions = new MboxLoadOptions();
-            loadOptions.PreferredTextEncoding = Encoding.UTF8;
-
-            // Create the MBOX reader
-            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
+            var loadOptions = new MboxLoadOptions
             {
-                // Read the first message
-                MailMessage message = mboxReader.ReadNextMessage();
-                if (message != null)
+                PreferredTextEncoding = Encoding.UTF8
+            };
+
+            // Ensure output directory exists
+            string outputDir = "output";
+            Directory.CreateDirectory(outputDir);
+
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, loadOptions))
+            {
+                int index = 0;
+                while (true)
                 {
-                    using (message)
+                    MailMessage message = mbox.ReadNextMessage();
+                    if (message == null)
+                        break;
+
+                    Console.WriteLine($"Message {++index}:");
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine($"From: {message.From}");
+                    Console.WriteLine($"To: {message.To}");
+
+                    string safeFileName = string.IsNullOrWhiteSpace(message.Subject)
+                        ? $"Untitled_{index}"
+                        : message.Subject;
+
+                    foreach (char c in Path.GetInvalidFileNameChars())
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"To: {message.To}");
+                        safeFileName = safeFileName.Replace(c, '_');
                     }
-                }
-                else
-                {
-                    Console.WriteLine("No messages found in the MBOX file.");
+
+                    // Truncate filename if too long for the file system
+                    int maxFileNameLength = 200;
+                    if (safeFileName.Length > maxFileNameLength)
+                        safeFileName = safeFileName.Substring(0, maxFileNameLength);
+
+                    string emlPath = Path.Combine(outputDir, $"{safeFileName}.eml");
+
+                    try
+                    {
+                        message.Save(emlPath);
+                        Console.WriteLine($"Saved to {emlPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save message to {emlPath}: {ex.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
