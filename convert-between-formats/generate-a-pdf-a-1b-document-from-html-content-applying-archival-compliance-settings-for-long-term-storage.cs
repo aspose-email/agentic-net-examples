@@ -6,72 +6,61 @@ using Aspose.Words.Saving;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
-        try
+        // Input and output file paths
+        const string htmlPath = "sample.html";
+        const string mhtmlPath = "sample.mhtml";
+        const string pdfPath = "output.pdf";
+
+        // Ensure HTML source exists; create a minimal placeholder if missing
+        if (!File.Exists(htmlPath))
         {
-            // Define input HTML file and output PDF/A-1b file paths
-            string inputHtmlPath = "input.html";
-            string outputPdfPath = "output.pdf";
-
-            // Verify that the input HTML file exists
-            if (!File.Exists(inputHtmlPath))
+            try
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputHtmlPath, Aspose.Email.SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine($"Input HTML file not found: {inputHtmlPath}");
+                File.WriteAllText(htmlPath, "<html><body><h1>Sample Document</h1><p>This is a test.</p></body></html>");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
                 return;
             }
+        }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPdfPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+        try
+        {
+            // Load HTML content into a MailMessage
+            string htmlContent = File.ReadAllText(htmlPath);
+            using (MailMessage mail = new MailMessage())
             {
-                Directory.CreateDirectory(outputDirectory);
+                mail.HtmlBody = htmlContent;
+
+                // Save the MailMessage as MHTML using the default MHTML options
+                mail.Save(mhtmlPath, Aspose.Email.SaveOptions.DefaultMhtml);
             }
 
-            // Load the HTML content into a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(inputHtmlPath, new HtmlLoadOptions()))
+            // Load the generated MHTML into Aspose.Words Document
+            Document doc = new Document(mhtmlPath);
+
+            // Configure PDF/A-1b compliance options
+            Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions
             {
-                // Save the MailMessage as MHTML into a memory stream
-                using (MemoryStream mhtmlStream = new MemoryStream())
-                {
-                    mailMessage.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
-                    mhtmlStream.Position = 0; // Reset stream position for reading
+                Compliance = PdfCompliance.PdfA1b,
+                // Embed all fonts to satisfy PDF/A requirements
+                EmbedFullFonts = true,
+                // Export document structure for better accessibility
+                ExportDocumentStructure = true
+            };
 
-                    // Load the MHTML into an Aspose.Words Document
-                    Document document = new Document(mhtmlStream);
-            {
-                        // Configure PDF/A-1b compliance options
-                        Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions();
-                        pdfOptions.Compliance = PdfCompliance.PdfA1b;
-
-                        // Save the document as PDF/A-1b
-                        document.Save(outputPdfPath, pdfOptions);
-                    }
-                }
-            }
-
-            Console.WriteLine("PDF/A-1b document created successfully.");
+            // Save the document as PDF/A-1b
+            doc.Save(pdfPath, pdfOptions);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred during conversion: {ex.Message}");
+            return;
         }
+
+        Console.WriteLine($"PDF/A-1b document created successfully at '{pdfPath}'.");
     }
 }
