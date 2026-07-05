@@ -4,44 +4,69 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputFolder = "MhtmlFiles";
+            // Define input and output directories
+            string inputFolder = "MhtmlFolder";
+            string outputFolder = "OutputFolder";
+
+            // Verify input folder exists
             if (!Directory.Exists(inputFolder))
             {
                 Console.Error.WriteLine($"Input folder '{inputFolder}' does not exist.");
                 return;
             }
 
-            string outputFolder = "Converted";
+            // Ensure output folder exists
             if (!Directory.Exists(outputFolder))
             {
                 Directory.CreateDirectory(outputFolder);
             }
 
-            string[] mhtmlFiles = Directory.GetFiles(inputFolder, "*.mhtml");
-            foreach (string mhtmlPath in mhtmlFiles)
+            // Gather all .mht and .mhtml files
+            string[] allFiles = Directory.GetFiles(inputFolder);
+            foreach (string filePath in allFiles)
             {
+                string extension = Path.GetExtension(filePath).ToLowerInvariant();
+                if (extension != ".mht" && extension != ".mhtml")
+                {
+                    continue; // Skip non‑MHTML files
+                }
+
                 try
                 {
-                    MhtmlLoadOptions loadOptions = new MhtmlLoadOptions();
-                    using (MailMessage message = MailMessage.Load(mhtmlPath, loadOptions))
+                    // Load the MHTML file into a MailMessage
+                    using (MailMessage message = MailMessage.Load(filePath))
                     {
-                        string baseName = Path.GetFileNameWithoutExtension(mhtmlPath);
+                        // Prepare save options for EML
+                        EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat)
+                        {
+                            PreserveEmbeddedMessageFormat = true
+                        };
+
+                        // Prepare save options for MSG
+                        MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                        {
+                            PreserveOriginalDates = true
+                        };
+
+                        // Build output file names
+                        string baseName = Path.GetFileNameWithoutExtension(filePath);
                         string emlPath = Path.Combine(outputFolder, baseName + ".eml");
                         string msgPath = Path.Combine(outputFolder, baseName + ".msg");
 
-                        EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
+                        // Save as EML
                         message.Save(emlPath, emlSaveOptions);
 
-                        message.Save(msgPath, SaveOptions.DefaultMsg);
+                        // Save as MSG
+                        message.Save(msgPath, msgSaveOptions);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to convert '{mhtmlPath}': {ex.Message}");
+                    Console.Error.WriteLine($"Error processing '{filePath}': {ex.Message}");
                 }
             }
         }
