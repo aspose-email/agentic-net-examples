@@ -1,52 +1,46 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
 class Program
 {
     static void Main()
     {
+        Console.Write("Enter the full path to the MBOX file: ");
+        string mboxPath = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(mboxPath))
+        {
+            Console.Error.WriteLine("No path was provided.");
+            return;
+        }
+
+        if (!File.Exists(mboxPath))
+        {
+            Console.Error.WriteLine($"File not found: {mboxPath}");
+            return;
+        }
+
         try
         {
-            Console.Write("Enter MBOX file path: ");
-            string mboxPath = Console.ReadLine();
-
-            if (string.IsNullOrWhiteSpace(mboxPath) || !File.Exists(mboxPath))
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                Console.Error.WriteLine("MBOX file not found.");
-                return;
-            }
-
-            try
-            {
-                using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                int totalMessageCount = 0;
+                while (true)
                 {
-                    int messageCount = 0;
-                    while (true)
-                    {
-                        MailMessage message = reader.ReadNextMessage();
-                        if (message == null)
-                            break;
-
-                        using (message)
-                        {
-                            messageCount++;
-                        }
-                    }
-
-                    Console.WriteLine($"Total messages in MBOX: {messageCount}");
+                    var message = reader.ReadNextMessage();
+                    if (message == null)
+                        break;
+                    totalMessageCount++;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MBOX file: {ex.Message}");
-                return;
+
+                Console.WriteLine($"Total messages in '{Path.GetFileName(mboxPath)}': {totalMessageCount}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error processing MBOX file: {ex.Message}");
         }
     }
 }
