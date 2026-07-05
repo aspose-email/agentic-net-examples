@@ -2,17 +2,18 @@ using System;
 using System.IO;
 using Aspose.Email;
 
+// Author: Aspose.Email example - Convert OFT to EML preserving attachments and timestamps
 class Program
 {
     static void Main()
     {
         try
         {
-            string oftFilePath = "template.oft";
-            string emlFilePath = "output.eml";
+            const string inputPath = "template.oft";
+            const string outputPath = "output.eml";
 
-            // Verify the OFT input file exists
-            if (!File.Exists(oftFilePath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
                 try
                 {
@@ -22,7 +23,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(oftFilePath, SaveOptions.DefaultEml);
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -31,22 +32,16 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {oftFilePath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Load the OFT file into a MailMessage
-            using (MailMessage message = MailMessage.Load(oftFilePath))
+            // Load the Outlook template (OFT) into a MailMessage
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Configure save options to preserve embedded message formats
-                EmlSaveOptions saveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat)
-                {
-                    PreserveEmbeddedMessageFormat = true
-                };
-
-                // Save the message as EML, preserving attachments and original timestamps
-                message.Save(emlFilePath, saveOptions);
-                Console.WriteLine($"Successfully converted '{oftFilePath}' to '{emlFilePath}'.");
+                // Save as EML; default options preserve attachments and original timestamps
+                EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
+                message.Save(outputPath, emlSaveOptions);
             }
         }
         catch (Exception ex)
