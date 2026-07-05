@@ -2,122 +2,92 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
+using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace AsposeEmailDuplicateSkip
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define input and output directories
-            string inputFolder = "InputEmails";
-            string outputFolder = "UniqueEmails";
-
-            // Verify input folder exists
-            if (!Directory.Exists(inputFolder))
+            try
             {
-                Console.Error.WriteLine($"Input folder does not exist: {inputFolder}");
-                return;
-            }
+                // Input MBOX file path
+                string inputMboxPath = "storage.mbox";
+                // Output directory for extracted messages
+                string outputDirectory = "output";
 
-            // Ensure output folder exists
-            if (!Directory.Exists(outputFolder))
-            {
+                // Verify input file exists
+                if (!File.Exists(inputMboxPath))
+                {
+                    Console.Error.WriteLine($"Input file not found: {inputMboxPath}");
+                    return;
+                }
+
+                // Ensure output directory exists
                 try
                 {
-                    Directory.CreateDirectory(outputFolder);
+                    Directory.CreateDirectory(outputDirectory);
                 }
                 catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Failed to create output folder: {dirEx.Message}");
-                    return;
-                }
-            }
-
-            // Track seen Message-Id values
-            HashSet<string> seenMessageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            // Get all .eml files in the input folder
-            string[] emlFiles;
-            try
-            {
-                emlFiles = Directory.GetFiles(inputFolder, "*.eml");
-            }
-            catch (Exception fileEx)
-            {
-                Console.Error.WriteLine($"Failed to enumerate files: {fileEx.Message}");
-                return;
-            }
-
-            foreach (string emlPath in emlFiles)
-            {
-                // Guard against missing file
-                if (!File.Exists(emlPath))
-                {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
                     return;
                 }
 
-                    Console.Error.WriteLine($"File not found: {emlPath}");
-                    continue;
-                }
+                // Set to track processed Message-Id headers
+                HashSet<string> processedMessageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                try
+                // Create MboxStorageReader
+                MboxStorageReader mboxReader = MboxStorageReader.CreateReader(inputMboxPath, new MboxLoadOptions());
+
+                // Iterate through each message in the MBOX storage
+                foreach (MboxMessageInfo mboxMessageInfo in mboxReader.EnumerateMessageInfo())
                 {
-                    // Load the email message
-                    using (MailMessage message = MailMessage.Load(emlPath))
+                    try
                     {
-                        // Retrieve the Message-Id header
-                        string messageId = message.Headers["Message-Id"];
-
-                        // If Message-Id is missing, generate a temporary unique identifier
-                        if (string.IsNullOrEmpty(messageId))
+                        // Extract the full MIME message
+                        using (MailMessage mailMessage = mboxReader.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions()))
                         {
-                            messageId = Guid.NewGuid().ToString();
+                            // Retrieve the Message-Id header
+                            string messageId = mailMessage.Headers["Message-Id"];
+
+                            // If Message-Id is missing, treat as unique (or could generate a fallback)
+                            if (!string.IsNullOrEmpty(messageId))
+                            {
+                                if (processedMessageIds.Contains(messageId))
+                                {
+                                    // Duplicate detected – skip saving
+                                    Console.WriteLine($"Skipping duplicate message with Message-Id: {messageId}");
+                                    continue;
+                                }
+                                processedMessageIds.Add(messageId);
+                            }
+
+                            // Build a safe file name using the subject (fallback to GUID)
+                            string safeSubject = string.IsNullOrWhiteSpace(mailMessage.Subject) ? Guid.NewGuid().ToString() : mailMessage.Subject;
+                            foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                            {
+                                safeSubject = safeSubject.Replace(invalidChar, '_');
+                            }
+                            string outputPath = Path.Combine(outputDirectory, $"{safeSubject}.eml");
+
+                            // Save the message
+                            mailMessage.Save(outputPath);
+                            Console.WriteLine($"Saved message: {outputPath}");
                         }
-
-                        // Skip duplicate messages
-                        if (seenMessageIds.Contains(messageId))
-                        {
-                            Console.WriteLine($"Skipping duplicate message with Message-Id: {messageId}");
-                            continue;
-                        }
-
-                        // Record the Message-Id as seen
-                        seenMessageIds.Add(messageId);
-
-                        // Prepare output file path
-                        string outputFileName = Path.GetFileNameWithoutExtension(emlPath) + ".msg";
-                        string outputPath = Path.Combine(outputFolder, outputFileName);
-
-                        // Save the message as MSG format
-                        MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                        message.Save(outputPath, saveOptions);
+                    }
+                    catch (Exception msgEx)
+                    {
+                        Console.Error.WriteLine($"Error processing message ID {mboxMessageInfo.EntryId}: {msgEx.Message}");
+                        // Continue with next message
                     }
                 }
-                catch (Exception msgEx)
-                {
-                    Console.Error.WriteLine($"Error processing file '{emlPath}': {msgEx.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
