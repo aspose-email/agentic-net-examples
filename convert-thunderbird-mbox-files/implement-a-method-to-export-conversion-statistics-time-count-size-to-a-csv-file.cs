@@ -1,91 +1,127 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
+using Aspose.Email;
 
-namespace AsposeEmailConversionStats
+class Program
 {
-    // Represents conversion statistics for a single operation
-    public class ConversionStats
+    static void Main(string[] args)
     {
-        public TimeSpan Duration { get; set; }
-        public int MessageCount { get; set; }
-        public long TotalSizeBytes { get; set; }
-
-        public ConversionStats(TimeSpan duration, int messageCount, long totalSizeBytes)
+        try
         {
-            this.Duration = duration;
-            this.MessageCount = messageCount;
-            this.TotalSizeBytes = totalSizeBytes;
-        }
-    }
+            string inputPath = "TestEml.eml";
+            string outputPath = "output.msg";
+            string csvPath = "conversion_stats.csv";
 
-    public static class StatsExporter
-    {
-        // Exports a collection of ConversionStats to a CSV file
-        public static void ExportToCsv(string csvFilePath, List<ConversionStats> statsList)
-        {
-            if (string.IsNullOrEmpty(csvFilePath))
+            // Ensure the input EML file exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine("CSV file path is null or empty.");
-                return;
-            }
-
-            try
-            {
-                string directoryPath = Path.GetDirectoryName(csvFilePath);
-                if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+                try
                 {
-                    Directory.CreateDirectory(directoryPath);
-                }
-
-                // Using StreamWriter inside a using block ensures proper disposal
-                using (StreamWriter writer = new StreamWriter(csvFilePath, false))
-                {
-                    // Write CSV header
-                    writer.WriteLine("Duration,MessageCount,TotalSizeBytes");
-
-                    // Write each statistic record
-                    foreach (ConversionStats stats in statsList)
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        string line = string.Format("{0},{1},{2}",
-                            stats.Duration,
-                            stats.MessageCount,
-                            stats.TotalSizeBytes);
-                        writer.WriteLine(line);
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
 
-                Console.WriteLine("Statistics exported successfully to: " + csvFilePath);
+                string minimalEml = "From: sender@example.com\r\nTo: recipient@example.com\r\nSubject: Test\r\n\r\nHello world.";
+                try
+                {
+                    File.WriteAllText(inputPath, minimalEml);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    return;
+                }
             }
-            catch (Exception ex)
+
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Console.Error.WriteLine("Error exporting statistics: " + ex.Message);
+                try
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
             }
+
+            // Load the EML file with load options
+            EmlLoadOptions emlLoadOptions = new EmlLoadOptions()
+            {
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
+            };
+
+            DateTime start = DateTime.UtcNow;
+            using (MailMessage message = MailMessage.Load(inputPath, emlLoadOptions))
+            {
+                // Convert and save as MSG
+                message.Save(outputPath, SaveOptions.DefaultMsg);
+            }
+            DateTime end = DateTime.UtcNow;
+            TimeSpan conversionDuration = end - start;
+
+            // Determine the size of the generated MSG file
+            long outputSize = 0;
+            if (File.Exists(outputPath))
+            {
+                try
+                {
+                    FileInfo info = new FileInfo(outputPath);
+                    outputSize = info.Length;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to obtain output file size: {ex.Message}");
+                }
+            }
+
+            // Export conversion statistics to CSV
+            ExportStatistics(csvPath, conversionDuration, 1, outputSize);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 
-    public class Program
+    // Writes conversion statistics (time, count, size) to a CSV file.
+    // Author: Aspose.Email example
+    private static void ExportStatistics(string csvFilePath, TimeSpan conversionTime, int messageCount, long totalSizeBytes)
     {
-        public static void Main(string[] args)
+        try
         {
-            try
+            string directory = Path.GetDirectoryName(csvFilePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                // Sample data for demonstration purposes
-                List<ConversionStats> sampleStats = new List<ConversionStats>();
-                sampleStats.Add(new ConversionStats(TimeSpan.FromSeconds(12.5), 150, 2048000));
-                sampleStats.Add(new ConversionStats(TimeSpan.FromSeconds(8.3), 80, 1024000));
-                sampleStats.Add(new ConversionStats(TimeSpan.FromSeconds(20.0), 300, 4096000));
-
-                // Define output CSV path
-                string outputCsvPath = "ConversionStats.csv";
-
-                // Export the statistics to CSV
-                StatsExporter.ExportToCsv(outputCsvPath, sampleStats);
+                Directory.CreateDirectory(directory);
             }
-            catch (Exception ex)
+
+            using (StreamWriter writer = new StreamWriter(csvFilePath, false))
             {
-                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+                // CSV header
+                writer.WriteLine("ConversionTimeSeconds,MessageCount,TotalSizeBytes");
+                // CSV data row
+                writer.WriteLine($"{conversionTime.TotalSeconds},{messageCount},{totalSizeBytes}");
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to write CSV file: {ex.Message}");
         }
     }
 }
