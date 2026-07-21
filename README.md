@@ -22,7 +22,7 @@ Examples are organized by feature category:
 - `working-with-exchange-webdav-client/` - 156 example(s)
 - `working-with-ibm-notes/` - 64 example(s)
 - `working-with-imap-client/` - 303 example(s)
-- `working-with-microsoft-graph-client/` - 38 example(s)
+- `working-with-microsoft-graph-client/` - 39 example(s)
 - `working-with-mime-messages/` - 343 example(s)
 - `working-with-outlook-items/` - 511 example(s)
 - `working-with-outlook-storage-files/` - 189 example(s)
@@ -85,6 +85,14 @@ catch (Exception ex)
 - Dispose clients/streams with `using` when applicable.
 - Avoid hardcoding secrets or license keys.
 
+## Generation Architecture
+
+This repository is produced by the Aspose.Email product-specific examples generator. It uses the shared Examples RAG/MCP platform for retrieval and skeleton code generation, then applies Aspose.Email-specific rules, validation, compile/run checks, repair, and publishing.
+
+- The shared Task Generator supplies versioned product tasks.
+- The shared Examples RAG/MCP platform retrieves product API context and generates skeleton code.
+- The Aspose.Email generator owns product-specific rules and compile/runtime guardrails.
+
 ## Agentic .NET Ecosystem
 
 Other Aspose products with agentic, build-validated example repositories:
@@ -128,4 +136,4 @@ Other Aspose products with agentic, build-validated example repositories:
 All examples use [Aspose.Email for .NET](https://products.aspose.com/email/net/) and require a valid license for production use. See [licensing options](https://purchase.aspose.com/buy).
 
 ---
-*Maintained by an [agentic example generation workflow](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-06-23*
+*Generated and validated by a product-specific examples generator using shared Examples RAG/MCP infrastructure. See the [agentic examples metrics section](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-07-21*
