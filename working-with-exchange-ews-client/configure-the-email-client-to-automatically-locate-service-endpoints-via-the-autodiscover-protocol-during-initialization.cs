@@ -1,75 +1,44 @@
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
     static void Main()
     {
+        // Placeholder credentials – replace with real values when running against a live server
+        string email = "your-email@example.com";
+        string password = "your-password";
+
+        // Guard: skip network operations if placeholders are detected
+        if (string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(password) ||
+            email.Contains("example.com") ||
+            password.Contains("your-"))
+        {
+            Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS client initialization.");
+            return;
+        }
+
         try
         {
-            // Placeholder credentials – skip real network call in CI environments
-            string domain = "example.com";
-            string userSmtpAddress = "user@example.com";
-            string password = "password";
+            // Create network credentials
+            NetworkCredential credentials = new NetworkCredential(email, password);
 
-            if (domain.Contains("example") || userSmtpAddress.Contains("example") || password == "password")
+            // AutoDiscover the EWS endpoint based on the email address
+            using (IEWSClient ewsClient = EWSClient.GetEWSClient(email, credentials))
             {
-                Console.Error.WriteLine("Placeholder credentials detected – skipping AutoDiscover and client connection.");
-                return;
-            }
-
-            // Initialize AutoDiscover service for the domain
-            AutodiscoverService autodiscover = new AutodiscoverService(domain);
-            autodiscover.Credentials = new NetworkCredential(userSmtpAddress, password);
-
-            // Retrieve EWS URLs (internal and external)
-            GetUserSettingsResponse settings = autodiscover.GetUserSettings(
-                userSmtpAddress,
-                UserSettingName.InternalEwsUrl,
-                UserSettingName.ExternalEwsUrl);
-
-            // Choose the first available URL
-            string ewsUrl = null;
-            if (settings != null && settings.Settings != null)
-            {
-                if (settings.Settings.ContainsKey(UserSettingName.InternalEwsUrl))
-                    ewsUrl = settings.Settings[UserSettingName.InternalEwsUrl] as string;
-                else if (settings.Settings.ContainsKey(UserSettingName.ExternalEwsUrl))
-                    ewsUrl = settings.Settings[UserSettingName.ExternalEwsUrl] as string;
-            }
-
-            if (string.IsNullOrEmpty(ewsUrl))
-            {
-                Console.Error.WriteLine("Unable to locate EWS endpoint via AutoDiscover.");
-                return;
-            }
-
-            // Create the EWS client using the discovered URL
-            IEWSClient client = null;
-            try
-            {
-                client = EWSClient.GetEWSClient(ewsUrl, new NetworkCredential(userSmtpAddress, password));
-                // Example operation: display the mailbox URI
-                Console.WriteLine("Connected to mailbox URI: " + client.MailboxInfo.InboxUri);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Failed to create or connect EWS client: " + ex.Message);
-                return;
-            }
-            finally
-            {
-                // Ensure the client is disposed
-                if (client != null)
-                    client.Dispose();
+                // Sample operation: retrieve mailbox information
+                ExchangeMailboxInfo mailboxInfo = ewsClient.GetMailboxInfo();
+                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine("Error initializing EWS client: " + ex.Message);
         }
     }
 }
