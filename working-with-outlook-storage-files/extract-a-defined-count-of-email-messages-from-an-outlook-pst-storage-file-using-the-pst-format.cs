@@ -1,84 +1,88 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            const string pstPath = "sample.pst";
-            const string outputFolder = "output";
-            const int maxMessages = 5;
+            // Define the PST file path, output directory and the maximum number of messages to extract.
+            const string pstPath = "storage.pst";
+            const string outputDir = "ExtractedMessages";
+            const int maxMessages = 10;
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputFolder))
-            {
-                Directory.CreateDirectory(outputFolder);
-            }
-
-            // Guard PST file existence; create a minimal placeholder if missing
+            // Verify that the PST file exists before attempting to open it.
             if (!File.Exists(pstPath))
             {
-                try
-                {
-                    // Create an empty Unicode PST file
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                return;
             }
 
-            // Open the PST file
+            // Ensure the output directory exists.
+            Directory.CreateDirectory(outputDir);
+
+            // Open the PST file.
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Access the root folder
-                FolderInfo rootFolder = pst.RootFolder;
+                int extractedCount = 0;
 
-                int extracted = 0;
-                foreach (MessageInfo messageInfo in rootFolder.EnumerateMessages())
+                // Iterate through each subfolder of the root folder.
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    if (extracted >= maxMessages)
-                        break;
-
-                    try
+                    // Enumerate messages in the current folder.
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
                     {
-                        using (MapiMessage msg = pst.ExtractMessage(messageInfo))
-                        {
-                            // Build a safe filename
-                            string safeSubject = string.IsNullOrWhiteSpace(msg.Subject) ? "NoSubject" : msg.Subject;
-                            foreach (char c in Path.GetInvalidFileNameChars())
-                                safeSubject = safeSubject.Replace(c, '_');
+                        // Extract the full message as a MapiMessage.
+                        MapiMessage message = pst.ExtractMessage(messageInfo);
 
-                            string fileName = Path.Combine(outputFolder, $"{safeSubject}_{extracted + 1}.msg");
-                            msg.Save(fileName);
-                            Console.WriteLine($"Saved message: {fileName}");
+                        // Build a safe filename from the subject.
+                        string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        // Ensure unique filename if needed.
+                        string fileName = $"{safeSubject}.msg";
+                        string outputPath = Path.Combine(outputDir, fileName);
+                        int duplicateIndex = 1;
+                        while (File.Exists(outputPath))
+                        {
+                            fileName = $"{safeSubject}_{duplicateIndex}.msg";
+                            outputPath = Path.Combine(outputDir, fileName);
+                            duplicateIndex++;
+                        }
+
+                        // Save the message as a .msg file.
+                        try
+                        {
+                            message.Save(outputPath);
+                            Console.WriteLine($"Saved: {outputPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message '{message.Subject}': {ex.Message}");
+                        }
+
+                        extractedCount++;
+                        if (extractedCount >= maxMessages)
+                        {
+                            Console.WriteLine($"Reached the defined limit of {maxMessages} messages.");
+                            return;
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error extracting message: {ex.Message}");
-                        // Continue with next message
-                    }
-
-                    extracted++;
                 }
 
-                if (extracted == 0)
-                {
-                    Console.WriteLine("No messages found in the PST file.");
-                }
+                Console.WriteLine($"Extraction completed. Total messages saved: {extractedCount}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
