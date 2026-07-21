@@ -1,7 +1,7 @@
-using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using System;
+using System.IO;
 
 class Program
 {
@@ -9,48 +9,46 @@ class Program
     {
         try
         {
-            // Placeholder connection details
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Example configuration for EWS client logging.
+            const string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            const string username = "user@example.com";
+            const string password = "password";
 
-            // Skip real connection when placeholders are used
-            if (mailboxUri.Contains("example.com"))
+            // Guard: skip real network calls when placeholder values are detected.
+            if (IsPlaceholder(mailboxUri, username, password))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping EWS client connection.");
+                Console.WriteLine("Placeholder credentials detected. Skipping EWS client initialization.");
                 return;
             }
 
-            // Prepare log file path and ensure the directory exists
-            string logPath = Path.Combine(Environment.CurrentDirectory, "Logs", "EwsLog.txt");
-            string logDir = Path.GetDirectoryName(logPath);
+            // Define log file path and ensure its directory exists.
+            string logFilePath = Path.Combine("logs", "ews_activity.log");
+            string logDir = Path.GetDirectoryName(logFilePath);
             if (!Directory.Exists(logDir))
             {
                 Directory.CreateDirectory(logDir);
             }
 
-            // Create and configure the EWS client
+            // Create and configure the EWS client.
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                try
-                {
-                    client.LogFileName = logPath;
-                    client.UseDateInLogFileName = true;
+                client.LogFileName = logFilePath;
+                client.UseDateInLogFileName = true;
 
-                    // Example operation to generate log entries
-                    var mailboxInfo = client.GetMailboxInfo();
-                    Console.WriteLine($"Connected to mailbox: {mailboxInfo.MailboxUri}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
-                    return;
-                }
+                // Example operation to generate log entries (optional).
+                // var mailboxInfo = client.GetMailboxInfo();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
+    }
+
+    private static bool IsPlaceholder(string uri, string user, string pass)
+    {
+        return uri.Contains("example.com", StringComparison.OrdinalIgnoreCase) ||
+               user.Contains("example.com", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(pass, "password", StringComparison.Ordinal);
     }
 }
