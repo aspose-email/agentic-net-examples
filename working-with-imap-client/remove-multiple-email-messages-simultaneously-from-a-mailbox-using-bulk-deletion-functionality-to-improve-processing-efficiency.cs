@@ -1,63 +1,71 @@
+using Aspose.Email;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
+// Author: Aspose.Email example – bulk delete messages via IMAP
 class Program
 {
     static void Main()
     {
         try
         {
-            // Placeholder connection details
+            // IMAP server connection settings
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
 
-            // Guard against placeholder credentials to avoid real network calls
+
+            // Skip external calls when placeholder credentials are used
             if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping actual server connection.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create and use the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            // Create and configure the ImapClient
+            using (ImapClient imapClient = new ImapClient())
             {
+                imapClient.Host = host;
+                imapClient.Port = port;
+                imapClient.Username = username;
+                imapClient.Password = password;
+                imapClient.SecurityOptions = SecurityOptions.SSLImplicit;
+
                 try
                 {
-                    // Select the INBOX folder
-                    client.SelectFolder("INBOX");
+                    // Retrieve all messages in the mailbox
+                    ImapMessageInfoCollection allMessages = imapClient.ListMessages();
 
-                    // Retrieve all messages in the folder
-                    IEnumerable<ImapMessageInfo> allMessages = client.ListMessages();
+                    // Choose a subset to delete (e.g., first 10 messages)
+                    List<ImapMessageInfo> messagesToDelete = allMessages.Take(10).ToList();
 
-                    // Choose a subset of messages to delete (e.g., first 5)
-                    List<ImapMessageInfo> messagesToDelete = allMessages.Take(5).ToList();
-
-                    if (messagesToDelete.Count == 0)
+                    if (messagesToDelete.Count > 0)
                     {
-                        Console.WriteLine("No messages found to delete.");
-                        return;
+                        // Bulk delete the selected messages
+                        imapClient.DeleteMessages(messagesToDelete);
+
+                        // Permanently remove the marked messages from the server
+                        Console.WriteLine($"{messagesToDelete.Count} messages have been deleted.");
                     }
-
-                    // Bulk delete the selected messages and commit immediately
-                    client.DeleteMessages(messagesToDelete);
-
-                    Console.WriteLine($"{messagesToDelete.Count} messages have been deleted.");
+                    else
+                    {
+                        Console.WriteLine("No messages matched the deletion criteria.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during IMAP operations: {ex.Message}");
+                    Console.Error.WriteLine($"Deletion error: {ex.Message}");
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
