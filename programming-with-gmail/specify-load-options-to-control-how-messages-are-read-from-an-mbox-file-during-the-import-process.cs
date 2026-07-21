@@ -1,7 +1,7 @@
 using System;
 using System.IO;
+using System.Text;
 using Aspose.Email;
-using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
 
 class Program
@@ -10,47 +10,76 @@ class Program
     {
         try
         {
-            // Define input MBOX file and output HTML file paths.
-            string mboxPath = "input.mbox";
-            string htmlPath = "firstMessage.html";
+            // Path to the MBOX file
+            string mboxPath = "storage.mbox";
 
-            // Guard against missing input file.
+            // Verify the MBOX file exists; create a minimal placeholder if missing
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
+                File.WriteAllText(mboxPath, string.Empty);
+                Console.Error.WriteLine($"MBOX file not found. Created empty placeholder at '{mboxPath}'.");
                 return;
             }
 
-            // Create load options to control how messages are read.
-            MboxLoadOptions loadOptions = new MboxLoadOptions
+            // Create the MBOX reader with specific load options
+            var mboxLoadOptions = new MboxLoadOptions
             {
-                // Example: keep the underlying stream open after disposing the reader (optional).
-                LeaveOpen = false,
-                // Example: specify preferred encoding if needed (null uses default detection).
-                PreferredTextEncoding = null
+                PreferredTextEncoding = Encoding.UTF8,
+                LeaveOpen = false
             };
 
-            // Open the MBOX storage reader using the factory method.
-            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, mboxLoadOptions))
             {
-                // Read the first message sequentially.
-                MailMessage message = reader.ReadNextMessage();
+                // Ensure the output directory exists
+                string outputDir = "output";
+                Directory.CreateDirectory(outputDir);
 
-                if (message == null)
+                // Read messages sequentially
+                while (true)
                 {
-                    Console.Error.WriteLine("No messages found in the MBOX file.");
-                    return;
-                }
+                    MailMessage eml = mbox.ReadNextMessage();
+                    if (eml == null)
+                        break;
 
-                // Save the message as HTML.
-                HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
-                message.Save(htmlPath, htmlOptions);
-                Console.WriteLine($"First message saved to {htmlPath}");
+                    Console.WriteLine($"Subject: {eml.Subject}");
+                    Console.WriteLine($"From: {eml.From}");
+                    Console.WriteLine($"To: {eml.To}");
+
+                    // Build a safe file name for the extracted message
+                    string safeSubject = GetSafeFileName(eml.Subject);
+                    string outputPath = Path.Combine(outputDir, $"{safeSubject}.eml");
+
+                    try
+                    {
+                        // Save the extracted message
+                        eml.Save(outputPath);
+                        Console.WriteLine($"Saved to '{outputPath}'.");
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Console.Error.WriteLine($"Failed to save message '{eml.Subject}': {saveEx.Message}");
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
+    }
+
+    // Helper to replace invalid filename characters with an underscore
+    private static string GetSafeFileName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return "Untitled";
+
+        char[] invalidChars = Path.GetInvalidFileNameChars();
+        var sb = new StringBuilder(name);
+        foreach (char c in invalidChars)
+        {
+            sb.Replace(c, '_');
+        }
+        return sb.ToString();
     }
 }
