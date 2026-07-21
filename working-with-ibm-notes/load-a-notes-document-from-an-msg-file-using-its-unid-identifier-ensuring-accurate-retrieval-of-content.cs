@@ -9,45 +9,53 @@ class Program
     {
         try
         {
-            const string msgPath = "sample.msg";
+            // Path to the MSG file
+            string msgPath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if it does not.
+            // Ensure the MSG file exists; create a placeholder if it does not.
             if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "receiver@example.com",
-                        "Sample Subject",
-                        "This is a placeholder message body."))
-                    {
-                        placeholder.Save(msgPath);
-                    }
+                    var placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body.");
+                    placeholder.Save(msgPath);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
+                return;
             }
 
-            // Load the MSG file.
-            using (MapiMessage message = MapiMessage.Load(msgPath))
-            {
-                // Retrieve the UNID property (PR_NOTE_UNID = 0x0E0F). It is stored as binary.
-                const long UnidTag = 0x0E0F;
-                byte[] unidBytes = message.GetPropertyBytes(UnidTag);
-                string unidHex = unidBytes != null ? BitConverter.ToString(unidBytes).Replace("-", "") : "N/A";
+            // Load the MSG file
+            MapiMessage msg = MapiMessage.Load(msgPath);
 
-                Console.WriteLine($"UNID: {unidHex}");
-                Console.WriteLine($"Subject: {message.Subject}");
-                Console.WriteLine($"Body: {message.Body}");
+            // Display basic message information
+            Console.WriteLine("Subject: " + msg.Subject);
+            Console.WriteLine("From: " + msg.SenderName);
+            Console.WriteLine("Body: " + msg.Body);
+
+            // Attempt to locate a custom property that holds the Notes UNID
+            foreach (MapiProperty property in msg.Properties.Values)
+            {
+                if (string.Equals(property.Name, "NotesUNID", StringComparison.OrdinalIgnoreCase))
+                {
+                    string unid = property.GetValue()?.ToString() ?? string.Empty;
+                    Console.WriteLine("Notes UNID: " + unid);
+                    break;
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
