@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Mime;
 using Aspose.Email;
 
 class Program
@@ -9,7 +10,7 @@ class Program
         try
         {
             // Define output file path
-            string outputPath = "output.msg";
+            string outputPath = "EmbeddedImage_out.msg";
 
             // Ensure the output directory exists
             string outputDir = Path.GetDirectoryName(outputPath);
@@ -18,43 +19,49 @@ class Program
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Create the mail message
-            using (MailMessage mailMessage = new MailMessage())
+            // Ensure the linked image exists (create a minimal placeholder if missing)
+            string imagePath = "1.jpg";
+            if (!File.Exists(imagePath))
             {
-                mailMessage.From = "sender@example.com";
-                mailMessage.To.Add("recipient@example.com");
-                mailMessage.Subject = "Sample email with alternate views";
-
-                // Plain‑text view
-                AlternateView plainView = AlternateView.CreateAlternateViewFromString(
-                    "This is the plain‑text version of the email.", null, "text/plain");
-
-                // HTML view
-                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
-                    "<html><body><h1>Hello</h1><p>This is the <b>HTML</b> version.</p></body></html>",
-                    null,
-                    "text/html");
-
-                // Add alternate views to the message
-                mailMessage.AlternateViews.Add(plainView);
-                mailMessage.AlternateViews.Add(htmlView);
-
-                // Save the message as MSG
-                try
-                {
-                    mailMessage.Save(outputPath, SaveOptions.DefaultMsgUnicode);
-                    Console.WriteLine($"Message saved to '{outputPath}'.");
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
-                    return;
-                }
+                // Create an empty JPEG file as a placeholder
+                File.WriteAllBytes(imagePath, new byte[0]);
             }
+
+            // Create the email message
+            using (MailMessage message = new MailMessage())
+            {
+                message.From = "AndrewIrwin@from.com";
+                message.To = "SusanMarc@to.com";
+                message.Subject = "This is an email";
+
+                // Plain text view
+                AlternateView plainView = AlternateView.CreateAlternateViewFromString(
+                    "This is my plain text content", null, "text/plain");
+
+                // HTML view with embedded image reference (cid:barcode)
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                    "Here is an embedded image. <img src=cid:barcode>", null, "text/html");
+
+                // Linked resource for the embedded image
+                LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg)
+                {
+                    ContentId = "barcode"
+                };
+
+                // Attach resources and views to the message
+                message.LinkedResources.Add(barcode);
+                message.AlternateViews.Add(plainView);
+                message.AlternateViews.Add(htmlView);
+
+                // Save the message as MSG with Unicode encoding
+                message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+            }
+
+            Console.WriteLine("Message saved successfully to " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
