@@ -1,89 +1,68 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string msgPath = "sample.msg";
-
-            // Ensure the MSG file exists; create a minimal placeholder if missing.
-            if (!File.Exists(msgPath))
-            {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Body = "This is a placeholder MSG file.";
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the existing MSG file.
-            MapiMessage msg;
             try
             {
-                msg = MapiMessage.Load(msgPath);
+                // Define output MSG file path
+                string outputPath = "OutputMessage.msg";
+
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Create a new MailMessage instance
+                MailMessage message = new MailMessage();
+
+                // Set basic properties
+                message.From = "sender@example.com";
+                message.Subject = "Sample Message with Recipients";
+                message.Body = "This message demonstrates adding To, CC, and BCC recipients.";
+
+                // Populate To recipients
+                MailAddressCollection toCollection = message.To;
+                toCollection.Add("to1@example.com");
+                toCollection.Add("to2@example.com");
+
+                // Populate CC recipients (property name is CC)
+                MailAddressCollection ccCollection = message.CC;
+                ccCollection.Add("cc1@example.com");
+                ccCollection.Add("cc2@example.com");
+
+                // Populate BCC recipients
+                MailAddressCollection bccCollection = message.Bcc;
+                bccCollection.Add("bcc1@example.com");
+                bccCollection.Add("bcc2@example.com");
+
+                // Save the message as an MSG file
+                try
+                {
+                    message.Save(outputPath, SaveOptions.DefaultMsg);
+                    Console.WriteLine($"Message saved successfully to '{outputPath}'.");
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
+                }
+                finally
+                {
+                    // Dispose the MailMessage to release resources
+                    message.Dispose();
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
             }
-
-            using (msg)
-            {
-                // Add To recipient.
-                msg.Recipients.Add("to@example.com", "To Recipient", MapiRecipientType.MAPI_TO);
-
-                // Add Cc recipient.
-                msg.Recipients.Add("cc@example.com", "Cc Recipient", MapiRecipientType.MAPI_CC);
-
-                // Add Bcc recipient.
-                msg.Recipients.Add("bcc@example.com", "Bcc Recipient", MapiRecipientType.MAPI_BCC);
-
-                // Save the updated MSG file.
-                try
-                {
-                    msg.Save(msgPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
