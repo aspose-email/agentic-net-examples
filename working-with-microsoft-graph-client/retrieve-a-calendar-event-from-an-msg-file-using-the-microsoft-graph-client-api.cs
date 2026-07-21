@@ -1,75 +1,77 @@
-using Aspose.Email.Mapi;
-using System;
-using System.IO;
-using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
+using Aspose.Email;
+using System;
+using System.IO;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
+        // Path to the MSG file containing the calendar event
+        string msgPath = "calendar.msg";
+
+        // Guard against missing input file
+        if (!File.Exists(msgPath))
+        {
+                try
+                {
+                    MapiCalendar placeholderCalendar = new MapiCalendar(
+                        "Placeholder Location",
+                        "Placeholder Summary",
+                        "Placeholder Description",
+                        DateTime.Now,
+                        DateTime.Now.AddHours(1));
+                    if (string.IsNullOrEmpty(placeholderCalendar.Subject))
+                    {
+                        placeholderCalendar.Subject = "Placeholder Summary";
+                    }
+                    if (string.IsNullOrEmpty(placeholderCalendar.Body))
+                    {
+                        placeholderCalendar.Body = "Placeholder Description";
+                    }
+                    placeholderCalendar.Save(msgPath, MapiCalendarSaveOptions.DefaultMsg);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+            Console.Error.WriteLine($"Input file not found: {msgPath}");
+            return;
+        }
+
         try
         {
-            // Placeholder credentials – replace with real values for actual use.
-            string clientId = "YOUR_CLIENT_ID";
-            string clientSecret = "YOUR_CLIENT_SECRET";
-            string refreshToken = "YOUR_REFRESH_TOKEN";
-            string calendarEventId = "EVENT_ID";
+            // Load the MSG file
+            MapiMessage msg = MapiMessage.Load(msgPath);
 
-            // Skip execution when placeholder credentials are detected.
-            if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_"))
+            // Verify that the MSG contains a calendar item
+            if (msg.SupportedType == MapiItemType.Calendar)
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph call.");
-                return;
+                // Convert the MAPI message to a MapiCalendar object
+                MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
+
+                // Display basic calendar information
+                Console.WriteLine($"Subject: {calendar.Subject}");
+                Console.WriteLine($"Start: {calendar.StartDate}");
+                Console.WriteLine($"End: {calendar.EndDate}");
+
+                // Placeholder: Here you could use Microsoft Graph client APIs
+                // (e.g., IGraphClient) to upload or query the event in a
+                // Microsoft 365 tenant. The required Graph client setup is
+                // version‑specific and not demonstrated in this minimal example.
             }
-
-            // Create token provider (3‑argument overload is the verified one).
-            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-            // Create Graph client and ensure it is disposed.
-            try
+            else
             {
-                using (IGraphClient client = GraphClient.GetClient(tokenProvider, null))
-                {
-                    // Fetch the calendar event by its Graph identifier.
-                    MapiCalendar calendar = client.FetchCalendarItem(calendarEventId);
-
-                    // Display basic calendar information.
-                    Console.WriteLine("Subject: " + calendar.Subject);
-                    Console.WriteLine("Body: " + calendar.Body);
-                    Console.WriteLine("Start: " + calendar.StartDate);
-                    Console.WriteLine("End: " + calendar.EndDate);
-
-                    // Optional: save the calendar as an MSG file.
-                    string outputPath = "calendar.msg";
-                    string outputDirectory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-
-                    if (!Directory.Exists(outputDirectory))
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-
-                    try
-                    {
-                        calendar.Save(outputPath, MapiCalendarSaveOptions.DefaultMsg);
-                        Console.WriteLine("Calendar saved to " + outputPath);
-                    }
-                    catch (Exception saveEx)
-                    {
-                        Console.Error.WriteLine("Failed to save calendar: " + saveEx.Message);
-                    }
-                }
-            }
-            catch (Exception clientEx)
-            {
-                Console.Error.WriteLine("Graph client error: " + clientEx.Message);
-                return;
+                Console.WriteLine("The MSG file does not contain a calendar item.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
         }
     }
 }
