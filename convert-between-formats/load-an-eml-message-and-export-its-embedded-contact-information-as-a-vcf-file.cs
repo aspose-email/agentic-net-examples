@@ -1,8 +1,7 @@
+using Aspose.Email.PersonalInfo;
 using System;
 using System.IO;
-using System.Text;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,116 +9,75 @@ class Program
     {
         try
         {
-            string emlPath = "input.eml";
-            string vcfPath = "output.vcf";
+            // Input EML file path
+            const string sourcePath = "source.eml";
+            // Output VCF file path (will be overwritten if exists)
+            const string outputVcfPath = "contact.vcf";
 
-            // Ensure input EML exists; create a minimal placeholder if missing
-            if (!File.Exists(emlPath))
+            // Verify the source EML file exists
+            if (!File.Exists(sourcePath))
             {
                 try
                 {
-                    string placeholderEml = "From: sender@example.com\r\nTo: recipient@example.com\r\nSubject: Sample\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(emlPath, placeholderEml, Encoding.UTF8);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(sourcePath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
-            }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(vcfPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the EML message
-            MailMessage mailMessage;
-            try
-            {
-                mailMessage = MailMessage.Load(emlPath, new EmlLoadOptions());
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load EML file: {ex.Message}");
+                Console.Error.WriteLine($"Source EML file not found: {sourcePath}");
                 return;
             }
 
-            using (mailMessage)
+            // Load the EML message
+            using (MailMessage mailMessage = MailMessage.Load(sourcePath))
             {
-                // Convert to MAPI message
-                MapiMessage mapiMessage;
-                try
-                {
-                    mapiMessage = MapiMessage.FromMailMessage(mailMessage);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to convert to MAPI message: {ex.Message}");
-                    return;
-                }
+                bool vcfFound = false;
 
-                using (mapiMessage)
+                // Iterate through attachments to find a VCF (vCard) file
+                foreach (Attachment attachment in mailMessage.Attachments)
                 {
-                    // Check if the message contains a contact
-                    if (mapiMessage.SupportedType == MapiItemType.Contact)
+                    // Check file extension or content type for vCard
+                    if (attachment.Name != null &&
+                        attachment.Name.EndsWith(".vcf", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Extract the contact
-                        MapiContact mapiContact;
-                        try
+                        // Ensure the output directory exists
+                        string outputDir = Path.GetDirectoryName(outputVcfPath);
+                        if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                         {
-                            mapiContact = (MapiContact)mapiMessage.ToMapiMessageItem();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to extract contact: {ex.Message}");
-                            return;
+                            Directory.CreateDirectory(outputDir);
                         }
 
-                        using (mapiContact)
+                        // Save the attachment content as a VCF file
+                        using (FileStream fs = new FileStream(outputVcfPath, FileMode.Create, FileAccess.Write))
                         {
-                            try
-                            {
-                                // Save contact as VCF
-                                mapiContact.Save(vcfPath);
-                                Console.WriteLine($"Contact saved to VCF: {vcfPath}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to save VCF file: {ex.Message}");
-                            }
+                            attachment.ContentStream.CopyTo(fs);
                         }
+
+                        Console.WriteLine($"Contact exported to: {outputVcfPath}");
+                        vcfFound = true;
+                        break; // Assuming only one contact needed
                     }
-                    else
-                    {
-                        // Not a contact – create a minimal placeholder VCF
-                        try
-                        {
-                            string placeholderVcf = "BEGIN:VCARD\r\nVERSION:2.1\r\nEND:VCARD\r\n";
-                            File.WriteAllText(vcfPath, placeholderVcf, Encoding.UTF8);
-                            Console.WriteLine($"Placeholder VCF created at: {vcfPath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to create placeholder VCF: {ex.Message}");
-                        }
-                    }
+                }
+
+                if (!vcfFound)
+                {
+                    Console.Error.WriteLine("No embedded VCF attachment found in the EML message.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
