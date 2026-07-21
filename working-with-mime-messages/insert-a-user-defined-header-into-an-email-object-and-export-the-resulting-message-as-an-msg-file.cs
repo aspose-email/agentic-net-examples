@@ -2,56 +2,56 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace EmailHeaderExample
 {
-    static void Main()
+    // Author: Generated example for inserting a custom header and saving as MSG
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define output MSG file path
-            string outputPath = "output.msg";
-
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (!Directory.Exists(outputDir))
+            try
             {
-                Directory.CreateDirectory(outputDir);
-            }
+                // Define output file path
+                string outputPath = "output.msg";
 
-            // Create a new mail message
-            using (MailMessage mail = new MailMessage())
-            {
-                mail.From = new MailAddress("sender@example.com");
-                mail.To.Add(new MailAddress("recipient@example.com"));
-                mail.Subject = "Sample Message";
-                mail.Body = "This is a sample email body.";
-
-                // Insert a custom header
-                mail.Headers.Add("X-Custom-Header", "MyHeaderValue");
-
-                // Iterate headers using Keys as required by validation
-                foreach (string key in mail.Headers.Keys)
+                // Ensure the target directory exists
+                string directory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    Console.WriteLine($"{key}: {mail.Headers[key]}");
+                    Directory.CreateDirectory(directory);
                 }
+
+                // Create a new email message
+                MailMessage message = new MailMessage();
+                message.From = "sender@example.com";
+                message.To = "receiver@example.com";
+                message.Subject = "Test Email with Custom Header";
+                message.Body = "This is the body of the email.";
+
+                // Insert a user‑defined header
+                message.Headers.Add("X-Custom-Header", "MyHeaderValue");
+
+                // Prepare MSG save options (preserve original dates)
+                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                {
+                    PreserveOriginalDates = true
+                };
 
                 // Save the message as MSG
                 try
                 {
-                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                    mail.Save(outputPath, saveOptions);
-                    Console.WriteLine($"Message saved to {outputPath}");
+                    message.Save(outputPath, saveOptions);
+                    Console.WriteLine($"Message saved successfully to '{outputPath}'.");
                 }
-                catch (Exception ex)
+                catch (Exception ioEx)
                 {
-                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
