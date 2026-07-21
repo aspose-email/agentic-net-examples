@@ -1,29 +1,36 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Amp;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgPath = "input.msg";
-            string outputPath = "amp_body.html";
+            string msgPath = "sample.msg";
+
+            // Ensure the directory for the MSG file exists
+            string? msgDir = Path.GetDirectoryName(msgPath);
+            if (!string.IsNullOrEmpty(msgDir) && !Directory.Exists(msgDir))
+            {
+                Directory.CreateDirectory(msgDir);
+            }
 
             // Verify input file exists
             if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -32,38 +39,50 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input MSG file not found: {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG as an AmpMessage
-            using (AmpMessage ampMessage = (AmpMessage)MailMessage.Load(msgPath))
-            {
-                string ampHtmlBody = ampMessage.AmpHtmlBody;
+            // Load the MSG file as a MapiMessage
+            MapiMessage mapiMsg = MapiMessage.Load(msgPath);
 
-                if (string.IsNullOrEmpty(ampHtmlBody))
+            // Convert to a MailMessage
+            MailMessage mailMsg = mapiMsg.ToMailMessage(new MailConversionOptions());
+
+            // Attempt to treat the message as an AmpMessage
+            if (mailMsg is AmpMessage ampMsg)
+            {
+                string ampBody = ampMsg.AmpHtmlBody;
+                Console.WriteLine("AMP Body extracted via AmpMessage:");
+                Console.WriteLine(ampBody);
+                return;
+            }
+
+            // Fallback: search for an attachment with AMP content type
+            foreach (MapiAttachment attachment in mapiMsg.Attachments)
+            {
+                if (attachment.FileName != null && attachment.FileName.EndsWith(".amp.html", StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine("The message does not contain an AMP body.");
+                    string tempPath = Path.Combine(Path.GetTempPath(), attachment.FileName);
+                    try
+                    {
+                        attachment.Save(tempPath);
+                        string ampContent = File.ReadAllText(tempPath);
+                        Console.WriteLine("AMP Body extracted from attachment:");
+                        Console.WriteLine(ampContent);
+                    }
+                    finally
+                    {
+                        if (File.Exists(tempPath))
+                        {
+                            File.Delete(tempPath);
+                        }
+                    }
                     return;
                 }
-
-                try
-                {
-                    // Ensure output directory exists
-                    string outputDirectory = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-
-                    File.WriteAllText(outputPath, ampHtmlBody);
-                    Console.WriteLine($"AMP body extracted and saved to: {outputPath}");
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Failed to write AMP body to file: {ioEx.Message}");
-                }
             }
+
+            Console.WriteLine("No AMP body found in the provided MSG file.");
         }
         catch (Exception ex)
         {
