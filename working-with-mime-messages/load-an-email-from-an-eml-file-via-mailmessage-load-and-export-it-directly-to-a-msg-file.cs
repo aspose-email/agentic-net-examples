@@ -2,18 +2,21 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace EmailConversionSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPath = "input.eml";
-            string outputPath = "output.msg";
-
-            // Ensure the input EML file exists; create a minimal placeholder if missing.
-            if (!File.Exists(inputPath))
+            try
             {
+                // Author note: Simple EML to MSG conversion using Aspose.Email.
+                string inputPath = "input.eml";
+                string outputPath = "output.msg";
+
+                // Verify input file exists before attempting to load.
+                if (!File.Exists(inputPath))
+                {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -31,35 +34,23 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    string placeholderEml = "From: placeholder@example.com\r\nTo: placeholder@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(inputPath, placeholderEml);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
                     return;
                 }
-            }
 
-            // Load the EML file and save it as MSG.
-            try
-            {
+                // Load the EML file into a MailMessage instance.
                 using (MailMessage message = MailMessage.Load(inputPath))
                 {
+                    // Save the message as MSG using the default MSG save options.
                     message.Save(outputPath, SaveOptions.DefaultMsg);
                 }
+
+                Console.WriteLine($"Conversion completed successfully. MSG saved to: {outputPath}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing email files: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
