@@ -1,65 +1,49 @@
-using Aspose.Email.PersonalInfo;
 using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.PersonalInfo;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailCreateContactSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials and service URL
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard against placeholder credentials to avoid real network calls
-            if (serviceUrl.Contains("example.com") || username == "username")
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping server interaction.");
-                return;
-            }
+                // Initialize EWS client (replace with actual service URL and credentials)
+                string mailboxUri = "https://ews.example.com/EWS/Exchange.asmx";
+                string username = "username";
+                string password = "password";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
-            {
-                try
+
+                // Skip external calls when placeholder credentials are used
+                if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
                 {
-                    // Prepare a MAPI contact
-                    MapiContact contact = new MapiContact();
-                    contact.NameInfo.DisplayName = "John Doe";
-                    contact.ElectronicAddresses.Email1.EmailAddress = "john.doe@example.com";
-
-                    // Cast to async interface to use CreateItemAsync
-                    if (client is IAsyncEwsClient asyncClient)
-                    {
-                        // Upload the contact to the Contacts folder
-                        string contactUri = asyncClient
-                            .CreateItemAsync(contact, client.MailboxInfo.ContactsUri, CancellationToken.None)
-                            .GetAwaiter()
-                            .GetResult();
-
-                        Console.WriteLine("Contact created at URI: " + contactUri);
-                    }
-                    else
-                    {
-                        Console.Error.WriteLine("Client does not support async operations.");
-                    }
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
                 }
-                catch (Exception ex)
+
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
                 {
-                    Console.Error.WriteLine("Error during contact creation: " + ex.Message);
+                    // Create a new contact
+                    Contact contact = new Contact
+                    {
+                        GivenName = "John",
+                        Surname = "Doe",
+                        DisplayName = "John Doe"
+                    };
+                    contact.EmailAddresses.Add(new EmailAddress("john.doe@example.com"));
+
+                    // Upload the contact to the server using CreateContact (the appropriate method for contacts)
+                    string contactId = client.CreateContact(contact);
+                    Console.WriteLine($"Contact created with ID: {contactId}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
