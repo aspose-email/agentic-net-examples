@@ -2,18 +2,22 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace EmailConversionExample
 {
-    static void Main(string[] args)
+    // Author: Aspose.Email .NET sample
+    class Program
     {
-        try
+        static void Main()
         {
-            string inputPath = "input.eml";
-            string outputPath = "output.html";
-
-            // Ensure input EML exists; create minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            try
             {
+                // Input and output file paths
+                string inputEmlPath = "input.eml";
+                string outputHtmlPath = "output.html";
+
+                // Verify that the input EML file exists
+                if (!File.Exists(inputEmlPath))
+                {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -22,7 +26,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                        placeholder.Save(inputEmlPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -31,48 +35,27 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    string placeholderContent = "From: test@example.com\r\nTo: test@example.com\r\nSubject: Test\r\n\r\nBody";
-                    File.WriteAllText(inputPath, placeholderContent);
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ioEx.Message}");
+                    Console.Error.WriteLine($"Input file not found: {inputEmlPath}");
                     return;
                 }
-            }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                try
+                // Load the EML message
+                using (MailMessage mailMessage = MailMessage.Load(inputEmlPath))
                 {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
-            }
+                    // Configure HTML save options with custom resource rendering
+                    HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
+                    htmlOptions.ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml;
 
-            // Load the EML message and save as HTML with custom options
-            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+                    // Save the message as HTML using the configured options
+                    mailMessage.Save(outputHtmlPath, htmlOptions);
+                }
+
+                Console.WriteLine($"Successfully converted '{inputEmlPath}' to HTML at '{outputHtmlPath}'.");
+            }
+            catch (Exception ex)
             {
-                HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
-                htmlOptions.ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml;
-                htmlOptions.CssStyles = "body { font-family: Arial; margin: 20px; }";
-                htmlOptions.ExtractHTMLBodyResourcesAsAttachments = false;
-                htmlOptions.UseRelativePathToResources = true;
-
-                mailMessage.Save(outputPath, htmlOptions);
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
