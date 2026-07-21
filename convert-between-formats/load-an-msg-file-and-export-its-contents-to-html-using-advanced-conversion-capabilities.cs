@@ -1,50 +1,82 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using Aspose.Email.Tools; // For HtmlSaveOptions and ResourceRenderingMode
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
+            // Path to the input MSG file
             string inputPath = "sample.msg";
-            string outputPath = "output.html";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
+            // Ensure the input file exists; create a placeholder if it does not
             if (!File.Exists(inputPath))
             {
-                using (MapiMessage placeholder = new MapiMessage(
-                    "Placeholder Subject",
-                    "sender@example.com",
-                    "receiver@example.com",
-                    "This is a placeholder message."))
+                try
                 {
-                    placeholder.Save(inputPath);
-                    Console.WriteLine($"Created placeholder MSG at \"{inputPath}\".");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
             }
 
-            // Load the MSG file into a MailMessage.
-            using (MailMessage mail = MailMessage.Load(inputPath, new MsgLoadOptions()))
+            // Load the MSG file
+            MsgLoadOptions loadOptions = new MsgLoadOptions();
+            using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
             {
-                // Configure advanced HTML save options.
-                HtmlSaveOptions saveOptions = new HtmlSaveOptions
+                // Set up HTML save options with embedded resources
+                HtmlSaveOptions htmlOptions = new HtmlSaveOptions
                 {
                     ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
                 };
 
-                // Ensure the output directory exists.
+                // Determine output HTML file path
+                string outputPath = Path.ChangeExtension(inputPath, ".html");
+
+                // Ensure the output directory exists
                 string outputDir = Path.GetDirectoryName(outputPath);
                 if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
                     Directory.CreateDirectory(outputDir);
                 }
 
-                // Save the message as HTML.
-                mail.Save(outputPath, saveOptions);
-                Console.WriteLine($"Message saved as HTML to \"{outputPath}\".");
+                // Save the message as HTML
+                message.Save(outputPath, htmlOptions);
+                Console.WriteLine($"Message successfully saved as HTML to: {outputPath}");
             }
         }
         catch (Exception ex)
