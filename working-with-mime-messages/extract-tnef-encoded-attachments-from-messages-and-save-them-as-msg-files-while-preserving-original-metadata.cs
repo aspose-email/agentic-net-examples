@@ -1,79 +1,59 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace TnefAttachmentExtractor
 {
-    static void Main()
+    // Author: Aspose.Email example for extracting TNEF attachments and saving as MSG files.
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Path to the source email file (EML, MSG, etc.)
-            string inputPath = "input.msg";
-
-            // Verify that the source file exists
-            if (!File.Exists(inputPath))
+            try
             {
-                try
+                // Input TNEF file (e.g., winmail.dat) and output directory.
+                string tnefFilePath = "winmail.dat";
+                string outputDirectory = "ExtractedAttachments";
+
+                // Guard file existence.
+                if (!File.Exists(tnefFilePath))
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Input TNEF file not found: {tnefFilePath}");
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
-                return;
-            }
-
-            // Load the email message
-            using (MailMessage message = MailMessage.Load(inputPath))
-            {
-                // Prepare output directory
-                string outputDir = "ExtractedTnefAttachments";
-                if (!Directory.Exists(outputDir))
+                // Ensure output directory exists.
+                if (!Directory.Exists(outputDirectory))
                 {
-                    Directory.CreateDirectory(outputDir);
+                    Directory.CreateDirectory(outputDirectory);
                 }
 
-                // Iterate through all attachments
-                foreach (Attachment attachment in message.Attachments)
+                // Load the TNEF message.
+                using (MapiMessage tnefMessage = MapiMessage.LoadFromTnef(tnefFilePath))
                 {
-                    // Process only TNEF (winmail.dat) attachments
-                    if (attachment.IsTnef)
+                    // Iterate through each attachment.
+                    foreach (MapiAttachment attachment in tnefMessage.Attachments)
                     {
-                        // Load the TNEF attachment as a MapiMessage
-                        using (MapiMessage tnefMessage = MapiMessage.LoadFromTnef(attachment.ContentStream))
+                        // Build a safe file name.
+                        string safeFileName = Path.GetFileName(attachment.FileName);
+                        if (string.IsNullOrEmpty(safeFileName))
                         {
-                            // Build output MSG file name
-                            string baseName = Path.GetFileNameWithoutExtension(attachment.Name);
-                            if (string.IsNullOrEmpty(baseName))
-                            {
-                                baseName = "attachment";
-                            }
-                            string outputPath = Path.Combine(outputDir, baseName + ".msg");
-
-                            // Save the extracted attachment as MSG
-                            tnefMessage.Save(outputPath);
-                            Console.WriteLine($"Saved TNEF attachment as MSG: {outputPath}");
+                            safeFileName = "attachment.dat";
                         }
+
+                        string outputPath = Path.Combine(outputDirectory, safeFileName);
+
+                        // Save the attachment. For embedded MSG files this will preserve original metadata.
+                        attachment.Save(outputPath);
+                        Console.WriteLine($"Saved attachment: {outputPath}");
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
