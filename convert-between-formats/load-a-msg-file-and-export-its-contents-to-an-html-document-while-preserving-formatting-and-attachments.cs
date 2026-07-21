@@ -1,74 +1,71 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputPath = "sample.msg";
+            // Author note: This sample loads a MSG file and saves it as an HTML document with embedded resources.
+            string inputMsgPath = "sample.msg";
             string outputHtmlPath = "sample.html";
-            string attachmentsDir = "Attachments";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing.
-            if (!File.Exists(inputPath))
+            // Verify input file exists
+            if (!File.Exists(inputMsgPath))
             {
-                MailMessage placeholder = new MailMessage(
-                    "sender@example.com",
-                    "receiver@example.com",
-                    "Placeholder",
-                    "This is a placeholder message.");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputMsgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
 
-                MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                placeholder.Save(inputPath, msgSaveOptions);
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+                return;
             }
 
-            // Ensure the attachments directory exists.
-            if (!Directory.Exists(attachmentsDir))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputHtmlPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(attachmentsDir);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the MSG file.
-            using (MailMessage message = MailMessage.Load(inputPath, new MsgLoadOptions()))
+            // Load the Outlook MSG file
+            MapiMessage mapMsg = MapiMessage.Load(inputMsgPath);
+
+            // Convert to MailMessage for HTML export
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            MailMessage mailMsg = mapMsg.ToMailMessage(conversionOptions);
+
+            // Export to HTML with embedded attachments
+            using (mailMsg)
             {
-                // Save the message as HTML with embedded resources.
                 HtmlSaveOptions htmlOptions = new HtmlSaveOptions
                 {
                     ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
                 };
-                message.Save(outputHtmlPath, htmlOptions);
-
-                // Extract attachments to the designated folder.
-                foreach (Attachment attachment in message.Attachments)
-                {
-                    string attachmentName = string.IsNullOrEmpty(attachment.Name) ? "attachment" : attachment.Name;
-                    string safeName = GetSafeFileName(attachmentName);
-                    string attachmentPath = Path.Combine(attachmentsDir, safeName);
-
-                    using (FileStream fs = new FileStream(attachmentPath, FileMode.Create, FileAccess.Write))
-                    {
-                        attachment.ContentStream.CopyTo(fs);
-                    }
-                }
+                mailMsg.Save(outputHtmlPath, htmlOptions);
             }
+
+            Console.WriteLine($"MSG file successfully exported to HTML: {outputHtmlPath}");
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
-    }
-
-    // Helper to sanitize file names.
-    static string GetSafeFileName(string fileName)
-    {
-        foreach (char c in Path.GetInvalidFileNameChars())
-        {
-            fileName = fileName.Replace(c, '_');
-        }
-        return fileName;
     }
 }
