@@ -1,66 +1,55 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Tools.Search;
 
-class Program
+namespace ExchangeAqsSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection details – replace with real values when running against a live server.
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard: avoid making real network calls when placeholders are used.
-            if (serviceUrl.Contains("example.com"))
+            try
             {
-                Console.Error.WriteLine("Placeholder Exchange service URL detected. Skipping execution.");
-                return;
-            }
+                // Define EWS connection parameters
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Create the EWS client.
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
-            {
-                try
+                // Skip external calls when placeholder credentials are used
+                if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    // Build an Advanced Query Syntax (AQS) query:
-                    //   - Messages received on or after 1 Jan 2023 (InternalDate >= startDate)
-                    //   - Subject contains the word "Report"
-                    DateTime startDate = new DateTime(2023, 1, 1);
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.InternalDate.Since(startDate);
-                    builder.Subject.Contains("Report");
-                    MailQuery query = builder.GetQuery();
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
 
-                    // Retrieve messages from the Inbox that match the query.
-                    ExchangeMessageInfoCollection messages = client.ListMessages(
-                        client.MailboxInfo.InboxUri,
-                        query);
+                // Create the EWS client (implements IDisposable)
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    // Build an Advanced Query Syntax (AQS) query
+                    // Example: messages from john@example.com with "Report" in the subject
+                    var query = new ExchangeAdvancedSyntaxMailQuery(
+                        "('From' Contains 'john@example.com' AND 'Subject' Contains 'Report')");
 
-                    // Output basic information for each matching message.
+                    // Retrieve messages from the Inbox that match the query
+                    ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", query);
+
+                    // Output basic information about each matching message
                     foreach (ExchangeMessageInfo info in messages)
                     {
                         Console.WriteLine($"Subject: {info.Subject}");
-                        Console.WriteLine($"Internal Date: {info.InternalDate}");
+                        Console.WriteLine($"From: {info.From}");
+                        Console.WriteLine($"Received: {info.InternalDate}");
                         Console.WriteLine(new string('-', 40));
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during message retrieval: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Log any unexpected errors without crashing the application
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
