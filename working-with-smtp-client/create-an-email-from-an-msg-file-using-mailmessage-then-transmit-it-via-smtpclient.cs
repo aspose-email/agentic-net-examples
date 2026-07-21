@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 
 class Program
@@ -9,20 +11,21 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            // Path to the source MSG file
+            const string msgPath = "input.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing
+            // Verify the MSG file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -31,70 +34,39 @@ class Program
                     return;
                 }
 
+                Console.Error.WriteLine($"Error: MSG file not found at '{msgPath}'.");
+                return;
+            }
+
+            // Load the MSG file as a MapiMessage
+            MapiMessage mapMsg = MapiMessage.Load(msgPath);
+
+            // Convert the MapiMessage to a MailMessage for sending
+            MailMessage mailMessage = mapMsg.ToMailMessage(new MailConversionOptions());
+
+            // SMTP server configuration (replace with real values)
+            const string smtpHost = "smtp.example.com";
+            const int smtpPort = 587;
+            const string smtpUser = "username@example.com";
+            const string smtpPassword = "password";
+
+            // Send the email using SmtpClient
+            using (SmtpClient smtpClient = new SmtpClient())
+            {
+                smtpClient.Host = smtpHost;
+                smtpClient.Port = smtpPort;
+                smtpClient.SecurityOptions = SecurityOptions.Auto;
+                smtpClient.Username = smtpUser;
+                smtpClient.Password = smtpPassword;
+
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage())
-                    {
-                        placeholder.From = new MailAddress("sender@example.com");
-                        placeholder.To.Add(new MailAddress("recipient@example.com"));
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Body = "This is a placeholder message.";
-                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                    }
+                    smtpClient.Send(mailMessage);
+                    Console.WriteLine("Email sent successfully.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the MSG file into a MailMessage instance
-            MailMessage message;
-            try
-            {
-                message = MailMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
-            }
-
-            // SMTP client configuration (placeholder values)
-            string host = "smtp.example.com";
-            int port = 587;
-            string username = "username";
-            string password = "password";
-
-            // Guard against placeholder credentials/host
-            if (host.Contains("example.com") || username == "username" || password == "password")
-            {
-                Console.Error.WriteLine("Placeholder SMTP configuration detected. Skipping send operation.");
-                if (message != null)
-                {
-                    message.Dispose();
-                }
-                return;
-            }
-
-            // Send the email using SmtpClient
-            try
-            {
-                using (SmtpClient client = new SmtpClient(host, port, username, password))
-                {
-                    client.Send(message);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to send email: {ex.Message}");
-            }
-            finally
-            {
-                if (message != null)
-                {
-                    message.Dispose();
+                    Console.Error.WriteLine($"Error sending email: {ex.Message}");
                 }
             }
         }
