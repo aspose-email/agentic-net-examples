@@ -1,54 +1,47 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
 
-class Program
+namespace ExchangeEmailSender
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials – in real scenarios replace with actual values.
-            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Detect placeholder credentials and skip actual network call.
-            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping email send operation.");
-                return;
-            }
+                // Define Exchange server connection parameters
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Initialize the Exchange client.
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
-            {
-                try
+                // Skip external calls when placeholder credentials are used
+                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    // Create a simple email message.
-                    using (MailMessage message = new MailMessage())
-                    {
-                        message.From = "sender@example.com";
-                        message.To.Add("recipient@example.com");
-                        message.Subject = "Test Email via Exchange";
-                        message.Body = "This is a test email sent using Aspose.Email ExchangeClient.";
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
 
-                        // Send the message.
-                        client.Send(message);
+                // Create the mail message
+                using (MailMessage mailMessage = new MailMessage())
+                {
+                    mailMessage.From = new MailAddress("sender@example.com");
+                    mailMessage.To.Add(new MailAddress("recipient@example.com"));
+                    mailMessage.Subject = "Test Email via Exchange";
+                    mailMessage.Body = "This is a test email sent using Aspose.Email ExchangeClient.";
+
+                    // Send the message using ExchangeClient
+                    using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+                    {
+                        client.Send(mailMessage);
                         Console.WriteLine("Email sent successfully.");
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error while sending email: {ex.Message}");
-                    return;
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
