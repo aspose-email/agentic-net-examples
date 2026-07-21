@@ -2,16 +2,17 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Words;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string inputMsgPath = "sample.msg";
+            // Input MSG file path
+            string inputMsgPath = "input.msg";
 
+            // Verify input file exists
             if (!File.Exists(inputMsgPath))
             {
                 try
@@ -31,52 +32,35 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {inputMsgPath}");
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Directory.GetCurrentDirectory();
-            if (!Directory.Exists(outputDirectory))
+            // Load the MSG file using MapiMessage
+            MapiMessage mapMsg = MapiMessage.Load(inputMsgPath);
+
+            // Convert to MailMessage with default conversion options
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            using (MailMessage mailMessage = mapMsg.ToMailMessage(conversionOptions))
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
-            {
-                // ---------- Save as EML ----------
-                string emlPath = Path.Combine(outputDirectory, "output.eml");
-                using (MailMessage mail = msg.ToMailMessage(new MailConversionOptions()))
+                // Ensure output directory exists
+                string outputDir = "output";
+                if (!Directory.Exists(outputDir))
                 {
-                    mail.Save(emlPath, SaveOptions.DefaultEml);
+                    Directory.CreateDirectory(outputDir);
                 }
 
-                // ---------- Convert to PDF and DOCX via MHTML ----------
-                string mhtmlPath = Path.Combine(outputDirectory, "temp.mhtml");
-                msg.Save(mhtmlPath, SaveOptions.DefaultMhtml);
+                // Save as PDF
+                string pdfPath = Path.Combine(outputDir, "converted.pdf");
+                mailMessage.Save(pdfPath);
 
-                Document doc = new Document(mhtmlPath);
-            {
-                    string pdfPath = Path.Combine(outputDirectory, "output.pdf");
-                    doc.Save(pdfPath, SaveFormat.Pdf);
+                // Save as DOCX
+                string docxPath = Path.Combine(outputDir, "converted.docx");
+                mailMessage.Save(docxPath);
 
-                    string docxPath = Path.Combine(outputDirectory, "output.docx");
-                    doc.Save(docxPath, SaveFormat.Docx);
-                }
-
-                // Clean up temporary MHTML file
-                try
-                {
-                    if (File.Exists(mhtmlPath))
-                    {
-                        File.Delete(mhtmlPath);
-                    }
-                }
-                catch (Exception cleanupEx)
-                {
-                    Console.Error.WriteLine($"Warning: Could not delete temporary file – {cleanupEx.Message}");
-                }
+                // Save as EML (preserving original format)
+                string emlPath = Path.Combine(outputDir, "converted.eml");
+                mailMessage.Save(emlPath);
             }
         }
         catch (Exception ex)
