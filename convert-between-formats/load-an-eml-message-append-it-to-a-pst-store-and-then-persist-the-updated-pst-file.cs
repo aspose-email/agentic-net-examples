@@ -1,8 +1,8 @@
+using Aspose.Email;
+using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,12 +10,12 @@ class Program
     {
         try
         {
-            // Paths to the source EML file and the target PST file
-            string emlFilePath = "sample.eml";
-            string pstFilePath = "output.pst";
+            // Define file paths
+            string emlPath = "source.eml";
+            string pstPath = "output.pst";
 
-            // Verify that the EML file exists
-            if (!File.Exists(emlFilePath))
+            // Verify source EML exists
+            if (!File.Exists(emlPath))
             {
                 try
                 {
@@ -25,7 +25,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(emlFilePath, SaveOptions.DefaultEml);
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -34,49 +34,107 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"EML file not found: {emlFilePath}");
+                try
+                {
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"EML file not found: {emlPath}");
                 return;
             }
 
-            // Ensure the PST file exists; create a new one if it does not
-            if (!File.Exists(pstFilePath))
+            // Ensure directory for PST exists
+            string pstDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
                 try
                 {
-                    PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
+                    Directory.CreateDirectory(pstDirectory);
                 }
-                catch (Exception createEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create PST file: {createEx.Message}");
+                    Console.Error.WriteLine($"Failed to create PST directory: {ex.Message}");
                     return;
                 }
             }
 
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+            // Load or create PST storage
+            PersonalStorage pstStorage;
+            if (File.Exists(pstPath))
+            {
+                try
+                {
+                    pstStorage = PersonalStorage.FromFile(pstPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to load PST file: {ex.Message}");
+                    return;
+                }
+            }
+            else
+            {
+                try
+                {
+                    pstStorage = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Use PST within a using block to ensure proper disposal
+            using (pstStorage)
             {
                 // Load the EML message
-                using (MailMessage mailMessage = MailMessage.Load(emlFilePath))
+                MailMessage mailMessage;
+                try
                 {
-                    // Convert the MailMessage to a MapiMessage
-                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
-                    {
-                        // Get the Inbox folder (creates it if missing)
-                        FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-
-                        // Append the message to the Inbox folder
-                        inboxFolder.AddMessage(mapiMessage);
-                    }
+                    mailMessage = MailMessage.Load(emlPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to load EML message: {ex.Message}");
+                    return;
                 }
 
-                // Changes are saved when the PersonalStorage object is disposed
-                // Optionally, you can explicitly save:
-                // pst.SaveAs(pstFilePath, FileFormat.Pst);
+                // Get (or create) the Inbox folder in the PST
+                FolderInfo inboxFolder;
+                try
+                {
+                    inboxFolder = pstStorage.GetPredefinedFolder(StandardIpmFolder.Inbox);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to get Inbox folder: {ex.Message}");
+                    return;
+                }
+
+                // Append the message to the folder
+                try
+                {
+                    inboxFolder.AddMessage(MapiMessage.FromMailMessage(mailMessage));
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to add message to PST: {ex.Message}");
+                    return;
+                }
+
+                // No explicit SaveAs needed; disposing the storage persists changes.
             }
+
+            Console.WriteLine("EML message successfully appended to PST.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
