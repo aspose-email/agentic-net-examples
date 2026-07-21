@@ -3,58 +3,70 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
+// Author: Example code for loading a MSG file (e.g., exported from IBM Notes) into memory.
+
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgPath = "notes_message.msg";
+            // Path to the MSG file.
+            string msgPath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing
+            // Verify the file exists before attempting to load.
             if (!File.Exists(msgPath))
             {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
-                        "Placeholder Body",
-                        "sender@example.com",
-                        "receiver@example.com"))
+                        "Placeholder body."))
                     {
                         placeholder.Save(msgPath);
                     }
-                    Console.WriteLine($"Placeholder MSG file created at {msgPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file into a MapiMessage object
-            MapiMessage notesMessage;
-            try
-            {
-                notesMessage = MapiMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Process the loaded message
-            using (notesMessage)
+            // Load the MSG file into a MapiMessage instance.
+            MapiMessage msg = MapiMessage.Load(msgPath);
+
+            // Example processing: display basic properties.
+            Console.WriteLine($"Subject: {msg.Subject}");
+            Console.WriteLine($"From: {msg.SenderName}");
+            Console.WriteLine($"Body: {msg.Body}");
+
+            // Iterate through attachments, if any.
+            foreach (MapiAttachment attachment in msg.Attachments)
             {
-                Console.WriteLine($"Subject: {notesMessage.Subject}");
-                Console.WriteLine($"Body: {notesMessage.Body}");
+                Console.WriteLine($"Attachment: {attachment.FileName}");
+
+                // Save each attachment to the same directory as the MSG file.
+                string attachmentPath = Path.Combine(Path.GetDirectoryName(msgPath) ?? string.Empty, attachment.FileName);
+                try
+                {
+                    attachment.Save(attachmentPath);
+                    Console.WriteLine($"Saved attachment to {attachmentPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
