@@ -1,8 +1,8 @@
-using Aspose.Email.Tools.Search;
-using Aspose.Email;
 using System;
-using Aspose.Email.Clients.Exchange.Dav;
-using Aspose.Email.Clients.Exchange;
+using System.IO;
+using Aspose.Email;
+using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -10,51 +10,50 @@ class Program
     {
         try
         {
-            // Placeholder connection settings
-            string serverUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            const string mboxPath = "storage.mbox";
+            const string recipient = "recipient@example.com";
+            const string outputDir = "output";
 
-            // Guard against executing with placeholder credentials
-            if (serverUri.Contains("example.com") || username.Contains("example.com"))
+            // Verify the MBOX file exists before attempting to read it.
+            if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // Create and connect the Exchange client
-            try
+            // Ensure the output directory exists.
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
+
+            // Create the MBOX reader.
+            using var mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
+
+            // Build a query that selects messages where the 'To' field contains the specified recipient.
+            var mailQuery = new MailQuery($"('To' Contains '{recipient}')");
+
+            // Enumerate matching messages using default EML load options.
+            foreach (MailMessage message in mbox.EnumerateMessages(new EmlLoadOptions(), mailQuery))
             {
-                using (ExchangeClient client = new ExchangeClient(serverUri, username, password))
+                try
                 {
-                    // Define the recipient to filter messages for
-                    string recipient = "alice@example.com";
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine($"From: {message.From}");
+                    Console.WriteLine($"To: {message.To}");
 
-                    // Build a query that selects messages addressed to the specified recipient
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.To.Contains(recipient);
-                    MailQuery query = builder.GetQuery();
+                    // Create a safe file name from the subject.
+                    string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "Untitled" : message.Subject;
+                    foreach (char c in Path.GetInvalidFileNameChars())
+                        safeSubject = safeSubject.Replace(c, '_');
 
-                    // Retrieve messages from the Inbox that match the query (recursive = false)
-                    ExchangeMessageInfoCollection messages = client.ListMessages(
-                        client.MailboxInfo.InboxUri,
-                        query,
-                        false);
+                    string emlPath = Path.Combine(outputDir, $"{safeSubject}.eml");
 
-                    // Process the filtered messages
-                    foreach (ExchangeMessageInfo info in messages)
-                    {
-                        Console.WriteLine($"Subject: {info.Subject}");
-                        Console.WriteLine($"From: {info.From}");
-                        Console.WriteLine($"To: {info.To}");
-                        Console.WriteLine();
-                    }
+                    // Save the message as an .eml file.
+                    message.Save(emlPath);
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Exchange client error: {ex.Message}");
-                return;
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to process a message: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
