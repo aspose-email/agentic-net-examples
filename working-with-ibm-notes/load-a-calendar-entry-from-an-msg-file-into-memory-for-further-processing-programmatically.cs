@@ -3,56 +3,83 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace CalendarLoader
 {
-    static void Main()
+    // Author: Generated example for loading a calendar entry from an MSG file.
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "calendar.msg";
-
-            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(msgPath))
+            try
             {
-                using (MapiMessage placeholder = new MapiMessage(
-                    "organizer@example.com",
-                    "attendee@example.com",
-                    "Meeting",
-                    "This is a meeting."))
+                // Define the path to the MSG file containing the calendar entry.
+                string msgPath = "calendar.msg";
+
+                // Verify that the file exists before attempting to load it.
+                if (!File.Exists(msgPath))
                 {
-                    // Mark the message as a calendar item.
-                    placeholder.MessageClass = "IPM.Appointment";
-                    placeholder.Save(msgPath);
+                try
+                {
+                    MapiCalendar placeholderCalendar = new MapiCalendar(
+                        "Placeholder Location",
+                        "Placeholder Summary",
+                        "Placeholder Description",
+                        DateTime.Now,
+                        DateTime.Now.AddHours(1));
+                    if (string.IsNullOrEmpty(placeholderCalendar.Subject))
+                    {
+                        placeholderCalendar.Subject = "Placeholder Summary";
+                    }
+                    if (string.IsNullOrEmpty(placeholderCalendar.Body))
+                    {
+                        placeholderCalendar.Body = "Placeholder Description";
+                    }
+                    placeholderCalendar.Save(msgPath, MapiCalendarSaveOptions.DefaultMsg);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
                 }
 
-                Console.WriteLine($"Placeholder MSG file created at {msgPath}");
-            }
+                    Console.Error.WriteLine($"Input file not found: {msgPath}");
+                    return;
+                }
 
-            // Load the MSG file.
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
-            {
+                // Load the MSG file as a MapiMessage.
+                MapiMessage msg;
+                try
+                {
+                    msg = MapiMessage.Load(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                    return;
+                }
+
+                // Check whether the loaded message contains a calendar item.
                 if (msg.SupportedType == MapiItemType.Calendar)
                 {
-                    // Convert the MAPI message to a MapiCalendar object.
+                    // Convert the MapiMessage to a MapiCalendar object.
                     MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
 
-                    // Access calendar properties.
+                    // Display basic calendar information.
                     Console.WriteLine($"Subject: {calendar.Subject}");
+                    Console.WriteLine($"Start Date: {calendar.StartDate}");
+                    Console.WriteLine($"End Date: {calendar.EndDate}");
                     Console.WriteLine($"Location: {calendar.Location}");
-                    Console.WriteLine($"Start: {calendar.StartDate}");
-                    Console.WriteLine($"End: {calendar.EndDate}");
-                    // Use Body for the calendar description.
-                    Console.WriteLine($"Body: {calendar.Body}");
                 }
                 else
                 {
-                    Console.WriteLine("The MSG file does not contain a calendar item.");
+                    Console.WriteLine("The loaded MSG file does not contain a calendar entry.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Catch any unexpected exceptions and report them.
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
