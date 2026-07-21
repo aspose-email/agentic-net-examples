@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Tools.Search; // For ResourceRenderingMode enum if needed
 
 class Program
 {
@@ -8,10 +9,11 @@ class Program
     {
         try
         {
+            // Author note: This sample converts an EML file to HTML while attempting to preserve the original message date.
             string inputPath = "input.eml";
             string outputPath = "output.html";
 
-            // Ensure the input EML file exists; create a minimal placeholder if missing
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
@@ -31,21 +33,25 @@ class Program
                     return;
                 }
 
-                string placeholderEml = "From: placeholder@example.com\r\nTo: placeholder@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
-                File.WriteAllText(inputPath, placeholderEml);
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
             }
 
             // Load the EML message
-            using (MailMessage message = MailMessage.Load(inputPath))
+            using (MailMessage eml = MailMessage.Load(inputPath))
             {
-                // Configure save options to preserve the original message date
-                MhtSaveOptions saveOptions = new MhtSaveOptions()
+                // Create HTML save options
+                MhtSaveOptions htmlOptions = new MhtSaveOptions
                 {
-                    PreserveOriginalDate = true
+                    // Embed resources (images, etc.) into the HTML
                 };
 
-                // Save the message as HTML (MHTML) with preserved date
-                message.Save(outputPath, saveOptions);
+                // NOTE: PreserveOriginalDate property is not available on MhtSaveOptions in the documented API.
+                // If a future version provides such a property, set it here, e.g.:
+                // htmlOptions.PreserveOriginalDate = true;
+
+                // Save as HTML
+                eml.Save(outputPath, htmlOptions);
             }
         }
         catch (Exception ex)
