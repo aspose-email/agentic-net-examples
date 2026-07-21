@@ -9,10 +9,8 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
-            string outputDir = "Attachments";
+            const string msgPath = "sample.msg";
 
-            // Verify input MSG file exists
             if (!File.Exists(msgPath))
             {
                 try
@@ -32,42 +30,23 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
                 return;
             }
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDir))
-                Directory.CreateDirectory(outputDir);
-
-            // Load the MSG file
             using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
                 foreach (MapiAttachment attachment in msg.Attachments)
                 {
-                    // Retrieve attachment bytes via BinaryData
-                    byte[] data = attachment.BinaryData;
-                    if (data == null || data.Length == 0)
-                        continue;
+                    Console.WriteLine($"Attachment Name: {attachment.FileName}");
 
-                    // Determine a safe file name
-                    string fileName = !string.IsNullOrEmpty(attachment.LongFileName)
-                        ? attachment.LongFileName
-                        : attachment.FileName;
-
-                    foreach (char invalid in Path.GetInvalidFileNameChars())
-                        fileName = fileName.Replace(invalid, '_');
-
-                    string outPath = Path.Combine(outputDir, fileName);
-
-                    try
+                    using (MemoryStream memory = new MemoryStream())
                     {
-                        File.WriteAllBytes(outPath, data);
-                        Console.WriteLine($"Saved attachment: {outPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save attachment '{fileName}': {ex.Message}");
+                        // Save attachment content to the memory stream
+                        attachment.Save(memory);
+                        byte[] attachmentData = memory.ToArray();
+                        Console.WriteLine($"Attachment Size: {attachmentData.Length} bytes");
+                        // attachmentData now holds the raw bytes of the attachment
                     }
                 }
             }
