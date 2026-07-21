@@ -1,46 +1,57 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailPstTransfer
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string pstPath = "sample.pst";
+            const string pstPath = "sample.pst";
 
-            // Ensure the PST file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(pstPath))
+            // Ensure the PST file exists; create a minimal placeholder if missing.
+            try
             {
-                using (PersonalStorage pstCreate = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                if (!File.Exists(pstPath))
                 {
-                    // Create default folders (Inbox and Sent Items) for demonstration.
-                    pstCreate.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
-                    pstCreate.CreatePredefinedFolder("Sent Items", StandardIpmFolder.SentItems);
-                }
-                Console.WriteLine($"Created placeholder PST at {pstPath}");
-            }
-
-            // Open the existing PST file.
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Retrieve source and destination folders.
-                FolderInfo sourceFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                FolderInfo destinationFolder = pst.GetPredefinedFolder(StandardIpmFolder.SentItems);
-
-                // Move each message from the source folder to the destination folder.
-                foreach (MessageInfo messageInfo in sourceFolder.EnumerateMessages())
-                {
-                    pst.MoveItem(messageInfo, destinationFolder);
-                    Console.WriteLine($"Moved message: {messageInfo.Subject}");
+                    // Create a new PST file with Unicode format.
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
+                return;
+            }
+
+            // Open the PST and transfer messages between folders.
+            try
+            {
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    // Get source (Inbox) and destination (Deleted Items) predefined folders.
+                    FolderInfo sourceFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
+                    FolderInfo destinationFolder = pst.GetPredefinedFolder(StandardIpmFolder.DeletedItems);
+
+                    // Enumerate all messages in the source folder.
+                    foreach (MessageInfo messageInfo in sourceFolder.EnumerateMessages())
+                    {
+                        // Move each message to the destination folder.
+                        pst.MoveItem(messageInfo, destinationFolder);
+                    }
+
+                    Console.WriteLine($"Moved messages from '{sourceFolder.DisplayName}' to '{destinationFolder.DisplayName}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
+                return;
+            }
         }
     }
 }
