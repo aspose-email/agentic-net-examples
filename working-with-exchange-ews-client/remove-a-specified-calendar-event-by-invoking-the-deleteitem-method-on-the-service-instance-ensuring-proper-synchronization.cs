@@ -7,48 +7,34 @@ class Program
 {
     static void Main()
     {
+        // Placeholder credentials – replace with real values for actual execution
+        string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+        string username = "username";
+        string password = "password";
+
+        // Guard: skip network call when placeholders are detected
+        if (username == "username" || password == "password")
+        {
+            Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
+            return;
+        }
+
+        // URI of the calendar item to be removed (replace with actual item URI)
+        string itemUri = "https://example.com/EWS/Exchange.asmx/Calendar/ItemId";
+
         try
         {
-            // Placeholder connection details
-            string serviceUrl = "https://ews.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Skip real network calls when placeholders are used
-            if (serviceUrl.Contains("example.com") || username == "username")
+            // Create and dispose the EWS client safely
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
-                return;
-            }
-
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
-            {
-                try
-                {
-                    // URI of the calendar item to delete (replace with actual item URI)
-                    string itemUri = "https://ews.example.com/EWS/Exchange.asmx/Calendar/ItemId";
-
-                    // Use default deletion options (moves item to Deleted Items)
-                    DeletionOptions options = CalendarDeletionOptions.Default;
-
-                    // Delete the calendar event
-                    client.DeleteItem(itemUri, options);
-                    Console.WriteLine("Calendar event deleted successfully.");
-
-                    // Optional: synchronize the calendar folder after deletion
-                    string calendarFolderUri = client.CurrentCalendarFolderUri;
-                    client.SyncFolder(calendarFolderUri);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during deletion: {ex.Message}");
-                }
+                // Delete the calendar item permanently
+                client.DeleteItem(itemUri, DeletionOptions.DeletePermanently);
+                Console.WriteLine("Calendar item deleted successfully.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Error deleting calendar item: {ex.Message}");
         }
     }
 }
