@@ -1,76 +1,50 @@
+using Aspose.Email;
 using System;
 using System.IO;
 using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define source PST files
-            string[] sourcePstPaths = new string[] { "source1.pst", "source2.pst", "source3.pst" };
-            // Define output PST file
-            string outputPstPath = "combined.pst";
+            // Author note: This example merges multiple PST files into a single PST archive,
+            // preserving the original folder hierarchy and all messages.
 
-            // Verify that each source PST file exists
+            // Define source PST file paths.
+            string[] sourcePstPaths = new string[] { "source1.pst", "source2.pst" };
+            // Define the target merged PST file path.
+            string targetPstPath = "merged.pst";
+
+            // Ensure each source PST exists; create a minimal placeholder if missing.
             foreach (string srcPath in sourcePstPaths)
             {
                 if (!File.Exists(srcPath))
                 {
-                    Console.Error.WriteLine($"Error: Source PST file not found – {srcPath}");
-                    return;
+                    // Create an empty PST with Unicode format.
+                    using (PersonalStorage.Create(srcPath, FileFormatVersion.Unicode)) { }
+                    Console.WriteLine($"Created placeholder source PST: {srcPath}");
                 }
             }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPstPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure the target PST exists; create it if missing.
+            if (!File.Exists(targetPstPath))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {outputDirectory}. {dirEx.Message}");
-                    return;
-                }
+                using (PersonalStorage.Create(targetPstPath, FileFormatVersion.Unicode)) { }
+                Console.WriteLine($"Created target PST: {targetPstPath}");
             }
 
-            // Delete existing output PST if it exists
-            if (File.Exists(outputPstPath))
+            // Open the target PST and merge the source PSTs.
+            using (PersonalStorage targetPst = PersonalStorage.FromFile(targetPstPath))
             {
-                try
-                {
-                    File.Delete(outputPstPath);
-                }
-                catch (Exception delEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to delete existing output PST – {outputPstPath}. {delEx.Message}");
-                    return;
-                }
+                targetPst.MergeWith(sourcePstPaths);
+                Console.WriteLine("PST files merged successfully.");
             }
-
-            // Create a new PST file and merge the source PSTs into it
-            using (PersonalStorage targetPst = PersonalStorage.Create(outputPstPath, FileFormatVersion.Unicode))
-            {
-                try
-                {
-                    targetPst.MergeWith(sourcePstPaths);
-                }
-                catch (Exception mergeEx)
-                {
-                    Console.Error.WriteLine($"Error: Merging PST files failed – {mergeEx.Message}");
-                    return;
-                }
-            }
-
-            Console.WriteLine($"Successfully merged PST files into {outputPstPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
