@@ -1,53 +1,48 @@
 using System;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailFolderMoveSample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main()
+        try
         {
-            try
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+
+            if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(clientSecret) || clientSecret.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(refreshToken) || refreshToken.StartsWith("YOUR_"))
             {
-                // Placeholder connection settings – real credentials should be provided by the user.
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
-                string password = "password";
+                Console.Error.WriteLine("Provide valid OAuth credentials.");
+                return;
+            }
 
-                // Guard against executing real network calls with placeholder data.
-                if (host.Contains("example.com"))
+            using (TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken))
+            {
+                OAuthNetworkCredential credentials = new OAuthNetworkCredential(tokenProvider);
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping actual server call.");
-                    return;
-                }
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                    Console.WriteLine("Mailbox URI: " + mailboxInfo.MailboxUri);
+                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                    Console.WriteLine("Drafts URI: " + mailboxInfo.DraftsUri);
 
-                // Create and connect the IMAP client.
-                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.SSLImplicit))
-                {
-                    try
+                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
+                    foreach (ExchangeMessageInfo message in messages)
                     {
-                        // Define source folder and the new parent folder.
-                        string sourceFolderName = "SourceFolder";
-                        string newParentFolderUri = "INBOX";
-
-                        // Attempt to move the folder.
-                        client.MoveFolder(newParentFolderUri, sourceFolderName);
-                        Console.WriteLine($"Folder '{sourceFolderName}' successfully moved under '{newParentFolderUri}'.");
-                    }
-                    catch (Exception moveEx)
-                    {
-                        // Handle errors such as insufficient permissions or non‑existent folders.
-                        Console.Error.WriteLine($"Failed to move folder: {moveEx.Message}");
+                        Console.WriteLine(message.Subject);
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                // Top‑level exception guard.
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
