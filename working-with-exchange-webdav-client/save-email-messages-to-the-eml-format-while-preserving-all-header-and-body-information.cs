@@ -2,20 +2,18 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-namespace SaveEmailToEml
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string sourcePath = "source.eml";
-                string destinationPath = "saved.eml";
+            const string sourcePath = "source.eml";
+            const string targetPath = "target.eml";
 
-                // Ensure source file exists, create placeholder if missing
-                if (!File.Exists(sourcePath))
-                {
+            // Ensure the source file exists; create a minimal placeholder if missing.
+            if (!File.Exists(sourcePath))
+            {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -33,66 +31,72 @@ namespace SaveEmailToEml
                     return;
                 }
 
-                    try
-                    {
-                        string placeholder = "From: placeholder@example.com\r\nTo: recipient@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
-                        File.WriteAllText(sourcePath, placeholder);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to create placeholder source file: {ex.Message}");
-                        return;
-                    }
-                }
-
-                // Load the email message
-                MailMessage mailMessage;
                 try
                 {
-                    mailMessage = MailMessage.Load(sourcePath);
+                    string placeholder = "From: placeholder@example.com\r\nTo: placeholder@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
+                    File.WriteAllText(sourcePath, placeholder);
+                    Console.WriteLine($"Created placeholder source file at '{sourcePath}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to load email message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder source file: {ex.Message}");
                     return;
                 }
+            }
 
-                using (mailMessage)
+            // Load the email message.
+            MailMessage mailMessage;
+            try
+            {
+                mailMessage = MailMessage.Load(sourcePath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load email from '{sourcePath}': {ex.Message}");
+                return;
+            }
+
+            // Ensure the target directory exists.
+            try
+            {
+                string targetDir = Path.GetDirectoryName(Path.GetFullPath(targetPath));
+                if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
                 {
-                    // Prepare save options for EML format
-                    EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
-
-                    // Ensure destination directory exists
-                    string destDirectory = Path.GetDirectoryName(destinationPath);
-                    if (!string.IsNullOrEmpty(destDirectory) && !Directory.Exists(destDirectory))
-                    {
-                        try
-                        {
-                            Directory.CreateDirectory(destDirectory);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to create destination directory: {ex.Message}");
-                            return;
-                        }
-                    }
-
-                    // Save the message preserving all headers and body
-                    try
-                    {
-                        mailMessage.Save(destinationPath, emlSaveOptions);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save email message: {ex.Message}");
-                        return;
-                    }
+                    Directory.CreateDirectory(targetDir);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Failed to prepare target directory: {ex.Message}");
+                return;
             }
+
+            // Save the message as EML preserving embedded message format.
+            try
+            {
+                EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat)
+                {
+                    PreserveEmbeddedMessageFormat = true
+                };
+                mailMessage.Save(targetPath, emlSaveOptions);
+                Console.WriteLine($"Email saved successfully to '{targetPath}'.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save email to '{targetPath}': {ex.Message}");
+            }
+            finally
+            {
+                // Dispose the loaded message.
+                if (mailMessage != null)
+                {
+                    mailMessage.Dispose();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
