@@ -1,52 +1,50 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-public class Program
+class Program
 {
-    public static void Main()
+    static void Main()
     {
         try
         {
-            // Placeholder credentials – replace with real values when available
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
+            // OAuth credentials – replace with real values or retrieve from a secure source
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
             string defaultEmail = "user@example.com";
 
-            // Skip execution if placeholder credentials are detected
-            if (clientId == "clientId" || clientSecret == "clientSecret" || refreshToken == "refreshToken")
+            // Validate placeholder values
+            if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(clientSecret) || clientSecret.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(refreshToken) || refreshToken.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(defaultEmail) || defaultEmail.StartsWith("YOUR_"))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping Gmail client operations.");
-                return;
+                throw new InvalidOperationException("OAuth credentials contain placeholder values. Please replace them with actual credentials.");
             }
 
-            // Create Gmail client (IDisposable) and ensure it is disposed
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
-            {
-                // Define the calendar IDs that should be permanently deleted
-                string[] calendarIds = new string[] { "calendarId1", "calendarId2" };
+            // Create the Gmail client instance
+            using IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
 
-                foreach (string calendarId in calendarIds)
+            // IDs of the calendars that should be permanently removed
+            string[] calendarIds = new string[] { "calendarId1", "calendarId2" };
+
+            foreach (string calendarId in calendarIds)
+            {
+                try
                 {
-                    try
-                    {
-                        // Delete the specified calendar
-                        gmailClient.DeleteCalendar(calendarId);
-                        Console.WriteLine($"Deleted calendar with ID: {calendarId}");
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log any errors that occur while deleting a calendar
-                        Console.Error.WriteLine($"Failed to delete calendar {calendarId}: {ex.Message}");
-                    }
+                    // Delete the calendar
+                    gmailClient.DeleteCalendar(calendarId);
+                    Console.WriteLine($"Deleted calendar with ID: {calendarId}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error deleting calendar '{calendarId}': {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            // Top‑level exception handling
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
