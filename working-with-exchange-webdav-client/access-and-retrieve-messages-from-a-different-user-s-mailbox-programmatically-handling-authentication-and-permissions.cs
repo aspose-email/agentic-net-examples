@@ -1,67 +1,49 @@
+using Aspose.Email.Clients.Exchange;
 using System;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
-using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        // Exchange WebDAV service URL (e.g., https://mail.example.com/ews/exchange.asmx)
+        string serviceUrl = "https://exchange.example.com/ews/exchange.asmx";
+
+        // Credentials of an account that has permission to access other mailboxes
+        string adminUsername = "admin@example.com";
+        string adminPassword = "adminPassword";
+        string domain = "example.com";
+
+        // The mailbox of the user whose messages we want to read
+        string targetMailbox = "user@example.com";
+
+        try
         {
-            try
+            // Initialize the Exchange client with admin credentials
+            using (ExchangeClient client = new ExchangeClient(serviceUrl, adminUsername, adminPassword, domain))
             {
-                // Placeholder connection details – replace with real values.
-                string serverUrl = "https://exchange.example.com/ews/exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
+                // Retrieve mailbox information for the target user
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo(targetMailbox);
 
-                // Guard against executing with placeholder credentials.
-                if (serverUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+                // List messages in the target user's Inbox folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
+
+                // Iterate through each message and fetch its full content
+                foreach (ExchangeMessageInfo msgInfo in messages)
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                    return;
-                }
-
-                // Initialize the WebDAV Exchange client.
-                using (ExchangeClient client = new ExchangeClient(serverUrl, username, password))
-                {
-                    // The mailbox of the user whose messages we want to access.
-                    string otherUserMailbox = "otheruser@example.com";
-
-                    // Retrieve mailbox information for the target user.
-                    ExchangeMailboxInfo otherMailboxInfo;
-                    try
-                    {
-                        otherMailboxInfo = client.GetMailboxInfo(otherUserMailbox);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to obtain mailbox info for '{otherUserMailbox}': {ex.Message}");
-                        return;
-                    }
-
-                    // List messages in the target user's Inbox.
-                    try
-                    {
-                        var inboxMessages = client.ListMessages(otherMailboxInfo.InboxUri);
-                        foreach (var msgInfo in inboxMessages)
-                        {
-                            // Fetch each message to read its subject (or other properties).
-                            MailMessage message = client.FetchMessage(msgInfo.UniqueUri);
-                            Console.WriteLine($"Subject: {message.Subject}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error retrieving messages: {ex.Message}");
-                    }
+                    MailMessage message = client.FetchMessage(msgInfo.UniqueUri);
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine($"From: {message.From}");
+                    Console.WriteLine($"To: {string.Join(", ", message.To)}");
+                    Console.WriteLine(new string('-', 40));
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
