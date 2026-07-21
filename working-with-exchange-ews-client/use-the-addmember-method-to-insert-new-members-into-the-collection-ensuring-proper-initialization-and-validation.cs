@@ -1,57 +1,84 @@
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailDistributionListExample
 {
-    static void Main()
+    // Extension method to simplify adding members with validation
+    public static class MailAddressCollectionExtensions
     {
-        try
+        public static void AddMember(this MailAddressCollection collection, string email, string displayName = null)
         {
-            // Placeholder connection details – replace with real values when available.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
+            if (string.IsNullOrWhiteSpace(email))
+                throw new ArgumentException("Email address cannot be null or empty.", nameof(email));
 
-            // Skip execution when placeholder credentials are detected to avoid unwanted network calls.
-            if (mailboxUri.Contains("example.com") || username == "username")
+            // Basic validation – ensure the email contains '@'
+            if (!email.Contains("@"))
+                throw new ArgumentException("Invalid email address format.", nameof(email));
+
+            collection.Add(new MailAddress(email, displayName));
+        }
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            // ----- Configuration (replace with real values or set via environment variables) -----
+            string serviceUrl = Environment.GetEnvironmentVariable("EWS_SERVICE_URL") ?? "https://your-ews-server/EWS/Exchange.asmx";
+            string username   = Environment.GetEnvironmentVariable("EWS_USERNAME")   ?? "user@example.com";
+            string password   = Environment.GetEnvironmentVariable("EWS_PASSWORD")   ?? "your_password";
+
+            // Guard against placeholder credentials
+            if (serviceUrl.Contains("your") || username.Contains("your") || password.Contains("your"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping network operations.");
                 return;
             }
 
-            // Create the EWS client inside a using block to ensure proper disposal.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // ----- Create a distribution list and add members -----
+            ExchangeDistributionList distributionList = new ExchangeDistributionList
             {
-                try
+                DisplayName = "Sample Distribution List"
+            };
+
+            MailAddressCollection members = new MailAddressCollection();
+            try
+            {
+                // Use the AddMember extension to insert members with validation
+                members.AddMember("john.doe@example.com", "John Doe");
+                members.AddMember("jane.smith@example.com", "Jane Smith");
+            }
+            catch (ArgumentException ex)
+            {
+                Console.Error.WriteLine($"Member validation error: {ex.Message}");
+                return;
+            }
+
+            // ----- Connect to EWS and create the distribution list -----
+            try
+            {
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
-                    // Initialize a new distribution list.
-                    ExchangeDistributionList distributionList = new ExchangeDistributionList
-                    {
-                        DisplayName = "Sample Distribution List"
-                    };
+                    // Create the distribution list on the server; returns the new list Id
+                    string listId = client.CreateDistributionList(distributionList, members);
+                    Console.WriteLine($"Distribution list created with Id: {listId}");
 
-                    // Prepare the collection of members to add.
-                    MailAddressCollection members = new MailAddressCollection();
-                    members.Add(new MailAddress("alice@example.com"));
-                    members.Add(new MailAddress("bob@example.com"));
+                    // Example of adding additional members later using AddToDistributionList
+                    MailAddressCollection additionalMembers = new MailAddressCollection();
+                    additionalMembers.AddMember("alice.wonderland@example.com", "Alice Wonderland");
 
-                    // Add members to the distribution list on the server.
-                    client.AddToDistributionList(distributionList, members);
-
-                    Console.WriteLine("Members added to the distribution list successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error while adding members: {ex.Message}");
+                    client.AddToDistributionList(distributionList, additionalMembers);
+                    Console.WriteLine("Additional member added successfully.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
+                // Do not rethrow; exit gracefully
+            }
         }
     }
 }
