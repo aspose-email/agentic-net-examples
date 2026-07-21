@@ -1,50 +1,49 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace EwsConfigurationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // ----- Manual EWS endpoint configuration -----
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Guard against placeholder credentials to avoid real network calls during CI
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS connection.");
-                return;
-            }
+                // ----- Manual EWS endpoint configuration -----
+                string ewsUrl = "https://mail.example.com/EWS/Exchange.asmx"; // replace with actual EWS URL
+                string username = "user@example.com";                       // replace with actual username
+                string password = "password";                               // replace with actual password
 
-            // Create the EWS client using the manual endpoint
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                // Guard: skip external calls when placeholders are present
+                if (ewsUrl.Contains("example.com") ||
+                    username.Contains("example.com") ||
+                    string.Equals(password, "password", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("Placeholder credentials detected. Skipping EWS call.");
+                    return;
+                }
+
+                // Create network credentials
+                NetworkCredential credentials = new NetworkCredential(username, password);
+
+                // Initialize the EWS client (IEWSClient) with the manual URL
+                using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, credentials))
+                {
+                    // Retrieve mailbox information
+                    var mailboxInfo = client.GetMailboxInfo();
+
+                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                    Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                    Console.WriteLine("Calendar URI: " + mailboxInfo.CalendarUri);
+                }
+            }
+            catch (Exception ex)
             {
-                // Example operation: retrieve mailbox information
-                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
-                Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
+                // Global exception handling – write error and exit gracefully
+                Console.Error.WriteLine("Error: " + ex.Message);
             }
-
-            // ----- Automatic discovery (optional) -----
-            // To enable autodiscover at runtime, use the AutodiscoverService (if available) to obtain the EWS URL,
-            // then create the client with the discovered URL as shown above.
-            // Example (commented out to avoid compilation issues if AutodiscoverService is not referenced):
-            // string email = "user@example.com";
-            // var autodiscover = new Aspose.Email.Clients.Exchange.Autodiscover.AutodiscoverService(email, new NetworkCredential(username, password));
-            // string discoveredUrl = autodiscover.GetEwsUrl();
-            // using (IEWSClient client = EWSClient.GetEWSClient(discoveredUrl, username, password))
-            // {
-            //     // Perform operations with the autodiscovered client
-            // }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
