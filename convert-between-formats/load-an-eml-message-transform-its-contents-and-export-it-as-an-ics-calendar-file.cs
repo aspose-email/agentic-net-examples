@@ -9,76 +9,62 @@ class Program
     {
         try
         {
+            // Input EML file path
             string inputPath = "input.eml";
+            // Output iCalendar file path
             string outputPath = "output.ics";
 
-            // Ensure the input EML file exists; create a minimal placeholder if it does not.
+            // Verify that the input file exists
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    string placeholderContent = "From: sender@example.com\r\nTo: recipient@example.com\r\nSubject: Sample\r\n\r\nThis is a sample email.";
-                    File.WriteAllText(inputPath, placeholderContent);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the EML message.
-            MailMessage mailMessage;
-            try
-            {
-                mailMessage = MailMessage.Load(inputPath, new EmlLoadOptions());
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load EML message: {ex.Message}");
+                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
                 return;
             }
 
-            using (mailMessage)
+            // Load the EML message
+            using (MailMessage email = MailMessage.Load(inputPath))
             {
-                // Build an appointment using data from the email.
-                MailAddress organizer = new MailAddress("organizer@example.com");
-                MailAddressCollection attendees = new MailAddressCollection();
-                attendees.Add(new MailAddress("attendee1@example.com"));
-                attendees.Add(new MailAddress("attendee2@example.com"));
-
-                DateTime start = DateTime.Now.AddDays(1).AddHours(9);
-                DateTime end = start.AddHours(1);
+                // Transform the email into a calendar appointment
+                DateTime start = email.Date;
+                DateTime end = start.AddHours(1); // default duration 1 hour
+                MailAddress organizer = email.From;
+                MailAddressCollection attendees = new MailAddressCollection(); // no attendees in this example
 
                 Appointment appointment = new Appointment(
-                    mailMessage.Subject ?? "No Subject",
-                    start,
-                    end,
-                    organizer,
-                    attendees);
-                appointment.Description = mailMessage.Body ?? string.Empty;
+                    location: "Location not specified",
+                    startDate: start,
+                    endDate: end,
+                    organizer: organizer,
+                    attendees: attendees);
 
-                // Save the appointment as an iCalendar (ICS) file.
-                try
-                {
-                    string outputDirectory = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
+                appointment.Summary = email.Subject ?? "No Subject";
+                appointment.Description = email.Body ?? string.Empty;
 
-                    appointment.Save(outputPath, AppointmentSaveFormat.Ics);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save ICS file: {ex.Message}");
-                    return;
-                }
+                // Export the appointment as an iCalendar (ICS) file
+                appointment.Save(outputPath);
+                Console.WriteLine($"Appointment saved to '{outputPath}'.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
