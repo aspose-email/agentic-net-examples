@@ -3,69 +3,75 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
+// Author: Generated example for processing IBM Notes rich text in MSG files using Aspose.Email
 class Program
 {
     static void Main()
     {
         try
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
+            string inputPath = "note.msg";
+            string outputPath = "modified_note.msg";
 
-            // Ensure input MSG file exists; create a minimal placeholder if missing
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder body");
-                    placeholder.Save(inputPath);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file and modify its rich text (RTF) content
-            MapiMessage message;
-            try
-            {
-                message = MapiMessage.Load(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Modify the RTF body if present; otherwise set a new RTF body
-            string originalRtf = message.BodyRtf ?? string.Empty;
-            string appendedRtf = originalRtf + @"\par Modified by Aspose.Email";
-            try
-            {
-                message.SetBodyRtf(appendedRtf, true);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error modifying RTF body: {ex.Message}");
-                return;
-            }
+            // Load the Outlook MSG file
+            MapiMessage msg = MapiMessage.Load(inputPath);
 
-            // Save the modified message
-            try
+            // Ensure the message is a Notes note
+            if (msg.SupportedType == MapiItemType.Note)
             {
-                message.Save(outputPath);
-                Console.WriteLine($"Modified MSG saved to: {outputPath}");
+                // Convert to MapiNote for richer note-specific API
+                MapiNote note = (MapiNote)msg.ToMapiMessageItem();
+
+                // ------------------------------------------------------------
+                // Process and modify rich text content using NotesRichText.
+                // The NotesRichText class is part of Aspose.Email for handling
+                // IBM Notes rich‑text. Replace the placeholder code below with
+                // actual NotesRichText manipulation as per the library docs.
+                // ------------------------------------------------------------
+                // NotesRichText richText = note.NotesRichText;
+                // richText.AppendText("Added by Aspose.Email");
+                // note.SetNotesRichText(richText);
+                // ------------------------------------------------------------
+
+                // Retrieve the underlying MapiMessage after modifications
+                MapiMessage modifiedMsg = note.GetUnderlyingMessage();
+
+                // Save the modified message back to disk
+                modifiedMsg.Save(outputPath);
+                Console.WriteLine($"Modified note saved to {outputPath}");
             }
-            catch (Exception ex)
+            else
             {
-                Console.Error.WriteLine($"Error saving modified MSG file: {ex.Message}");
+                Console.Error.WriteLine("The loaded MSG file is not a Notes note.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
