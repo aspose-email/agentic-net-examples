@@ -1,48 +1,49 @@
 using System;
-using System.Collections.Generic;
+using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
+// Author: Example code for deleting POP3 messages based on unique IDs
 class Program
 {
     static void Main()
     {
         try
         {
-            // POP3 server connection details (placeholders)
+            // POP3 server connection parameters
             string host = "pop3.example.com";
             int port = 110;
             string username = "user@example.com";
             string password = "password";
 
-            // Skip execution if placeholder credentials are detected
-            if (host.Contains("example") || username.Contains("example") || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder POP3 credentials detected. Skipping server operations.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // List of unique identifiers of messages to delete
-            List<string> idsToDelete = new List<string> { "UID12345", "UID67890" };
+            // Unique identifiers of messages to be removed
+            string[] idsToDelete = new string[] { "12345", "67890" };
 
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Initialize POP3 client (auto security negotiation)
+            using (Pop3Client pop3Client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
             {
                 try
                 {
-                    // Validate connection credentials
-                    client.ValidateCredentials();
-
-                    // Delete each specified message by its unique ID
-                    foreach (string uid in idsToDelete)
+                    // Mark each specified message for deletion
+                    foreach (string uniqueId in idsToDelete)
                     {
-                        client.DeleteMessage(uid);
+                        pop3Client.DeleteMessage(uniqueId);
                     }
 
-                    // Commit deletions to finalize removal on the server
+                    // Commit deletions; server will remove marked messages on session termination
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
+                    return;
                 }
             }
         }
