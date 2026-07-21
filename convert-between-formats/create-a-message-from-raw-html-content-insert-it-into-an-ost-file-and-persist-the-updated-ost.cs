@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -10,70 +10,54 @@ class Program
     {
         try
         {
-            // Define paths
-            string ostPath = "sample.ost";
-            string outputDirectory = Path.GetDirectoryName(Path.GetFullPath(ostPath));
-            string htmlContent = "<html><body><h1>Hello from Aspose.Email</h1></body></html>";
+            const string ostPath = "sample.ost";
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create directory '{outputDirectory}': {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure OST file exists; create a new one if missing
+            // Ensure the OST file exists; create a minimal one if missing
             if (!File.Exists(ostPath))
             {
-                try
+                // Create a new OST (treated as PST with Unicode format)
+                using (PersonalStorage pst = PersonalStorage.Create(ostPath, FileFormatVersion.Unicode))
                 {
-                    // Create a new Unicode OST/PST file
-                    PersonalStorage.Create(ostPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create OST file '{ostPath}': {ex.Message}");
-                    return;
+                    pst.RootFolder.AddSubFolder("Inbox");
                 }
             }
 
-            // Open the OST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(ostPath))
+            // Build a simple HTML email
+            MailMessage mail = new MailMessage
             {
-                // Create a new MAPI message from raw HTML
-                MapiMessage mapiMessage = new MapiMessage();
-                mapiMessage.Subject = "Sample HTML Message";
-                // Set HTML body content
-                mapiMessage.SetBodyContent(htmlContent, BodyContentType.Html);
-                // Optionally set sender information
-                mapiMessage.SenderName = "Aspose Sample";
-                mapiMessage.SenderEmailAddress = "sample@aspose.com";
+                From = new MailAddress("sender@example.com"),
+                Subject = "Sample HTML Message",
+                IsBodyHtml = true,
+                HtmlBody = "<html><body><h1>Hello from Aspose.Email</h1></body></html>"
+            };
+            mail.To.Add(new MailAddress("recipient@example.com"));
 
-                // Add the message to the root folder
+            // Convert MailMessage to MapiMessage (required for OST insertion)
+            MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail);
+
+            // Open the existing OST for modification
+            using (PersonalStorage ost = PersonalStorage.FromFile(ostPath))
+            {
+                FolderInfo inbox;
                 try
                 {
-                    string entryId = pst.RootFolder.AddMessage(mapiMessage);
-                    Console.WriteLine($"Message added with EntryId: {entryId}");
+                    inbox = ost.RootFolder.GetSubFolder("Inbox");
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Console.Error.WriteLine($"Failed to add message to OST: {ex.Message}");
-                    return;
+                    inbox = ost.RootFolder.AddSubFolder("Inbox");
                 }
+
+                // Add the message to the folder
+                inbox.AddMessage(mapiMessage);
+                // Changes are persisted when the storage is disposed
             }
 
-            Console.WriteLine("OST file updated successfully.");
+            Console.WriteLine("Message added to OST successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
