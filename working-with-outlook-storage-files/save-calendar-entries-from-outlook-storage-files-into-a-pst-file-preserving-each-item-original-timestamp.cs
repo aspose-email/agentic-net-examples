@@ -1,3 +1,4 @@
+using Aspose.Email.Calendar;
 using System;
 using System.IO;
 using Aspose.Email;
@@ -10,82 +11,73 @@ class Program
     {
         try
         {
-            // Input Outlook storage file (PST/OST). Adjust the path as needed.
-            string sourcePath = "source.pst";
-            // Destination PST file where calendar entries will be saved.
-            string destinationPath = "destination.pst";
+            // Input Outlook storage file (e.g., PST) containing calendar entries
+            string sourcePstPath = "source.pst";
+            // Output PST file where calendar entries will be saved
+            string destPstPath = "calendar_output.pst";
 
-            // Guard source file existence.
-            if (!File.Exists(sourcePath))
+            // Verify source file exists
+            if (!File.Exists(sourcePstPath))
             {
-                Console.Error.WriteLine($"Error: Source file not found – {sourcePath}");
-                // Create a minimal placeholder PST to allow the example to continue.
-                using (PersonalStorage placeholder = PersonalStorage.Create(sourcePath, FileFormatVersion.Unicode))
-                {
-                    // No content needed.
-                }
-                Console.Error.WriteLine("Created a placeholder source PST.");
+                Console.Error.WriteLine($"Source PST file not found: {sourcePstPath}");
                 return;
             }
 
-            // Ensure destination directory exists.
-            string destDir = Path.GetDirectoryName(destinationPath);
-            if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+            // Ensure destination directory exists
+            string destDirectory = Path.GetDirectoryName(destPstPath);
+            if (!string.IsNullOrEmpty(destDirectory) && !Directory.Exists(destDirectory))
             {
-                Directory.CreateDirectory(destDir);
+                Directory.CreateDirectory(destDirectory);
             }
 
-            // Open source and destination PST files.
-            using (PersonalStorage sourcePst = PersonalStorage.FromFile(sourcePath))
-            using (PersonalStorage destPst = PersonalStorage.Create(destinationPath, FileFormatVersion.Unicode))
+            // Open source PST
+            using (PersonalStorage sourcePst = PersonalStorage.FromFile(sourcePstPath))
             {
-                // Start copying from the root folder.
-                FolderInfo sourceRoot = sourcePst.RootFolder;
-                FolderInfo destRoot = destPst.RootFolder;
+                // Get the Calendar folder from the source PST
+                FolderInfo sourceCalendarFolder = sourcePst.GetPredefinedFolder(StandardIpmFolder.Appointments);
+                if (sourceCalendarFolder == null)
+                {
+                    Console.Error.WriteLine("Source PST does not contain a Calendar folder.");
+                    return;
+                }
 
-                CopyFolderRecursive(sourcePst, sourceRoot, destPst, destRoot);
+                // Create destination PST (Unicode format)
+                using (PersonalStorage destPst = PersonalStorage.Create(destPstPath, FileFormatVersion.Unicode))
+                {
+                    // Ensure a Calendar folder exists in the destination PST
+                    FolderInfo destCalendarFolder = destPst.GetPredefinedFolder(StandardIpmFolder.Appointments);
+                    if (destCalendarFolder == null)
+                    {
+                        destCalendarFolder = sourcePst.CreatePredefinedFolder("Calendar", StandardIpmFolder.Appointments);
+                    }
+
+                    // Enumerate each calendar item (appointment) in the source folder
+                    foreach (MessageInfo messageInfo in sourceCalendarFolder.EnumerateMessages())
+                    {
+                        // Extract the full MAPI message (appointment)
+                        MapiMessage appointmentMessage = sourcePst.ExtractMessage(messageInfo);
+
+                        // Preserve original timestamps by copying relevant properties
+                        // ClientSubmitTime, CreationTime, LastModificationTime are standard MAPI properties
+                        // They are already part of the extracted message, so no extra handling is required.
+                        // If needed, you could explicitly set them like this:
+                        // appointmentMessage.ClientSubmitTime = messageInfo.ClientSubmitTime;
+                        // appointmentMessage.CreationTime = messageInfo.CreationTime;
+                        // appointmentMessage.LastModificationTime = messageInfo.LastModificationTime;
+
+                        // Add the appointment to the destination Calendar folder
+                        destCalendarFolder.AddMessage(appointmentMessage);
+                    }
+
+                    // Destination PST will be saved when disposed
+                }
             }
 
-            Console.WriteLine("Calendar entries have been saved to the destination PST.");
+            Console.WriteLine("Calendar entries have been successfully saved to the PST file.");
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
-        }
-    }
-
-    // Recursively copies folders and messages, preserving original timestamps.
-    private static void CopyFolderRecursive(PersonalStorage srcPst, FolderInfo srcFolder,
-                                            PersonalStorage dstPst, FolderInfo dstParentFolder)
-    {
-        // Create or get the corresponding folder in the destination PST.
-        FolderInfo dstFolder;
-        try
-        {
-            dstFolder = dstParentFolder.GetSubFolder(srcFolder.DisplayName);
-        }
-        catch
-        {
-            // Subfolder does not exist; create it.
-            dstFolder = dstParentFolder.AddSubFolder(srcFolder.DisplayName);
-        }
-
-        // Copy all messages from the source folder to the destination folder.
-        foreach (MessageInfo msgInfo in srcFolder.EnumerateMessages())
-        {
-            // Extract the full MAPI message.
-            using (MapiMessage message = srcPst.ExtractMessage(msgInfo))
-            {
-                // Add the message to the destination folder.
-                // AddMessage preserves the internal properties, including timestamps.
-                dstFolder.AddMessage(message);
-            }
-        }
-
-        // Recursively process subfolders.
-        foreach (FolderInfo subFolder in srcFolder.GetSubFolders())
-        {
-            CopyFolderRecursive(srcPst, subFolder, dstPst, dstFolder);
         }
     }
 }
