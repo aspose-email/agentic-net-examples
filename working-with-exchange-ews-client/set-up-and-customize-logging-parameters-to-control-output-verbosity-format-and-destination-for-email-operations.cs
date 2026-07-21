@@ -1,75 +1,84 @@
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange.WebService;
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailLoggingExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection information
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
+            // Input parameters
+            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
+            string username = "placeholder_user";
+            string password = "placeholder_pass";
+            string logFilePath = "ews_log.txt";
 
-            // Skip real network calls when placeholders are used
-            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
+            // Prepare log file (ensure directory exists)
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                string logDir = Path.GetDirectoryName(Path.GetFullPath(logFilePath));
+                if (!Directory.Exists(logDir))
+                {
+                    Directory.CreateDirectory(logDir);
+                }
+                // Start a fresh log for this run
+                File.WriteAllText(logFilePath, $"Log started at {DateTime.Now}{Environment.NewLine}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare log file: {ex.Message}");
                 return;
             }
 
-            // Create the EWS client inside a using block to ensure disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            // Detect placeholder credentials and skip network operations if present
+            bool credentialsArePlaceholder = string.IsNullOrWhiteSpace(username) ||
+                                             string.IsNullOrWhiteSpace(password) ||
+                                             username.Contains("placeholder", StringComparison.OrdinalIgnoreCase) ||
+                                             password.Contains("placeholder", StringComparison.OrdinalIgnoreCase);
+
+            if (credentialsArePlaceholder)
             {
-                // Access logging properties via the EmailClient base class
-                EmailClient emailClient = client as EmailClient;
-                if (emailClient == null)
-                {
-                    Console.Error.WriteLine("Unable to access logging properties on the client.");
-                    return;
-                }
+                Console.WriteLine("Placeholder credentials detected. Skipping EWS client operations.");
+                return;
+            }
 
-                // Enable logging
-                emailClient.EnableLogger = true;
-
-                // Prepare log directory and file
-                string logDirectory = Path.Combine(Environment.CurrentDirectory, "Logs");
+            // Helper local function for logging
+            void Log(string message)
+            {
                 try
                 {
-                    if (!Directory.Exists(logDirectory))
-                    {
-                        Directory.CreateDirectory(logDirectory);
-                    }
+                    File.AppendAllText(logFilePath, $"{DateTime.Now:O} - {message}{Environment.NewLine}");
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Console.Error.WriteLine($"Failed to create log directory: {ex.Message}");
-                    return;
-                }
-
-                // Set log file name and include date in the file name
-                emailClient.LogFileName = Path.Combine(logDirectory, "ews_log.txt");
-                emailClient.UseDateInLogFileName = true;
-
-                // Example operation: retrieve mailbox information
-                try
-                {
-                    var mailboxInfo = client.MailboxInfo;
-                    Console.WriteLine($"Mailbox URI: {mailboxInfo.MailboxUri}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Operation failed: {ex.Message}");
+                    // Swallow logging errors to avoid breaking main flow
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+
+            // Create and configure the EWS client
+            try
+            {
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    Log("EWS client created successfully.");
+
+                    // Example operation: retrieve mailbox information
+                    var mailboxInfo = client.GetMailboxInfo();
+                    Log($"Inbox URI: {mailboxInfo.InboxUri}");
+                    Log($"Sent Items URI: {mailboxInfo.SentItemsUri}");
+
+                    Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
+                    Console.WriteLine($"Sent Items URI: {mailboxInfo.SentItemsUri}");
+                }
+            }
+            catch (Exception ex)
+            {
+                string errMsg = $"EWS operation failed: {ex.Message}";
+                Console.Error.WriteLine(errMsg);
+                Log(errMsg);
+            }
         }
     }
 }
