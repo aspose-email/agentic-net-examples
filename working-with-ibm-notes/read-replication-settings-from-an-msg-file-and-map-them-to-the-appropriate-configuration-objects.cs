@@ -1,102 +1,93 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailReplicationExample
 {
-    static void Main()
+    // Simple configuration class to hold replication settings
+    public class ReplicationConfig
     {
-        try
-        {
-            string msgPath = "input.msg";
+        public string Server { get; set; }
+        public string Database { get; set; }
+        public string Folder { get; set; }
+        // Add other relevant properties as needed
+    }
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            // Path to the MSG file containing replication settings
+            string msgPath = "sample.msg";
+
+            // Guard input file existence
             if (!File.Exists(msgPath))
             {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
-                        "Placeholder body",
-                        OutlookMessageFormat.Unicode))
+                        "Placeholder body."))
                     {
                         placeholder.Save(msgPath);
                     }
-                    Console.WriteLine($"Created placeholder MSG file at '{msgPath}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file.
-            MapiMessage msg;
-            try
-            {
-                msg = MapiMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            using (msg)
+            try
             {
-                // Read replication settings.
-                long replicationMsgSize = 0;
-                int replicationMessagePriority = 0;
-                bool hasSize = false;
-                bool hasPriority = false;
+                // Load the MSG file
+                MapiMessage msg = MapiMessage.Load(msgPath);
 
-                // ReplicationMsgSize property (long)
-                try
-                {
-                    hasSize = msg.TryGetPropertyLong(KnownPropertyList.ReplicationMsgSize.Tag, ref replicationMsgSize);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error reading ReplicationMsgSize: {ex.Message}");
-                }
+                // -----------------------------------------------------------------
+                // Retrieve replication settings.
+                // NOTE: The exact property exposing replication settings may vary
+                // between Aspose.Email versions. Replace the placeholder below with
+                // the appropriate API when available.
+                // -----------------------------------------------------------------
+                // var replicationSettings = msg.ReplicationSettings; // <-- placeholder
 
-                // ReplicationMessagePriority property (int)
-                try
+                // Example of iterating custom MAPI properties (if replication info is stored there)
+                foreach (var entry in msg.GetCustomProperties())
                 {
-                    hasPriority = msg.TryGetPropertyInt32(KnownPropertyList.ReplicationMessagePriority.Tag, ref replicationMessagePriority);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error reading ReplicationMessagePriority: {ex.Message}");
+                    // Each entry is a MapiProperty; its Value holds the property data.
+                    var property = entry.Value;
+                    // Process property as needed (e.g., look for known replication tags)
+                    // Console.WriteLine($"Property Tag: {property.Tag}, Value: {property.Value}");
                 }
 
-                // Map to a simple configuration object.
-                ReplicationConfig config = new ReplicationConfig
-                {
-                    MessageSize = hasSize ? replicationMsgSize : (long?)null,
-                    MessagePriority = hasPriority ? replicationMessagePriority : (int?)null
-                };
+                // Map retrieved settings to a configuration object
+                ReplicationConfig config = new ReplicationConfig();
 
-                // Output the configuration.
-                Console.WriteLine("Replication Settings:");
-                Console.WriteLine($"  Message Size: {(config.MessageSize.HasValue ? config.MessageSize.Value.ToString() : "Not available")}");
-                Console.WriteLine($"  Message Priority: {(config.MessagePriority.HasValue ? config.MessagePriority.Value.ToString() : "Not available")}");
+                // -----------------------------------------------------------------
+                // Populate the config object with actual values from replicationSettings.
+                // The following assignments are placeholders; replace with real mapping.
+                // -----------------------------------------------------------------
+                // config.Server   = replicationSettings.Server;
+                // config.Database = replicationSettings.Database;
+                // config.Folder   = replicationSettings.Folder;
+
+                // Output the mapped configuration (placeholder values will be null)
+                Console.WriteLine("Replication Configuration:");
+                Console.WriteLine($"Server   : {config.Server ?? "N/A"}");
+                Console.WriteLine($"Database : {config.Database ?? "N/A"}");
+                Console.WriteLine($"Folder   : {config.Folder ?? "N/A"}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
             }
         }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
     }
-}
-
-// Simple configuration holder for replication settings.
-class ReplicationConfig
-{
-    public long? MessageSize { get; set; }
-    public int? MessagePriority { get; set; }
 }
