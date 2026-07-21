@@ -1,20 +1,18 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
     static void Main()
     {
-        try
-        {
-            string inputPath = "calendar.msg";
-            string outputPath = "calendar.ics";
+        const string inputMsgPath = "input.msg";
+        const string outputIcsPath = "output.ics";
 
-            // Verify input file exists
-            if (!File.Exists(inputPath))
-            {
+        // Verify input file exists
+        if (!File.Exists(inputMsgPath))
+        {
                 try
                 {
                     MapiCalendar placeholderCalendar = new MapiCalendar(
@@ -23,7 +21,15 @@ class Program
                         "Placeholder Description",
                         DateTime.Now,
                         DateTime.Now.AddHours(1));
-                    placeholderCalendar.Save(inputPath, new MapiCalendarMsgSaveOptions());
+                    if (string.IsNullOrEmpty(placeholderCalendar.Subject))
+                    {
+                        placeholderCalendar.Subject = "Placeholder Summary";
+                    }
+                    if (string.IsNullOrEmpty(placeholderCalendar.Body))
+                    {
+                        placeholderCalendar.Body = "Placeholder Description";
+                    }
+                    placeholderCalendar.Save(inputMsgPath, MapiCalendarSaveOptions.DefaultMsg);
                 }
                 catch (Exception ex)
                 {
@@ -31,57 +37,48 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
+            Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+            return;
+        }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+        // Ensure output directory exists
+        string outputDir = Path.GetDirectoryName(outputIcsPath);
+        if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+        {
+            try
             {
                 Directory.CreateDirectory(outputDir);
             }
-
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
+            catch (Exception ex)
             {
-                // Check if the MSG is a calendar item
-                if (msg.SupportedType != MapiItemType.Calendar)
-                {
-                    // Create a minimal placeholder ICS file
-                    try
-                    {
-                        File.WriteAllText(outputPath, "BEGIN:VCALENDAR\r\nEND:VCALENDAR");
-                        Console.WriteLine("Input MSG is not a calendar. Placeholder ICS created.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to write placeholder ICS: {ex.Message}");
-                    }
-                    return;
-                }
+                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                return;
+            }
+        }
 
+        try
+        {
+            // Load the MSG file
+            MapiMessage msg = MapiMessage.Load(inputMsgPath);
+
+            // Check if the MSG contains a calendar item
+            if (msg.SupportedType == MapiItemType.Calendar)
+            {
                 // Convert to MapiCalendar
                 MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
 
-                // Ensure required properties are set
-                if (string.IsNullOrEmpty(calendar.Subject))
-                {
-                    calendar.Subject = "Untitled Event";
-                }
-                if (string.IsNullOrEmpty(calendar.Body))
-                {
-                    calendar.Body = "No description.";
-                }
-
-                // Export to ICS
-                calendar.Save(outputPath);
-                Console.WriteLine($"Calendar exported to {outputPath}");
+                // Save as iCalendar (ICS) preserving event data
+                calendar.Save(outputIcsPath);
+                Console.WriteLine($"Successfully exported to {outputIcsPath}");
+            }
+            else
+            {
+                Console.Error.WriteLine("The provided MSG file does not contain a calendar item.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }
