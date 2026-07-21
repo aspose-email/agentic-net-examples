@@ -1,56 +1,44 @@
 using System;
-using System.IO;
-using System.Text;
+using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string logFilePath = "log.txt";
+            // Define connection parameters
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Ensure the log file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(logFilePath))
-            {
-                try
-                {
-                    using (FileStream createStream = File.Create(logFilePath))
-                    {
-                        byte[] placeholder = Encoding.UTF8.GetBytes("Placeholder log content.");
-                        createStream.Write(placeholder, 0, placeholder.Length);
-                    }
-                }
-                catch (Exception createEx)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder log file: {createEx.Message}");
-                    return;
-                }
-            }
 
-            // Read and display the log file contents.
-            try
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                using (FileStream readStream = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (StreamReader reader = new StreamReader(readStream, Encoding.UTF8))
-                {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        Console.WriteLine(line);
-                    }
-                }
-            }
-            catch (Exception readEx)
-            {
-                Console.Error.WriteLine($"Failed to read log file: {readEx.Message}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
+            }
+
+            // Create and use the EWS client inside a using block to ensure proper disposal
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            {
+                // Retrieve mailbox information
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+
+                // Output some useful URIs
+                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                Console.WriteLine("Calendar URI: " + mailboxInfo.CalendarUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Log any unexpected errors without crashing the application
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
