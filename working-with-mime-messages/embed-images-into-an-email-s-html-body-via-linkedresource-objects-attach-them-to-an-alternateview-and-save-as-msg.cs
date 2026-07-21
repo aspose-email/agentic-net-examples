@@ -5,17 +5,18 @@ using Aspose.Email.Mime;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string imagePath = "1.jpg";
-            string outputPath = "EmbeddedImage_out.msg";
+            // Paths for the image to embed and the output MSG file
+            string imagePath = "logo.png";
+            string outputPath = "EmailWithImage.msg";
 
-            // Verify the image file exists
+            // Verify that the image file exists
             if (!File.Exists(imagePath))
             {
-                Console.Error.WriteLine($"Image file '{imagePath}' not found.");
+                Console.Error.WriteLine($"Image file not found: {imagePath}");
                 return;
             }
 
@@ -26,39 +27,41 @@ class Program
                 Directory.CreateDirectory(outputDir);
             }
 
-            using (MailMessage eml = new MailMessage())
+            // Create the email message
+            using (MailMessage message = new MailMessage())
             {
-                eml.From = "AndrewIrwin@from.com";
-                eml.To = "SusanMarc@to.com";
-                eml.Subject = "This is an email";
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Email with Embedded Image";
 
-                // Plain text view
-                AlternateView plainView = AlternateView.CreateAlternateViewFromString(
-                    "This is my plain text content", null, "text/plain");
+                // HTML body referencing the embedded image via Content-ID
+                string htmlBody = "<html><body><h1>Hello</h1><img src=\"cid:logoImage\" alt=\"Logo\"/></body></html>";
 
-                // HTML view with CID reference
-                string htmlContent = "Here is an embedded image. <img src=cid:barcode>";
-                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
-                    htmlContent, null, "text/html");
+                // Create an AlternateView for the HTML content
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(htmlBody, null, "text/html");
 
-                // Linked resource for the image
-                LinkedResource barcode = new LinkedResource(imagePath, Aspose.Email.Mime.MediaTypeNames.Image.Jpeg)
+                // Create a LinkedResource for the image file
+                using (LinkedResource logoResource = new LinkedResource(imagePath))
                 {
-                    ContentId = "barcode"
-                };
+                    logoResource.ContentId = "logoImage";
+                    logoResource.TransferEncoding = TransferEncoding.Base64;
 
-                // Attach resources and views
-                eml.LinkedResources.Add(barcode);
-                eml.AlternateViews.Add(plainView);
-                eml.AlternateViews.Add(htmlView);
+                    // Attach the linked resource to the HTML view
+                    htmlView.LinkedResources.Add(logoResource);
 
-                // Save as MSG
-                eml.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                    // Add the HTML view to the message
+                    message.AlternateViews.Add(htmlView);
+
+                    // Save the message as a MSG file
+                    message.Save(outputPath);
+                }
             }
+
+            Console.WriteLine($"Message saved to {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
