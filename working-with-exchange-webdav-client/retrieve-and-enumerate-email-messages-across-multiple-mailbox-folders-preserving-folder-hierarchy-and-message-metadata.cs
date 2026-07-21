@@ -1,73 +1,87 @@
-using Aspose.Email.Storage.Pst;
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
+    // Author: Aspose.Email example – extracts all messages from a PST preserving folder hierarchy.
     static void Main()
     {
         try
         {
-            // Placeholder connection details – real values should be provided for actual execution
-            string serverUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            const string pstPath = "storage.pst";
+            const string outputRoot = "ExtractedMessages";
 
-            // Skip execution when placeholder credentials are detected
-            if (serverUrl.Contains("example.com") || username.Contains("example.com"))
+            // Guard input PST file existence.
+            if (!File.Exists(pstPath))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
                 return;
             }
 
-            // Create and use the Exchange WebDav client
-            using (ExchangeClient client = new ExchangeClient(serverUrl, username, password))
+            // Ensure the output directory exists.
+            if (!Directory.Exists(outputRoot))
+                Directory.CreateDirectory(outputRoot);
+
+            // Open the PST file.
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                try
-                {
-                    // Start enumeration from the root folder (Inbox) – you can change this to any known folder URI
-                    string rootFolderUri = client.MailboxInfo.InboxUri;
-                    EnumerateFolder(client, rootFolderUri, string.Empty);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during mailbox enumeration: {ex.Message}");
-                }
+                Console.WriteLine($"Total items count: {pst.Store.GetTotalItemsCount()}");
+
+                // Process the root folder and all subfolders recursively.
+                ProcessFolder(pst, pst.RootFolder, outputRoot);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 
-    // Recursively enumerates folders and their messages, preserving hierarchy via indentation
-    private static void EnumerateFolder(ExchangeClient client, string folderUri, string indent)
+    // Recursively extracts messages from a folder, preserving hierarchy.
+    private static void ProcessFolder(PersonalStorage pst, FolderInfo folder, string outputBasePath)
     {
-        // Retrieve folder information
-        ExchangeFolderInfo folderInfo = client.GetFolderInfo(folderUri);
+        // Create a subdirectory for the current folder.
+        string folderPath = Path.Combine(outputBasePath, SanitizePath(folder.DisplayName));
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
 
-        // Display folder name (fallback to URI if DisplayName is unavailable)
-        string folderName = !string.IsNullOrEmpty(folderInfo.DisplayName) ? folderInfo.DisplayName : folderInfo.Uri;
-        Console.WriteLine($"{indent}Folder: {folderName}");
+        Console.WriteLine($"Folder: {folder.DisplayName}");
+        Console.WriteLine($"Total items: {folder.ContentCount}");
+        Console.WriteLine($"Total unread items: {folder.ContentUnreadCount}");
 
-        // List messages in the current folder
-        ExchangeMessageInfoCollection messages = client.ListMessages(folderInfo.Uri);
-        foreach (ExchangeMessageInfo msgInfo in messages)
+        // Extract each message in the current folder.
+        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
         {
-            // Use InternalDate as per validation rule
-            Console.WriteLine($"{indent}  Subject: {msgInfo.Subject}");
-            Console.WriteLine($"{indent}  From: {msgInfo.From}");
-            Console.WriteLine($"{indent}  Date (Internal): {msgInfo.InternalDate}");
+            Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+            // Extract the full message object as MapiMessage.
+            MapiMessage mapiMsg = pst.ExtractMessage(messageInfo);
+
+            // Build a safe filename from the subject.
+            string safeSubject = string.IsNullOrWhiteSpace(messageInfo.Subject) ? "NoSubject" : SanitizePath(messageInfo.Subject);
+            string filePath = Path.Combine(folderPath, $"{safeSubject}.msg");
+
+            // Save the message.
+            mapiMsg.Save(filePath);
         }
 
-        // Recursively process subfolders
-        ExchangeFolderInfoCollection subFolders = client.ListSubFolders(folderInfo);
-        foreach (ExchangeFolderInfo subFolder in subFolders)
+        // Recurse into subfolders.
+        foreach (FolderInfo subFolder in folder.GetSubFolders())
         {
-            EnumerateFolder(client, subFolder.Uri, indent + "  ");
+            ProcessFolder(pst, subFolder, folderPath);
         }
+    }
+
+    // Removes characters that are invalid in file or directory names.
+    private static string SanitizePath(string name)
+    {
+        foreach (char c in Path.GetInvalidFileNameChars())
+            name = name.Replace(c, '_');
+        foreach (char c in Path.GetInvalidPathChars())
+            name = name.Replace(c, '_');
+        return name;
     }
 }
