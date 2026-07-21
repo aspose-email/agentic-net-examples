@@ -1,7 +1,9 @@
-using Aspose.Email.Clients;
 using System;
 using System.IO;
+using System.Linq;
 using Aspose.Email;
+using Aspose.Email.Mapi;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 
 class Program
@@ -10,20 +12,21 @@ class Program
     {
         try
         {
-            string templatePath = "template.msg";
+            // Path to the MSG template
+            const string msgPath = "template.msg";
 
-            // Ensure the MSG template exists; create a minimal placeholder if missing
-            if (!File.Exists(templatePath))
+            // Verify the MSG file exists
+            if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(templatePath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -32,70 +35,40 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    MailMessage placeholder = new MailMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder Body");
-                    placeholder.Save(templatePath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the template message
-            MailMessage templateMessage;
-            try
-            {
-                templateMessage = MailMessage.Load(templatePath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG template: {ex.Message}");
+                Console.Error.WriteLine($"MSG template not found at path: {msgPath}");
                 return;
             }
 
-            // Instantiate a new MailMessage and populate fields from the template
-            using (MailMessage message = new MailMessage())
+            // Load the MSG file as a MapiMessage
+            MapiMessage mapiMessage = MapiMessage.Load(msgPath);
+
+            // Convert MapiMessage to MailMessage
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
             {
-                message.From = templateMessage.From;
-                message.To = templateMessage.To;
-                message.Subject = templateMessage.Subject;
-                message.Body = templateMessage.Body;
-
-                // SMTP client configuration (placeholders)
-                string smtpHost = "smtp.example.com";
-                int smtpPort = 587;
-                string smtpUser = "username";
-                string smtpPass = "password";
-
-                // Guard against placeholder credentials/hosts
-                if (smtpHost.Contains("example.com") || string.IsNullOrWhiteSpace(smtpUser) || string.IsNullOrWhiteSpace(smtpPass))
+                // Prepare SMTP client
+                using (SmtpClient smtpClient = new SmtpClient())
                 {
-                    Console.Error.WriteLine("SMTP configuration contains placeholder values. Skipping send operation.");
-                    return;
-                }
-
-                // Send the message using SmtpClient
-                try
-                {
-                    using (SmtpClient client = new SmtpClient(smtpHost, smtpPort))
+                    try
                     {
-                        client.Username = smtpUser;
-                        client.Password = smtpPass;
-                        client.SecurityOptions = SecurityOptions.Auto;
-                        client.Send(message);
+                        // Configure SMTP server (replace with real values)
+                        smtpClient.Host = "smtp.example.com";
+                        smtpClient.Port = 587;
+                        smtpClient.SecurityOptions = SecurityOptions.Auto;
+                        smtpClient.Username = "user@example.com";
+                        smtpClient.Password = "password";
+
+                        // Build recipient list string
+                        string recipients = string.Join(";", mailMessage.To.Select(a => a.Address));
+
+                        // Send the email using the fields from the template
+                        smtpClient.Send(mailMessage.From.Address, recipients, mailMessage.Subject, mailMessage.Body);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to send email: {ex.Message}");
-                    return;
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"SMTP send failed: {ex.Message}");
+                        return;
+                    }
                 }
             }
         }
