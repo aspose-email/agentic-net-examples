@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -10,73 +10,69 @@ class Program
     {
         try
         {
-            string pstPath = "sample.pst";
-            string outputDir = "CalendarEvents";
+            string pstPath = "storage.pst";
+            string outputDirectory = "CalendarEvents";
 
-            // Ensure PST file exists; create a minimal placeholder if missing
-            if (!File.Exists(pstPath))
+            if (!File.Exists(pstPath) || new FileInfo(pstPath).Length == 0)
             {
-                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                if (File.Exists(pstPath))
+                {
+                    File.Delete(pstPath);
+                }
+                using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                {
+                }
             }
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
+            Directory.CreateDirectory(outputDirectory);
 
-            // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                ProcessFolder(pst, pst.RootFolder, outputDir);
+                FolderInfo calendarFolder = pst.GetPredefinedFolder(StandardIpmFolder.Appointments);
+                if (calendarFolder == null)
+                {
+                    Console.WriteLine("The PST file does not contain an appointments folder.");
+                    return;
+                }
+
+                foreach (MessageInfo messageInfo in calendarFolder.EnumerateMessages())
+                {
+                    using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
+                    {
+                        if (mapiMessage.SupportedType == MapiItemType.Calendar)
+                        {
+                            MapiCalendar calendar = (MapiCalendar)mapiMessage.ToMapiMessageItem();
+                            string title = string.IsNullOrWhiteSpace(calendar.Subject) ? "Untitled" : calendar.Subject;
+                            string fileName = MakeSafeFileName(title);
+                            string outputPath = Path.Combine(outputDirectory, $"{fileName}.ics");
+
+                            int duplicateIndex = 1;
+                            while (File.Exists(outputPath))
+                            {
+                                outputPath = Path.Combine(outputDirectory, $"{fileName}_{duplicateIndex}.ics");
+                                duplicateIndex++;
+                            }
+
+                            calendar.Save(outputPath, new MapiCalendarIcsSaveOptions());
+                            Console.WriteLine($"Saved calendar event: {outputPath}");
+                        }
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 
-    static void ProcessFolder(PersonalStorage pst, FolderInfo folder, string outputDir)
+    static string MakeSafeFileName(string value)
     {
-        // Enumerate messages in the current folder
-        foreach (MessageInfo msgInfo in folder.EnumerateMessages())
+        string safe = string.IsNullOrWhiteSpace(value) ? "Untitled" : value.Trim();
+        foreach (char invalidChar in Path.GetInvalidFileNameChars())
         {
-            try
-            {
-                using (MapiMessage msg = pst.ExtractMessage(msgInfo))
-                {
-                    // Check if the message is a calendar item
-                    if (msg.SupportedType == MapiItemType.Calendar)
-                    {
-                        MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem();
-
-                        // Prepare a safe filename based on the subject
-                        string safeSubject = string.IsNullOrWhiteSpace(calendar.Subject) ? "Untitled" : calendar.Subject;
-                        foreach (char c in Path.GetInvalidFileNameChars())
-                        {
-                            safeSubject = safeSubject.Replace(c, '_');
-                        }
-
-                        string icsPath = Path.Combine(outputDir, $"{safeSubject}_{Guid.NewGuid()}.ics");
-
-                        // Save the calendar entry as an .ics file
-                        calendar.Save(icsPath, new MapiCalendarIcsSaveOptions());
-
-                        Console.WriteLine($"Saved calendar event to {icsPath}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to process a message: {ex.Message}");
-            }
+            safe = safe.Replace(invalidChar, '_');
         }
-
-        // Recursively process subfolders
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            ProcessFolder(pst, subFolder, outputDir);
-        }
+        return safe;
     }
 }
