@@ -1,50 +1,53 @@
 using System;
-using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
 class Program
 {
-    static void Main()
+    static async Task Main()
     {
         try
         {
-            // Placeholder connection settings
-            string host = "pop3.example.com";
-            string username = "username";
+            string host = "pop.example.com";
+            int port = 110;
+            string username = "user@example.com";
             string password = "password";
 
-            // Skip real network calls when placeholders are used
-            if (host.Contains("example.com") || username == "username" || password == "password")
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
                 Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
                 return;
             }
 
-            // Create and configure the POP3 client
-            using (Pop3Client client = new Pop3Client(host, username, password))
+            IAsyncPop3Client pop3Client = await Pop3Client.CreateAsync(
+                host,
+                username,
+                null,
+                port,
+                SecurityOptions.Auto,
+                CancellationToken.None);
+
+            try
             {
-                // Register asynchronous‑style event handlers
-                client.BindIPEndPoint += remoteEndPoint => new IPEndPoint(IPAddress.Any, 0);
-                client.OnConnect += (sender, e) => Console.WriteLine("POP3 client connected.");
+                Pop3MessageInfoCollection messageInfos = await pop3Client.ListMessagesAsync();
 
-                // Attempt to validate credentials (wrapped in its own try/catch)
-                try
+                foreach (Pop3MessageInfo info in messageInfos)
                 {
-                    client.ValidateCredentials();
-                    Console.WriteLine("Credentials validated successfully.");
+                    MailMessage message = await pop3Client.FetchMessageAsync(info.SequenceNumber);
+                    Console.WriteLine($"Subject: {message.Subject}");
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error validating credentials: {ex.Message}");
-                    return;
-                }
-
-                // Additional POP3 operations could be placed here
+            }
+            finally
+            {
+                pop3Client.Dispose();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
