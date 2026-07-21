@@ -5,67 +5,51 @@ using Aspose.Email.Calendar;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define input HTML and output iCalendar file paths
+            // Input HTML file path
             string inputHtmlPath = "input.html";
-            string outputIcsPath = "output.ics";
 
-            // Ensure the input HTML file exists; create a minimal placeholder if missing
+            // Ensure the HTML file exists; create a minimal placeholder if missing
             if (!File.Exists(inputHtmlPath))
             {
-                try
-                {
-                    File.WriteAllText(inputHtmlPath, "<html><body>Sample Event</body></html>");
-                    Console.WriteLine($"Placeholder HTML created at {inputHtmlPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder HTML: {ex.Message}");
-                    return;
-                }
+                File.WriteAllText(inputHtmlPath, "<html><body>Sample Event</body></html>");
             }
 
-            // Read the HTML content
-            string htmlContent;
-            try
+            // Read HTML content
+            string htmlContent = File.ReadAllText(inputHtmlPath);
+
+            // Prepare appointment details
+            MailAddress organizer = new MailAddress("organizer@example.com");
+            MailAddressCollection attendees = new MailAddressCollection(); // no attendees for this example
+            DateTime startTime = DateTime.Now.AddHours(1);
+            DateTime endTime = startTime.AddHours(2);
+
+            // Create the appointment (location, start, end, organizer, attendees)
+            Appointment appointment = new Appointment("Location", startTime, endTime, organizer, attendees);
+            appointment.Summary = "Event generated from HTML";
+            appointment.Description = htmlContent; // embed HTML as description
+
+            // Output iCalendar (ICS) file path
+            string outputIcsPath = "output.ics";
+
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputIcsPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                htmlContent = File.ReadAllText(inputHtmlPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
-                return;
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create an appointment and populate it with the HTML description
-            Appointment appointment = new Appointment(
-                "Sample Event",
-                DateTime.Now.AddHours(1),
-                DateTime.Now.AddHours(2),
-                new MailAddress("organizer@example.com"),
-                new MailAddressCollection());
+            // Save the appointment as an iCalendar file
+            appointment.Save(outputIcsPath);
 
-            appointment.HtmlDescription = htmlContent;
-            appointment.Summary = "Sample Event from HTML";
-            appointment.Description = "Event generated from HTML content";
-
-            // Save the appointment as an iCalendar (ICS) file
-            try
-            {
-                appointment.Save(outputIcsPath);
-                Console.WriteLine($"iCalendar file saved to {outputIcsPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save iCalendar file: {ex.Message}");
-            }
+            Console.WriteLine("iCalendar file created at: " + Path.GetFullPath(outputIcsPath));
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
