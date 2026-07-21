@@ -10,37 +10,34 @@ class Program
     {
         try
         {
-            // Placeholder connection parameters
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Define connection parameters
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Guard against placeholder credentials to avoid real network calls during CI
-            if (mailboxUri.Contains("example") || username.Contains("example") || password.Contains("example"))
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange service connection.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client (Exchange service) inside a using block for proper disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Create the EWS client (implements IEWSClient)
+            using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                try
-                {
-                    // Example operation: list the number of messages in the Inbox folder
-                    string inboxUri = client.MailboxInfo.InboxUri;
-                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
-                    Console.WriteLine($"Inbox contains {messages.Count} messages.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during Exchange operation: {ex.Message}");
-                }
+                // Retrieve mailbox information
+                ExchangeMailboxInfo mailboxInfo = ewsClient.GetMailboxInfo();
+
+                // Output some useful URIs
+                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                Console.WriteLine("Calendar URI: " + mailboxInfo.CalendarUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
