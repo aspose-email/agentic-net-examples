@@ -1,8 +1,8 @@
 using System;
-using System.Net;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -10,44 +10,29 @@ class Program
     {
         try
         {
-            // Placeholder credentials – replace with real values for actual execution
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Author note: Example demonstrates filtering messages in an MBOX file by subject.
+            string mboxPath = "storage.mbox";
 
-            // Skip real network call when placeholders are detected
-            if (serviceUrl.Contains("example.com"))
+            // Verify that the MBOX file exists before attempting to read it.
+            if (!File.Exists(mboxPath))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            // Create the MBOX reader.
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                // Retrieve message infos from the Inbox folder
-                ExchangeMessageInfoCollection messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
+                // Define a query that selects messages whose subject contains the word "Invoice".
+                MailQuery subjectQuery = new MailQuery("Subject Contains 'Invoice'");
 
-                // Define the subject keyword to filter messages
-                string subjectKeyword = "Invoice";
-
-                foreach (ExchangeMessageInfo info in messageInfos)
+                // Enumerate only the messages that match the query.
+                foreach (MailMessage message in mbox.EnumerateMessages(subjectQuery))
                 {
-                    // Filter based on the Subject property (case‑insensitive)
-                    if (info.Subject != null && info.Subject.IndexOf(subjectKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        // Fetch the full message using the unique URI
-                        MailMessage fullMessage = client.FetchMessage(info.UniqueUri);
-
-                        Console.WriteLine($"Subject : {fullMessage.Subject}");
-                        Console.WriteLine($"From    : {fullMessage.From}");
-                        Console.WriteLine($"Received: {info.InternalDate}");
-                        Console.WriteLine(new string('-', 40));
-
-                        fullMessage.Dispose();
-                    }
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine($"From: {message.From}");
+                    Console.WriteLine($"To: {string.Join(", ", message.To)}");
+                    Console.WriteLine(new string('-', 40));
                 }
             }
         }
