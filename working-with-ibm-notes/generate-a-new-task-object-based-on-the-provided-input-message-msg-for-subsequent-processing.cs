@@ -1,25 +1,28 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
+// Author: Aspose.Email example - load a MSG file and extract its task information
 class Program
 {
     static void Main()
     {
-        try
-        {
-            string inputMsgPath = "input.msg";
-            string outputTaskPath = "task.msg";
+        // Path to the input MSG file containing a task
+        string inputPath = "task.msg";
 
-            // Ensure input MSG exists; create a minimal placeholder if missing
-            if (!File.Exists(inputMsgPath))
-            {
+        // Ensure the file exists before attempting to load it
+        if (!File.Exists(inputPath))
+        {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "sender@example.com", "recipient@example.com"))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath);
+                        placeholder.Save(inputPath);
                     }
                 }
                 catch (Exception ex)
@@ -27,51 +30,36 @@ class Program
                     Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the original message
-            MapiMessage originalMsg;
-            try
+            Console.Error.WriteLine($"Input file not found: {inputPath}");
+            return;
+        }
+
+        try
+        {
+            // Load the MSG file as a generic MAPI message
+            MapiMessage msg = MapiMessage.Load(inputPath);
+
+            // Verify that the message actually represents a task
+            if (msg.SupportedType == MapiItemType.Task)
             {
-                originalMsg = MapiMessage.Load(inputMsgPath);
+                // Convert the generic message to a strongly‑typed MapiTask
+                MapiTask task = (MapiTask)msg.ToMapiMessageItem();
+
+                // Example processing: output key task properties
+                Console.WriteLine($"Subject   : {task.Subject}");
+                Console.WriteLine($"StartDate : {task.StartDate}");
+                Console.WriteLine($"DueDate   : {task.DueDate}");
             }
-            catch (Exception ex)
+            else
             {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
-                return;
+                Console.Error.WriteLine("The loaded MSG file does not contain a task item.");
             }
-
-            // Create a new task message based on the original
-            using (MapiMessage taskMsg = new MapiMessage())
-            {
-                // Set task-specific properties
-                taskMsg.MessageClass = "IPM.Task";
-                taskMsg.Subject = $"Task: {originalMsg.Subject}";
-                taskMsg.Body = originalMsg.Body;
-
-                // Optionally copy categories if present
-                if (originalMsg.Categories != null && originalMsg.Categories.Length > 0)
-                {
-                    taskMsg.Categories = originalMsg.Categories;
-                }
-
-                // Save the task message
-                try
-                {
-                    taskMsg.Save(outputTaskPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving task MSG: {ex.Message}");
-                    return;
-                }
-            }
-
-            Console.WriteLine($"Task message created successfully at '{outputTaskPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Report any errors without throwing
+            Console.Error.WriteLine($"Error processing the MSG file: {ex.Message}");
         }
     }
 }
