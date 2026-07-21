@@ -4,39 +4,59 @@ using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
+// Author: Aspose.Email .NET example
+
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Placeholder credentials and EWS URL for the shared mailbox
-            string ewsUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+            // Connection parameters
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
+            string sharedMailbox = "shared@example.com";
 
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password))
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password" || sharedMailbox.Contains("example.com"))
             {
-                // Get the Inbox URI of the shared mailbox
-                string inboxUri = client.MailboxInfo.InboxUri;
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
 
-                // List messages in the Inbox
-                ExchangeMessageInfoCollection messagesInfo = client.ListMessages(inboxUri);
+            // Credentials for the primary user
+            NetworkCredential credentials = new NetworkCredential(username, password);
 
-                // Iterate through each message info and fetch the full message
-                foreach (ExchangeMessageInfo info in messagesInfo)
+            // Initialize the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            {
+                // Impersonate the shared mailbox
+                client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, sharedMailbox);
+
+                // Retrieve mailbox folder URIs
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+
+                // List messages in the shared mailbox Inbox
+                ExchangeMessageInfoCollection messageInfos = client.ListMessages(mailboxInfo.InboxUri);
+
+                Console.WriteLine($"Found {messageInfos.Count} messages in the shared mailbox Inbox.");
+
+                foreach (ExchangeMessageInfo messageInfo in messageInfos)
                 {
-                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                    {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                    }
+                    // Fetch the full message
+                    MailMessage message = client.FetchMessage(messageInfo.UniqueUri);
+                    Console.WriteLine($"Subject: {message.Subject}");
                 }
+
+                // Reset impersonation after operation
+                client.ResetImpersonation();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
