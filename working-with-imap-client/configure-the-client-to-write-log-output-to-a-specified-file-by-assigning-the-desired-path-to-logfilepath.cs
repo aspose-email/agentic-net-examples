@@ -1,71 +1,47 @@
-using Aspose.Email.Clients;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Smtp;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define log file path
-            string logFilePath = Path.Combine(Environment.CurrentDirectory, "imap_client.log");
+            // Specify the log file path
+            string logFilePath = "logs/email.log";
 
             // Ensure the directory for the log file exists
+            string logDirectory = Path.GetDirectoryName(logFilePath);
+            if (!Directory.Exists(logDirectory))
+            {
+                Directory.CreateDirectory(logDirectory);
+            }
+
+            // Create and configure the SMTP client
             try
             {
-                string logDir = Path.GetDirectoryName(logFilePath);
-                if (!Directory.Exists(logDir))
+                using (SmtpClient client = new SmtpClient())
                 {
-                    Directory.CreateDirectory(logDir);
+                    // Enable logging and set the log file name
+                    client.EnableLogger = true;
+                    client.LogFileName = logFilePath;
+                    client.UseDateInLogFileName = false; // optional: do not append date
+
+                    Console.WriteLine("Email client logging is configured to: " + client.LogFileName);
                 }
             }
-            catch (Exception ex)
+            catch (Exception clientEx)
             {
-                Console.Error.WriteLine($"Failed to prepare log directory: {ex.Message}");
+                Console.Error.WriteLine("Client error: " + clientEx.Message);
                 return;
-            }
-
-            // Placeholder connection settings
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip real network call when placeholders are used
-            if (host.Contains("example.com"))
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping actual IMAP connection.");
-                return;
-            }
-
-            // Initialize the IMAP client with the specified settings
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-            {
-                // Configure logging
-                client.LogFileName = logFilePath;
-
-                // Example operation: list folders (wrapped in try/catch for client safety)
-                try
-                {
-                    var folders = client.ListFolders();
-                    foreach (var folder in folders)
-                    {
-                        Console.WriteLine($"Folder: {folder}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }
