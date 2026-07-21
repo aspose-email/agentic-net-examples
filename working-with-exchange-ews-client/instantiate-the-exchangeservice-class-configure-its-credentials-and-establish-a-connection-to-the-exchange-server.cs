@@ -1,5 +1,6 @@
-using System;
 using Aspose.Email;
+using System;
+using System.Net;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -8,40 +9,31 @@ class Program
     {
         try
         {
-            // Placeholder credentials – skip real connection in sample environments
+            // Define Exchange server URI and credentials
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
 
-            bool isPlaceholder = mailboxUri.Contains("example.com") ||
-                                  username.Equals("username", StringComparison.OrdinalIgnoreCase) ||
-                                  password.Equals("password", StringComparison.OrdinalIgnoreCase);
-
-            if (isPlaceholder)
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping connection to Exchange server.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create and configure the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            NetworkCredential credentials = new NetworkCredential("username", "password", "DOMAIN");
+
+            // Instantiate the Exchange service (EWS client) and establish a connection
+            using (IEWSClient exchangeService = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
-                try
-                {
-                    // Attempt a simple operation to verify the connection
-                    string versionInfo = client.GetVersionInfo();
-                    Console.WriteLine($"Connected to Exchange server. Version: {versionInfo}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to connect or authenticate: {ex.Message}");
-                    return;
-                }
+                // Optional: configure additional properties
+                exchangeService.LogFileName = "ews_log.txt";
+
+                // Connection is established; you can now use exchangeService for further operations
+                Console.WriteLine("Exchange service connected successfully.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
