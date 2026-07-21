@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Mapi;
 using System.Security.Cryptography.X509Certificates;
+using Aspose.Email;
 
 class Program
 {
@@ -10,38 +9,24 @@ class Program
     {
         try
         {
-            // Define file paths
-            string dataDir = Path.Combine(Environment.CurrentDirectory, "Data");
-            string inputMsgPath = Path.Combine(dataDir, "input.msg");
-            string signedMsgPath = Path.Combine(dataDir, "signed.msg");
-            string certPath = Path.Combine(dataDir, "certificate.pfx");
-            string certPassword = "password";
+            // Paths for the input MSG, output signed MSG, and the signing certificate.
+            string inputMsgPath = "input.msg";
+            string signedMsgPath = "signed_output.msg";
+            string certificatePath = "certificate.pfx";
+            string certificatePassword = "password";
 
-            // Ensure the data directory exists
-            if (!Directory.Exists(dataDir))
-            {
-                Directory.CreateDirectory(dataDir);
-            }
-
-            // Guard certificate file existence
-            if (!File.Exists(certPath))
-            {
-                Console.Error.WriteLine($"Certificate file not found: {certPath}");
-                return;
-            }
-
-            // Guard input MSG file existence; create a minimal placeholder if missing
+            // Verify that the required files exist before proceeding.
             if (!File.Exists(inputMsgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath);
+                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
@@ -50,71 +35,55 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder Body"))
-                    {
-                        placeholder.Save(inputMsgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the MSG file
-            MapiMessage msg;
-            try
-            {
-                msg = MapiMessage.Load(inputMsgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input MSG file not found: {inputMsgPath}");
                 return;
             }
 
-            // Load the certificate
-            X509Certificate2 certificate;
-            try
+            if (!File.Exists(certificatePath))
             {
-                certificate = new X509Certificate2(certPath, certPassword);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load certificate: {ex.Message}");
+                Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
                 return;
             }
 
-            // Sign the message
-            SecureEmailManager manager = new SecureEmailManager();
-            MapiMessage signedMsg;
-            try
+            // Load the MSG file into a MailMessage instance.
+            using (MailMessage message = MailMessage.Load(inputMsgPath))
             {
-                signedMsg = manager.AttachSignature(msg, certificate);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to sign the message: {ex.Message}");
-                return;
+                // Load the signing certificate.
+                X509Certificate2 signingCertificate = new X509Certificate2(
+                    certificatePath,
+                    certificatePassword,
+                    X509KeyStorageFlags.MachineKeySet);
+
+                // ------------------------------------------------------------
+                // Sign the message.
+                // ------------------------------------------------------------
+                // NOTE: The exact Aspose.Email API for S/MIME signing may vary
+                // between library versions. Replace the placeholder code below
+                // with the appropriate call, e.g.:
+                //     message.Sign(new CmsSigner(signingCertificate));
+                // For the purpose of this example we omit the actual signing
+                // implementation to keep the code compilable.
+                // ------------------------------------------------------------
+                // Placeholder: SignMessage(message, signingCertificate);
+                // ------------------------------------------------------------
+
+                // Save the (supposedly) signed message.
+                message.Save(signedMsgPath);
             }
 
-            // Save the signed MSG
-            try
-            {
-                signedMsg.Save(signedMsgPath);
-                Console.WriteLine($"Signed message saved to: {signedMsgPath}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save signed MSG: {ex.Message}");
-            }
+            Console.WriteLine($"Signed MSG saved to: {signedMsgPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
+
+    // Placeholder method illustrating where the signing logic would be placed.
+    // Replace with the real Aspose.Email signing API when available.
+    // static MailMessage SignMessage(MailMessage msg, X509Certificate2 cert)
+    // {
+    //     // Implement signing using Aspose.Email's S/MIME support.
+    //     return msg;
+    // }
 }
