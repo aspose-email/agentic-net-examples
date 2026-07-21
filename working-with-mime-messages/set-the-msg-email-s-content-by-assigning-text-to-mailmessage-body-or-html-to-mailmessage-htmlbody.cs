@@ -8,7 +8,8 @@ class Program
     {
         try
         {
-            string outputPath = "output.msg";
+            // Author note: This example creates a MailMessage, sets its body, and saves it as a MSG file.
+            string outputPath = "example.msg";
 
             // Ensure the output directory exists
             string directory = Path.GetDirectoryName(outputPath);
@@ -17,29 +18,24 @@ class Program
                 Directory.CreateDirectory(directory);
             }
 
-            // Create and configure the mail message
-            using (MailMessage message = new MailMessage())
-            {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Sample Message";
+            // Create a new MailMessage instance
+            MailMessage message = new MailMessage();
+            message.From = new MailAddress("sender@example.com");
+            message.To.Add(new MailAddress("recipient@example.com"));
+            message.Subject = "Sample Message";
 
-                // Set plain‑text body
-                message.Body = "This is a plain text body.";
+            // Set plain‑text body
+            message.Body = "This is the plain text body of the email.";
 
-                // Uncomment the following lines to use an HTML body instead
-                // message.HtmlBody = "<html><body><h1>Hello, World!</h1></body></html>";
-                // message.IsBodyHtml = true;
+            // Set HTML body (optional)
+            message.HtmlBody = "<html><body><h1>Hello</h1><p>This is an <b>HTML</b> body.</p></body></html>";
 
-                // Save the message as an Outlook MSG file
-                message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-            }
-
-            Console.WriteLine("Message saved to " + outputPath);
+            // Save the message as a .msg file
+            message.Save(outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
