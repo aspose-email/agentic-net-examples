@@ -1,29 +1,32 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main(string[] args)
+    // Author: Aspose.Email .NET sample
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.html";
-
-            // Ensure the input MSG file exists; create a minimal placeholder if missing.
-            if (!File.Exists(inputPath))
+            try
             {
+                // Path to the MSG file
+                string msgPath = "sample.msg";
+
+                // Verify that the file exists before attempting to load it
+                if (!File.Exists(msgPath))
+                {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -32,63 +35,25 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    string inputDir = Path.GetDirectoryName(inputPath);
-                    if (!string.IsNullOrEmpty(inputDir) && !Directory.Exists(inputDir))
-                    {
-                        Directory.CreateDirectory(inputDir);
-                    }
-
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "Sample Subject",
-                        "Sample Body",
-                        "sender@example.com",
-                        "recipient@example.com"))
-                    {
-                        placeholder.Save(inputPath);
-                    }
-
-                    Console.WriteLine($"Placeholder MSG created at '{inputPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Message file not found: {msgPath}");
                     return;
                 }
-            }
 
-            // Ensure the output directory exists.
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                // Load the Outlook MSG file
+                MapiMessage msg = MapiMessage.Load(msgPath);
+
+                // Access the HTML body of the message
+                string htmlBody = msg.BodyHtml;
+
+                // Output the HTML content
+                Console.WriteLine("HTML Body:");
+                Console.WriteLine(htmlBody);
+            }
+            catch (Exception ex)
             {
-                Directory.CreateDirectory(outputDir);
+                // Gracefully handle any unexpected errors
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            // Load the MSG file as a MailMessage and access its HtmlBody.
-            using (MailMessage mail = MailMessage.Load(inputPath))
-            {
-                string htmlBody = mail.HtmlBody;
-
-                if (string.IsNullOrEmpty(htmlBody))
-                {
-                    Console.WriteLine("The message does not contain an HTML body.");
-                }
-
-                try
-                {
-                    File.WriteAllText(outputPath, htmlBody ?? string.Empty);
-                    Console.WriteLine($"HTML content saved to '{outputPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to write HTML output: {ex.Message}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
