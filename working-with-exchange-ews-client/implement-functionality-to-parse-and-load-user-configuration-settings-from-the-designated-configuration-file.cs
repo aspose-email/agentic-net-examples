@@ -1,66 +1,93 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Text.Json;
-using System.Collections.Generic;
 
-class Program
+// Author: Aspose.Email example author
+
+namespace ConfigLoaderExample
 {
-    static void Main(string[] args)
+    // Define a class that represents the configuration settings
+    public class UserSettings
     {
-        try
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public int RefreshIntervalMinutes { get; set; }
+    }
+
+    public class Program
+    {
+        public static void Main(string[] args)
         {
-            string configFilePath = "userconfig.json";
-
-            // Ensure the configuration file exists; create a minimal placeholder if missing
-            if (!File.Exists(configFilePath))
-            {
-                try
-                {
-                    using (FileStream createStream = File.Create(configFilePath))
-                    {
-                        byte[] placeholder = Encoding.UTF8.GetBytes("{ }");
-                        createStream.Write(placeholder, 0, placeholder.Length);
-                    }
-                    Console.WriteLine($"Placeholder configuration file created at {configFilePath}.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder config file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load configuration settings from the file
-            Dictionary<string, string> settings = null;
             try
             {
-                using (FileStream readStream = File.OpenRead(configFilePath))
+                // Path to the configuration file (can be passed as an argument or use a default)
+                string configFilePath = args.Length > 0 ? args[0] : "userconfig.json";
+
+                // Ensure the directory exists
+                string configDirectory = Path.GetDirectoryName(configFilePath);
+                if (!string.IsNullOrEmpty(configDirectory) && !Directory.Exists(configDirectory))
                 {
-                    settings = JsonSerializer.Deserialize<Dictionary<string, string>>(readStream);
+                    try
+                    {
+                        Directory.CreateDirectory(configDirectory);
+                    }
+                    catch (Exception dirEx)
+                    {
+                        Console.Error.WriteLine($"Failed to create configuration directory: {dirEx.Message}");
+                        return;
+                    }
                 }
+
+                // Guard file existence; create a minimal placeholder if missing
+                if (!File.Exists(configFilePath))
+                {
+                    try
+                    {
+                        UserSettings placeholder = new UserSettings
+                        {
+                            Username = "defaultUser",
+                            Email = "user@example.com",
+                            RefreshIntervalMinutes = 15
+                        };
+                        string placeholderJson = JsonSerializer.Serialize(placeholder, new JsonSerializerOptions { WriteIndented = true });
+                        File.WriteAllText(configFilePath, placeholderJson);
+                        Console.WriteLine($"Configuration file not found. Created placeholder at '{configFilePath}'.");
+                    }
+                    catch (Exception createEx)
+                    {
+                        Console.Error.WriteLine($"Failed to create placeholder configuration file: {createEx.Message}");
+                        return;
+                    }
+                }
+
+                // Load and parse the configuration file
+                UserSettings loadedSettings;
+                try
+                {
+                    string jsonContent = File.ReadAllText(configFilePath);
+                    loadedSettings = JsonSerializer.Deserialize<UserSettings>(jsonContent);
+                    if (loadedSettings == null)
+                    {
+                        Console.Error.WriteLine("Configuration file is empty or malformed.");
+                        return;
+                    }
+                }
+                catch (Exception readEx)
+                {
+                    Console.Error.WriteLine($"Error reading or parsing configuration file: {readEx.Message}");
+                    return;
+                }
+
+                // Use the loaded settings (example output)
+                Console.WriteLine("Loaded user configuration:");
+                Console.WriteLine($"Username: {loadedSettings.Username}");
+                Console.WriteLine($"Email: {loadedSettings.Email}");
+                Console.WriteLine($"Refresh Interval (minutes): {loadedSettings.RefreshIntervalMinutes}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to read configuration file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-
-            if (settings == null)
-            {
-                Console.Error.WriteLine("Configuration file is empty or contains invalid JSON.");
-                return;
-            }
-
-            // Output loaded settings
-            foreach (KeyValuePair<string, string> entry in settings)
-            {
-                Console.WriteLine($"{entry.Key} = {entry.Value}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
