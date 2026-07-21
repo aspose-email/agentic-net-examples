@@ -4,44 +4,44 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Paths for the attachment and the output MSG file
+            // Define paths for the attachment and the output MSG file
             string attachmentPath = "sample.txt";
-            string outputPath = "output.msg";
+            string outputMsgPath = "EmailWithAttachment.msg";
 
-            // Ensure the attachment file exists; create a minimal placeholder if it does not
+            // Ensure the attachment file exists; create a minimal placeholder if missing
             if (!File.Exists(attachmentPath))
             {
                 try
                 {
-                    File.WriteAllText(attachmentPath, "Placeholder content");
+                    File.WriteAllText(attachmentPath, "Placeholder attachment content.");
                 }
-                catch (Exception ex)
+                catch (Exception ioEx)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ioEx.Message}");
                     return;
                 }
             }
 
             // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    Directory.CreateDirectory(outputDirectory);
                 }
-                catch (Exception ex)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
                     return;
                 }
             }
 
-            // Compose the email message
+            // Compose the email and add the attachment
             using (MailMessage message = new MailMessage())
             {
                 message.From = "sender@example.com";
@@ -49,25 +49,19 @@ class Program
                 message.Subject = "Message with attachment";
                 message.Body = "Please see the attached file.";
 
-                // Add the file attachment
+                // Add the attachment to the message
                 Attachment attachment = new Attachment(attachmentPath);
                 message.Attachments.Add(attachment);
 
-                // Save the message as an Outlook MSG file
-                try
-                {
-                    message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                    Console.WriteLine($"Message saved to {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
-                }
+                // Save the message as an MSG file
+                message.Save(outputMsgPath);
             }
+
+            Console.WriteLine("Email with attachment saved successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
