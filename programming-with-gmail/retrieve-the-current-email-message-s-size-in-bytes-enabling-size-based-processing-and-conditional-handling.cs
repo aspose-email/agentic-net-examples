@@ -1,51 +1,82 @@
 using System;
+using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-class Program
+namespace Sample
 {
-    static void Main(string[] args)
+    // Author: Aspose.Email example for retrieving email size via POP3
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder POP3 server credentials
-            string host = "pop3.example.com";
-            string username = "username";
-            string password = "password";
-
-            // Guard against executing real network calls with placeholder data
-            if (host.Contains("example.com") || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            try
             {
-                Console.Error.WriteLine("Placeholder POP3 credentials detected. Skipping network operation.");
-                return;
-            }
+                // POP3 server connection details (replace with real values)
+                string host = "pop3.example.com";
+                int port = 110;
+                string username = "user@example.com";
+                string password = "password";
 
-            // Initialize POP3 client (connection is established via constructor)
-            using (Pop3Client client = new Pop3Client(host, username, password))
-            {
-                try
+
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    // Validate credentials before proceeding
-                    client.ValidateCredentials();
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
 
-                    // Get total number of messages in the mailbox
-                    int messageCount = client.GetMessageCount();
-
-                    // Iterate through each message and retrieve its size
-                    for (int i = 1; i <= messageCount; i++)
+                // Initialize POP3 client
+                using (Pop3Client client = new Pop3Client())
+                {
+                    try
                     {
-                        long sizeInBytes = client.GetMessageInfo(i).Size;
-                        Console.WriteLine($"Message {i} size: {sizeInBytes} bytes");
+                        client.Host = host;
+                        client.Port = port;
+                        client.Username = username;
+                        client.Password = password;
+                        client.SecurityOptions = SecurityOptions.Auto;
+
+                        // Optional: get total mailbox size
+                        long mailboxSize = client.GetMailboxSize();
+                        Console.WriteLine($"Mailbox total size: {mailboxSize} bytes");
+
+                        // Retrieve list of messages
+                        Pop3MessageInfoCollection messages = client.ListMessages();
+
+                        if (messages.Count > 0)
+                        {
+                            // Get size of the first message
+                            Pop3MessageInfo firstMessageInfo = messages[0];
+                            long sizeInBytes = firstMessageInfo.Size;
+                            Console.WriteLine($"First message size: {sizeInBytes} bytes");
+
+                            // Conditional handling based on size
+                            if (sizeInBytes > 1024 * 1024) // larger than 1 MB
+                            {
+                                Console.WriteLine("Message exceeds 1 MB, apply special processing.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Message size is within normal limits.");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("No messages found in the mailbox.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                        return;
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }
