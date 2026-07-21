@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 
 class Program
@@ -9,73 +11,65 @@ class Program
     {
         try
         {
-            // Path to the MSG file
-            string msgFilePath = "sample.msg";
+            // Input MSG file path
+            string msgPath = "input.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(msgFilePath))
+            // Verify the MSG file exists
+            if (!File.Exists(msgPath))
             {
-                using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder", "This is a placeholder message."))
-                {
-                    try
-                    {
-                        placeholder.Save(msgFilePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                        return;
-                    }
-                }
-            }
-
-            // Load the email message from the MSG file
-            MailMessage message;
-            try
-            {
-                message = MailMessage.Load(msgFilePath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
-            }
-
-            // SMTP server configuration (placeholders)
-            string smtpHost = "smtp.example.com";
-            int smtpPort = 587;
-            string smtpUsername = "username";
-            string smtpPassword = "password";
-
-            // Guard against placeholder credentials to avoid real network calls
-            if (smtpHost.Contains("example.com") || smtpUsername == "username")
-            {
-                Console.WriteLine("Placeholder SMTP configuration detected. Skipping send operation.");
-                message.Dispose();
-                return;
-            }
-
-            // Create and configure the SMTP client
-            using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, smtpUsername, smtpPassword))
-            {
-                // Enable protocol logging
-                client.EnableLogger = true;
-                client.LogFileName = "smtp_log.txt";
-
                 try
                 {
-                    // Send the loaded message
-                    client.Send(message);
-                    Console.WriteLine("Email sent successfully.");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to send email: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
+            }
+
+            // Load the MSG file as a MAPI message
+            MapiMessage mapMsg = MapiMessage.Load(msgPath);
+
+            // Convert MAPI message to MailMessage
+            MailMessage mailMessage = mapMsg.ToMailMessage(new MailConversionOptions());
+
+            // SMTP server configuration (replace with real values)
+            string smtpHost = "smtp.example.com";
+            int smtpPort = 587;
+            string smtpUser = "user@example.com";
+            string smtpPassword = "password";
+
+            // Create and configure the SMTP client
+            using (SmtpClient smtpClient = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPassword, SecurityOptions.Auto))
+            {
+                // Enable protocol logging
+                smtpClient.EnableLogger = true;
+
+                try
+                {
+                    // Send the email
+                    smtpClient.Send(mailMessage);
+                    Console.WriteLine("Message sent successfully.");
+                }
+                catch (SmtpException ex)
+                {
+                    Console.Error.WriteLine($"SMTP error: {ex.Message}");
                 }
             }
 
-            // Dispose the loaded message
-            message.Dispose();
+            // Dispose the MailMessage
+            mailMessage.Dispose();
         }
         catch (Exception ex)
         {
@@ -83,3 +77,4 @@ class Program
         }
     }
 }
+// Author: Generated example for loading MSG, enabling SMTP logging, and sending email.
