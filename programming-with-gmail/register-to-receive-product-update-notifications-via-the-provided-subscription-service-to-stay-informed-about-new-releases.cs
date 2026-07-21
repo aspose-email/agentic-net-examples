@@ -1,59 +1,41 @@
-using System;
-using System.Collections.Generic;
-using Aspose.Email;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using System;
+using Aspose.Email;
+using Aspose.Email.Clients.Smtp;
 
-class Program
+namespace ProgrammingWithGmail
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials – replace with real values.
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string defaultEmail = "user@example.com";
+            // Subscription service email address (replace with actual address if known)
+            const string subscriptionEmail = "subscribe@example.com";
 
-            // Skip execution when using placeholder credentials to avoid unwanted network calls.
-            if (clientId == "clientId" || clientSecret == "clientSecret" ||
-                refreshToken == "refreshToken" || defaultEmail == "user@example.com")
+            // Create the subscription request email
+            var message = new MailMessage
             {
-                Console.Error.WriteLine("Placeholder Gmail credentials detected. Skipping subscription registration.");
-                return;
-            }
+                From = "your.email@gmail.com",          // Replace with your Gmail address
+                To = subscriptionEmail,
+                Subject = "Subscribe to product updates",
+                Body = "Please add me to the product update notification list."
+            };
 
-            // Create Gmail client.
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+            // Configure Gmail SMTP client (use your credentials)
+            var client = new SmtpClient("smtp.gmail.com", 587, "your.email@gmail.com", "your_password")
             {
-                // Example: create a filter that forwards product update emails to a specific label.
-                // This acts as a simple subscription mechanism within Gmail.
-                Filter productUpdateFilter = new Filter();
+                SecurityOptions = SecurityOptions.Auto
+            };
 
-                // Set filter criteria (e.g., subject contains "Product Update").
-                // Assuming Filter has a Criteria property; adjust as per actual API if needed.
-                // productUpdateFilter.Criteria = "subject:Product Update";
-
-                // Set action to apply a label named "ProductUpdates".
-                // Assuming Filter has an Action property; adjust as per actual API if needed.
-                // productUpdateFilter.Action = new FilterAction { AddLabel = "ProductUpdates" };
-
-                // Register the filter with Gmail.
-                try
-                {
-                    gmailClient.CreateFilter(productUpdateFilter);
-                    Console.WriteLine("Product update filter created successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create filter: {ex.Message}");
-                }
+            try
+            {
+                client.Send(message);
+                Console.WriteLine("Subscription request sent successfully.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send subscription request: {ex.Message}");
+            }
         }
     }
 }
