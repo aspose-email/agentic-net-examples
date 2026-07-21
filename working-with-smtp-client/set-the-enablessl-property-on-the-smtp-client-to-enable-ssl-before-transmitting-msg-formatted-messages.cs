@@ -5,113 +5,95 @@ using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 using Aspose.Email.Mapi;
 
-class Program
+namespace SmtpEnableSslExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder SMTP server details
-            string host = "smtp.example.com";
-            string username = "username";
-            string password = "password";
+            // Define the path to the MSG file.
+            const string msgFilePath = "sample.msg";
 
-            // Skip actual network call when placeholders are used
-            if (host.Contains("example.com") || username == "username" || password == "password")
-            {
-                Console.Error.WriteLine("Placeholder SMTP credentials detected. Skipping send operation.");
-                return;
-            }
-
-            // Path to the MSG file to be sent
-            string msgPath = "message.msg";
-
-            // Ensure the MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
+            // Ensure the MSG file exists; create a minimal placeholder if it does not.
+            if (!File.Exists(msgFilePath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
+                    MailMessage placeholder = new MailMessage
                     {
-                        placeholder.Save(msgPath);
-                    }
+                        From = "placeholder@example.com",
+                        To = "recipient@example.com",
+                        Subject = "Placeholder Message",
+                        Body = "This is a placeholder MSG file."
+                    };
+                    placeholder.Save(msgFilePath);
+                    Console.WriteLine($"Created placeholder MSG file at '{msgFilePath}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the MSG file and convert it to MailMessage
-            MapiMessage mapiMessage;
+            // Load the MSG file into a MapiMessage.
+            MapiMessage mapMsg;
             try
             {
-                mapiMessage = MapiMessage.Load(msgPath);
+                mapMsg = MapiMessage.Load(msgFilePath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                Console.WriteLine($"Error loading MSG file: {ex.Message}");
                 return;
             }
 
-            using (mapiMessage)
+            // Convert the MapiMessage to a MailMessage for sending.
+            MailMessage mailMessage;
+            try
             {
-                MailMessage mailMessage;
-                try
-                {
-                    mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions());
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to convert MSG to MailMessage: {ex.Message}");
-                    return;
-                }
-
-                using (mailMessage)
-                {
-                    // Ensure required fields are set
-                    if (mailMessage.From == null)
-                        mailMessage.From = new MailAddress(username);
-                    if (mailMessage.To.Count == 0)
-                        mailMessage.To.Add("recipient@example.com");
-
-                    // Create SMTP client with SSL enabled via SecurityOptions
-                    using (SmtpClient client = new SmtpClient(host, username, password, SecurityOptions.SSLImplicit))
-                    {
-                        try
-                        {
-                            client.Send(mailMessage);
-                            Console.WriteLine("Message sent successfully.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to send message: {ex.Message}");
-                        }
-                    }
-                }
+                mailMessage = mapMsg.ToMailMessage(new MailConversionOptions());
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error converting MSG to MailMessage: {ex.Message}");
+                return;
+            }
+
+            // Configure the SMTP client.
+            // Placeholder credentials are used; real credentials should be supplied for actual sending.
+            const string smtpHost = "smtp.example.com";
+            const int smtpPort = 587;
+            const string smtpUser = "user@example.com";
+            const string smtpPass = "password";
+
+            // Guard against sending with placeholder credentials.
+            if (smtpHost.Contains("example.com") || smtpUser.Contains("example.com"))
+            {
+                Console.WriteLine("SMTP client is configured with placeholder credentials. Skipping send operation.");
+                return;
+            }
+
+            SmtpClient client = new SmtpClient
+            {
+                Host = smtpHost,
+                Port = smtpPort,
+                Username = smtpUser,
+                Password = smtpPass,
+                // Enable SSL before transmitting the message.
+                SecurityOptions = SecurityOptions.SSLExplicit
+            };
+
+            // Send the message inside a try/catch block.
+            try
+            {
+                client.Send(mailMessage);
+                Console.WriteLine("Message sent successfully via SMTP with SSL enabled.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send message: {ex.Message}");
+            }
         }
     }
 }
