@@ -5,86 +5,41 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string msgPath = "input.msg";
-            string outputDirectory = "Attachments";
+            // Author note: Example reads attachments from an MSG file via a stream.
+            string msgPath = "outlookmessage.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing
+            // Guard file existence
             if (!File.Exists(msgPath))
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                MapiMessage placeholderMessage = new MapiMessage(
-                    "sender@example.com",
-                    "receiver@example.com",
-                    "Placeholder Subject",
-                    "This is a placeholder message."
-                );
-                placeholderMessage.Save(msgPath);
-                Console.WriteLine($"Placeholder MSG created at: {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
             }
 
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputDirectory))
+            // Open the MSG file as a stream
+            using (FileStream fileStream = new FileStream(msgPath, FileMode.Open, FileAccess.Read))
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Load the MSG file
-            using (MapiMessage message = MapiMessage.Load(msgPath))
-            {
-                foreach (MapiAttachment attachment in message.Attachments)
+                // Initialize the MapiMessageReader with the stream
+                using (MapiMessageReader reader = new MapiMessageReader(fileStream))
                 {
-                    // Retrieve attachment data as a byte array
-                    byte[] attachmentData = attachment.BinaryData;
-                    if (attachmentData == null || attachmentData.Length == 0)
-                    {
-                        Console.WriteLine($"Attachment '{attachment.FileName}' contains no data.");
-                        continue;
-                    }
+                    // Parse the message
+                    MapiMessage message = reader.ReadMessage();
 
-                    // Determine a safe file name
-                    string safeFileName = Path.GetFileName(attachment.FileName);
-                    if (string.IsNullOrEmpty(safeFileName))
+                    // Iterate through attachments
+                    foreach (MapiAttachment attachment in message.Attachments)
                     {
-                        safeFileName = "attachment.bin";
-                    }
-
-                    string outputPath = Path.Combine(outputDirectory, safeFileName);
-
-                    try
-                    {
-                        // Write the attachment data to a file using streams
-                        using (FileStream fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                        // Save attachment content to a memory stream
+                        using (MemoryStream memory = new MemoryStream())
                         {
-                            using (MemoryStream memoryStream = new MemoryStream(attachmentData))
-                            {
-                                memoryStream.CopyTo(fileStream);
-                            }
+                            attachment.Save(memory);
+                            memory.Position = 0; // Reset for reading if needed
+
+                            // Example: output attachment name and size
+                            Console.WriteLine($"Attachment: {attachment.FileName}, Size: {memory.Length} bytes");
                         }
-                        Console.WriteLine($"Saved attachment to: {outputPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save attachment '{safeFileName}': {ex.Message}");
                     }
                 }
             }
