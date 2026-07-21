@@ -1,48 +1,44 @@
-using Aspose.Email.Clients;
-using System;
 using Aspose.Email;
+using System;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
-class Program
+namespace ValidateImapCredentials
 {
-    static void Main()
+    // Author: Aspose.Email example
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder server details
+            // Define connection parameters
             string host = "imap.example.com";
-            string username = "user@example.com";
+            int port = 993;
+            string username = "username";
             string password = "password";
 
-            // Guard against executing real network calls with placeholder credentials
-            if (host.Contains("example.com"))
+            // Guard against placeholder credentials
+            if (host.Contains("example", StringComparison.OrdinalIgnoreCase) ||
+                username.Equals("username", StringComparison.OrdinalIgnoreCase) ||
+                string.IsNullOrWhiteSpace(password))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping validation.");
+                Console.WriteLine("Placeholder credentials detected – skipping validation.");
                 return;
             }
 
-            // Initialize the IMAP client
-            using (ImapClient client = new ImapClient(host, username, password, SecurityOptions.Auto))
+            try
             {
-                try
+                // Create the IMAP client with SSL implicit security
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.SSLImplicit))
                 {
                     // Validate the supplied credentials
                     bool isValid = client.ValidateCredentials();
-
-                    Console.WriteLine(isValid
-                        ? "Credentials are valid."
-                        : "Credentials are invalid.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
-                    return;
+                    Console.WriteLine(isValid ? "Credentials are valid." : "Credentials are invalid.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
+            }
         }
     }
 }
