@@ -1,6 +1,7 @@
 using System;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -8,48 +9,42 @@ class Program
     {
         try
         {
-            // Placeholder SMTP configuration
-            string host = "smtp.example.com";
-            string username = "username";
-            string password = "password";
+            // Define EWS service URL and credentials
+            string ewsUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+            NetworkCredential credentials = new NetworkCredential("user@example.com", "password");
 
-            // Guard: skip sending when placeholders are used
-            if (host.Contains("example.com") || username == "username" || password == "password")
+            // Guard: skip external calls when placeholder credentials are used
+            bool placeholders = ewsUrl.Contains("outlook.office365.com") &&
+                                credentials.UserName == "user@example.com" &&
+                                credentials.Password == "password";
+
+            if (placeholders)
             {
-                Console.Error.WriteLine("Placeholder SMTP credentials detected. Skipping send operation.");
+                Console.WriteLine("Placeholder credentials detected. Skipping network operation.");
                 return;
             }
 
-            // Create and configure the SMTP client
-            using (SmtpClient client = new SmtpClient(host, username, password))
+            // Initialize the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, credentials, proxy: null))
             {
-                try
-                {
-                    // Build the email message
-                    using (MailMessage message = new MailMessage())
-                    {
-                        message.From = new MailAddress("sender@example.com");
-                        message.To.Add(new MailAddress("recipient@example.com"));
-                        message.Subject = "Test Email with Custom Header";
-                        message.Body = "This email contains a custom header.";
+                // Create a simple email message
+                MailMessage message = new MailMessage();
+                message.From = new MailAddress("user@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Test Email with Custom Header";
+                message.Body = "This email was sent using Aspose.Email with a custom EWS header.";
 
-                        // Apply a custom header
-                        message.Headers.Add("X-Custom-Header", "MyHeaderValue");
+                // Add a custom header to the email message
+                message.Headers.Add("X-Custom-Header", "MyValue");
 
-                        // Send the message
-                        client.Send(message);
-                        Console.WriteLine("Message sent successfully.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error sending email: {ex.Message}");
-                }
+                // Send the message via EWS
+                client.Send(message);
+                Console.WriteLine("Email sent successfully.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
