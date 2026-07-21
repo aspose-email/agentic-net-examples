@@ -10,104 +10,66 @@ class Program
     {
         try
         {
-            string pstPath = "sample.pst";
+            const string pstPath = "storage.pst";
+            const string outputDir = "output";
 
-            // Guard file existence and create a minimal PST if missing
+            // Ensure the output directory exists.
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
+
+            // Ensure the PST file exists; create a minimal empty PST if missing.
             if (!File.Exists(pstPath))
             {
-                try
-                {
-                    // Ensure the directory for the PST exists
-                    string pstDirectory = Path.GetDirectoryName(pstPath);
-                    if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-                    {
-                        Directory.CreateDirectory(pstDirectory);
-                    }
-
-                    // Create an empty Unicode PST file
-                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Optionally create a default folder structure
-                        createdPst.RootFolder.AddSubFolder("Inbox");
-                    }
-
-                    Console.WriteLine($"Placeholder PST created at '{pstPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
-                    return;
-                }
-
-                // No further processing needed for a newly created empty PST
-                return;
+                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                Console.WriteLine($"Created placeholder PST file at '{pstPath}'.");
             }
 
-            // Open existing PST file
+            // Open the PST file.
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Ensure output directory exists
-                string outputDir = "output";
-                try
-                {
-                    if (!Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating output directory: {ex.Message}");
-                    return;
-                }
+                // Retrieve and display total items count.
+                int totalItemsCount = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Total items count: {totalItemsCount}");
 
-                // Iterate through each subfolder in the PST root
+                // Iterate through each subfolder of the root folder.
                 foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    Console.WriteLine($"Processing folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
 
-                    // Enumerate messages within the current folder
+                    // Enumerate messages in the current folder.
                     foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
                     {
-                        Console.WriteLine($"  Message subject: {messageInfo.Subject}");
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
 
-                        // Build a safe file name for the extracted MSG
-                        string safeSubject = string.IsNullOrWhiteSpace(messageInfo.Subject) ? "NoSubject" : messageInfo.Subject;
-                        foreach (char invalidChar in Path.GetInvalidFileNameChars())
-                        {
-                            safeSubject = safeSubject.Replace(invalidChar, '_');
-                        }
+                        // Extract the full message as a MapiMessage.
+                        MapiMessage mapiMsg = pst.ExtractMessage(messageInfo);
+
+                        // Prepare a safe filename based on the subject.
+                        string safeSubject = string.IsNullOrWhiteSpace(mapiMsg.Subject) ? "NoSubject" : mapiMsg.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            safeSubject = safeSubject.Replace(c, '_');
+
+                        // Ensure unique filename.
                         string msgFilePath = Path.Combine(outputDir, $"{safeSubject}.msg");
-
-                        try
+                        int duplicateIndex = 1;
+                        while (File.Exists(msgFilePath))
                         {
-                            // Extract the message to a MapiMessage object
-                            using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
-                            {
-                                // Save the original message
-                                mapiMessage.Save(msgFilePath);
-
-                                // Modify the subject
-                                mapiMessage.Subject = $"Modified - {mapiMessage.Subject}";
-
-                                // Overwrite the MSG file with the modified message
-                                mapiMessage.Save(msgFilePath);
-                            }
-
-                            Console.WriteLine($"    Extracted and modified message saved to: {msgFilePath}");
+                            msgFilePath = Path.Combine(outputDir, $"{safeSubject}_{duplicateIndex}.msg");
+                            duplicateIndex++;
                         }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"    Error processing message '{messageInfo.Subject}': {ex.Message}");
-                            // Continue with next message
-                        }
+
+                        // Save the message as a .msg file.
+                        mapiMsg.Save(msgFilePath);
+                        Console.WriteLine($"Saved message to '{msgFilePath}'.");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
