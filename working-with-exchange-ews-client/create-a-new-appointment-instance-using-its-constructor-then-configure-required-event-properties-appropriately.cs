@@ -1,3 +1,4 @@
+// Author: Aspose.Email example - creates an Appointment and sets its properties
 using System;
 using Aspose.Email;
 using Aspose.Email.Calendar;
@@ -10,34 +11,34 @@ class Program
         {
             // Prepare attendees
             MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("person1@example.com"));
-            attendees.Add(new MailAddress("person2@example.com"));
-            attendees.Add(new MailAddress("person3@example.com"));
+            attendees.Add(new MailAddress("person1@domain.com"));
+            attendees.Add(new MailAddress("person2@domain.com"));
+            attendees.Add(new MailAddress("person3@domain.com"));
 
-            // Organizer address
-            MailAddress organizer = new MailAddress("organizer@example.com");
-
-            // Create the appointment using the constructor that accepts location, summary, description, dates, organizer and attendees
+            // Create the appointment using the constructor with location, summary, description, dates, organizer and attendees
             Appointment appointment = new Appointment(
-                "Conference Room",
+                "Conference Room 1",
                 "Project Kickoff",
                 "Discuss project goals and milestones.",
-                new DateTime(2023, 10, 1, 9, 0, 0),
-                new DateTime(2023, 10, 1, 10, 0, 0),
-                organizer,
-                attendees
-            );
+                new DateTime(2024, 10, 1, 10, 0, 0),
+                new DateTime(2024, 10, 1, 11, 0, 0),
+                new MailAddress("organizer@domain.com"),
+                attendees);
 
             // Configure additional required properties
-            appointment.Location = "Conference Room A";
             appointment.Summary = "Project Kickoff Meeting";
-            appointment.Description = "Initial meeting to discuss project scope and deliverables.";
-            appointment.StartDate = new DateTime(2023, 10, 1, 9, 0, 0);
-            appointment.EndDate = new DateTime(2023, 10, 1, 10, 0, 0);
-            appointment.Organizer = organizer;
-            appointment.Attendees = attendees;
+            appointment.Description = "Initial meeting to outline project scope and deliverables.";
+            appointment.Location = "Conference Room 1";
 
-            Console.WriteLine("Appointment created successfully.");
+            // Display the created appointment details
+            Console.WriteLine("Appointment created:");
+            Console.WriteLine($"Location: {appointment.Location}");
+            Console.WriteLine($"Summary: {appointment.Summary}");
+            Console.WriteLine($"Description: {appointment.Description}");
+            Console.WriteLine($"Start: {appointment.StartDate}");
+            Console.WriteLine($"End: {appointment.EndDate}");
+            Console.WriteLine($"Organizer: {appointment.Organizer}");
+            Console.WriteLine($"Attendees count: {appointment.Attendees.Count}");
         }
         catch (Exception ex)
         {
