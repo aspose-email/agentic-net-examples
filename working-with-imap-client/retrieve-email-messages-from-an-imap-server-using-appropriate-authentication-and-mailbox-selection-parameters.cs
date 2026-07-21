@@ -1,61 +1,50 @@
-using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
-class Program
+public class Program
 {
-    static void Main()
+    public static void Main(string[] args)
     {
+        // Placeholder connection parameters
+        string host = "imap.example.com";
+        int port = 993;
+        string username = "user@example.com";
+        string password = "password";
+
+        // Guard to avoid real network calls when placeholders are used
+        if (host.Contains("example.com") || username.Contains("example.com"))
+        {
+            Console.Error.WriteLine("Placeholder IMAP credentials detected. Skipping network operation.");
+            return;
+        }
+
         try
         {
-            // Placeholder IMAP server credentials
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "username";
-            string password = "password";
-
-            // Skip real connection when placeholders are detected
-            if (host.Contains("example.com") || username == "username" || password == "password")
+            // Initialize IMAP client with SSL implicit security
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.SSLImplicit))
             {
-                Console.WriteLine("Placeholder IMAP credentials detected. Skipping connection.");
-                return;
-            }
+                // Select the INBOX folder
+                client.SelectFolder("INBOX");
 
-            // Create and use the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-            {
-                try
+                // Get list of message identifiers
+                ImapMessageInfoCollection messagesInfo = client.ListMessages();
+
+                Console.WriteLine($"Found {messagesInfo.Count} messages in INBOX.");
+
+                // Iterate through messages and display subject
+                foreach (ImapMessageInfo info in messagesInfo)
                 {
-                    // Select the INBOX folder
-                    client.SelectFolder("INBOX");
-
-                    // Retrieve the list of messages in the selected folder
-                    ImapMessageInfoCollection messagesInfo = client.ListMessages();
-
-                    foreach (ImapMessageInfo info in messagesInfo)
-                    {
-                        // Fetch each full message using its unique identifier
-                        MailMessage message = client.FetchMessage(info.UniqueId);
-                        using (message)
-                        {
-                            Console.WriteLine($"Subject: {message.Subject}");
-                            Console.WriteLine($"From: {message.From}");
-                            Console.WriteLine($"Date: {message.Date}");
-                            Console.WriteLine(new string('-', 40));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                    MailMessage message = client.FetchMessage(info.UniqueId);
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    message.Dispose();
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error retrieving IMAP messages: {ex.Message}");
         }
     }
 }
