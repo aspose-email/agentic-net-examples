@@ -1,75 +1,74 @@
-using Aspose.Email.Clients;
 using System;
 using System.Collections.Generic;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
-class Program
+namespace ImapFolderTransfer
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder IMAP server settings
+            // Placeholder guard: skip real network operations when using example credentials.
             string host = "imap.example.com";
-            int port = 993;
             string username = "user@example.com";
             string password = "password";
-            string sourceFolder = "INBOX";
-            string destinationFolder = "Processed";
 
-            // Skip real network calls when placeholders are detected
-            if (host.Contains("example.com") || username.Contains("example.com"))
+            bool usePlaceholders = host.Contains("example.com") ||
+                                   username.Contains("example.com") ||
+                                   password == "password";
+
+            if (usePlaceholders)
             {
-                Console.Error.WriteLine("Placeholder IMAP credentials detected. Skipping execution.");
+                Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
                 return;
             }
 
-            // Create and connect the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            try
             {
-                try
+                using (ImapClient client = new ImapClient())
                 {
-                    // Ensure the destination folder exists; create if it does not
-                    if (!client.ExistFolder(destinationFolder))
+                    client.Host = host;
+                    client.Port = 993;
+                    client.SecurityOptions = SecurityOptions.SSLImplicit;
+                    client.Username = username;
+                    client.Password = password;
+
+                    // Define source and destination folders.
+                    string sourceFolder = "INBOX";
+                    string destinationFolder = "Archive";
+
+                    // Retrieve message identifiers from the source folder.
+                    ImapMessageInfoCollection messageInfos = client.ListMessages(sourceFolder);
+                    List<string> messageUids = new List<string>();
+                    foreach (ImapMessageInfo info in messageInfos)
                     {
-                        client.CreateFolder(destinationFolder);
+                        // UniqueId is a string in recent Aspose.Email versions.
+                        messageUids.Add(info.UniqueId);
                     }
 
-                    // Select the source folder
-                    client.SelectFolder(sourceFolder);
+                    // Convert the list of UIDs to a comma‑separated string as required by older API overloads.
+                    string uidList = string.Join(",", messageUids);
 
-                    // Retrieve list of messages in the source folder
-                    IList<ImapMessageInfo> messages = client.ListMessages();
+                    // Perform copy.
+                    client.CopyMessages(sourceFolder, destinationFolder, uidList);
 
-                    if (messages == null || messages.Count == 0)
-                    {
-                        Console.WriteLine("No messages to transfer.");
-                        return;
-                    }
+                    // Perform move.
+                    client.MoveMessages(sourceFolder, destinationFolder, uidList);
 
-                    // Collect unique identifiers of messages to move
-                    List<string> messageIds = new List<string>();
-                    foreach (ImapMessageInfo info in messages)
-                    {
-                        messageIds.Add(info.UniqueId);
-                    }
+                    // Example of moving an entire folder (including subfolders) to a new parent folder.
+                    string newParentFolder = "ArchivesRoot";
+                    string folderToMove = destinationFolder;
+                    client.MoveFolder(newParentFolder, folderToMove);
 
-                    // Move messages to the destination folder
-                    client.MoveMessages(messageIds, destinationFolder);
-
-                    Console.WriteLine($"Transferred {messageIds.Count} messages from '{sourceFolder}' to '{destinationFolder}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+                    Console.WriteLine("Message transfer operations completed successfully.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
