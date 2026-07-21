@@ -1,83 +1,81 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
-class Program
+namespace DetermineMapiItemTypes
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string pstPath = "sample.pst";
-
-            // Ensure the PST file exists; create a minimal placeholder if missing
-            if (!File.Exists(pstPath))
+            try
             {
-                string directory = Path.GetDirectoryName(pstPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+                // Path to the PST file (replace with your actual file path)
+                string pstPath = "storage.pst";
 
-                try
+                if (!File.Exists(pstPath))
                 {
-                    // Create an empty Unicode PST file
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine($"Placeholder PST created at: {pstPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
+                    Console.Error.WriteLine($"PST file not found: {pstPath}");
                     return;
                 }
-            }
 
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Process the root folder
-                ProcessFolder(pst, pst.RootFolder);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
+                // Directory where extracted messages will be saved
+                string outputDir = "output";
+                Directory.CreateDirectory(outputDir);
 
-    // Recursively process a folder and its subfolders
-    private static void ProcessFolder(PersonalStorage pst, FolderInfo folder)
-    {
-        try
-        {
-            // Enumerate messages in the current folder
-            foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-            {
-                try
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    using (MapiMessage message = pst.ExtractMessage(messageInfo))
+                    // Iterate through all top‑level folders
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                     {
-                        MapiItemType itemType = message.SupportedType;
-                        Console.WriteLine($"EntryId: {messageInfo.EntryId} | Type: {itemType}");
+                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                        Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                        Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                        // Enumerate each message in the folder
+                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        {
+                            Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                            // Extract the MAPI message from the PST
+                            MapiMessage mapiMessage = pst.ExtractMessage(messageInfo);
+
+                            // Determine the MAPI item type via the MessageClass property
+                            string messageClass = mapiMessage.MessageClass ?? "Unknown";
+                            Console.WriteLine($"MAPI Message Class: {messageClass}");
+
+                            // Create a safe filename based on the subject
+                            string safeSubject = string.IsNullOrWhiteSpace(mapiMessage.Subject) ? "Untitled" : mapiMessage.Subject;
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                            {
+                                safeSubject = safeSubject.Replace(c, '_');
+                            }
+
+                            // Truncate if the filename is excessively long
+                            if (safeSubject.Length > 100)
+                                safeSubject = safeSubject.Substring(0, 100);
+
+                            string msgPath = Path.Combine(outputDir, $"{safeSubject}.msg");
+
+                            try
+                            {
+                                mapiMessage.Save(msgPath);
+                                Console.WriteLine($"Saved message to: {msgPath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to save message '{safeSubject}': {ex.Message}");
+                            }
+                        }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing message {messageInfo.EntryId}: {ex.Message}");
-                }
             }
-
-            // Recursively process subfolders
-            foreach (FolderInfo subFolder in folder.GetSubFolders())
+            catch (Exception ex)
             {
-                ProcessFolder(pst, subFolder);
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error processing folder {folder.DisplayName}: {ex.Message}");
         }
     }
 }
