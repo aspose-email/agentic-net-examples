@@ -1,8 +1,10 @@
+using Aspose.Email.Clients.Exchange;
 using System;
+using System.IO;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,61 +12,96 @@ class Program
     {
         try
         {
-            // Placeholder connection details
-            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
+            // Ensure TLS 1.2 for secure connection
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            // EWS connection parameters (replace with real values)
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
+            string domain = "example.com";
 
-            // Guard against placeholder credentials to avoid real network calls during CI
-            if (string.IsNullOrEmpty(serviceUrl) || serviceUrl.Contains("example"))
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password" || domain.Contains("example.com"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create and connect the EWS client
-            try
+            // Create the EWS client inside a using block for proper disposal
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password, domain))
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                try
                 {
+                    // Get mailbox information to obtain folder URIs
+                    var mailboxInfo = client.GetMailboxInfo();
+
                     // List messages in the Inbox folder
-                    ExchangeMessageInfoCollection messageInfos;
-                    try
+                    ExchangeMessageInfoCollection inboxMessages = client.ListMessages(mailboxInfo.InboxUri);
+                    if (inboxMessages == null || inboxMessages.Count == 0)
                     {
-                        messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
+                        Console.WriteLine("No messages found in the Inbox.");
                         return;
                     }
 
-                    // Iterate through each message info
-                    foreach (ExchangeMessageInfo info in messageInfos)
+                    // Process the first message
+                    var firstMsgInfo = inboxMessages[0];
+                    string messageUri = firstMsgInfo.UniqueUri;
+
+                    // Fetch the full MailMessage
+                    MailMessage fetchedMessage = client.FetchMessage(messageUri);
+                    if (fetchedMessage == null)
                     {
-                        // Fetch the full MailMessage using UniqueUri
-                        try
+                        Console.WriteLine("Failed to fetch the message.");
+                        return;
+                    }
+
+                    // Prepare output file path
+                    string outputPath = Path.Combine(Environment.CurrentDirectory, "FetchedMessage.eml");
+
+                    // Guard file I/O
+                    try
+                    {
+                        string dir = Path.GetDirectoryName(outputPath);
+                        if (!Directory.Exists(dir))
                         {
-                            using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                            {
-                                // Example processing: output subject and sender
-                                Console.WriteLine($"Subject: {message.Subject}");
-                                Console.WriteLine($"From: {message.From}");
-                                Console.WriteLine(new string('-', 40));
-                            }
+                            Console.Error.WriteLine($"Directory does not exist: {dir}");
+                            return;
                         }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to fetch message '{info.UniqueUri}': {ex.Message}");
-                            // Continue with next message
-                        }
+
+                        // Save the fetched message to .eml file
+                        fetchedMessage.Save(outputPath);
+                        Console.WriteLine($"Message saved to: {outputPath}");
+                    }
+                    catch (Exception ioEx)
+                    {
+                        Console.Error.WriteLine($"IO error: {ioEx.Message}");
+                        return;
+                    }
+                    finally
+                    {
+                        // Dispose the fetched MailMessage
+                        fetchedMessage.Dispose();
+                    }
+
+                    // OPTIONAL: Create a draft MAPI message and append it to Drafts folder
+                    // (demonstrates AppendMessage with MapiMessage)
+                    try
+                    {
+                        var draft = new MapiMessage("sender@example.com", "recipient@example.com", "Draft Subject", "Draft body content.");
+                        client.AppendMessage(mailboxInfo.DraftsUri, draft, true);
+                        Console.WriteLine("Draft message appended to Drafts folder.");
+                    }
+                    catch (Exception draftEx)
+                    {
+                        Console.Error.WriteLine($"Failed to append draft: {draftEx.Message}");
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"EWS client error: {ex.Message}");
-                return;
+                catch (Exception clientEx)
+                {
+                    Console.Error.WriteLine($"EWS operation error: {clientEx.Message}");
+                }
             }
         }
         catch (Exception ex)
