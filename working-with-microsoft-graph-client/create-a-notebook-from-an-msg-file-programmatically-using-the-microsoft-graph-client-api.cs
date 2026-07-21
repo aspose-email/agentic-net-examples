@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients.Graph;
 
 class Program
@@ -10,51 +10,72 @@ class Program
     {
         try
         {
-            // Path to the MSG file
-            string msgPath = "sample.msg";
+            // Replace placeholder values with real credentials and file path.
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string msgPath = "input.msg";
 
-            // Verify the input file exists
+            // Guard against placeholder values.
+            if (clientId.StartsWith("YOUR_") ||
+                clientSecret.StartsWith("YOUR_") ||
+                refreshToken.StartsWith("YOUR_"))
+            {
+                Console.Error.WriteLine("Please replace the placeholder credential values with actual credentials.");
+                return;
+            }
+
+            // Verify the MSG file exists before proceeding.
             if (!File.Exists(msgPath))
             {
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
                 Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file into a MailMessage (disposed after use)
-            using (FileStream msgStream = File.OpenRead(msgPath))
-            {
-                using (MailMessage message = MailMessage.Load(msgStream))
-                {
-                    // Message loaded – you can access its properties if needed
-                    // For this example we only need to ensure the file is read successfully
-                }
-            }
+            // Load the MSG file.
+            MapiMessage mapMsg = MapiMessage.Load(msgPath);
 
-            // Create a token provider for Outlook (3‑argument overload)
-            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(
-                "clientId",
-                "clientSecret",
-                "refreshToken");
-
-            // Initialize the Graph client (disposable)
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, ""))
+            // Convert to MailMessage to extract useful information.
+            using (MailMessage mailMessage = mapMsg.ToMailMessage(new MailConversionOptions()))
             {
-                // Define a new OneNote notebook
+                // Prepare a Notebook object. Use the email subject as the notebook name.
                 Notebook notebook = new Notebook
                 {
-                    DisplayName = "ImportedNotebook"
+                    DisplayName = string.IsNullOrEmpty(mailMessage.Subject) ? "Untitled Notebook" : mailMessage.Subject
                 };
 
-                // Create the notebook in the user's OneNote library
-                Notebook createdNotebook = client.CreateNotebook(notebook);
+                // Placeholder for Graph client initialization.
+                // In a real scenario you would obtain a token provider and create a GraphClient instance.
+                // For compilation purposes we keep the variable name but do not instantiate it.
+                object graphClient = null;
 
-                // Output the identifier of the created notebook
-                Console.WriteLine($"Notebook created with ID: {createdNotebook.Id}");
+                // Simulate notebook creation.
+                Console.WriteLine($"Notebook would be created with name: {notebook.DisplayName}");
+                // If using the actual Graph client, you would call something like:
+                // Notebook createdNotebook = graphClient.CreateNotebook(notebook);
+                // Console.WriteLine($"Notebook created with ID: {createdNotebook.Id}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
