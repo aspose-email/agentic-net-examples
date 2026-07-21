@@ -1,9 +1,8 @@
-using Aspose.Email.Tools.Search;
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -11,51 +10,42 @@ class Program
     {
         try
         {
-            // Placeholder connection data – replace with real values when running against a real server.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // EWS client configuration (replace with real credentials)
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Guard against executing real network calls with placeholder data.
-            if (mailboxUri.Contains("example.com"))
+            // Skip external calls when placeholder credentials are used
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected – skipping EWS call.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client using the recommended factory method.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(username, password)))
+            // Create and dispose the EWS client safely
+            using (IEWSClient ewsClient = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // Build an Advanced Query Syntax (AQS) expression.
-                // AQS allows expressive searches such as:
-                //   from:"john@example.com" subject:"report" hasattachment:true
-                // The builder provides strongly‑typed access to each field.
-                ExchangeAdvancedSyntaxQueryBuilder aqsBuilder = new ExchangeAdvancedSyntaxQueryBuilder();
-                aqsBuilder.From.Contains("john@example.com");
-                aqsBuilder.Subject.Contains("report");
-                aqsBuilder.HasAttachment.Equals(true);
+                // ------------------------------------------------------------
+                // Example: Direct AQS string
+                // ------------------------------------------------------------
+                // AQS query string can combine multiple criteria using logical operators.
+                // Supported operators: AND, OR, NOT, parentheses for grouping, and property filters.
+                string aqsString = "From:'john@example.com' AND Subject:'Report' AND Received>='2023-01-01'";
 
-                // Convert the builder configuration into a MailQuery object.
-                MailQuery aqsQuery = aqsBuilder.GetQuery();
+                // Build the AQS query
+                ExchangeAdvancedSyntaxMailQuery aqsQuery = new ExchangeAdvancedSyntaxMailQuery(aqsString);
 
-                // List messages from the Inbox that match the AQS query.
-                // The ListMessages overload accepts a MailQuery (including AQS queries) and a recursion flag.
-                ExchangeMessageInfoCollection messages = client.ListMessages(
-                    client.MailboxInfo.InboxUri,
-                    aqsQuery);
+                // Retrieve the Inbox folder URI
+                string inboxUri = ewsClient.GetMailboxInfo().InboxUri;
 
-                // Output basic information about the matched messages.
-                foreach (ExchangeMessageInfo info in messages)
-                {
-                    Console.WriteLine($"Subject: {info.Subject}");
-                    Console.WriteLine($"From: {info.From}");
-                    Console.WriteLine($"Has Attachment: {info.HasAttachments}");
-                    Console.WriteLine(new string('-', 40));
-                }
+                // Execute the search using the AQS query
+                ExchangeMessageInfoCollection aqsMessages = ewsClient.ListMessages(inboxUri, aqsQuery);
+                Console.WriteLine($"Found {aqsMessages.Count} messages using direct AQS string.");
             }
         }
         catch (Exception ex)
         {
+            // Graceful error handling
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
