@@ -1,50 +1,61 @@
 using System;
-using System.Collections.Generic;
 using Aspose.Email;
+
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-class Program
+namespace GmailOAuthExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials – replace with real values for actual execution.
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string defaultEmail = "user@example.com";
+            // Replace the placeholder values with your actual Google OAuth credentials.
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string defaultEmail = "YOUR_EMAIL@example.com";
 
-            // Guard: skip network calls when placeholders are used.
-            if (clientId == "clientId" || clientSecret == "clientSecret" ||
-                refreshToken == "refreshToken" || defaultEmail == "user@example.com")
+            // Guard against placeholder values.
+            if (clientId.StartsWith("YOUR_") ||
+                clientSecret.StartsWith("YOUR_") ||
+                refreshToken.StartsWith("YOUR_") ||
+                defaultEmail.StartsWith("YOUR_"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail API calls.");
+                Console.Error.WriteLine("Please replace placeholder credentials with valid values.");
                 return;
             }
 
-            // Obtain a token provider for Google and retrieve an access token.
-            TokenProvider tokenProvider = TokenProvider.Google.GetInstance(clientId, clientSecret, refreshToken);
-            OAuthToken oauthToken = tokenProvider.GetAccessToken();
-
-            // Create the Gmail client using the obtained access token.
-            using (IGmailClient gmailClient = GmailClient.GetInstance(oauthToken.Token, defaultEmail))
+            try
             {
-                // List messages in the mailbox.
-                List<GmailMessageInfo> messages = gmailClient.ListMessages();
+                // Obtain a Google token provider.
+                Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Google.GetInstance(clientId, clientSecret, refreshToken);
 
-                Console.WriteLine($"Total messages: {messages.Count}");
-                foreach (GmailMessageInfo info in messages)
+                // Retrieve the OAuth token and extract the access token string.
+                OAuthToken oauthToken = tokenProvider.GetAccessToken();
+                string accessToken = oauthToken.Token;
+
+                // Create the Gmail client using the access token.
+                using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
                 {
-                    // GmailMessageInfo does not expose Subject; use Id for demonstration.
-                    Console.WriteLine($"Message Id: {info.Id}");
+                    // Build a simple email message.
+                    MailMessage message = new MailMessage
+                    {
+                        From = new MailAddress(defaultEmail),
+                        Subject = "Aspose.Email Gmail OAuth Test",
+                        Body = "This email was sent using Aspose.Email with Google OAuth 2.0 authentication."
+                    };
+                    message.To.Add(new MailAddress(defaultEmail));
+
+                    // Send the message.
+                    gmailClient.SendMessage(message);
+                    Console.WriteLine("Email sent successfully.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            }
         }
     }
 }
