@@ -9,69 +9,45 @@ class Program
     {
         try
         {
+            // Paths for the image and output MSG file
             string imagePath = "1.jpg";
             string outputPath = "EmbeddedImage_out.msg";
 
             // Ensure the image file exists; create a minimal placeholder if missing
             if (!File.Exists(imagePath))
             {
-                try
-                {
-                    using (FileStream fs = File.Create(imagePath))
-                    {
-                        // Minimal JPEG header (empty image)
-                        byte[] jpegHeader = new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 };
-                        fs.Write(jpegHeader, 0, jpegHeader.Length);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder image: {ex.Message}");
-                    return;
-                }
+                // Minimal JPEG header (SOI and EOI) to form a valid image file
+                byte[] jpegPlaceholder = new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 };
+                File.WriteAllBytes(imagePath, jpegPlaceholder);
             }
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Create the email message
+            MailMessage eml = new MailMessage();
+            eml.From = "AndrewIrwin@from.com";
+            eml.To = "SusanMarc@to.com";
+            eml.Subject = "This is an email";
+
+            // Plain‑text view (for clients that do not support HTML)
+            AlternateView plainView = AlternateView.CreateAlternateViewFromString(
+                "This is my plain text content", null, "text/plain");
+
+            // HTML view with an embedded image referenced by Content‑Id "barcode"
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                "Here is an embedded image. <img src=cid:barcode>", null, "text/html");
+
+            // Linked resource representing the embedded image
+            LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg)
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
+                ContentId = "barcode"
+            };
 
-            using (MailMessage message = new MailMessage())
-            {
-                message.From = "AndrewIrwin@from.com";
-                message.To.Add("SusanMarc@to.com");
-                message.Subject = "This is an email";
+            // Attach the linked resource and alternate views to the message
+            eml.LinkedResources.Add(barcode);
+            eml.AlternateViews.Add(plainView);
+            eml.AlternateViews.Add(htmlView);
 
-                AlternateView plainView = AlternateView.CreateAlternateViewFromString(
-                    "This is my plain text content", null, "text/plain");
-
-                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
-                    "Here is an embedded image.<img src=cid:barcode>", null, "text/html");
-
-                // Create the linked resource (embedded image) and set its Content-Id
-                LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg)
-                {
-                    ContentId = "barcode"
-                };
-
-                // Add the linked resource and alternate views to the message
-                message.LinkedResources.Add(barcode);
-                message.AlternateViews.Add(plainView);
-                message.AlternateViews.Add(htmlView);
-
-                // Save the message as an MSG file
-                message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
-            }
+            // Save the message as an MSG file with Unicode support
+            eml.Save(outputPath, SaveOptions.DefaultMsgUnicode);
         }
         catch (Exception ex)
         {
