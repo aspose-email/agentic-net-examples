@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using Aspose.Email;
 using Aspose.Email.Clients.Pop3;
 
@@ -7,72 +8,76 @@ namespace Pop3ActivityLoggingSample
 {
     class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
-            try
+            // Configuration parameters – replace with real values or keep placeholders for demonstration
+            string host = "pop3.example.com";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Path for the activity log file
+            string logFilePath = "pop3_activity.log";
+
+            // Ensure the directory for the log file exists
+            string logDir = Path.GetDirectoryName(logFilePath);
+            if (!string.IsNullOrEmpty(logDir) && !Directory.Exists(logDir))
             {
-                // POP3 server credentials (replace with real values)
-                string host = "pop3.example.com";
-                int port = 110;
-                string username = "username";
-                string password = "password";
+                Directory.CreateDirectory(logDir);
+            }
 
-                // Guard against placeholder credentials to avoid real network calls during CI
-                if (host.Contains("example.com") || (username == "username" && password == "password"))
-                {
-                    Console.Error.WriteLine("Placeholder POP3 credentials detected. Skipping network operations.");
-                    return;
-                }
+            // Guard: skip real network calls when placeholder credentials are detected
+            bool usePlaceholders = host.Contains("example.com") ||
+                                   username.Contains("example.com") ||
+                                   password.Equals("password", StringComparison.OrdinalIgnoreCase);
 
-                // Prepare log file path
-                string logPath = "pop3log.txt";
+            var logBuilder = new StringBuilder();
+
+            if (usePlaceholders)
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
+                logBuilder.AppendLine("POP3 activity logging skipped due to placeholder credentials.");
+            }
+            else
+            {
                 try
                 {
-                    string logDirectory = Path.GetDirectoryName(logPath);
-                    if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
+                    // Create and configure the POP3 client inside a using block to guarantee disposal
+                    using (Pop3Client pop3Client = new Pop3Client(host, username, password))
                     {
-                        Directory.CreateDirectory(logDirectory);
+                        logBuilder.AppendLine($"Connecting to POP3 server '{host}' as '{username}'.");
+
+                        try
+                        {
+                            // Example operation: list messages in the mailbox
+                            Pop3MessageInfoCollection messages = pop3Client.ListMessages();
+                            Console.WriteLine($"Total messages on server: {messages.Count}");
+                            logBuilder.AppendLine($"Total messages on server: {messages.Count}");
+                        }
+                        catch (Pop3Exception popEx)
+                        {
+                            // Log POP3‑specific errors and continue
+                            Console.Error.WriteLine($"POP3 error: {popEx.Message}");
+                            logBuilder.AppendLine($"POP3 error: {popEx.Message}");
+                        }
                     }
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to prepare log directory: {dirEx.Message}");
-                    return;
-                }
-
-                // Initialize POP3 client with logging enabled
-                using (Pop3Client client = new Pop3Client(host, port, username, password))
-                {
-                    client.EnableLogger = true;
-                    client.LogFileName = logPath;
-                    client.UseDateInLogFileName = true;
-
-                    try
-                    {
-                        // Retrieve mailbox status
-                        Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
-                        Console.WriteLine($"Message count: {mailboxInfo.MessageCount}");
-                        Console.WriteLine($"Occupied size: {mailboxInfo.OccupiedSize}");
-
-                        // List messages to generate detailed activity logs
-                        Pop3MessageInfoCollection messages = client.ListMessages();
-                        Console.WriteLine($"Listed {messages.Count} messages.");
-                    }
-                    catch (Pop3Exception popEx)
-                    {
-                        Console.Error.WriteLine($"POP3 error: {popEx.Message}");
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error during POP3 operations: {ex.Message}");
-                        return;
-                    }
+                    // Catch any unexpected exceptions and report them
+                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                    logBuilder.AppendLine($"Unexpected error: {ex.Message}");
                 }
             }
-            catch (Exception ex)
+
+            // Write the activity log to the file system
+            try
             {
-                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+                File.WriteAllText(logFilePath, logBuilder.ToString());
+                Console.WriteLine($"Activity log written to: {Path.GetFullPath(logFilePath)}");
+            }
+            catch (IOException ioEx)
+            {
+                Console.Error.WriteLine($"Failed to write activity log: {ioEx.Message}");
             }
         }
     }
