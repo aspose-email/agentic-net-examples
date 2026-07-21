@@ -2,29 +2,44 @@ using System;
 using Aspose.Email;
 using Aspose.Email.Tools.Verifications;
 
-class Program
+namespace EmailValidationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Sample email address to validate
-            string emailAddress = "example@example.com";
+            try
+            {
+                // Create an instance of the EmailValidator.
+                EmailValidator validator = new EmailValidator();
 
-            // Create an instance of EmailValidator
-            EmailValidator validator = new EmailValidator();
+                // Optional: configure DNS servers and timeout (in milliseconds).
+                // validator.DnsServers = new string[] { "8.8.8.8", "8.8.4.4" };
+                // validator.Timeout = 5000;
 
-            // Perform validation
-            ValidationResult validationResult;
-            validator.Validate(emailAddress, out validationResult);
+                // List of email addresses to validate.
+                string[] emailAddresses = new string[]
+                {
+                    "alice@example.com",
+                    "bob@invalid-domain",
+                    "not-an-email"
+                };
 
-            // Output validation result
-            Console.WriteLine("Return Code: " + validationResult.ReturnCode);
-            Console.WriteLine("Message: " + validationResult.Message);
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+                foreach (string address in emailAddresses)
+                {
+                    // Perform validation using the default MailServer policy.
+                    ValidationResult result;
+                    validator.Validate(address, out result);
+
+                    // Output the validation result.
+                    Console.WriteLine($"{address} => {result}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Gracefully report any unexpected errors.
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
