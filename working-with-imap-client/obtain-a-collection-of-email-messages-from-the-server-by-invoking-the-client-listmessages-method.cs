@@ -2,63 +2,36 @@ using System;
 using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Clients.Google;
+using Aspose.Email.Mime;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Replace placeholders with actual OAuth access token and email address.
+            string accessToken = "YOUR_ACCESS_TOKEN";
+            string defaultEmail = "user@example.com";
+
+            // Create Gmail client instance (disposable)
+            using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
             {
-                // Placeholder credentials – replace with real values when available.
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string defaultEmail = "user@example.com";
+                // Retrieve all messages from the mailbox
+                List<GmailMessageInfo> messages = gmailClient.ListMessages();
 
-                // Guard against executing external calls with placeholder credentials.
-                if (clientId == "clientId" || clientSecret == "clientSecret" ||
-                    refreshToken == "refreshToken" || defaultEmail == "user@example.com")
+                Console.WriteLine($"Total messages: {messages.Count}");
+                foreach (GmailMessageInfo info in messages)
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping Gmail client call.");
-                    return;
-                }
-
-                // Initialize Gmail client.
-                IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-
-                try
-                {
-                    // Retrieve the list of messages.
-                    List<GmailMessageInfo> messages = gmailClient.ListMessages();
-
-                    // Output basic information for each message.
-                    foreach (GmailMessageInfo messageInfo in messages)
-                    {
-                        // GmailMessageInfo does not have a Subject property; use Id as an identifier.
-                        Console.WriteLine($"Message Id: {messageInfo.Id}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Handle errors related to Gmail client operations.
-                    Console.Error.WriteLine($"Gmail client error: {ex.Message}");
-                }
-                finally
-                {
-                    // Dispose the client if it implements IDisposable.
-                    if (gmailClient is IDisposable disposableClient)
-                    {
-                        disposableClient.Dispose();
-                    }
+                    // Fetch the full message to access Subject and From fields
+                    MailMessage mail = gmailClient.FetchMessage(info.Id);
+                    Console.WriteLine($"Subject: {mail.Subject}, From: {mail.From}");
                 }
             }
-            catch (Exception ex)
-            {
-                // Top-level exception guard.
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
