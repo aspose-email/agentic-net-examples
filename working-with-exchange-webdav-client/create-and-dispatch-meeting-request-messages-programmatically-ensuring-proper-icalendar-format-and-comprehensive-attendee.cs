@@ -1,68 +1,82 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Calendar;
-using Aspose.Email.Calendar.Recurrences;
 using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Calendar;
 
-class Program
+namespace MeetingRequestSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder SMTP settings
-            string smtpHost = "smtp.example.com";
-            int smtpPort = 25;
-            string smtpUser = "user@example.com";
-            string smtpPass = "password";
-
-            // Guard against placeholder credentials
-            if (smtpHost.Contains("example.com"))
+            try
             {
-                Console.Error.WriteLine("Placeholder SMTP configuration detected. Skipping send operation.");
-                return;
+                // Prepare the email message.
+                using (MailMessage msg = new MailMessage())
+                {
+                    // Set the organizer as the sender.
+                    MailAddress organizer = new MailAddress("organizer@domain.com");
+                    msg.From = organizer;
+
+                    // Define attendees.
+                    MailAddressCollection attendees = new MailAddressCollection
+                    {
+                        new MailAddress("person1@domain.com"),
+                        new MailAddress("person2@domain.com"),
+                        new MailAddress("person3@domain.com")
+                    };
+
+                    // Add attendees to the message recipients.
+                    foreach (MailAddress attendee in attendees)
+                    {
+                        msg.To.Add(attendee);
+                    }
+
+                    // Create the appointment (meeting request).
+                    Appointment app = new Appointment(
+                        "Room 112",
+                        new DateTime(2026, 10, 1, 13, 0, 0),
+                        new DateTime(2026, 10, 1, 14, 0, 0),
+                        organizer,
+                        attendees)
+                    {
+                        Summary = "Release Meeting",
+                        Description = "Discuss the next release"
+                    };
+
+                    // Attach the iCalendar representation to the email.
+                    msg.AlternateViews.Add(app.RequestApointment());
+
+                    // SMTP configuration (placeholders).
+                    string smtpHost = "smtp.server.com";
+                    int smtpPort = 25;
+                    string smtpUser = "user";
+                    string smtpPass = "password";
+
+                    // Guard: skip actual sending when placeholders are detected.
+                    bool placeholdersDetected = smtpHost.Contains("smtp.server.com") ||
+                                                smtpUser.Equals("user", StringComparison.OrdinalIgnoreCase) ||
+                                                smtpPass.Equals("password", StringComparison.OrdinalIgnoreCase);
+
+                    if (placeholdersDetected)
+                    {
+                        Console.WriteLine("Placeholder SMTP credentials detected. Skipping send operation.");
+                        Console.WriteLine("Meeting request prepared successfully.");
+                    }
+                    else
+                    {
+                        using (SmtpClient smtp = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass))
+                        {
+                            smtp.Send(msg);
+                            Console.WriteLine("Meeting request sent successfully.");
+                        }
+                    }
+                }
             }
-
-            // Attendees collection
-            MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("person1@domain.com"));
-            attendees.Add(new MailAddress("person2@domain.com"));
-            attendees.Add(new MailAddress("person3@domain.com"));
-
-            // Create the appointment
-            Appointment appointment = new Appointment(
-                location: "Room 112",
-                summary: "Release Meeting",
-                description: "Discuss the next release",
-                startDate: new DateTime(2026, 4, 1, 13, 0, 0),
-                endDate: new DateTime(2026, 4, 1, 14, 0, 0),
-                organizer: new MailAddress("organizer@domain.com"),
-                attendees: attendees);
-
-            // Set a daily recurrence ending on a specific date (no OccurrenceCount property)
-            DailyRecurrencePattern recurrence = new DailyRecurrencePattern(5, 1);
-            recurrence.EndDate = new DateTime(2026, 4, 5);
-            appointment.Recurrence = recurrence;
-
-            // Build the meeting request message
-            MailMessage message = new MailMessage();
-            message.From = new MailAddress("organizer@domain.com");
-            foreach (MailAddress addr in attendees)
+            catch (Exception ex)
             {
-                message.To.Add(addr);
+                Console.Error.WriteLine("Unexpected error: " + ex.Message);
             }
-            message.Subject = appointment.Summary;
-            message.AlternateViews.Add(appointment.RequestApointment());
-
-            // Send the meeting request via SMTP
-            using (SmtpClient client = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass))
-            {
-                client.Send(message);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
         }
     }
 }
