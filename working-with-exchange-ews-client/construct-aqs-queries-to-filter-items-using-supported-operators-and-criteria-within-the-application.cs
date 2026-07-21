@@ -1,61 +1,60 @@
-using Aspose.Email.Tools.Search;
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
 
 namespace AqsQuerySample
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             try
             {
-                // Placeholder credentials – replace with real values or skip execution.
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "username";
+                // Author: Sample demonstrating AQS query construction and usage with EWS
+                // Initialize EWS client (replace with real credentials)
+                string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
                 string password = "password";
 
-                // Guard against placeholder credentials to avoid real network calls in CI.
-                if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
-                {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
-                    return;
-                }
-
-                // Create the EWS client.
                 using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
-                    try
-                    {
-                        // Build an AQS query: subject contains "report" AND from contains "example@domain.com".
-                        ExchangeAdvancedSyntaxQueryBuilder builder = new ExchangeAdvancedSyntaxQueryBuilder();
-                        builder.Subject.Contains("report");
-                        builder.From.Contains("example@domain.com");
-                        MailQuery query = builder.GetQuery();
+                    // Build an Advanced Query Syntax (AQS) query
+                    // Example: messages from test@example.com that are unread and received after 1 Jan 2023
+                    string aqsExpression = "(From:'test@example.com' AND IsRead:false AND SentDate>='2023-01-01')";
 
-                        // List messages from the Inbox that match the query.
-                        string inboxUri = client.MailboxInfo.InboxUri;
-                        ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri, query);
-
-                        // Output the subjects of the retrieved messages.
-                        foreach (var messageInfo in messages)
-                        {
-                            Console.WriteLine($"Message URI: {messageInfo.UniqueUri}");
-                        }
-                    }
-                    catch (Exception ex)
+                    // Skip external calls when placeholder credentials are used
+                    if (username.Contains("example.com") || password == "password" || aqsExpression.Contains("example.com"))
                     {
-                        Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
+                        Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                         return;
+                    }
+
+                    ExchangeAdvancedSyntaxMailQuery query = new ExchangeAdvancedSyntaxMailQuery(aqsExpression);
+
+                    // Get the Inbox folder URI
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    string inboxUri = mailboxInfo.InboxUri;
+
+                    // Search messages in the Inbox using the AQS query
+                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri, query);
+
+                    Console.WriteLine($"Found {messages.Count} message(s) matching the AQS query.");
+
+                    // Optionally fetch and display subject of each message
+                    foreach (ExchangeMessageInfo info in messages)
+                    {
+                        // Fetch the full message as a MailMessage
+                        MailMessage message = client.FetchMessage(info.UniqueUri);
+                        Console.WriteLine($"Subject: {message.Subject}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return;
             }
         }
     }
