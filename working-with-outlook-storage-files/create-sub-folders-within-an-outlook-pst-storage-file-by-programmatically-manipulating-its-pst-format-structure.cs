@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
 class Program
@@ -9,58 +9,64 @@ class Program
     {
         try
         {
+            // Path to the PST file
             string pstPath = "sample.pst";
 
-            // Ensure the directory for the PST file exists
-            string directory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            // Create a new PST file if it does not exist
+            // Ensure the PST file exists; create a new Unicode PST if missing
             if (!File.Exists(pstPath))
             {
                 try
                 {
                     PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine($"Created new PST file at {pstPath}");
+                    Console.WriteLine($"Created new PST file at '{pstPath}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
                     return;
                 }
             }
 
-            // Open the PST file
+            // Open the PST for read/write operations
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Verify that the PST is writable
-                if (!pst.CanWrite)
+                // Access the root folder
+                FolderInfo rootFolder = pst.RootFolder;
+
+                // Create a first-level subfolder named "Invoices"
+                FolderInfo invoicesFolder;
+                try
                 {
-                    Console.Error.WriteLine("PST file is read‑only. Cannot add sub‑folders.");
+                    invoicesFolder = rootFolder.AddSubFolder("Invoices");
+                    Console.WriteLine("Created subfolder: Invoices");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Could not create 'Invoices' folder: {ex.Message}");
                     return;
                 }
 
-                // Get the root folder of the PST
-                FolderInfo rootFolder = pst.RootFolder;
-
-                // Create a top‑level folder named "Projects"
-                FolderInfo projectsFolder = rootFolder.AddSubFolder("Projects");
-
-                // Create a sub‑folder named "2024" under "Projects"
-                FolderInfo yearFolder = projectsFolder.AddSubFolder("2024");
-
-                // Create a nested hierarchy in one call using FolderCreationOptions
-                FolderCreationOptions options = new FolderCreationOptions
+                // Create a nested subfolder "2023" under "Invoices"
+                try
                 {
-                    CreateHierarchy = true
-                };
-                // This creates "Archives\2023" under the root folder
-                FolderInfo archiveFolder = rootFolder.AddSubFolder(@"Archives\2023", options);
+                    FolderInfo yearFolder = invoicesFolder.AddSubFolder("2023");
+                    Console.WriteLine("Created subfolder: Invoices\\2023");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Could not create '2023' folder: {ex.Message}");
+                }
 
-                Console.WriteLine("Sub‑folders created successfully.");
+                // Additional example: create another top‑level folder "Reports"
+                try
+                {
+                    FolderInfo reportsFolder = rootFolder.AddSubFolder("Reports");
+                    Console.WriteLine("Created subfolder: Reports");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Could not create 'Reports' folder: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
