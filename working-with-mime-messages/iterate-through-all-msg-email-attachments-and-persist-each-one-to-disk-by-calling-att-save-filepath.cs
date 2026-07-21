@@ -1,20 +1,21 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
-namespace AsposeEmailAttachmentExtractor
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                string msgPath = "sample.msg";
+            // Author note: Example demonstrates extracting all attachments from a MSG file.
+            string inputMsgPath = "c:\\outlookmessage.msg";
+            string outputFolder = "Attachments";
 
-                if (!File.Exists(msgPath))
-                {
+            // Verify input file exists
+            if (!File.Exists(inputMsgPath))
+            {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -23,7 +24,7 @@ namespace AsposeEmailAttachmentExtractor
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath);
+                        placeholder.Save(inputMsgPath);
                     }
                 }
                 catch (Exception ex)
@@ -32,67 +33,43 @@ namespace AsposeEmailAttachmentExtractor
                     return;
                 }
 
-                    Console.Error.WriteLine($"Input file not found: {msgPath}");
-                    return;
-                }
-
-                using (MapiMessage msg = MapiMessage.Load(msgPath))
-                {
-                    if (msg.Attachments == null || msg.Attachments.Count == 0)
-                    {
-                        Console.WriteLine("No attachments found in the MSG file.");
-                        return;
-                    }
-
-                    string outputDir = "Attachments";
-
-                    try
-                    {
-                        if (!Directory.Exists(outputDir))
-                        {
-                            Directory.CreateDirectory(outputDir);
-                        }
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create output directory '{outputDir}': {dirEx.Message}");
-                        return;
-                    }
-
-                    foreach (MapiAttachment attachment in msg.Attachments)
-                    {
-                        string originalFileName = attachment.FileName;
-                        if (string.IsNullOrEmpty(originalFileName))
-                        {
-                            originalFileName = "attachment.bin";
-                        }
-
-                        // Sanitize file name
-                        char[] invalidChars = Path.GetInvalidFileNameChars();
-                        string safeFileName = originalFileName;
-                        foreach (char c in invalidChars)
-                        {
-                            safeFileName = safeFileName.Replace(c, '_');
-                        }
-
-                        string outputPath = Path.Combine(outputDir, safeFileName);
-
-                        try
-                        {
-                            attachment.Save(outputPath);
-                            Console.WriteLine($"Saved attachment to: {outputPath}");
-                        }
-                        catch (Exception attEx)
-                        {
-                            Console.Error.WriteLine($"Failed to save attachment '{originalFileName}': {attEx.Message}");
-                        }
-                    }
-                }
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+                return;
             }
-            catch (Exception ex)
+
+            // Ensure output directory exists
+            try
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Directory.CreateDirectory(outputFolder);
             }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Failed to create output directory '{outputFolder}': {dirEx.Message}");
+                return;
+            }
+
+            // Load the MSG file
+            MapiMessage msg = MapiMessage.Load(inputMsgPath);
+
+            // Iterate through attachments and save each to disk
+            foreach (MapiAttachment att in msg.Attachments)
+            {
+                Console.WriteLine($"Attachment Name: {att.FileName}");
+                string outputPath = Path.Combine(outputFolder, att.FileName);
+
+                try
+                {
+                    att.Save(outputPath);
+                }
+                catch (Exception saveEx)
+                {
+                    Console.Error.WriteLine($"Failed to save attachment '{att.FileName}': {saveEx.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
