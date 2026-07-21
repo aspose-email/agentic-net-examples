@@ -11,7 +11,7 @@ class Program
             string inputPath = "input.msg";
             string outputPath = "output.eml";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing
+            // Ensure input MSG exists; create a minimal placeholder if missing
             if (!File.Exists(inputPath))
             {
                 try
@@ -33,29 +33,20 @@ class Program
 
                 using (MailMessage placeholder = new MailMessage())
                 {
-                    placeholder.Subject = "Placeholder";
-                    placeholder.Body = "This is a placeholder message.";
-                    MsgSaveOptions placeholderSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                    placeholder.Save(inputPath, placeholderSaveOptions);
+                    placeholder.From = new MailAddress("sender@example.com");
+                    placeholder.To.Add(new MailAddress("recipient@example.com"));
+                    placeholder.Subject = "Placeholder Message";
+                    placeholder.Body = "This is a placeholder MSG created because the input file was missing.";
+                    placeholder.Save(inputPath);
                 }
-            }
-
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
             }
 
             // Load the MSG file
             using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Save as EML preserving all properties
-                EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
-                message.Save(outputPath, emlSaveOptions);
+                // Save directly as EML, preserving all properties
+                message.Save(outputPath);
             }
-
-            Console.WriteLine("MSG file successfully converted to EML.");
         }
         catch (Exception ex)
         {
