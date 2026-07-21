@@ -1,49 +1,74 @@
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace SharedMailboxExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder values – replace with real server and credentials.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-            string sharedMailboxAddress = "shared@example.com";
-
-            // Guard against placeholder credentials to avoid real network calls in CI.
-            if (mailboxUri.Contains("example.com"))
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
+                // EWS service URL and user credentials
+                string ewsUrl = "https://mail.example.com/EWS/Exchange.asmx";
+                string userName = "user@example.com";
+                string password = "password";
 
-            // Create the EWS client.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                // The shared mailbox to which operations should be directed
+                string sharedMailboxAddress = "shared@example.com";
+
+
+                // Skip external calls when placeholder credentials are used
+                if (ewsUrl.Contains("example.com") || userName.Contains("example.com") || password == "password" || sharedMailboxAddress.Contains("example.com"))
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                NetworkCredential credentials = new NetworkCredential(userName, password);
+
+                // Create the EWS client (implements IEWSClient) and ensure proper disposal
+                using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, credentials))
+                {
+                    try
+                    {
+                        // Impersonate the shared mailbox
+                        client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, sharedMailboxAddress);
+                        Console.WriteLine("Impersonation set to shared mailbox: " + sharedMailboxAddress);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("Failed to impersonate shared mailbox: " + ex.Message);
+                        return;
+                    }
+
+                    // Example: send a test email from the shared mailbox
+                    using (MailMessage message = new MailMessage())
+                    {
+                        message.From = new MailAddress(userName);
+                        message.To.Add(sharedMailboxAddress);
+                        message.Subject = "Test email from shared mailbox";
+                        message.Body = "This is a test message sent via impersonated shared mailbox.";
+
+                        try
+                        {
+                            client.Send(message);
+                            Console.WriteLine("Test email sent successfully.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine("Failed to send email: " + ex.Message);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
             {
-                // Retrieve information about the shared mailbox.
-                ExchangeMailboxInfo sharedMailboxInfo = client.GetMailboxInfo(sharedMailboxAddress);
-
-                // Prepare a simple email message addressed from the shared mailbox.
-                MailMessage message = new MailMessage();
-                message.From = new MailAddress(sharedMailboxAddress);
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Test email from shared mailbox";
-                message.Body = "This email was sent using a shared mailbox address.";
-
-                // Send the message using the client.
-                client.Send(message);
-                Console.WriteLine("Message sent successfully from shared mailbox.");
+                Console.Error.WriteLine("Unexpected error: " + ex.Message);
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
