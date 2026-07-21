@@ -9,73 +9,49 @@ class Program
     {
         try
         {
-            string msgPath = "amp_message.msg";
+            // Define output file path
+            string outputPath = "amp_email.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(msgPath))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    using (AmpMessage placeholder = new AmpMessage())
-                    {
-                        placeholder.From = new MailAddress("sender@example.com", "Sender");
-                        placeholder.To = new MailAddressCollection { new MailAddress("recipient@example.com", "Recipient") };
-                        placeholder.Subject = "AMP Sample Message";
-                        placeholder.AmpHtmlBody = "<!doctype html><html amp4email><head><meta charset='utf-8'></head><body><h1>Hello AMP</h1></body></html>";
-                        placeholder.Save(msgPath);
-                        Console.WriteLine($"Placeholder MSG created at '{msgPath}'.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the MSG file and attempt to read AMP HTML content.
-            try
+            // Create an AMP message
+            using (AmpMessage ampMessage = new AmpMessage())
             {
-                using (MailMessage loadedMessage = MailMessage.Load(msgPath))
+                // Basic mail properties
+                ampMessage.From = "sender@example.com";
+                ampMessage.To.Add("recipient@example.com");
+                ampMessage.Subject = "AMP Email Example";
+
+                // Create an AMP image component (width, height)
+                AmpImage ampImage = new AmpImage(300, 200);
+                ampImage.Src = "https://example.com/image.png";
+                ampImage.Alt = "Example image";
+
+                // Add the image component to the message
+                ampMessage.AddAmpComponent(ampImage);
+
+                // Create an AMP fit text component
+                AmpFitText ampFitText = new AmpFitText("Hello, AMP world!");
+                // Add the text component to the message
+                ampMessage.AddAmpComponent(ampFitText);
+
+                // Save the AMP message as a MSG file
+                using (FileStream fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
                 {
-                    AmpMessage ampMessage = loadedMessage as AmpMessage;
-                    if (ampMessage != null)
-                    {
-                        Console.WriteLine("AMP HTML Body:");
-                        Console.WriteLine(ampMessage.AmpHtmlBody);
-                    }
-                    else
-                    {
-                        Console.WriteLine("The loaded message does not contain AMP content.");
-                    }
+                    ampMessage.Save(fileStream, SaveOptions.DefaultMsgUnicode);
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
-                return;
+
+                Console.WriteLine("AMP email saved to: " + outputPath);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
