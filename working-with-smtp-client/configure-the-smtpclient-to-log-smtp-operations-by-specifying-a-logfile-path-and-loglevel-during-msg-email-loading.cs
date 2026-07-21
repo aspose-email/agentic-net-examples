@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 
 class Program
@@ -10,11 +11,11 @@ class Program
         try
         {
             // Define paths
-            string msgPath = "sample.msg";
-            string logPath = "smtp_operations.log";
+            string emlPath = "sample.eml";
+            string logPath = "smtp.log";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
+            // Ensure the EML file exists; create a minimal placeholder if missing
+            if (!File.Exists(emlPath))
             {
                 try
                 {
@@ -24,63 +25,67 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
 
+                string minimalEml = "From: sender@example.com\r\nTo: recipient@example.com\r\nSubject: Test Message\r\n\r\nHello, this is a test email.";
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage())
-                    {
-                        placeholder.From = new MailAddress("sender@example.com");
-                        placeholder.To.Add("receiver@example.com");
-                        placeholder.Subject = "Placeholder Message";
-                        placeholder.Body = "This is a placeholder MSG file.";
-                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                    }
+                    File.WriteAllText(emlPath, minimalEml);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the MSG email
+            // Load the email message from the file
             MailMessage message;
             try
             {
-                message = MailMessage.Load(msgPath);
+                message = MailMessage.Load(emlPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to load email message: {ex.Message}");
                 return;
             }
 
-            // Configure the SMTP client with logging
-            using (SmtpClient client = new SmtpClient("smtp.example.com", 25, "username", "password"))
+            // Configure and use SmtpClient with logging
+            using (SmtpClient smtpClient = new SmtpClient())
             {
-                client.LogFileName = logPath;
+                // Enable logger and specify log file
+                smtpClient.EnableLogger = true;
+                smtpClient.LogFileName = logPath;
 
-                // Guard against placeholder credentials/hosts
-                if (client.Host.Contains("example.com"))
+                // Example SMTP server settings (replace with real values as needed)
+                smtpClient.Host = "smtp.example.com";
+                smtpClient.Port = 587;
+                smtpClient.SecurityOptions = SecurityOptions.Auto;
+                smtpClient.Username = "user@example.com";
+                smtpClient.Password = "password";
+
+                try
                 {
-                    Console.WriteLine("Placeholder SMTP configuration detected; skipping actual send operation.");
-                    return;
+                    smtpClient.Send(message);
+                    Console.WriteLine("Email sent successfully.");
                 }
-
-                // Sending is omitted to avoid external calls in placeholder scenario
-                // client.Send(message);
+                catch (SmtpException smtpEx)
+                {
+                    Console.Error.WriteLine($"SMTP error: {smtpEx.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to send email: {ex.Message}");
+                }
             }
-
-            // Dispose the loaded message
-            message.Dispose();
         }
         catch (Exception ex)
         {
