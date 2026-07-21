@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -8,36 +9,49 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string outputPath = "OutputMessage.msg";
+            // Author note: simple console app to modify the sender of a MSG file.
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Guard file existence
+            if (!File.Exists(inputPath))
             {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Create a new mail message and set sender and recipient
-            using (MailMessage message = new MailMessage())
-            {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Test Message";
-                message.Body = "This is a test email.";
-
-                // Save the message as MSG format
                 try
                 {
-                    message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
-                    Console.WriteLine($"Message saved to '{outputPath}'.");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
                 }
-                catch (Exception ioEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
             }
+
+            // Load the MSG file
+            using (MapiMessage mapMsg = MapiMessage.Load(inputPath))
+            {
+                // Convert to MailMessage for easier manipulation
+                using (MailMessage mailMsg = mapMsg.ToMailMessage(new MailConversionOptions()))
+                {
+                    // Assign the sender address
+                    mailMsg.From = new MailAddress("sender@example.com");
+
+                    // Save the modified message back to MSG format
+                    mailMsg.Save(outputPath);
+                }
+            }
+
+            Console.WriteLine($"Message saved with new sender to: {outputPath}");
         }
         catch (Exception ex)
         {
