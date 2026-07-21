@@ -5,47 +5,43 @@ using Aspose.Email.Clients.Pop3;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Placeholder connection settings
+            // Author note: sample demonstrates establishing a POP3 connection with Aspose.Email.
             string host = "pop3.example.com";
-            int port = 110;
+            int port = 995; // SSL/TLS port
             string username = "user@example.com";
             string password = "password";
 
-            // Skip real network call when placeholders are used
-            if (host.Contains("example.com"))
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping POP3 connection.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            try
+            // Create POP3 client with automatic security negotiation.
+            using (Pop3Client pop3Client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
             {
-                // Initialize POP3 client with explicit authentication
-                using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+                // The client connects automatically on the first operation.
+                int messageCount = pop3Client.GetMessageCount();
+                Console.WriteLine($"Total messages: {messageCount}");
+
+                int fetchCount = Math.Min(5, messageCount);
+                for (int i = 1; i <= fetchCount; i++)
                 {
-                    // Validate credentials (establishes connection)
-                    client.ValidateCredentials();
-
-                    Console.WriteLine("POP3 client connected and authenticated successfully.");
-
-                    // Example operation: retrieve message count
-                    int messageCount = client.GetMessageCount();
-                    Console.WriteLine($"Total messages in mailbox: {messageCount}");
+                    MailMessage message = pop3Client.FetchMessage(i);
+                    Console.WriteLine($"Message {i}: {message.Subject}");
+                    message.Dispose();
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"POP3 client error: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
