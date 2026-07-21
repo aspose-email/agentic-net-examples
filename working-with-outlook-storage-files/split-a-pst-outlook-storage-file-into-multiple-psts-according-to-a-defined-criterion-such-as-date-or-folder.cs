@@ -1,62 +1,57 @@
-using Aspose.Email.Mapi;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Tools.Search;
 
-class Program
+namespace AsposeEmailPstSplitExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPstPath = "input.pst";
-            string outputFolder = "output";
-
-            // Ensure output directory exists
-            if (!Directory.Exists(outputFolder))
+            try
             {
-                Directory.CreateDirectory(outputFolder);
-            }
+                // Paths (adjust as needed)
+                string pstFilePath = "input.pst";
+                string outputFolder = "SplitPstParts";
 
-            // Guard input PST file; create minimal placeholder if missing
-            if (!File.Exists(inputPstPath))
-            {
-                try
+                // Create a placeholder PST file if it does not exist
+                if (!File.Exists(pstFilePath))
                 {
-                    using (PersonalStorage placeholder = PersonalStorage.Create(inputPstPath, FileFormatVersion.Unicode))
+                    using (PersonalStorage pst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
                     {
-                        // Add a simple message to the root folder
-                        MapiMessage msg = new MapiMessage("sender@example.com", "receiver@example.com", "Placeholder", "This is a placeholder message.");
-                        placeholder.RootFolder.AddMessage(msg);
+                        // Add a default folder to make the PST valid
+                        pst.RootFolder.AddSubFolder("Inbox");
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
-                    return;
-                }
-            }
 
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(inputPstPath))
-            {
-                // Split the PST into parts of approximately 10 MB each
-                long chunkSize = 10L * 1024 * 1024; // 10 MB
-                try
+                // Ensure output directory exists
+                if (!Directory.Exists(outputFolder))
                 {
-                    pst.SplitInto(chunkSize, outputFolder);
-                    Console.WriteLine("PST split operation completed successfully.");
+                    Directory.CreateDirectory(outputFolder);
                 }
-                catch (Exception ex)
+
+                // Define split criteria – e.g., messages received in the last 30 days
+                var criteria = new List<MailQuery>();
+                var builder = new MailQueryBuilder();
+                builder.InternalDate.Since(DateTime.Now.AddDays(-30));
+                MailQuery recentMessagesQuery = builder.GetQuery();
+                criteria.Add(recentMessagesQuery);
+
+                // Load the PST file and split it according to the criteria
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
                 {
-                    Console.Error.WriteLine($"Error during PST split: {ex.Message}");
+                    pst.SplitInto(criteria, outputFolder);
                 }
+
+                Console.WriteLine("PST splitting completed successfully.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
