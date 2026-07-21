@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,117 +8,69 @@ class Program
     {
         try
         {
-            // Define file paths
-            string outputMsgPath = Path.Combine(Environment.CurrentDirectory, "output.msg");
-            string attachmentPath = Path.Combine(Environment.CurrentDirectory, "sample.txt");
-            string attachmentSaveDir = Path.Combine(Environment.CurrentDirectory, "Attachments");
+            // Output directory and file path
+            string outputDirectory = "Output";
+            string outputFilePath = Path.Combine(outputDirectory, "SampleMessage.msg");
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputMsgPath);
-            if (!Directory.Exists(outputDir))
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Ensure attachment directory exists
-            if (!Directory.Exists(attachmentSaveDir))
+            // Create the email message
+            using (MailMessage message = new MailMessage())
             {
-                Directory.CreateDirectory(attachmentSaveDir);
-            }
+                message.From = "sender@example.com";
+                message.To = "receiver@example.com";
+                message.Subject = "Sample MSG with Attachments";
+                message.Body = "This is the body of the email.";
 
-            // Create a placeholder attachment file if it does not exist
-            if (!File.Exists(attachmentPath))
-            {
-                try
-                {
-                    File.WriteAllText(attachmentPath, "This is a sample attachment.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
-                    return;
-                }
-            }
+                // Attachment file names
+                string[] attachmentFiles = { "attachment1.txt", "attachment2.jpg" };
 
-            // Create a new MailMessage
-            using (MailMessage mailMessage = new MailMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is the body of the message."))
-            {
-                // Add attachment
-                using (Attachment attachment = new Attachment(attachmentPath))
+                foreach (string fileName in attachmentFiles)
                 {
-                    mailMessage.Attachments.Add(attachment);
+                    // Ensure the attachment file exists; create a minimal placeholder if missing
+                    if (!File.Exists(fileName))
+                    {
+                        try
+                        {
+                            File.WriteAllText(fileName, $"Placeholder content for {fileName}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to create placeholder '{fileName}': {ex.Message}");
+                            continue;
+                        }
+                    }
+
+                    // Add the attachment to the message
+                    try
+                    {
+                        Attachment attachment = new Attachment(fileName);
+                        message.Attachments.Add(attachment);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to add attachment '{fileName}': {ex.Message}");
+                    }
                 }
 
-                // Save as MSG with preserved dates
-                MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                // Save the message as MSG with original dates preserved
+                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
                 {
                     PreserveOriginalDates = true
                 };
 
                 try
                 {
-                    mailMessage.Save(outputMsgPath, msgSaveOptions);
+                    message.Save(outputFilePath, saveOptions);
+                    Console.WriteLine($"Message saved to '{outputFilePath}'.");
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the saved MSG file as MapiMessage
-            if (!File.Exists(outputMsgPath))
-            {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(outputMsgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine("MSG file was not created.");
-                return;
-            }
-
-            using (MapiMessage loadedMsg = MapiMessage.Load(outputMsgPath))
-            {
-                // Iterate over headers using Keys as required
-                foreach (string key in loadedMsg.Headers.Keys)
-                {
-                    string value = loadedMsg.Headers[key];
-                    Console.WriteLine($"{key}: {value}");
-                }
-
-                // Process attachments
-                foreach (MapiAttachment att in loadedMsg.Attachments)
-                {
-                    string attName = !string.IsNullOrEmpty(att.LongFileName) ? att.LongFileName : att.FileName;
-                    Console.WriteLine($"Attachment found: {attName}");
-
-                    // Save attachment binary data if present
-                    if (att.BinaryData != null && att.BinaryData.Length > 0)
-                    {
-                        string savePath = Path.Combine(attachmentSaveDir, attName);
-                        try
-                        {
-                            File.WriteAllBytes(savePath, att.BinaryData);
-                            Console.WriteLine($"Attachment saved to: {savePath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save attachment '{attName}': {ex.Message}");
-                        }
-                    }
                 }
             }
         }
