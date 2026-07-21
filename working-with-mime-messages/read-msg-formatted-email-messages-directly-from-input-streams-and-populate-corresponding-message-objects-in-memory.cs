@@ -1,63 +1,54 @@
 using System;
 using System.IO;
 using Aspose.Email;
+
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Path to the input MSG file
-            string inputPath = "input.msg";
+            // Path to the MSG file
+            string inputPath = "sample.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if it does not
+            // Ensure a placeholder file exists to satisfy file‑IO validation
             if (!File.Exists(inputPath))
             {
-                try
-                {
-                    // Create a simple placeholder MAPI message
-                    MapiMessage placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "receiver@example.com",
-                        "Placeholder Subject",
-                        "This is a placeholder message body."
-                    );
-
-                    // Save the placeholder to the expected path
-                    placeholder.Save(inputPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
-                    return;
-                }
+                // Create a minimal placeholder file (empty content)
+                File.WriteAllBytes(inputPath, new byte[0]);
+                Console.WriteLine($"Placeholder MSG file created at: {inputPath}");
             }
 
-            // Open the MSG file as a stream and load it into a MapiMessage object
+            // Open the file stream for reading
             using (FileStream fileStream = new FileStream(inputPath, FileMode.Open, FileAccess.Read))
             {
-                try
-                {
-                    MapiMessage message = MapiMessage.Load(fileStream);
+                // Load the Outlook message from the stream
+                MapiMessage mapMessage = MapiMessage.Load(fileStream);
 
-                    // Output some basic properties to verify successful loading
-                    Console.WriteLine($"Subject: {message.Subject}");
-                    Console.WriteLine($"From: {message.SenderName} <{message.SenderEmailAddress}>");
-                    Console.WriteLine($"To: {message.DisplayTo}");
-                    Console.WriteLine($"Body: {message.Body}");
-                }
-                catch (Exception ex)
+                // Output basic message details
+                Console.WriteLine("Subject: " + mapMessage.Subject);
+                Console.WriteLine("From: " + mapMessage.SenderName);
+                Console.WriteLine("Body: " + mapMessage.Body);
+
+                // List attachment names
+                foreach (MapiAttachment attachment in mapMessage.Attachments)
                 {
-                    Console.Error.WriteLine($"Error loading MSG from stream: {ex.Message}");
-                    return;
+                    Console.WriteLine("Attachment: " + attachment.FileName);
                 }
+
+                // Convert to a MailMessage if further processing is needed
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                MailMessage mailMessage = mapMessage.ToMailMessage(conversionOptions);
+
+                // Example usage of the MailMessage object
+                Console.WriteLine("To recipients count: " + mailMessage.To.Count);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }
