@@ -1,39 +1,55 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string inputPath = "input.html";
-            string outputPath = "output.emlx";
+            // Define input and output paths
+            string sourcePath = "source.html";
+            string targetPath = "target.emlx";
 
-            // Ensure the input HTML file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Ensure the source HTML file exists; create a minimal placeholder if missing
+            if (!File.Exists(sourcePath))
             {
                 try
                 {
-                    File.WriteAllText(inputPath, "<html><body><p>Placeholder</p></body></html>");
-                    Console.WriteLine($"Created placeholder input file: {inputPath}");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(sourcePath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder input file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    File.WriteAllText(sourcePath, "<html><body>Hello, World!</body></html>");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
                     return;
                 }
             }
 
             // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string targetDir = Path.GetDirectoryName(targetPath);
+            if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    Directory.CreateDirectory(targetDir);
                 }
                 catch (Exception ex)
                 {
@@ -42,21 +58,27 @@ class Program
                 }
             }
 
-            // Load the HTML message
-            HtmlLoadOptions htmlLoadOptions = new HtmlLoadOptions();
-            using (MailMessage mailMessage = MailMessage.Load(inputPath, htmlLoadOptions))
+            // Load the HTML message with default HtmlLoadOptions
+            using (MailMessage mailMessage = MailMessage.Load(sourcePath, new HtmlLoadOptions()))
             {
                 // Prepare save options for EMLX format
                 EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlxFormat);
-                // Save the message as EMLX
-                mailMessage.Save(outputPath, emlSaveOptions);
-            }
 
-            Console.WriteLine($"Message saved as EMLX to {outputPath}");
+                // Save the message as EMLX
+                try
+                {
+                    mailMessage.Save(targetPath, emlSaveOptions);
+                    Console.WriteLine($"Message saved successfully to '{targetPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save message as EMLX: {ex.Message}");
+                }
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
