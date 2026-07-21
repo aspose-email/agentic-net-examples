@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mime;
 
 class Program
 {
@@ -8,7 +9,7 @@ class Program
     {
         try
         {
-            // Define output MSG file path
+            // Define output file path
             string outputPath = "output.msg";
 
             // Ensure the output directory exists
@@ -18,27 +19,42 @@ class Program
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Create and populate the email message
+            // Create a new mail message and assign standard fields
             using (MailMessage message = new MailMessage())
             {
-                // Standard fields
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.CC.Add(new MailAddress("cc@example.com"));
-                message.Bcc.Add(new MailAddress("bcc@example.com"));
-                message.Subject = "Test Subject";
-                message.Body = "This is the email body.";
+                // From address
+                message.From = new MailAddress("sender@example.com", "Sender Name");
 
-                // Save as MSG file with Unicode format
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                message.Save(outputPath, saveOptions);
+                // To address
+                message.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
+
+                // CC address (optional)
+                message.CC.Add(new MailAddress("cc@example.com", "CC Name"));
+
+                // BCC address (optional)
+                message.Bcc.Add(new MailAddress("bcc@example.com", "BCC Name"));
+
+                // Subject
+                message.Subject = "Sample MSG File Generated with Aspose.Email";
+
+                // Body (plain text)
+                message.Body = "Hello,\n\nThis is a sample email generated programmatically using Aspose.Email for .NET.\n\nBest regards,\nSender";
+
+                // Add a simple attachment (optional)
+                string attachmentPath = "sample.txt";
+                if (File.Exists(attachmentPath))
+                {
+                    message.Attachments.Add(new Attachment(attachmentPath));
+                }
+
+                // Save the message as an MSG file
+                message.Save(outputPath);
+                Console.WriteLine($"Message saved successfully to '{outputPath}'.");
             }
-
-            Console.WriteLine("MSG file created successfully at: " + Path.GetFullPath(outputPath));
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
