@@ -1,59 +1,65 @@
+using Aspose.Email.Calendar;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
     static void Main()
     {
+        string pstPath = "sample.pst";
+
         try
         {
-            // Define PST file path
-            string pstPath = "SampleCalendar.pst";
-
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            // Create PST file if it does not exist
+            if (!File.Exists(pstPath))
             {
-                Directory.CreateDirectory(pstDirectory);
+                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
             }
 
-            // Open existing PST or create a new one if it does not exist
-            using (PersonalStorage pst = File.Exists(pstPath)
-                ? PersonalStorage.FromFile(pstPath)
-                : PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+            // Open PST storage
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Get the root folder of the PST
-                FolderInfo rootFolder = pst.RootFolder;
-
-                // Name of the calendar subfolder
-                const string calendarFolderName = "My Calendar";
-
-                // Try to get the calendar subfolder; create it if it does not exist
+                // Get or create Calendar folder
                 FolderInfo calendarFolder;
                 try
                 {
-                    calendarFolder = rootFolder.GetSubFolder(calendarFolderName);
+                    calendarFolder = pst.RootFolder.GetSubFolder("Calendar");
                 }
-                catch
+                catch (Exception)
                 {
-                    calendarFolder = rootFolder.AddSubFolder(calendarFolderName);
+                    calendarFolder = pst.RootFolder.AddSubFolder("Calendar");
                 }
 
-                // Create a MAPI calendar item
-                MapiCalendar mapiCalendar = new MapiCalendar(
-                    location: "Conference Room",
-                    summary: "Team Meeting",
-                    description: "Discuss project status and next steps.",
-                    startDate: DateTime.Now.AddHours(1),
-                    endDate: DateTime.Now.AddHours(2));
+                // Build attendees collection
+                MapiCalendarAttendees attendees = new MapiCalendarAttendees();
+                attendees.AppointmentRecipients = new MapiRecipientCollection();
+                attendees.AppointmentRecipients.Add(
+                    "attendee1@example.com",
+                    "Attendee One",
+                    MapiRecipientType.MAPI_TO);
+                attendees.AppointmentRecipients.Add(
+                    "attendee2@example.com",
+                    "Attendee Two",
+                    MapiRecipientType.MAPI_TO);
 
-                // Add the calendar item to the folder
-                calendarFolder.AddMapiMessageItem(mapiCalendar);
+                // Create calendar item
+                MapiCalendar calendar = new MapiCalendar(
+                    "Conference Room",                     // location
+                    "Project Kickoff",                     // summary
+                    "Discuss project scope and timeline.", // description
+                    new DateTime(2024, 8, 1, 10, 0, 0),    // start time
+                    new DateTime(2024, 8, 1, 11, 0, 0),    // end time
+                    "organizer@example.com",               // organizer email
+                    null);                                 // attendees set later
 
-                Console.WriteLine("Calendar item added to PST successfully.");
+                // Assign attendees
+                calendar.Attendees = attendees;
+
+                // Add calendar item to PST
+                calendarFolder.AddMapiMessageItem(calendar);
             }
         }
         catch (Exception ex)
