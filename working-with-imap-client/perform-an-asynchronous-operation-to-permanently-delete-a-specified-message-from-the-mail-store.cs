@@ -1,58 +1,55 @@
-using Aspose.Email.Clients;
+using Aspose.Email;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
-using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
-namespace AsposeEmailImapDeleteExample
+class Program
 {
-    class Program
+    static async System.Threading.Tasks.Task Main(string[] args)
     {
-        // Entry point of the console application.
-        static async Task Main(string[] args)
+        try
         {
-            // Top‑level exception guard.
-            try
-            {
-                // Placeholder connection parameters.
-                string host = "imap.example.com";
-                string username = "user@example.com";
-                string password = "password";
-                string messageUid = "12345"; // Unique identifier of the message to delete.
+            // Connection settings (replace with real values)
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
+            string messageId = "YOUR_MESSAGE_UID";
 
-                // Guard against executing real network calls with placeholder credentials.
-                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password" || messageId.StartsWith("YOUR_"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
+
+            // Initialize ImapClient
+            using (ImapClient imapClient = new ImapClient())
+            {
+                imapClient.Host = host;
+                imapClient.Port = port;
+                imapClient.Username = username;
+                imapClient.Password = password;
+                imapClient.SecurityOptions = SecurityOptions.SSLImplicit;
+
+                try
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping IMAP delete operation.");
+                    // Asynchronously delete the message permanently (commitNow = true)
+                    await imapClient.DeleteMessageAsync(messageId, true, CancellationToken.None);
+                    Console.WriteLine("Message deleted permanently.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error deleting message: {ex.Message}");
                     return;
                 }
-
-                // Create and connect the IMAP client inside a using block to ensure disposal.
-                using (ImapClient client = new ImapClient(host, username, password, SecurityOptions.Auto))
-                {
-                    // Wrap client operations in a try/catch to surface friendly errors.
-                    try
-                    {
-                        // Permanently delete the message identified by its UID.
-                        // The second argument (true) commits the deletion immediately.
-                        await client.DeleteMessageAsync(messageUid, true, CancellationToken.None);
-
-                        Console.WriteLine($"Message with UID '{messageUid}' has been permanently deleted.");
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log any errors that occur during the delete operation.
-                        Console.Error.WriteLine($"Error deleting message: {ex.Message}");
-                        return;
-                    }
-                }
             }
-            catch (Exception ex)
-            {
-                // Log any unexpected errors that escape the inner blocks.
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }
