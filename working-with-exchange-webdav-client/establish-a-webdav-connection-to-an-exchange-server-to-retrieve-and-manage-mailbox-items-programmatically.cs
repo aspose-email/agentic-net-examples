@@ -1,55 +1,81 @@
-using System;
-using System.Net;
 using Aspose.Email.Clients.Exchange.Dav;
+using System;
+using System.IO;
+using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace ExchangeWebDavSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
+            // Exchange server connection parameters (replace with real values)
+            string mailboxUri = "https://exchange.example.com/exchange";
             string username = "user@example.com";
             string password = "password";
 
-            // Skip real network call when using placeholder values
-            if (mailboxUri.Contains("example.com"))
+            // Guard: skip network operations when placeholder values are detected
+            bool isPlaceholder = mailboxUri.Contains("example.com") ||
+                                 username.Contains("example.com") ||
+                                 password == "password";
+
+            if (isPlaceholder)
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
+                Console.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
                 return;
             }
 
-            // Create credentials
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Connect to Exchange using WebDAV (ExchangeClient)
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, credentials))
+            // Ensure the output directory exists before any file operations
+            string outputDir = Path.Combine(Environment.CurrentDirectory, "Output");
+            if (!Directory.Exists(outputDir))
             {
-                try
-                {
-                    // List messages from the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                Directory.CreateDirectory(outputDir);
+            }
 
-                    // Iterate over the collection
-                    foreach (ExchangeMessageInfo messageInfo in messages)
+            try
+            {
+                // Establish a WebDAV connection using ExchangeClient
+                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+                {
+                    // Retrieve mailbox information to get standard folder URIs
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+
+                    // List messages in the Inbox folder
+                    ExchangeMessageInfoCollection inboxMessages = client.ListMessages(mailboxInfo.InboxUri);
+
+                    foreach (ExchangeMessageInfo msgInfo in inboxMessages)
                     {
-                        Console.WriteLine($"Subject: {messageInfo.Subject}");
-                        Console.WriteLine($"From: {messageInfo.From}");
-                        Console.WriteLine($"Received: {messageInfo.InternalDate}");
-                        Console.WriteLine(new string('-', 40));
+                        try
+                        {
+                            // Fetch the full mail message
+                            MailMessage message = client.FetchMessage(msgInfo.UniqueUri);
+
+                            // Build a safe file name for the message
+                            string safeSubject = string.IsNullOrWhiteSpace(msgInfo.Subject) ? "NoSubject" : msgInfo.Subject;
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                            {
+                                safeSubject = safeSubject.Replace(c, '_');
+                            }
+                            string emlPath = Path.Combine(outputDir, safeSubject + ".eml");
+
+                            // Save the message to disk (overwrite if it already exists)
+                            message.Save(emlPath, SaveOptions.DefaultEml);
+
+                            // Move the processed message to Deleted Items folder
+                            client.MoveMessage(msgInfo, mailboxInfo.DeletedItemsUri);
+                        }
+                        catch (Exception exMsg)
+                        {
+                            Console.Error.WriteLine($"Error processing message '{msgInfo.Subject}': {exMsg.Message}");
+                        }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error while listing messages: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
+            }
         }
     }
 }
