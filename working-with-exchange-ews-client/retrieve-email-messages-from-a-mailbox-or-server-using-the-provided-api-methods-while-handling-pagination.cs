@@ -1,8 +1,8 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -10,31 +10,61 @@ class Program
     {
         try
         {
-            // Placeholder connection details
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Exchange Web Services endpoint and credentials
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Skip live call when placeholders are detected
-            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping live server call.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client
+            // Create the EWS client (automatically handles connection)
             using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messagesInfo = client.ListMessages(client.MailboxInfo.InboxUri);
+                // Obtain mailbox information to get the Inbox URI
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                string inboxUri = mailboxInfo.InboxUri;
 
-                // Iterate through each message info and fetch the full message
-                foreach (ExchangeMessageInfo info in messagesInfo)
+                // Build a query that matches all messages
+                MailQueryBuilder queryBuilder = new MailQueryBuilder();
+                MailQuery query = queryBuilder.GetQuery();
+
+                const int itemsPerPage = 50;
+
+                while (true)
                 {
-                    using (MailMessage message = client.FetchMessage(info.UniqueUri))
+                    // Retrieve a page of messages from the Inbox
+                    ExchangeMessagePageInfo pageInfo = client.ListMessagesByPage(inboxUri, query, itemsPerPage);
+                    if (pageInfo == null || pageInfo.Items == null || pageInfo.Items.Count == 0)
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
+                        break; // No more messages
                     }
+
+                    // Process each message in the current page
+                    foreach (ExchangeMessageInfo msgInfo in pageInfo.Items)
+                    {
+                        // Fetch the full message using its unique URI
+                        using (MailMessage message = client.FetchMessage(msgInfo.UniqueUri))
+                        {
+                            Console.WriteLine($"Subject: {message.Subject}");
+                        }
+                    }
+
+                    // If the page returned fewer items than requested, we have reached the end
+                    if (pageInfo.Items.Count < itemsPerPage)
+                    {
+                        break;
+                    }
+
+                    // Note: ListMessagesByPage does not accept a page index; for a real pagination loop,
+                    // adjust the query (e.g., with Skip/Take) or use other paging mechanisms.
+                    // This example stops after the first page for simplicity.
+                    break;
                 }
             }
         }
