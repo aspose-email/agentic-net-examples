@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -11,69 +11,77 @@ class Program
     {
         try
         {
-            // Placeholder credentials – replace with real values or skip execution.
-            string clientId = "your-client-id";
-            string clientSecret = "your-client-secret";
-            string refreshToken = "your-refresh-token";
-            string tenantId = "your-tenant-id";
+            // ======== Placeholder values (replace with real credentials) ========
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string tenantId = "YOUR_TENANT_ID";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string graphEndpoint = "YOUR_GRAPH_ENDPOINT"; // e.g., "https://graph.microsoft.com/v1.0"
+            string messageId = "YOUR_MESSAGE_ID";
+            string attachmentId = "YOUR_ATTACHMENT_ID";
+            string outputPath = "YOUR_OUTPUT_PATH.msg";
+            // ====================================================================
 
-            if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-") || refreshToken.StartsWith("your-"))
+            // Simple guard for placeholder literals
+            if (string.IsNullOrWhiteSpace(clientId) || !clientId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(clientSecret) || !clientSecret.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(tenantId) || !tenantId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(refreshToken) || !refreshToken.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(graphEndpoint) || !graphEndpoint.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(messageId) || !messageId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(attachmentId) || !attachmentId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(outputPath) || !outputPath.StartsWith("YOUR_"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph call.");
+                Console.Error.WriteLine("One or more placeholder values are not set. Please replace the \"YOUR_...\" strings with actual values.");
                 return;
             }
 
-            // Create token provider for Outlook.
-            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-            // Initialize Graph client.
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
+            // Ensure output directory exists
+            try
             {
-                // ID of the message that contains the attachment.
-                string messageId = "MESSAGE_ID";
+                string directory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                return;
+            }
 
-                // List attachments of the message.
-                MapiAttachmentCollection attachments;
+            // Authenticate and obtain a Graph client
+            Aspose.Email.Clients.ITokenProvider tokenProvider;
+            try
+            {
+                tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
+                return;
+            }
+
+            using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, graphEndpoint))
+            {
                 try
                 {
-                    attachments = client.ListAttachments(messageId);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to list attachments: {ex.Message}");
-                    return;
-                }
-
-                // Directory to save MSG attachments.
-                string outputDir = Path.Combine(Environment.CurrentDirectory, "Attachments");
-                try
-                {
-                    if (!Directory.Exists(outputDir))
-                        Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-
-                foreach (MapiAttachment attachment in attachments)
-                {
-                    // Process only MSG format attachments.
-                    if (Path.GetExtension(attachment.FileName).Equals(".msg", StringComparison.OrdinalIgnoreCase))
+                    // Fetch the attachment by its id
+                    MapiAttachment attachment = graphClient.FetchAttachment(attachmentId);
+                    if (attachment == null)
                     {
-                        string outputPath = Path.Combine(outputDir, attachment.FileName);
-                        try
-                        {
-                            // Save the attachment directly; no need to call FetchAttachment.
-                            attachment.Save(outputPath);
-                            Console.WriteLine($"Saved MSG attachment to: {outputPath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
-                        }
+                        Console.Error.WriteLine("Attachment not found.");
+                        return;
                     }
+
+                    // Save the attachment as an MSG file
+                    attachment.Save(outputPath);
+                    Console.WriteLine($"Attachment saved to: {outputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error during Graph operation: {ex.Message}");
                 }
             }
         }

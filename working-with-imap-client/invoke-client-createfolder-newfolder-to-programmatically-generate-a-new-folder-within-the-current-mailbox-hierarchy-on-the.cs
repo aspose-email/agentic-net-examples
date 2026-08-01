@@ -1,48 +1,53 @@
-using System;
 using Aspose.Email;
+using System;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
-namespace Sample
+// Author: Example code for creating a folder using Aspose.Email IMAP client
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Connection settings (replace with real values)
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
+
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                // Placeholder credentials and host
-                string host = "imap.example.com";
-                string username = "username";
-                string password = "password";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
 
-                // Guard against placeholder values to avoid real network calls
-                if (host.Contains("example.com", StringComparison.OrdinalIgnoreCase) ||
-                    username.Equals("username", StringComparison.OrdinalIgnoreCase) ||
-                    password.Equals("password", StringComparison.OrdinalIgnoreCase))
+            // Initialize IMAP client
+            using (ImapClient client = new ImapClient())
+            {
+                client.Host = host;
+                client.Port = port;
+                client.SecurityOptions = SecurityOptions.SSLImplicit;
+                client.Username = username;
+                client.Password = password;
+
+                try
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping folder creation.");
-                    return;
+                    // Create a new folder named "NewFolder" in the mailbox root
+                    client.CreateFolder("NewFolder");
+                    Console.WriteLine("Folder 'NewFolder' created successfully.");
                 }
-
-                // Create and connect the IMAP client
-                using (ImapClient client = new ImapClient(host, username, password))
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        // Create a new folder named "NewFolder"
-                        client.CreateFolder("NewFolder");
-                        Console.WriteLine("Folder 'NewFolder' created successfully.");
-                    }
-                    catch (ImapException imapEx)
-                    {
-                        Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
-                    }
+                    Console.Error.WriteLine($"Failed to create folder: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

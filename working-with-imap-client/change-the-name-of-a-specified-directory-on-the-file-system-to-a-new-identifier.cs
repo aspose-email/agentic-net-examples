@@ -1,56 +1,50 @@
+using Aspose.Email;
 using System;
-using System.IO;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Imap;
 
-namespace AsposeEmailSample
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main()
+        try
         {
-            try
+            // Configuration – replace with actual server details and credentials
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "user@example.com";
+            string password = "password";
+
+            // Folder names
+            string oldFolderName = "OldFolder";
+            string newFolderName = "NewFolder";
+
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                // Define the existing directory and the new name
-                string sourceDirectory = "OldDirectory";
-                string targetDirectory = "NewDirectory";
-
-                // Guard: ensure the source directory exists; create a placeholder if it does not
-                if (!Directory.Exists(sourceDirectory))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(sourceDirectory);
-                        Console.WriteLine($"Source directory '{sourceDirectory}' was missing and has been created as a placeholder.");
-                    }
-                    catch (Exception ioEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create placeholder directory: {ioEx.Message}");
-                        return;
-                    }
-                }
-
-                // Guard: ensure the target directory does not already exist
-                if (Directory.Exists(targetDirectory))
-                {
-                    Console.Error.WriteLine($"Target directory '{targetDirectory}' already exists. Rename operation aborted.");
-                    return;
-                }
-
-                // Perform the rename operation
-                try
-                {
-                    Directory.Move(sourceDirectory, targetDirectory);
-                    Console.WriteLine($"Directory renamed from '{sourceDirectory}' to '{targetDirectory}'.");
-                }
-                catch (Exception renameEx)
-                {
-                    Console.Error.WriteLine($"Failed to rename directory: {renameEx.Message}");
-                }
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
             }
-            catch (Exception ex)
+
+            // Create and configure the IMAP client
+            using (ImapClient imapClient = new ImapClient())
             {
-                // Top-level exception guard
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                imapClient.Host = host;
+                imapClient.Port = port;
+                imapClient.Username = username;
+                imapClient.Password = password;
+                imapClient.SecurityOptions = SecurityOptions.SSLImplicit; // Auto‑negotiation can also be used
+
+                // Rename the specified folder on the IMAP server
+                imapClient.RenameFolder(oldFolderName, newFolderName);
+                Console.WriteLine($"Folder '{oldFolderName}' successfully renamed to '{newFolderName}'.");
             }
+        }
+        catch (Exception ex)
+        {
+            // Graceful error handling
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

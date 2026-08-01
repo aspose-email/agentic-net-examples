@@ -1,40 +1,49 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Tools.Verifications;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
-class Program
+namespace EmailVerificationExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
             // Sample email addresses to validate
-            string[] emailAddresses = new string[] { "user@example.com", "invalid-email", "test@nonexistentdomain.xyz" };
-
-            // Create an EmailValidator instance
-            EmailValidator validator = new EmailValidator();
-
-            foreach (string address in emailAddresses)
+            var emailSamples = new List<string>
             {
-                ValidationResult validationResult;
-                validator.Validate(address, out validationResult);
+                "john.doe@example.com",
+                "jane_doe123@sub.domain.co.uk",
+                "invalid-email@",
+                "another.invalid@domain",
+                "user+mailbox/department=shipping@example.com",
+                "plainaddress",
+                "email@123.123.123.123",
+                "email@[123.123.123.123]",
+                "\"quoted@local\"@example.com",
+                "very.common@example.com"
+            };
 
-                Console.WriteLine($"Email: {address}");
-                Console.WriteLine($"Return Code: {validationResult.ReturnCode}");
-                if (!string.IsNullOrEmpty(validationResult.Message))
-                {
-                    Console.WriteLine($"Message: {validationResult.Message}");
-                }
-                if (validationResult.LastException != null)
-                {
-                    Console.WriteLine($"Exception: {validationResult.LastException.Message}");
-                }
-                Console.WriteLine();
+            Console.WriteLine("Email Validation Results:");
+            Console.WriteLine(new string('=', 30));
+
+            foreach (var email in emailSamples)
+            {
+                bool isValid = IsValidEmail(email);
+                Console.WriteLine($"{email} => {(isValid ? "Valid" : "Invalid")}");
             }
         }
-        catch (Exception ex)
+
+        // Simple email validation using a regular expression that covers most common cases.
+        private static bool IsValidEmail(string email)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            // This pattern validates the general structure of an email address.
+            const string pattern = @"^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@"
+                                 + @"(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$";
+
+            return Regex.IsMatch(email, pattern, RegexOptions.Compiled);
         }
     }
 }

@@ -4,10 +4,11 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Define input and output file paths
             string inputPath = "input.eml";
             string outputPath = "output.msg";
 
@@ -31,29 +32,51 @@ class Program
                     return;
                 }
 
-                string placeholderEml = "From: placeholder@example.com\r\nTo: recipient@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
-                File.WriteAllText(inputPath, placeholderEml);
+                try
+                {
+                    string placeholder = "Subject: Placeholder\r\n\r\nThis is a placeholder email body.";
+                    File.WriteAllText(inputPath, placeholder);
+                    Console.WriteLine($"Created placeholder EML file at '{inputPath}'.");
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ioEx.Message}");
+                    return;
+                }
             }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Load the EML message with options to preserve attachments and embedded messages
+            try
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
+                var emlLoadOptions = new EmlLoadOptions
+                {
+                    PreserveTnefAttachments = true,
+                    PreserveEmbeddedMessageFormat = true
+                };
 
-            // Load the EML file
-            using (MailMessage message = MailMessage.Load(inputPath))
+                using (MailMessage message = MailMessage.Load(inputPath, emlLoadOptions))
+                {
+                    // Save the message as MSG format using default save options
+                    try
+                    {
+                        message.Save(outputPath, SaveOptions.DefaultMsg);
+                        Console.WriteLine($"Message successfully converted and saved to '{outputPath}'.");
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Console.Error.WriteLine($"Error saving MSG file: {saveEx.Message}");
+                    }
+                }
+            }
+            catch (Exception loadEx)
             {
-                // Save the message in MSG format
-                message.Save(outputPath, SaveOptions.DefaultMsg);
+                Console.Error.WriteLine($"Error loading EML file: {loadEx.Message}");
             }
-
-            Console.WriteLine("EML to MSG conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            // Top-level exception guard
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

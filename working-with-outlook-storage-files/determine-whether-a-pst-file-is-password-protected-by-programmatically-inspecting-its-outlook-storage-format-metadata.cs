@@ -1,45 +1,56 @@
-using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using System;
+using System.IO;
 
-class Program
+namespace AsposeEmailPstPasswordCheck
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main()
         {
-            // Path to the PST file to inspect
-            string pstPath = "sample.pst";
-
-            // Ensure the PST file exists; create a minimal placeholder if missing
-            if (!File.Exists(pstPath))
+            try
             {
-                // Create an empty Unicode PST file as a placeholder
-                using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                string pstPath = "sample.pst";
+
+                // Create a minimal PST file if it does not exist (placeholder)
+                if (!File.Exists(pstPath))
                 {
-                    // No additional setup required for the placeholder
+                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    {
+                        // Empty PST created as placeholder
+                    }
                 }
 
-                Console.WriteLine($"Created placeholder PST at \"{pstPath}\".");
-            }
+                bool isPasswordProtected = false;
 
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                try
+                {
+                    // Attempt to open the PST without a password
+                    using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                    {
+                        // Opened successfully – not password protected
+                        isPasswordProtected = false;
+                    }
+                }
+                catch (Exception ex) when (ex.Message != null && ex.Message.IndexOf("password", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    // Exception indicates a password is required
+                    isPasswordProtected = true;
+                }
+                catch (Exception ex)
+                {
+                    // Other exceptions – rethrow after logging
+                    Console.Error.WriteLine($"Unexpected error while checking PST: {ex.Message}");
+                    return;
+                }
+
+                Console.WriteLine($"Is PST password protected? {isPasswordProtected}");
+            }
+            catch (Exception ex)
             {
-                // Access the message store metadata
-                MessageStore store = pst.Store;
-
-                // Determine whether the PST is password protected
-                bool isPasswordProtected = store.IsPasswordProtected;
-
-                Console.WriteLine($"PST password protected: {isPasswordProtected}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            // Friendly error output
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

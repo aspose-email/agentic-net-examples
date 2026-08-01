@@ -1,9 +1,10 @@
-using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Mapi;
+using System;
+using System.IO;
+using System.Text.RegularExpressions;
 
-namespace EmailColorExample
+namespace EmailColorExtractor
 {
     class Program
     {
@@ -11,33 +12,70 @@ namespace EmailColorExample
         {
             try
             {
-                // Placeholder credentials – replace with real values when available
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string defaultEmail = "user@example.com";
+                // Path to the Outlook MSG file
+                string msgPath = @"c:\outlookmessage.msg";
 
-                // Skip external call when placeholder credentials are used
-                if (clientId == "clientId" && clientSecret == "clientSecret" && refreshToken == "refreshToken")
+                // Ensure the directory for the MSG file exists
+                string? directory = Path.GetDirectoryName(msgPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping Gmail client call.");
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Verify that the file exists before attempting to load
+                if (!File.Exists(msgPath))
+                {
+                    try
+                    {
+                        using (MapiMessage placeholder = new MapiMessage(
+                            "from@example.com",
+                            "to@example.com",
+                            "Placeholder Subject",
+                            "Placeholder body."))
+                        {
+                            placeholder.Save(msgPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                        return;
+                    }
+
+                    Console.Error.WriteLine($"Input file not found. Placeholder MSG created at: {msgPath}");
                     return;
                 }
 
-                // Create Gmail client
-                using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
-                {
-                    // Retrieve color information from the Gmail account
-                    ColorsInfo colorsInfo = gmailClient.GetColors();
+                // Load the MSG file
+                MapiMessage msg = MapiMessage.Load(msgPath);
 
-                    // Output retrieved color attributes (example)
-                    Console.WriteLine("Colors information retrieved:");
-                    Console.WriteLine(colorsInfo);
+                // Get the message body (may contain HTML)
+                string body = msg.Body ?? string.Empty;
+
+                // Regular expression to find hex color codes in the body (e.g., #FF0000 or #F00)
+                Regex colorRegex = new Regex(@"#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", RegexOptions.Compiled);
+
+                // Find all matches
+                MatchCollection matches = colorRegex.Matches(body);
+
+                if (matches.Count == 0)
+                {
+                    Console.WriteLine("No color attributes found in the email body.");
+                }
+                else
+                {
+                    Console.WriteLine("Extracted color values:");
+                    foreach (Match match in matches)
+                    {
+                        // Output the full match (including the leading '#')
+                        Console.WriteLine(match.Value);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex.Message);
+                // Log any unexpected errors
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }

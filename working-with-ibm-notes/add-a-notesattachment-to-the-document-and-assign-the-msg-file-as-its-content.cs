@@ -9,88 +9,64 @@ class Program
     {
         try
         {
-            string inputMsgPath = "input.msg";
-            string outputMsgPath = "output.msg";
+            // Path to the existing MSG file that will be attached as a note
+            string noteFilePath = "note.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing.
-            if (!File.Exists(inputMsgPath))
+            // Verify the source MSG file exists
+            if (!File.Exists(noteFilePath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage())
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath);
+                        placeholder.Save(noteFilePath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file to be attached.
-            MapiMessage attachedMessage;
-            try
-            {
-                attachedMessage = MapiMessage.Load(inputMsgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file '{inputMsgPath}': {ex.Message}");
+                Console.Error.WriteLine($"Source MSG file not found: {noteFilePath}");
                 return;
             }
 
-            // Create a new message that will hold the Notes attachment.
-            using (MapiMessage targetMessage = new MapiMessage())
+            // Load the MSG file to be used as the attachment content
+            MapiMessage noteMessage = MapiMessage.Load(noteFilePath);
+
+            // Create a new MAPI message that will hold the notes attachment
+            MapiMessage mainMessage = new MapiMessage
             {
-                // Add the loaded MSG as an embedded message attachment.
-                try
-                {
-                    targetMessage.Attachments.Add("AttachedMessage.msg", attachedMessage);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to add attachment: {ex.Message}");
-                    return;
-                }
+                Subject = "Message with NotesAttachment",
+                Body = "This message contains a notes attachment."
+            };
 
-                // Ensure the output directory exists.
-                try
-                {
-                    string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputMsgPath));
-                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
-                    return;
-                }
+            // Add the loaded MSG as an embedded attachment (NotesAttachment)
+            // The attachment name can be any desired string; here we use the original file name
+            mainMessage.Attachments.Add("NoteAttachment.msg", noteMessage);
 
-                // Save the message with the attached MSG.
-                try
-                {
-                    targetMessage.Save(outputMsgPath);
-                    Console.WriteLine($"Message saved with Notes attachment to '{outputMsgPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
-                }
+            // Define output path for the resulting MSG file
+            string outputFilePath = "MessageWithNotes.msg";
+
+            // Ensure the output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputFilePath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Dispose the attached message if it implements IDisposable.
-            if (attachedMessage is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            // Save the composed message with the notes attachment
+            mainMessage.Save(outputFilePath);
+            Console.WriteLine($"Message saved successfully: {outputFilePath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

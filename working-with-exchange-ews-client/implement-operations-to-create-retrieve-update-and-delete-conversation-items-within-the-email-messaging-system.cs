@@ -1,62 +1,86 @@
 using System;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailConversationSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static async Task Main(string[] args)
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            try
             {
-                // Get Inbox folder identifier
-                string inboxFolderId = client.MailboxInfo.InboxUri;
+                // EWS service connection parameters (replace with real values)
+                string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-                // Find conversations in the Inbox
-                ExchangeConversation[] conversations = client.FindConversations(inboxFolderId);
-                if (conversations == null || conversations.Length == 0)
+                // Skip external calls when placeholder credentials are used
+                if (username.Contains("example.com") || password == "password")
                 {
-                    Console.WriteLine("No conversations found in the Inbox.");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
 
-                // Use the first conversation for demonstration
-                string conversationId = conversations[0].ConversationId;
-                Console.WriteLine($"Conversation ID: {conversationId}");
+                // Create the async EWS client (explicit cast from sync client)
+                IAsyncEwsClient ewsClient = (IAsyncEwsClient)EWSClient.GetEWSClient(serviceUrl, username, password);
 
-                // Retrieve messages belonging to the conversation
-                MailMessageCollection messages = client.FetchConversationMessages(conversationId);
-                Console.WriteLine($"Number of messages in conversation: {messages.Count}");
+                // Retrieve mailbox information to obtain folder URIs
+                var mailboxInfo = await ewsClient.GetMailboxInfoAsync(null, CancellationToken.None);
+                string inboxUri = mailboxInfo.InboxUri;
+                string deletedItemsUri = mailboxInfo.DeletedItemsUri;
 
-                // Mark the conversation as read
-                client.SetConversationReadState(conversationId, true);
-                Console.WriteLine("Conversation marked as read.");
+                // -----------------------------------------------------------------
+                // 1. Create a new mail message and store it as a conversation item
+                // -----------------------------------------------------------------
+                var mail = new MailMessage
+                {
+                    From = new MailAddress("sender@example.com"),
+                    Subject = "Conversation Sample",
+                    Body = "This is a sample message for conversation CRUD operations."
+                };
+                mail.To.Add(new MailAddress("recipient@example.com"));
 
-                // Copy the conversation to the Drafts folder
-                string draftsFolderId = client.MailboxInfo.DraftsUri;
-                client.CopyConversationItems(conversationId, draftsFolderId);
-                Console.WriteLine("Conversation copied to Drafts folder.");
+                // Convert MailMessage to MapiMessage
+                MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail);
 
-                // Move the conversation to the Deleted Items folder
-                string deletedItemsFolderId = client.MailboxInfo.DeletedItemsUri;
-                client.MoveConversationItems(conversationId, deletedItemsFolderId);
-                Console.WriteLine("Conversation moved to Deleted Items folder.");
+                // Create the item in the Inbox folder
+                string createdItemId = await ewsClient.CreateItemAsync(mapiMessage, inboxUri, CancellationToken.None);
+                Console.WriteLine($"Created item ID: {createdItemId}");
 
-                // Delete the conversation items from Deleted Items (cleanup)
-                client.DeleteConversationItems(conversationId, deletedItemsFolderId);
-                Console.WriteLine("Conversation items deleted from Deleted Items folder.");
+                // For demonstration, use the created item ID as the conversation ID
+                string conversationId = createdItemId;
+
+                // ---------------------------------------------------------------
+                // 2. Retrieve all messages belonging to the conversation
+                // ---------------------------------------------------------------
+                MailMessageCollection conversationMessages = await ewsClient.FetchConversationMessagesAsync(conversationId, CancellationToken.None);
+                Console.WriteLine($"Conversation contains {conversationMessages.Count} message(s).");
+                foreach (MailMessage msg in conversationMessages)
+                {
+                    Console.WriteLine($"- Subject: {msg.Subject}");
+                }
+
+                // ---------------------------------------------------------------
+                // 3. Move the conversation items to Deleted Items folder
+                // ---------------------------------------------------------------
+                await ewsClient.MoveConversationItemsAsync(conversationId, deletedItemsUri, inboxUri, CancellationToken.None);
+                Console.WriteLine("Conversation items moved to Deleted Items.");
+
+                // ---------------------------------------------------------------
+                // 4. Delete the conversation items permanently
+                // ---------------------------------------------------------------
+                await ewsClient.DeleteConversationItemsAsync(conversationId, deletedItemsUri, CancellationToken.None);
+                Console.WriteLine("Conversation items deleted.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

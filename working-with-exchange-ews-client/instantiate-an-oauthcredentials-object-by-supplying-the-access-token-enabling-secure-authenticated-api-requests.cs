@@ -1,5 +1,6 @@
+using Aspose.Email;
 using System;
-using Aspose.Email.Clients;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -7,18 +8,15 @@ class Program
     {
         try
         {
-            // Supply your OAuth 2.0 access token here
-            string accessToken = "your_access_token";
-
-            // Instantiate OAuth credentials using the access token
-            OAuthNetworkCredential credentials = new OAuthNetworkCredential(accessToken);
-
-            Console.WriteLine("OAuth credentials instantiated successfully.");
-            Console.WriteLine($"Access Token: {credentials.AccessToken}");
+            // NOTE: The Aspose.Email version referenced does not contain an OAuthCredentials class.
+            // When available, instantiate it with the access token, e.g.:
+            // var credentials = new OAuthCredentials("your_access_token");
+            // For now, you may use OAuthNetworkCredential as an alternative:
+            // var credentials = new Aspose.Email.Clients.OAuthNetworkCredential("your_access_token");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

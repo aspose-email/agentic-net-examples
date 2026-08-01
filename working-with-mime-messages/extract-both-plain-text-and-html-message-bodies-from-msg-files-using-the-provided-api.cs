@@ -5,7 +5,7 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
@@ -32,24 +32,24 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file inside a using block to ensure proper disposal
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Load the Outlook MSG file
+            MapiMessage msg = MapiMessage.Load(msgPath);
+
+            // Convert the MAPI message to a MailMessage to access Body and HtmlBody
+            using (MailMessage mailMessage = msg.ToMailMessage(new MailConversionOptions()))
             {
-                // Extract plain‑text body
-                string plainBody = msg.Body;
-
-                // Extract HTML body (may be empty if not present)
-                string htmlBody = msg.BodyHtml;
-
+                // Output plain‑text body
                 Console.WriteLine("Plain Text Body:");
-                Console.WriteLine(string.IsNullOrEmpty(plainBody) ? "(none)" : plainBody);
+                Console.WriteLine(mailMessage.Body ?? string.Empty);
+                Console.WriteLine();
 
-                Console.WriteLine("\nHTML Body:");
-                Console.WriteLine(string.IsNullOrEmpty(htmlBody) ? "(none)" : htmlBody);
+                // Output HTML body
+                Console.WriteLine("HTML Body:");
+                Console.WriteLine(mailMessage.HtmlBody ?? string.Empty);
             }
         }
         catch (Exception ex)

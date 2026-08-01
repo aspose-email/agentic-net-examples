@@ -1,8 +1,10 @@
+using Aspose.Email.Clients.Exchange.WebService;
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 
-namespace EmailArchiveSample
+namespace EmailArchiveExample
 {
     class Program
     {
@@ -10,27 +12,31 @@ namespace EmailArchiveSample
         {
             try
             {
-                // Determine base directory of the application
-                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                // Define the archive folder name
+                string archiveFolderName = "Archive";
 
-                // Define the archive folder path
-                string archiveFolderPath = Path.Combine(baseDirectory, "EmailArchive");
+                // Build a full path in the current working directory
+                string archivePath = Path.Combine(Environment.CurrentDirectory, archiveFolderName);
 
-                // Guarded file system operation: check existence and create if necessary
-                if (!Directory.Exists(archiveFolderPath))
+                // Ensure the directory exists; create it if it does not
+                if (!Directory.Exists(archivePath))
                 {
-                    DirectoryInfo archiveDirectory = Directory.CreateDirectory(archiveFolderPath);
-                    Console.WriteLine($"Created archive directory at: {archiveDirectory.FullName}");
+                    Directory.CreateDirectory(archivePath);
+                    Console.WriteLine($"Created archive directory: {archivePath}");
                 }
                 else
                 {
-                    Console.WriteLine($"Archive directory already exists at: {archiveFolderPath}");
+                    Console.WriteLine($"Archive directory already exists: {archivePath}");
                 }
+
+                // Placeholder for Exchange EWS client (replace with actual credentials and URL)
+                // var client = EWSClient.GetEWSClient("https://your-ews-url/EWS/Exchange.asmx", "username", "password", "domain");
+                // Additional logic for storing email assets can be placed here
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                // Top‑level exception handling
-                Console.Error.WriteLine($"An error occurred: {exception.Message}");
+                // Log any unexpected errors without crashing the application
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }

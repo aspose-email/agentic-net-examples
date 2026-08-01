@@ -2,67 +2,53 @@ using System;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
-using Aspose.Email.Tools.Verifications;
 
-namespace EmailServerValidationSample
+namespace EmailServerVerification
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
+            // Server configuration – replace with real values or obtain from configuration.
+            string host = "smtp.example.com";
+            int port = 587;
+            string username = "user@example.com";
+            string password = "password";
+
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
+
+            // Wrap the client in a using block to ensure proper disposal.
             try
             {
-                // Placeholder configuration – skip real network calls if placeholders are detected
-                string host = "smtp.example.com";
-                int port = 587;
-                string username = "user@example.com";
-                string password = "password";
-                string emailToValidate = "user@example.com";
-
-                if (host.Contains("example.com") || emailToValidate.Contains("example.com"))
+                using (SmtpClient client = new SmtpClient(host, port, username, password, SecurityOptions.Auto))
                 {
-                    Console.WriteLine("Placeholder configuration detected. Skipping external validation.");
-                    return;
-                }
+                    // Attempt to validate the credentials against the SMTP server.
+                    bool isValid = client.ValidateCredentials();
 
-                // Validate server credentials
-                using (SmtpClient client = new SmtpClient())
-                {
-                    client.Host = host;
-                    client.Port = port;
-                    client.Username = username;
-                    client.Password = password;
-                    client.SecurityOptions = SecurityOptions.Auto;
-
-                    try
+                    if (isValid)
                     {
-                        bool credentialsValid = client.ValidateCredentials();
-                        Console.WriteLine($"Credentials validation result: {credentialsValid}");
+                        Console.WriteLine("SMTP server credentials are valid. Connectivity test succeeded.");
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.Error.WriteLine($"Error during credentials validation: {ex.Message}");
-                        return;
-                    }
-                }
-
-                // Validate email address (includes mail server validation)
-                EmailValidator emailValidator = new EmailValidator();
-                ValidationResult validationResult;
-                emailValidator.Validate(emailToValidate, out validationResult);
-                Console.WriteLine($"Email validation return code: {validationResult.ReturnCode}");
-
-                if (validationResult.ReturnCode != ValidationResponseCode.ValidationSuccess)
-                {
-                    Console.WriteLine($"Validation message: {validationResult.Message}");
-                    if (validationResult.LastException != null)
-                    {
-                        Console.WriteLine($"Exception: {validationResult.LastException.Message}");
+                        Console.WriteLine("SMTP server credentials are invalid or the server rejected the connection.");
                     }
                 }
             }
+            catch (SmtpException ex)
+            {
+                // Handles SMTP-specific errors (e.g., authentication failures, connection issues).
+                Console.Error.WriteLine($"SMTP error: {ex.Message}");
+            }
             catch (Exception ex)
             {
+                // Handles any other unexpected errors.
                 Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }

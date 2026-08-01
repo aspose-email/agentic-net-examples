@@ -1,48 +1,57 @@
 using System;
 using System.IO;
+using System.Net.Mime;
 using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define output file path
-            string outputPath = "output.msg";
+            // Output file path
+            string outputPath = "EmbeddedImage_out.msg";
 
             // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(directory);
             }
 
-            // Create a new mail message
-            using (MailMessage message = new MailMessage())
+            // Create the email message
+            using (MailMessage eml = new MailMessage())
             {
-                message.From = "sender@example.com";
-                message.To.Add("recipient@example.com");
-                message.Subject = "Sample with Alternate Views";
+                eml.From = "AndrewIrwin@from.com";
+                eml.To.Add("SusanMarc@to.com");
+                eml.Subject = "This is an email";
 
-                // Create a plain‑text alternate view
+                // Plain text alternate view
                 AlternateView plainView = AlternateView.CreateAlternateViewFromString(
-                    "This is plain text content.", null, "text/plain");
+                    "This is my plain text content", null, "text/plain");
 
-                // Create an HTML alternate view
+                // HTML alternate view with embedded image reference
                 AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
-                    "<html><body><h1>Hello, World!</h1></body></html>", null, "text/html");
+                    "Here is an embedded image. <img src=cid:barcode>", null, "text/html");
 
-                // Add the alternate views to the message
-                message.AlternateViews.Add(plainView);
-                message.AlternateViews.Add(htmlView);
+                // Linked resource (embedded image)
+                LinkedResource barcode = new LinkedResource("1.jpg", MediaTypeNames.Image.Jpeg)
+                {
+                    ContentId = "barcode"
+                };
 
-                // Save the message to an MSG file
-                message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                // Attach resources and views to the message
+                eml.LinkedResources.Add(barcode);
+                eml.AlternateViews.Add(plainView);
+                eml.AlternateViews.Add(htmlView);
+
+                // Save the message as MSG with Unicode support
+                eml.Save(outputPath, SaveOptions.DefaultMsgUnicode);
             }
         }
         catch (Exception ex)
         {
+            // Output any errors to the error stream
             Console.Error.WriteLine(ex.Message);
         }
     }

@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
@@ -10,48 +9,50 @@ class Program
     {
         try
         {
-            // Placeholder POP3 server credentials
+            // POP3 server connection details
             string host = "pop3.example.com";
+            int port = 110;
             string username = "user@example.com";
             string password = "password";
 
-            // Skip real network calls when using placeholder credentials
-            if (host.Contains("example.com"))
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Skipping POP3 operations due to placeholder credentials.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create and connect the POP3 client
-            using (Pop3Client client = new Pop3Client(host, username, password))
+            // Create and configure the POP3 client
+            using (Pop3Client client = new Pop3Client())
             {
                 try
                 {
-                    // List all messages in the mailbox
-                    Pop3MessageInfoCollection messageInfos = client.ListMessages();
+                    client.Host = host;
+                    client.Port = port;
+                    client.Username = username;
+                    client.Password = password;
+                    client.SecurityOptions = SecurityOptions.Auto; // Auto-detect security
 
-                    // Iterate through messages and delete those that match a condition
-                    foreach (Pop3MessageInfo info in messageInfos)
+                    // Implicitly connect by retrieving the message count
+                    int messageCount = client.GetMessageCount();
+                    Console.WriteLine($"Total messages on server: {messageCount}");
+
+                    // Delete the first two messages (if they exist)
+                    int messagesToDelete = Math.Min(2, messageCount);
+                    for (int i = 1; i <= messagesToDelete; i++)
                     {
-                        // Fetch the full message to inspect its subject
-                        using (MailMessage message = client.FetchMessage(info.SequenceNumber))
-                        {
-                            // Example condition: delete messages whose subject contains "DeleteMe"
-                            if (message.Subject != null && message.Subject.Contains("DeleteMe"))
-                            {
-                                // Mark the message for deletion by sequence number
-                                client.DeleteMessage(info.SequenceNumber);
-                                Console.WriteLine($"Marked for deletion: {info.SequenceNumber} - {message.Subject}");
-                            }
-                        }
+                        client.DeleteMessage(i);
+                        Console.WriteLine($"Message {i} marked for deletion.");
                     }
 
-                    // Commit deletions so the server removes the marked messages
-                    Console.WriteLine("Deletion commit completed.");
+                    // Commit deletions – POP3 server will remove them after UPDATE state
+                    Console.WriteLine("Deletion committed.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    Console.Error.WriteLine($"POP3 operation error: {ex.Message}");
+                    return;
                 }
             }
         }

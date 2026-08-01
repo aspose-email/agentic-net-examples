@@ -1,54 +1,51 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.Dav;
 
-
-namespace EmailTransferSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Author note: Adjust the service URL, credentials, and folder URIs as needed for your environment.
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+
+            // Skip external calls when placeholder credentials are used
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                // Placeholder Exchange server URL and credentials.
-                string exchangeUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
 
-                // Guard: skip execution when placeholder credentials are detected.
-                if (exchangeUrl.Contains("example.com"))
+            // Create the Exchange client.
+            using (ExchangeClient client = new ExchangeClient(serviceUrl, username, password))
+            {
+                // Retrieve mailbox information to obtain default folder URIs.
+                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+
+                // Define source and destination folder URIs.
+                string sourceFolderUri = mailboxInfo.InboxUri;          // Example source folder.
+                string destinationFolderUri = mailboxInfo.SentItemsUri; // Example destination folder.
+
+                // List messages in the source folder.
+                ExchangeMessageInfoCollection messages = client.ListMessages(sourceFolderUri);
+
+                foreach (ExchangeMessageInfo msgInfo in messages)
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping operation.");
-                    return;
-                }
-
-                // Initialize the Exchange client.
-                using (ExchangeClient client = new ExchangeClient(exchangeUrl, username, password))
-                {
-                    // Define source and destination folder URIs.
-                    // Here we use Inbox as source and Drafts as destination for illustration.
-                    string sourceFolderUri = client.MailboxInfo.InboxUri;
-                    string destinationFolderUri = client.MailboxInfo.DraftsUri;
-
-                    // List messages in the source folder.
-                    ExchangeMessageInfoCollection messageInfos = client.ListMessages(sourceFolderUri);
-
-                    // Iterate over each message and move it to the destination folder.
-                    foreach (ExchangeMessageInfo messageInfo in messageInfos)
-                    {
-                        // MoveMessage preserves metadata such as subject, flags, etc.
-                        client.MoveMessage(messageInfo, destinationFolderUri);
-                        Console.WriteLine($"Moved message: {messageInfo.Subject}");
-                    }
+                    // Move each message to the destination folder while preserving metadata.
+                    client.MoveMessage(msgInfo, destinationFolderUri);
+                    Console.WriteLine($"Moved message with Subject: '{msgInfo.Subject}'");
                 }
             }
-            catch (Exception ex)
-            {
-                // Top‑level exception guard: output error without crashing.
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

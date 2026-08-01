@@ -7,87 +7,42 @@ class Program
 {
     static void Main()
     {
+        const string inputPath = "encrypted.msg";
+        const string outputPath = "decrypted.msg";
+
         try
         {
-            string inputPath = "encrypted.msg";
-            string outputPath = "decrypted.txt";
-
-            // Ensure input file exists; create a minimal placeholder if missing.
+            // Ensure the input file exists; create a minimal placeholder if it does not.
             if (!File.Exists(inputPath))
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "Sender Name", "sender@example.com"))
-                    {
-                        placeholder.Save(inputPath);
-                        Console.WriteLine($"Placeholder MSG created at '{inputPath}'.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
-                }
+                // Create a simple unencrypted message as a placeholder.
+                MailMessage placeholder = new MailMessage();
+                placeholder.From = "placeholder@example.com";
+                placeholder.To = "placeholder@example.com";
+                placeholder.Subject = "Placeholder Message";
+                placeholder.Body = "This is a placeholder message.";
+                placeholder.Save(inputPath, SaveOptions.DefaultMsg);
             }
 
             // Load the MSG file.
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
-            {
-                // Check if the message is encrypted.
-                if (!msg.IsEncrypted)
-                {
-                    Console.WriteLine("The message is not encrypted. No decryption needed.");
-                }
-                else
-                {
-                    // Decrypt the message.
-                    using (MapiMessage decryptedMsg = msg.Decrypt())
-                    {
-                        // Retrieve the body content.
-                        string body = decryptedMsg.Body ?? string.Empty;
+            MapiMessage encryptedMsg = MapiMessage.Load(inputPath);
 
-                        // Ensure the output directory exists.
-                        try
-                        {
-                            string outputDir = Path.GetDirectoryName(outputPath);
-                            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                            {
-                                Directory.CreateDirectory(outputDir);
-                            }
+            // Decrypt the message. If the message is not encrypted, Decrypt returns the same instance.
+            MapiMessage decryptedMsg = encryptedMsg.Decrypt();
 
-                            // Write the decrypted content to a file.
-                            File.WriteAllText(outputPath, body);
-                            Console.WriteLine($"Decrypted content saved to '{outputPath}'.");
-                        }
-                        catch (Exception ioEx)
-                        {
-                            Console.Error.WriteLine($"Failed to write decrypted content: {ioEx.Message}");
-                            return;
-                        }
-                    }
-                }
-            }
+            // Convert to MailMessage for further processing or saving.
+            MailConversionOptions conversionOpts = new MailConversionOptions();
+            MailMessage mail = decryptedMsg.ToMailMessage(conversionOpts);
+
+            // Save the decrypted message.
+            mail.Save(outputPath, SaveOptions.DefaultMsg);
+
+            Console.WriteLine($"Decrypted message saved to '{outputPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Error processing the message: {ex.Message}");
+            // Gracefully exit without throwing.
         }
     }
 }

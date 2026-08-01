@@ -1,104 +1,66 @@
-using Aspose.Email.Tools.Search;
 using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
+using Aspose.Email.Tools.Search;
 
-class Program
+namespace Pop3FilterSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder POP3 server credentials
-            string host = "pop3.example.com";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip actual network call when placeholders are used
-            if (host.Contains("example.com"))
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping POP3 connection.");
+                // POP3 server connection settings
+                string host = "pop3.example.com";
+                int port = 995;
+                string username = "user@example.com";
+                string password = "password";
+
+
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Create and configure the POP3 client
+                using (Pop3Client pop3Client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+                {
+                    // Build a query to filter messages (e.g., subjects containing "Invoice")
+                    MailQueryBuilder queryBuilder = new MailQueryBuilder();
+                    queryBuilder.Subject.Contains("Invoice");
+                    MailQuery query = queryBuilder.GetQuery();
+
+                    // Retrieve message infos that match the query
+                    Pop3MessageInfoCollection messageInfos = pop3Client.ListMessages(query);
+
+                    Console.WriteLine($"Found {messageInfos.Count} message(s) matching the criteria.");
+
+                    foreach (Pop3MessageInfo info in messageInfos)
+                    {
+                        // Fetch the full message
+                        using (MailMessage message = pop3Client.FetchMessage(info.SequenceNumber))
+                        {
+                            // Process the message (example: display subject and sender)
+                            Console.WriteLine($"Subject: {message.Subject}");
+                            Console.WriteLine($"From: {message.From}");
+                        }
+
+                        // Optionally delete the processed message from the server
+                        pop3Client.DeleteMessage(info.SequenceNumber);
+                    }
+
+                    // Commit deletions to the server
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
                 return;
             }
-
-            // Create and connect POP3 client
-            using (Pop3Client client = new Pop3Client(host, username, password))
-            {
-                try
-                {
-                    client.ValidateCredentials();
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to validate credentials: {ex.Message}");
-                    return;
-                }
-
-                // Build a query to filter messages (e.g., subject contains "Invoice")
-                MailQueryBuilder builder = new MailQueryBuilder();
-                builder.Subject.Contains("Invoice");
-                MailQuery query = builder.GetQuery();
-
-                // Retrieve filtered message infos
-                Pop3MessageInfoCollection infos;
-                try
-                {
-                    infos = client.ListMessages(query);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error listing messages: {ex.Message}");
-                    return;
-                }
-
-                // Ensure output directory exists
-                string outputDir = "output";
-                try
-                {
-                    if (!Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-
-                // Process each message
-                foreach (Pop3MessageInfo info in infos)
-                {
-                    try
-                    {
-                        using (MailMessage message = client.FetchMessage(info.SequenceNumber))
-                        {
-                            Console.WriteLine($"Processing message #{info.SequenceNumber}: {message.Subject}");
-
-                            // Save the message to a file
-                            string filePath = Path.Combine(outputDir, $"msg_{info.SequenceNumber}.eml");
-                            try
-                            {
-                                message.Save(filePath);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to save message #{info.SequenceNumber}: {ex.Message}");
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to fetch message #{info.SequenceNumber}: {ex.Message}");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

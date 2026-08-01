@@ -2,62 +2,73 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace AsposeEmailMsgSerialization
 {
-    static void Main()
+    // Author: Aspose.Email example for MSG serialization with full header, attachment, and property preservation.
+    class Program
     {
-        try
+        static void Main()
         {
-            string emlPath = "sample.eml";
-            string msgPath = "output.msg";
+            const string inputPath = "input.eml";
+            const string outputPath = "output.msg";
 
-            // Verify input file exists
-            if (!File.Exists(emlPath))
+            // Ensure the output directory exists.
+            try
             {
-                try
+                string? outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
-                    }
+                    Directory.CreateDirectory(outputDir);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine($"Error: Input file not found – {emlPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
                 return;
             }
 
-            // Load the email message
-            using (MailMessage mail = MailMessage.Load(emlPath))
+            MailMessage message = null;
+            try
             {
-                // Display all headers
-                foreach (string key in mail.Headers.Keys)
+                if (File.Exists(inputPath))
                 {
-                    Console.WriteLine($"{key}: {mail.Headers[key]}");
+                    // Load existing EML file.
+                    message = MailMessage.Load(inputPath);
+                }
+                else
+                {
+                    // Create a minimal placeholder message when the source file is missing.
+                    message = new MailMessage
+                    {
+                        From = new MailAddress("sender@example.com"),
+                        To = new MailAddressCollection { new MailAddress("recipient@example.com") },
+                        Subject = "Placeholder Subject",
+                        Body = "This is a placeholder email generated because the input file was not found."
+                    };
                 }
 
-                // Prepare MSG save options (Unicode MSG format, preserve original dates)
-                MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                // Preserve original dates and use Unicode MSG format.
+                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
                 {
                     PreserveOriginalDates = true
                 };
 
-                // Save as MSG file
-                mail.Save(msgPath, msgSaveOptions);
-                Console.WriteLine($"Message saved to {msgPath}");
+                // Save the message as MSG with all headers, attachments, and properties preserved.
+                message.Save(outputPath, saveOptions);
+                Console.WriteLine($"Message successfully saved to '{outputPath}'.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing email: {ex.Message}");
+            }
+            finally
+            {
+                // Dispose the MailMessage if it implements IDisposable.
+                if (message != null)
+                {
+                    message.Dispose();
+                }
+            }
         }
     }
 }

@@ -1,70 +1,75 @@
+using Aspose.Email.Storage.Pst;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage;
 
-class Program
+namespace OutlookDistributionListPstSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string pstPath = "SampleDistributionLists.pst";
-
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            try
             {
-                Directory.CreateDirectory(pstDirectory);
-            }
+                // Define PST file path
+                string pstPath = "OutlookDistributionLists.pst";
 
-            // Create a new PST file if it does not exist
-            if (!File.Exists(pstPath))
+                // Ensure the directory for the PST file exists
+                string pstDirectory = Path.GetDirectoryName(Path.GetFullPath(pstPath));
+                if (!Directory.Exists(pstDirectory))
+                {
+                    Directory.CreateDirectory(pstDirectory);
+                }
+
+                // Create a new PST file if it does not exist, otherwise open existing one
+                PersonalStorage pst;
+                if (!File.Exists(pstPath))
+                {
+                    pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                }
+                else
+                {
+                    pst = PersonalStorage.FromFile(pstPath);
+                }
+
+                using (pst)
+                {
+                    // Create (or get) a folder to store distribution lists
+                    FolderInfo distFolder;
+                    try
+                    {
+                        distFolder = pst.RootFolder.GetSubFolder("DistributionLists");
+                    }
+                    catch (ArgumentException)
+                    {
+                        // Folder does not exist; create it
+                        distFolder = pst.RootFolder.AddSubFolder("DistributionLists");
+                    }
+
+                    // Prepare distribution list members
+                    MapiDistributionListMemberCollection members = new MapiDistributionListMemberCollection();
+                    members.Add(new MapiDistributionListMember("John Doe", "john.doe@example.com"));
+                    members.Add(new MapiDistributionListMember("Jane Smith", "jane.smith@example.com"));
+
+                    // Create the distribution list
+                    MapiDistributionList distributionList = new MapiDistributionList("Team Contacts", members);
+
+                    // Retrieve the underlying MAPI message representation
+                    MapiMessage underlyingMessage = distributionList.GetUnderlyingMessage();
+
+                    // Add the distribution list message to the PST folder
+                    distFolder.AddMessage(underlyingMessage);
+                }
+
+                Console.WriteLine("Distribution list successfully saved to PST.");
+            }
+            catch (Exception ex)
             {
-                try
-                {
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return;
             }
-
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Use the root folder to store the distribution list
-                FolderInfo rootFolder = pst.RootFolder;
-
-                // Create a new distribution list
-                MapiDistributionList distributionList = new MapiDistributionList
-                {
-                    DisplayName = "Sample Distribution List"
-                };
-
-                // Add members to the distribution list
-                distributionList.Members.Add(new MapiDistributionListMember("John Doe", "john.doe@example.com"));
-                distributionList.Members.Add(new MapiDistributionListMember("Jane Smith", "jane.smith@example.com"));
-
-                // Add the distribution list to the PST folder
-                try
-                {
-                    string entryId = rootFolder.AddMapiMessageItem(distributionList);
-                    Console.WriteLine($"Distribution list added with EntryId: {entryId}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error adding distribution list to PST: {ex.Message}");
-                    return;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

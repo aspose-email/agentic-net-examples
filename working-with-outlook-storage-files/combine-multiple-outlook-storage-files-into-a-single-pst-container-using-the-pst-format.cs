@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
 class Program
@@ -9,67 +9,55 @@ class Program
     {
         try
         {
-            // Define source PST files to merge
-            string[] sourceFiles = new string[]
-            {
-                "source1.pst",
-                "source2.pst"
-            };
+            // Author note: This example merges multiple PST files into a single PST container.
+            string targetPstPath = "merged.pst";
 
-            // Define the output combined PST file
-            string outputFile = "combined.pst";
+            // Define source PST files to merge.
+            string[] sourcePstPaths = new string[] { "source1.pst", "source2.pst", "source3.pst" };
 
-            // Verify that each source file exists
-            foreach (string sourcePath in sourceFiles)
+            // Verify that each source PST file exists.
+            foreach (string srcPath in sourcePstPaths)
             {
-                if (!File.Exists(sourcePath))
+                if (!File.Exists(srcPath))
                 {
-                    Console.Error.WriteLine($"Error: Source file not found – {sourcePath}");
+                    Console.Error.WriteLine($"Source PST file not found: {srcPath}");
                     return;
                 }
             }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputFile);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure the directory for the target PST exists.
+            string targetDirectory = Path.GetDirectoryName(targetPstPath);
+            if (!string.IsNullOrEmpty(targetDirectory) && !Directory.Exists(targetDirectory))
+            {
+                Console.Error.WriteLine($"Target directory does not exist: {targetDirectory}");
+                return;
+            }
+
+            // If a target PST already exists, delete it to create a fresh container.
+            if (File.Exists(targetPstPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    File.Delete(targetPstPath);
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating output directory: {dirEx.Message}");
+                    Console.Error.WriteLine($"Unable to delete existing target PST: {ex.Message}");
                     return;
                 }
             }
 
-            // Create the combined PST file and merge sources
-            try
+            // Create a new PST file with Unicode format.
+            using (PersonalStorage pst = PersonalStorage.Create(targetPstPath, FileFormatVersion.Unicode))
             {
-                using (PersonalStorage combinedPst = PersonalStorage.Create(outputFile, FileFormatVersion.Unicode))
-                {
-                    try
-                    {
-                        combinedPst.MergeWith(sourceFiles);
-                        Console.WriteLine("PST files merged successfully into " + outputFile);
-                    }
-                    catch (Exception mergeEx)
-                    {
-                        Console.Error.WriteLine($"Error during merge operation: {mergeEx.Message}");
-                        return;
-                    }
-                }
-            }
-            catch (Exception createEx)
-            {
-                Console.Error.WriteLine($"Error creating combined PST file: {createEx.Message}");
-                return;
+                // Merge the source PST files into the newly created PST.
+                pst.MergeWith(sourcePstPaths);
+                Console.WriteLine($"Successfully merged {sourcePstPaths.Length} PST files into '{targetPstPath}'.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }

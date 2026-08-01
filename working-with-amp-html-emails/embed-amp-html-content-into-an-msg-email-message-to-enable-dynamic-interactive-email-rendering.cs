@@ -5,51 +5,40 @@ using Aspose.Email.Amp;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             // Define output MSG file path
             string outputPath = "amp_email.msg";
-
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
             // Create an AMP email message
-            using (AmpMessage ampMessage = new AmpMessage())
-            {
-                // Set basic properties
-                ampMessage.From = new MailAddress("sender@example.com");
-                ampMessage.To.Add(new MailAddress("recipient@example.com"));
-                ampMessage.Subject = "AMP Email Example";
+            AmpMessage ampMessage = new AmpMessage();
+            ampMessage.Subject = "AMP Email Example";
+            ampMessage.From = new MailAddress("sender@example.com");
+            ampMessage.To.Add(new MailAddress("receiver@example.com"));
 
-                // AMP HTML content
-                string ampHtml = @"<!doctype html>
+            // Embed AMP HTML content.
+            // Note: The exact property name may vary between Aspose.Email versions.
+            // Adjust the property used to set AMP content if necessary.
+            ampMessage.AmpHtmlBody = @"<!doctype html>
 <html amp4email>
 <head>
-    <meta charset=""utf-8"">
-    <script async src=""https://cdn.ampproject.org/v0.js""></script>
-    <style amp4email-boilerplate>body{visibility:hidden}</style>
+  <meta charset=""utf-8"">
+  <script async src=""https://cdn.ampproject.org/v0.js""></script>
 </head>
 <body>
-    <h1>Hello AMP Email!</h1>
-    <amp-img src=""https://example.com/image.jpg"" width=""600"" height=""400"" layout=""responsive""></amp-img>
+  <p>Hello, this is an AMP-enabled email!</p>
 </body>
 </html>";
 
-                // Assign AMP body and a fallback HTML body
-                ampMessage.AmpHtmlBody = ampHtml;
-                ampMessage.HtmlBody = "<p>This is a fallback HTML version for non‑AMP clients.</p>";
-
-                // Save the message as an Outlook MSG file
-                ampMessage.Save(outputPath);
-            }
-
-            Console.WriteLine($"AMP message saved to {outputPath}");
+            // Save the message as an MSG file
+            ampMessage.Save(outputPath);
         }
         catch (Exception ex)
         {

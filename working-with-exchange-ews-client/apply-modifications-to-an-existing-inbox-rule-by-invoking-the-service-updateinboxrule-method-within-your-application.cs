@@ -1,5 +1,5 @@
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
 
@@ -7,59 +7,42 @@ namespace UpdateInboxRuleSample
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             try
             {
-                // Placeholder connection settings – replace with real values.
-                string serviceUrl = "https://example.com/EWS";
-                string username = "username";
+                // Connection parameters – replace with real values.
+                string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
                 string password = "password";
-                string domain = "";
 
-                // Guard against executing with placeholder credentials.
-                if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
+
+                // Skip external calls when placeholder credentials are used
+                if (username.Contains("example.com") || password == "password")
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping inbox rule update.");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
 
-                // Create the EWS client.
-                using (IEWSClient service = EWSClient.GetEWSClient(serviceUrl, username, password, domain))
+                // Create the EWS client. IEWSClient implements IDisposable.
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
-                    try
-                    {
-                        // Retrieve existing inbox rules.
-                        InboxRule[] existingRules = service.GetInboxRules();
+                    // Prepare the rule to be updated.
+                    InboxRule rule = new InboxRule();
+                    rule.RuleId = "YOUR_RULE_ID";               // Existing rule identifier.
+                    rule.DisplayName = "Updated Rule Name";     // New display name.
+                    rule.IsEnabled = true;                      // Enable the rule.
+                    // Additional modifications can be made here, e.g., rule.Priority = 1;
 
-                        if (existingRules == null || existingRules.Length == 0)
-                        {
-                            Console.Error.WriteLine("No inbox rules found to update.");
-                            return;
-                        }
+                    // Update the rule on the server.
+                    client.UpdateInboxRule(rule);
 
-                        // Select the first rule for demonstration purposes.
-                        InboxRule ruleToUpdate = existingRules[0];
-
-                        // Modify the rule – for example, toggle its enabled state and change the display name.
-                        ruleToUpdate.IsEnabled = !ruleToUpdate.IsEnabled;
-                        ruleToUpdate.DisplayName = ruleToUpdate.DisplayName + " (Updated)";
-
-                        // Apply the update.
-                        service.UpdateInboxRule(ruleToUpdate);
-
-                        Console.WriteLine("Inbox rule updated successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error while updating inbox rule: {ex.Message}");
-                        return;
-                    }
+                    Console.WriteLine("Inbox rule updated successfully.");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }

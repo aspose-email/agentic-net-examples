@@ -1,51 +1,52 @@
-using Aspose.Email.Tools.Search;
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
 
-class Program
+namespace AsposeEmailFindItemsSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials – skip actual network call in CI environments
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
+            // Placeholder credentials – replace with real values before running against a live server.
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
-            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
+            // Guard: skip external call when placeholders are still present.
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.WriteLine("Placeholder credentials detected. Skipping network operation.");
                 return;
             }
 
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            try
             {
-                // Build a query that matches all messages (no filters)
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                MailQuery query = builder.GetQuery();
-
-                // Retrieve all messages from the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-
-                // Iterate through the returned message infos
-                foreach (ExchangeMessageInfo info in messages)
+                // Create the EWS client.
+                using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, username, password))
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
-                    Console.WriteLine($"Date: {info.InternalDate}");
-                    Console.WriteLine($"From: {info.From}");
-                    Console.WriteLine($"Size: {info.Size}");
-                    Console.WriteLine(new string('-', 40));
+                    // Build a query that matches all messages (no filter).
+                    MailQuery query = new MailQueryBuilder().GetQuery();
+
+                    // Retrieve all messages from the Inbox folder using ListMessages.
+                    ExchangeMessageInfoCollection messageInfos = ewsClient.ListMessages("Inbox", query);
+
+                    // Iterate over the retrieved message info objects.
+                    foreach (ExchangeMessageInfo msgInfo in messageInfos)
+                    {
+                        Console.WriteLine($"Subject: {msgInfo.Subject}");
+                        Console.WriteLine($"From: {msgInfo.From}");
+                        Console.WriteLine($"Received: {msgInfo.InternalDate}");
+                        Console.WriteLine(new string('-', 40));
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during ListMessages operation: {ex.Message}");
+            }
         }
     }
 }

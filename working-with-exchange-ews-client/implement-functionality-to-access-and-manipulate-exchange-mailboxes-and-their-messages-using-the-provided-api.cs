@@ -1,70 +1,98 @@
 using System;
 using System.IO;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace ExchangeMailboxSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip real network call when placeholders are detected
-            if (mailboxUri.Contains("example.com"))
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
-                return;
-            }
+                // Connection parameters – replace with real values.
+                string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                // Get mailbox information
-                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
-                Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
-
-                // List messages in the Inbox
-                ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
-                Console.WriteLine($"Found {messages.Count} messages in Inbox.");
-
-                if (messages.Count > 0)
+                // Create the EWS client.
+                using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, username, password))
                 {
-                    // Fetch the first message
-                    string firstMessageUri = messages[0].UniqueUri;
-                    using (MailMessage message = client.FetchMessage(firstMessageUri))
+                    try
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
+                        // Get mailbox information.
+                        ExchangeMailboxInfo mailboxInfo = ewsClient.GetMailboxInfo();
+                        string inboxUri = mailboxInfo.InboxUri;
 
-                        // Save the message to a local file (guarded file I/O)
-                        string outputPath = "message.eml";
-                        string outputDir = Path.GetDirectoryName(outputPath);
-                        if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                        // List messages in the Inbox.
+                        ExchangeMessageInfoCollection messageInfos = ewsClient.ListMessages(inboxUri);
+
+                        // Ensure output directory exists.
+                        string outputDir = "OutputMessages";
+
+                        // Skip external calls when placeholder credentials are used
+                        if (username.Contains("example.com") || password == "password")
+                        {
+                            Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                            return;
+                        }
+
+                        if (!Directory.Exists(outputDir))
                         {
                             Directory.CreateDirectory(outputDir);
                         }
 
-                        try
+                        foreach (ExchangeMessageInfo messageInfo in messageInfos)
                         {
-                            message.Save(outputPath, SaveOptions.DefaultEml);
-                            Console.WriteLine($"Message saved to {outputPath}");
+                            try
+                            {
+                                // Fetch the full message.
+                                MailMessage mailMessage = ewsClient.FetchMessage(messageInfo.UniqueUri);
+
+                                // Build a safe file name from the message URI.
+                                string safeFileName = messageInfo.UniqueUri.Replace("/", "_").Replace("\\", "_") + ".eml";
+                                string filePath = Path.Combine(outputDir, safeFileName);
+
+                                // Save the message to disk.
+                                mailMessage.Save(filePath);
+                                Console.WriteLine($"Saved message to: {filePath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to process message {messageInfo.UniqueUri}: {ex.Message}");
+                            }
                         }
-                        catch (Exception ex)
+
+                        // Example: delete the first message (optional – uncomment to enable).
+                        /*
+                        if (messageInfos.Count > 0)
                         {
-                            Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                            try
+                            {
+                                string uriToDelete = messageInfos[0].UniqueUri;
+                                ewsClient.DeleteItem(uriToDelete, DeletionOptions.DeletePermanently);
+                                Console.WriteLine($"Deleted message: {uriToDelete}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to delete message: {ex.Message}");
+                            }
                         }
+                        */
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

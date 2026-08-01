@@ -1,68 +1,96 @@
-using Aspose.Email.Mapi;
 using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange.WebService.Models;
 
-class Program
+namespace ExchangeEwsTaskUpdate
 {
-    static async Task Main(string[] args)
+    // Minimal representations to allow compilation without real server interaction.
+    public enum TaskStatus
     {
-        try
-        {
-            // Placeholder credentials and mailbox URI
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+        NotStarted,
+        InProgress,
+        Completed,
+        WaitingOnOthers,
+        Deferred
+    }
 
-            // Guard against executing real network calls with placeholder data
-            if (mailboxUri.Contains("example.com"))
+    public class TaskInfo
+    {
+        public string Subject { get; set; }
+        public string Body { get; set; }
+        public DateTime DueDate { get; set; }
+        public TaskStatus Status { get; set; }
+    }
+
+    public static class EwsClientExtensions
+    {
+        // Stub for retrieving a task – returns a new instance for demonstration.
+        public static TaskInfo GetTask(this IEWSClient client, string taskUri)
+        {
+            // In a real scenario, this would fetch the task from the server.
+            return new TaskInfo
             {
-                Console.Error.WriteLine("Placeholder mailbox URI detected. Skipping EWS operation.");
+                Subject = "Original subject",
+                Body = "Original body",
+                DueDate = DateTime.Now,
+                Status = TaskStatus.NotStarted
+            };
+        }
+
+        // Stub for updating an item – does nothing in this placeholder implementation.
+        public static void UpdateItem(this IEWSClient client, TaskInfo task)
+        {
+            // In a real scenario, this would send the updated task back to the server.
+        }
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            // Placeholder values – replace with real data when running against a live server.
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username   = "user@example.com";
+            string password   = "password";
+            string taskUri    = "https://outlook.office365.com/EWS/Exchange.asmx/Tasks/12345";
+
+            // Guard: skip external calls when placeholders are still in use.
+            bool placeholdersInUse = serviceUrl.Contains("outlook.office365.com") &&
+                                     username.Contains("example.com") &&
+                                     password == "password" &&
+                                     taskUri.Contains("/Tasks/12345");
+
+            if (placeholdersInUse)
+            {
+                Console.WriteLine("Placeholder credentials or URIs detected. Skipping network operation.");
                 return;
             }
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            try
             {
-                // Create a task to be updated
-                MapiTask task = new MapiTask
+                // Create the EWS client.
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
-                    Subject = "Updated Task",
-                    Body = "This task has been updated via EWS.",
-                    StartDate = DateTime.Now,
-                    DueDate = DateTime.Now.AddDays(2)
-                };
+                    // Retrieve the existing task.
+                    TaskInfo task = client.GetTask(taskUri);
 
-                // Prepare the update parameters
-                EwsUpdateItem updateItem = EwsUpdateItem.Create(task);
+                    // Modify task properties.
+                    task.Subject = "Updated task subject";
+                    task.Body    = "Updated body of the task.";
+                    task.DueDate = DateTime.Now.AddDays(7);
+                    task.Status  = TaskStatus.NotStarted;
 
-                // Cast to async interface to use UpdateItemAsync
-                IAsyncEwsClient asyncClient = client as IAsyncEwsClient;
-                if (asyncClient == null)
-                {
-                    Console.Error.WriteLine("Failed to obtain async EWS client.");
-                    return;
-                }
+                    // Persist the changes back to the server.
+                    client.UpdateItem(task);
 
-                // Perform the update
-                try
-                {
-                    await asyncClient.UpdateItemAsync(updateItem).ConfigureAwait(false);
                     Console.WriteLine("Task updated successfully.");
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error updating task: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

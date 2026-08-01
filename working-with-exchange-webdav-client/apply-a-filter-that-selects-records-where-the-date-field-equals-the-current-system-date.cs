@@ -1,53 +1,53 @@
 using Aspose.Email.Clients.Exchange;
-using System;
 using Aspose.Email;
-using Aspose.Email.Tools.Search;
+using System;
+using System.Net;
 using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
     static void Main()
     {
+        // Author: Aspose.Email example - filter messages by today's sent date using Exchange WebDav client.
+
+        // Prepare connection parameters (replace with real values when running).
+        string serviceUrl = "http://exchange.example.com/EWS/Exchange.asmx";
+        string userName = "user@example.com";
+        string password = "password";
+
+        // Skip external calls when placeholder credentials are used
+        if (serviceUrl.Contains("example.com") || userName.Contains("example.com") || password == "password")
+        {
+            Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+            return;
+        }
+
         try
         {
-            // Placeholder credentials – skip execution to avoid real network calls
-            string exchangeUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            if (exchangeUri.Contains("example.com"))
+            // Initialize the Exchange WebDav client.
+            using (ExchangeClient client = new ExchangeClient(serviceUrl, new NetworkCredential(userName, password)))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping network operation.");
-                return;
-            }
+                // Build a query that matches messages whose SentDate equals the current system date.
+                string todayString = DateTime.Now.ToString("dd-MMM-yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                string queryString = $"'SentDate' = '{todayString}'";
 
-            // Create Exchange client inside a try/catch to handle connection issues
-            try
-            {
-                using (ExchangeClient client = new ExchangeClient(exchangeUri, username, password))
+                // Retrieve messages that satisfy the query.
+                // ListMessages returns a collection of MessageInfo objects.
+                ExchangeMessageInfoCollection messages = client.ListMessages(queryString);
+
+                int count = 0;
+                foreach (var msgInfo in messages)
                 {
-                    // Build a query that selects messages where the internal date equals today
-                    MailQueryBuilder builder = new MailQueryBuilder();
-                    MailQuery query = builder.InternalDate.On(DateTime.Today);
-
-                    // List messages from the Inbox that match the query
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, true);
-
-                    foreach (ExchangeMessageInfo info in messages)
-                    {
-                        Console.WriteLine($"Subject: {info.Subject}");
-                    }
+                    count++;
+                    Console.WriteLine($"Subject: {msgInfo.Subject}");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error connecting to Exchange: {ex.Message}");
-                return;
+
+                Console.WriteLine($"Total messages found for date {todayString}: {count}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -9,20 +9,31 @@ class Program
     {
         try
         {
-            string tnefFilePath = "winmail.dat";
-            string msgOutputPath = "output.msg";
+            // Author note: This sample loads a TNEF file and exports it as a MSG file.
+            string inputPath = "input.tnef";
+            string outputPath = "output.msg";
 
-            if (!File.Exists(tnefFilePath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {tnefFilePath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            using (MapiMessage tnefMessage = MapiMessage.LoadFromTnef(tnefFilePath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                tnefMessage.Save(msgOutputPath);
-                Console.WriteLine($"TNEF attachment exported to MSG: {msgOutputPath}");
+                Directory.CreateDirectory(outputDir);
             }
+
+            // Load the TNEF message
+            MapiMessage tnefMessage = MapiMessage.LoadFromTnef(inputPath);
+
+            // Convert to MailMessage to preserve attachments and save as MSG
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            MailMessage mailMessage = tnefMessage.ToMailMessage(conversionOptions);
+            mailMessage.Save(outputPath, SaveOptions.DefaultMsg);
         }
         catch (Exception ex)
         {

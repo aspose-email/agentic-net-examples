@@ -3,17 +3,21 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main(string[] args)
+    // Author: Aspose.Email example for retrieving sender email from MSG
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "sample.msg";
-
-            // Ensure the MSG file exists
-            if (!File.Exists(msgPath))
+            try
             {
+                // Path to the MSG file
+                string msgPath = "message.msg";
+
+                // Guard file existence
+                if (!File.Exists(msgPath))
+                {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -31,42 +35,27 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    // Create a minimal placeholder MSG file
-                    using (MapiMessage placeholder = new MapiMessage("Placeholder Sender", "placeholder@example.com", "Placeholder Subject", "Placeholder body"))
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                    Console.WriteLine($"Placeholder MSG file created at '{msgPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"File not found: {msgPath}");
                     return;
                 }
-            }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
-            {
+                // Load the MSG file
+                MapiMessage mapiMessage = MapiMessage.Load(msgPath);
+
                 // Convert to MailMessage to access From.Address
-                using (MailMessage mail = msg.ToMailMessage(new MailConversionOptions()))
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
                 {
-                    if (mail.From != null && !string.IsNullOrEmpty(mail.From.Address))
-                    {
-                        Console.WriteLine($"Sender Email: {mail.From.Address}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Sender email address not available.");
-                    }
+                    // Retrieve sender's email address
+                    string senderEmail = mailMessage.From?.Address;
+                    Console.WriteLine($"Sender Email: {senderEmail}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Output any unexpected errors
+                Console.Error.WriteLine(ex.Message);
+            }
         }
     }
 }

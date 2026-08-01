@@ -1,7 +1,6 @@
 using Aspose.Email.Storage.Pst;
-using System;
-using System.Net;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
 
@@ -11,47 +10,37 @@ class Program
     {
         try
         {
-            // Placeholder credentials – skip actual network call in CI environments
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
+            // Initialize EWS client (replace with real credentials and URL)
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
-            if (serviceUrl.Contains("example.com"))
+            // Skip external calls when placeholder credentials are used
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder Exchange service URL detected. Skipping network call.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            NetworkCredential credential = new NetworkCredential(username, password);
-
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credential))
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // Target folder name to find
+                // Root folder URI in EWS
+                string parentFolderUri = "msgfolderroot";
+
+                // Name of the folder to locate
                 string targetFolderName = "TargetFolder";
 
-                // Retrieve subfolders of the root folder
-                ExchangeFolderInfoCollection subFolders = client.ListSubFolders(client.MailboxInfo.RootUri);
+                // Find folders matching the specified name under the parent folder
+                ExchangeFolderInfoCollection foundFolders = client.ListSubFolders(parentFolderUri, targetFolderName);
 
-                // Search for the folder with the specified display name
-                ExchangeFolderInfo targetFolder = null;
-                foreach (ExchangeFolderInfo folderInfo in subFolders)
+                if (foundFolders != null && foundFolders.Count > 0)
                 {
-                    if (string.Equals(folderInfo.DisplayName, targetFolderName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        targetFolder = folderInfo;
-                        break;
-                    }
-                }
-
-                if (targetFolder != null)
-                {
-                    Console.WriteLine($"Folder found: {targetFolder.DisplayName}");
-                    Console.WriteLine($"Folder URI: {targetFolder.Uri}");
+                    var folder = foundFolders[0];
+                    Console.WriteLine($"Found folder '{folder.DisplayName}' with URI: {folder.Uri}");
                 }
                 else
                 {
-                    Console.WriteLine($"Folder \"{targetFolderName}\" not found in the mailbox hierarchy.");
+                    Console.WriteLine("Folder not found.");
                 }
             }
         }

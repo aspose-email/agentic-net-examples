@@ -1,7 +1,8 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Google;
+
+// Author: Sample code to delete a Gmail message using Aspose.Email
 
 class Program
 {
@@ -9,38 +10,24 @@ class Program
     {
         try
         {
-            // Placeholder connection details
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
-            string messageUid = "12345"; // Unique identifier of the message to delete
+            // Replace with a valid OAuth access token and the email address of the account
+            string accessToken = "YOUR_ACCESS_TOKEN";
+            string defaultEmail = "user@example.com";
 
-            // Skip execution when placeholders are detected
-            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping external call.");
-                return;
-            }
+            // Create the Gmail client instance
+            IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail);
 
-            // Create and use the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-            {
-                try
-                {
-                    // Delete the message by its unique identifier
-                    client.DeleteMessage(messageUid);
-                    Console.WriteLine($"Message with UID '{messageUid}' has been deleted.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Operation error: {ex.Message}");
-                }
-            }
+            // The ID of the message you want to delete
+            string messageId = "MESSAGE_ID_TO_DELETE";
+
+            // Delete the message permanently
+            gmailClient.DeleteMessage(messageId);
+
+            Console.WriteLine("Message deleted successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

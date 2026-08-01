@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.PersonalInfo;
 using HtmlAgilityPack;
 
@@ -10,81 +10,85 @@ class Program
     {
         try
         {
-            string htmlPath = "contact.html";
-            string vcfPath = "contact.vcf";
+            // Define input HTML and output VCF file paths
+            string htmlFilePath = "contact.html";
+            string vcfFilePath = "contact.vcf";
 
-            // Verify input HTML file exists
-            if (!File.Exists(htmlPath))
+            // Ensure the HTML input file exists; create a minimal placeholder if missing
+            if (!File.Exists(htmlFilePath))
             {
-                Console.Error.WriteLine($"Input file not found: {htmlPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(vcfPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Load and parse HTML
-            var htmlDoc = new HtmlDocument();
-            htmlDoc.Load(htmlPath);
-
-            // Extract name (example XPath, adjust as needed)
-            var nameNode = htmlDoc.DocumentNode.SelectSingleNode("//span[@class='name']");
-            string fullName = nameNode?.InnerText?.Trim() ?? "Unknown";
-
-            // Extract email (first mailto link)
-            var emailNode = htmlDoc.DocumentNode.SelectSingleNode("//a[starts-with(@href,'mailto:')]");
-            string email = null;
-            if (emailNode != null)
-            {
-                string href = emailNode.GetAttributeValue("href", string.Empty);
-                if (href.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    email = href.Substring(7);
+                    string placeholderHtml = "<html><body>" +
+                                            "<span class=\"name\">John Doe</span>" +
+                                            "<span class=\"email\">john.doe@example.com</span>" +
+                                            "</body></html>";
+                    File.WriteAllText(htmlFilePath, placeholderHtml);
+                }
+                catch (Exception ioEx)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ioEx.Message}");
+                    return;
                 }
             }
 
-            // Extract phone (example XPath)
-            var phoneNode = htmlDoc.DocumentNode.SelectSingleNode("//span[@class='phone']");
-            string phone = phoneNode?.InnerText?.Trim();
+            // Load the HTML document using HtmlAgilityPack
+            var htmlDoc = new HtmlDocument();
+            try
+            {
+                htmlDoc.Load(htmlFilePath);
+            }
+            catch (Exception loadEx)
+            {
+                Console.Error.WriteLine($"Error loading HTML file: {loadEx.Message}");
+                return;
+            }
 
-            // Create Aspose.Email contact
+            // Extract name and email using XPath
+            var nameNode = htmlDoc.DocumentNode.SelectSingleNode("//span[contains(@class,'name')]");
+            var emailNode = htmlDoc.DocumentNode.SelectSingleNode("//span[contains(@class,'email')]");
+
+            if (nameNode == null || emailNode == null)
+            {
+                Console.Error.WriteLine("Failed to locate required contact fields in the HTML.");
+                return;
+            }
+
+            string fullName = nameNode.InnerText.Trim();
+            string emailAddress = emailNode.InnerText.Trim();
+
+            // Split full name into given name and surname (basic split on last space)
+            string givenName = fullName;
+            string surname = string.Empty;
+            int lastSpaceIndex = fullName.LastIndexOf(' ');
+            if (lastSpaceIndex > 0 && lastSpaceIndex < fullName.Length - 1)
+            {
+                givenName = fullName.Substring(0, lastSpaceIndex);
+                surname = fullName.Substring(lastSpaceIndex + 1);
+            }
+
+            // Create a Contact object and populate fields
             var contact = new Contact
             {
-                DisplayName = fullName
+                GivenName = givenName,
+                Surname = surname
             };
+            contact.EmailAddresses.Add(new EmailAddress(emailAddress));
 
-            // Populate given name and surname if possible
-            var nameParts = fullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-            if (nameParts.Length > 0) contact.GivenName = nameParts[0];
-            if (nameParts.Length > 1) contact.Surname = nameParts[1];
-
-            // Add email address (typed)
-            if (!string.IsNullOrEmpty(email))
+            // Save the contact as a VCF file using the default VCard format
+            try
             {
-                contact.EmailAddresses.Add(new EmailAddress(email));
+                contact.Save(vcfFilePath);
+                Console.WriteLine($"VCF file generated successfully at: {vcfFilePath}");
             }
-
-            // Add phone number (typed)
-            if (!string.IsNullOrEmpty(phone))
+            catch (Exception saveEx)
             {
-                contact.PhoneNumbers.Add(new PhoneNumber
-                {
-                    Number = phone,
-                    Category = PhoneNumberCategory.Work
-                });
+                Console.Error.WriteLine($"Error saving VCF file: {saveEx.Message}");
             }
-
-            // Save as VCF
-            contact.Save(vcfPath);
-            Console.WriteLine($"Contact saved to {vcfPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

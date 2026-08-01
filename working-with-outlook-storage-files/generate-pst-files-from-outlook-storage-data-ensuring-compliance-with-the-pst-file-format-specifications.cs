@@ -1,61 +1,60 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
+using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
 
 class Program
 {
     static void Main()
     {
-        try
-        {
-            string outputPstPath = "output.pst";
+        // Author: Aspose.Email example - Convert MBOX to PST with safety checks
+        string inputMboxPath = "input.mbox";
+        string outputPstPath = "output.pst";
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPstPath));
-            if (!Directory.Exists(outputDir))
+        // Ensure input file exists; create an empty placeholder if missing
+        if (!File.Exists(inputMboxPath))
+        {
+            try
+            {
+                File.WriteAllText(inputMboxPath, string.Empty);
+                Console.WriteLine($"Created placeholder MBOX file at '{inputMboxPath}'.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
+                return;
+            }
+        }
+
+        // Ensure output directory exists
+        string outputDir = Path.GetDirectoryName(outputPstPath);
+        if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+        {
+            try
             {
                 Directory.CreateDirectory(outputDir);
             }
-
-            // Delete existing PST file if present
-            if (File.Exists(outputPstPath))
+            catch (Exception ex)
             {
-                try
-                {
-                    File.Delete(outputPstPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error deleting existing PST: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Failed to create output directory '{outputDir}': {ex.Message}");
+                return;
             }
+        }
 
-            // Create a new Unicode PST file
-            using (PersonalStorage pst = PersonalStorage.Create(outputPstPath, FileFormatVersion.Unicode))
+        // Perform conversion inside a try/catch block
+        try
+        {
+            // Convert the MBOX storage to PST. The method returns a PersonalStorage instance.
+            using (PersonalStorage pst = MailStorageConverter.MboxToPst(inputMboxPath, outputPstPath))
             {
-                // Create a simple email message
-                using (MailMessage mail = new MailMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is a sample email body."))
-                {
-                    // Convert MailMessage to MapiMessage
-                    using (MapiMessage mapiMsg = MapiMessage.FromMailMessage(mail))
-                    {
-                        // Add the message to the root folder
-                        string entryId = pst.RootFolder.AddMessage(mapiMsg);
-                        Console.WriteLine($"Message added with EntryId: {entryId}");
-                    }
-                }
-
-                // Display total items count in the PST
-                int totalItems = pst.Store.GetTotalItemsCount();
-                Console.WriteLine($"Total items in PST: {totalItems}");
+                // The PST file is now created at outputPstPath.
+                Console.WriteLine($"Conversion successful. PST file saved to '{outputPstPath}'.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Conversion failed: {ex.Message}");
         }
     }
 }

@@ -1,43 +1,45 @@
-using System;
-using System.Reflection;
 using Aspose.Email;
+using System;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
+// Author: Aspose.Email example – retrieve and display all inbox rule definitions
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
+        // Replace with your actual EWS service URL and credentials
+        string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+
+
+        // Skip external calls when placeholder credentials are used
+        if (username.Contains("example.com") || password == "password")
+        {
+            Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+            return;
+        }
+
         try
         {
-            // Get the assembly that contains Aspose.Email types
-            Assembly asposeAssembly = typeof(MailMessage).Assembly;
+            IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password);
+            // Get all inbox rules for the default mailbox (null or empty string)
+            InboxRule[] rules = client.GetInboxRules(null);
 
-            // Retrieve all types defined in the assembly
-            Type[] allTypes = asposeAssembly.GetTypes();
-
-            foreach (Type currentType in allTypes)
+            Console.WriteLine($"Total rules: {rules.Length}");
+            foreach (InboxRule rule in rules)
             {
-                // Filter only types that belong to the Aspose.Email namespace hierarchy
-                if (currentType.Namespace != null && currentType.Namespace.StartsWith("Aspose.Email"))
-                {
-                    Console.WriteLine($"Type: {currentType.FullName}");
-
-                    // Get public members declared directly on the type
-                    MemberInfo[] members = currentType.GetMembers(
-                        BindingFlags.Public |
-                        BindingFlags.Instance |
-                        BindingFlags.Static |
-                        BindingFlags.DeclaredOnly);
-
-                    foreach (MemberInfo member in members)
-                    {
-                        Console.WriteLine($"  Member: {member.MemberType} {member.Name}");
-                    }
-                }
+                Console.WriteLine($"Name: {rule.DisplayName}");
+                Console.WriteLine($"Enabled: {rule.IsEnabled}");
+                Console.WriteLine($"Priority: {rule.Priority}");
+                Console.WriteLine(new string('-', 30));
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
+            return;
         }
     }
 }

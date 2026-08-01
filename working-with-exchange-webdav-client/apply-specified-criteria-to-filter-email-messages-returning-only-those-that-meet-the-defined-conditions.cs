@@ -1,60 +1,68 @@
 using System;
-using Aspose.Email.Clients.Exchange.Dav;
-using Aspose.Email.Clients.Exchange;
+using System.IO;
+using Aspose.Email;
+using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
     static void Main()
     {
-        // Top‑level exception guard
         try
         {
-            // Placeholder connection details
-            string host = "exchange.example.com";
-            string username = "user@example.com";
-            string password = "password";
+            // Path to the source MBOX file.
+            string mboxPath = "storage.mbox";
 
-            // Skip real network call when placeholders are used
-            if (host.Contains("example.com"))
+            if (!File.Exists(mboxPath))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping server connection.");
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // Ensure the client is instantiated before any use
-            using (ExchangeClient client = new ExchangeClient(host, username, password))
-            {
-                // Guard client operations for connection/authentication errors
-                try
-                {
-                    // Retrieve messages from the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
+            // Ensure the output directory exists.
+            string outputDir = "FilteredMessages";
+            Directory.CreateDirectory(outputDir);
 
-                    // Apply filtering criteria
-                    foreach (ExchangeMessageInfo info in messages)
+            // Create the MBOX reader.
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            {
+                // Define filter criteria: messages from example.com with "Report" in the subject.
+                MailQuery mailQuery = new MailQuery("(('From' Contains 'example.com') & 'Subject' Contains 'Report')");
+
+                // Enumerate and process only the messages that match the query.
+                foreach (MailMessage message in mbox.EnumerateMessages(new EmlLoadOptions(), mailQuery))
+                {
+                    using (message)
                     {
-                        // Example criteria: subject contains "Invoice" and size > 10 KB
-                        if (info.Subject != null &&
-                            info.Subject.Contains("Invoice") &&
-                            info.Size > 10_000)
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"To: {string.Join(", ", message.To)}");
+
+                        // Prepare a safe file name.
+                        string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
                         {
-                            Console.WriteLine($"Subject: {info.Subject}");
-                            Console.WriteLine($"Size: {info.Size} bytes");
-                            Console.WriteLine($"From: {info.From}");
-                            Console.WriteLine($"Received: {info.Date}");
-                            Console.WriteLine(new string('-', 40));
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        string filePath = Path.Combine(outputDir, $"{safeSubject}.eml");
+
+                        try
+                        {
+                            message.Save(filePath);
+                            Console.WriteLine($"Saved to: {filePath}");
+                        }
+                        catch (Exception saveEx)
+                        {
+                            Console.Error.WriteLine($"Failed to save message '{safeSubject}': {saveEx.Message}");
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

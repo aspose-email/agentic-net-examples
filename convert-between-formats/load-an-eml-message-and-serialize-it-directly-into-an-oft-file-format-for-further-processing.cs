@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,11 +8,12 @@ class Program
     {
         try
         {
-            string inputPath = "input.eml";
-            string outputPath = "output.oft";
+            // Define source and target file paths
+            string sourcePath = "source.eml";
+            string targetPath = "target.oft";
 
-            // Ensure input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Ensure the source EML file exists; create a minimal placeholder if missing
+            if (!File.Exists(sourcePath))
             {
                 try
                 {
@@ -23,7 +23,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                        placeholder.Save(sourcePath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -34,41 +34,30 @@ class Program
 
                 try
                 {
-                    string placeholder = "From: placeholder@example.com\r\nTo: recipient@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(inputPath, placeholder);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
             }
 
             // Load the EML message
-            try
+            using (MailMessage mailMessage = MailMessage.Load(sourcePath))
             {
-                using (MailMessage mailMessage = MailMessage.Load(inputPath))
+                // Save the message as an Outlook Template (OFT) using default options
+                try
                 {
-                    // Convert to MAPI message
-                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
-                    {
-                        // Save as Outlook File Template (OFT)
-                        try
-                        {
-                            mapiMessage.SaveAsTemplate(outputPath);
-                            Console.WriteLine($"Successfully saved OFT file to '{outputPath}'.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save OFT file: {ex.Message}");
-                        }
-                    }
+                    mailMessage.Save(targetPath, SaveOptions.DefaultOft);
+                }
+                catch (Exception saveEx)
+                {
+                    Console.Error.WriteLine($"Error saving OFT file: {saveEx.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load or process EML file: {ex.Message}");
-            }
+
+            Console.WriteLine("EML successfully converted to OFT.");
         }
         catch (Exception ex)
         {

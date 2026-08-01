@@ -1,50 +1,57 @@
-using Aspose.Email.Clients.Exchange;
 using System;
+using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Imap;
 
-class Program
+namespace RetrieveMessagesById
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder server URI and credentials.
-            string serverUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Author: Aspose.Email example - fetch messages by unique identifiers (UIDs) using IMAP.
+            string host = "imap.example.com";
+            int port = 993;
             string username = "user@example.com";
             string password = "password";
 
-            // If placeholders are detected, skip the external call to avoid runtime failures.
-            if (serverUri.Contains("example.com"))
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping server call.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the Exchange WebDAV client.
-            using (ExchangeClient client = new ExchangeClient(serverUri, username, password))
+            // Create the IMAP client with SSL implicit security.
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.SSLImplicit))
             {
-                // Unique identifiers (message IDs) of the messages to retrieve.
-                string[] messageIds = { "AAMkAGI2AAAAAA...", "AAMkAGI3BBBBBB..." };
-
-                foreach (string id in messageIds)
+                try
                 {
-                    // Retrieve message info by ID from the Inbox folder.
-                    ExchangeMessageInfoCollection infos = client.ListMessagesById("Inbox", id);
+                    // Select the folder to work with (e.g., INBOX).
+                    client.SelectFolder("INBOX");
 
-                    // The collection should contain a single item; fetch the full message.
-                    foreach (var info in infos)
+                    // List of message UIDs to retrieve.
+                    List<string> messageUids = new List<string> { "1", "2", "3" };
+
+                    // Fetch the messages corresponding to the supplied UIDs.
+                    IList<MailMessage> messages = client.FetchMessages(messageUids);
+
+                    // Process the retrieved messages.
+                    foreach (MailMessage message in messages)
                     {
-                        // Fetch the complete MailMessage using the message's unique URI.
-                        MailMessage message = client.FetchMessage(info.UniqueUri);
                         Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"Date: {message.Date}");
+                        Console.WriteLine(new string('-', 40));
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"An error occurred while fetching messages: {ex.Message}");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
         }
     }
 }

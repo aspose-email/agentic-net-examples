@@ -3,40 +3,41 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Calendar;
 
+// Author: Aspose.Email example - creates an appointment and saves it as an iCalendar (ICS) file.
 class Program
 {
     static void Main()
     {
         try
         {
-            // Define output file path
+            // Define the output file path for the .ics file.
             string outputPath = "appointment.ics";
 
-            // Ensure the directory for the output file exists
-            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Ensure the target directory exists.
+            string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+            if (!Directory.Exists(directory))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(directory);
             }
 
-            // Prepare attendees collection
+            // Prepare attendees.
             MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("attendee1@example.com"));
-            attendees.Add(new MailAddress("attendee2@example.com"));
+            attendees.Add(new MailAddress("attendee@example.com"));
 
-            // Create the appointment with location, summary, description, start/end, organizer, attendees
+            // Create the appointment with location, summary, description, start/end times, organizer, and attendees.
             Appointment appointment = new Appointment(
-                location: "Conference Room 1",
-                summary: "Project Kickoff",
-                description: "Discuss project goals and timelines.",
-                startDate: new DateTime(2024, 5, 20, 10, 0, 0),
-                endDate: new DateTime(2024, 5, 20, 11, 0, 0),
-                organizer: new MailAddress("organizer@example.com"),
-                attendees: attendees
-            );
+                "Conference Room",                     // location
+                "Team Sync",                           // summary (subject)
+                "Weekly team sync meeting.",           // description
+                new DateTime(2023, 12, 1, 10, 0, 0),   // start time
+                new DateTime(2023, 12, 1, 11, 0, 0),   // end time
+                new MailAddress("organizer@example.com"), // organizer
+                attendees);                            // attendees
 
-            // Save the appointment as an iCalendar (ICS) file
+            // Save the appointment as an iCalendar file using default options.
             appointment.Save(outputPath);
+
+            Console.WriteLine($"Appointment successfully saved to '{outputPath}'.");
         }
         catch (Exception ex)
         {

@@ -1,24 +1,25 @@
 using System;
 using System.IO;
+using System.Text;
 using Aspose.Email;
 using Aspose.Email.Amp;
-using Aspose.Email.Mime;
 
+// Author: Generated example for creating an AMP message with an AlternateView and saving as MSG
 class Program
 {
     static void Main()
     {
         try
         {
-            string outputPath = "amp_message.msg";
-
-            // Ensure the output directory exists
-            string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-            if (!Directory.Exists(directory))
+            // Define output file path
+            string outputPath = "AmpMessage_out.msg";
+            string directory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
+            // Create the AMP message
             using (AmpMessage ampMessage = new AmpMessage())
             {
                 ampMessage.From = "sender@example.com";
@@ -26,29 +27,25 @@ class Program
                 ampMessage.Subject = "AMP Email Example";
 
                 // AMP HTML content
-                string ampHtml = @"<!doctype html>
-<html amp4email>
-<head>
-<meta charset=""utf-8"">
-<script async src=""https://cdn.ampproject.org/v0.js""></script>
-</head>
-<body>
-<h1>Hello AMP</h1>
-</body>
-</html>";
+                string ampHtml = "<!doctype html><html amp4email><head><meta charset=\"utf-8\"><script async src=\"https://cdn.ampproject.org/v0.js\"></script></head><body><h1>Hello AMP</h1></body></html>";
 
-                // Create the appropriate content type for AMP
-                ContentType ampContentType = new ContentType("text/x-amp-html");
+                // Create an AlternateView with the required MIME type for AMP
+                AlternateView ampView = AlternateView.CreateAlternateViewFromString(ampHtml, Encoding.UTF8, "text/x-amp-html");
+                ampMessage.AddAlternateView(ampView);
 
-                // Create an AlternateView with the AMP content
-                using (AlternateView ampView = AlternateView.CreateAlternateViewFromString(ampHtml, ampContentType))
+                // Optionally set the AmpHtmlBody property
+                ampMessage.AmpHtmlBody = ampHtml;
+
+                // Save the message as an MSG file
+                try
                 {
-                    ampMessage.AlternateViews.Add(ampView);
+                    ampMessage.Save(outputPath, SaveOptions.DefaultMsgUnicode);
                 }
-
-                // Save the message as an Outlook MSG file
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                ampMessage.Save(outputPath, saveOptions);
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    return;
+                }
             }
         }
         catch (Exception ex)

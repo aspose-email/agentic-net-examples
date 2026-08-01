@@ -5,15 +5,15 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Input and output MSG file paths
-            string inputPath = "sample.msg";
-            string outputPath = "sample_updated.msg";
+            // Input and output file paths
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Verify input file exists
+            // Guard input file existence
             if (!File.Exists(inputPath))
             {
                 try
@@ -33,7 +33,7 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
@@ -44,28 +44,24 @@ class Program
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
-            {
-                // Retrieve current priority
-                int currentPriority = 0;
-                if (msg.TryGetPropertyInt32(KnownPropertyList.Priority.Tag, ref currentPriority))
-                {
-                    Console.WriteLine($"Current priority: {currentPriority}");
-                }
-                else
-                {
-                    Console.WriteLine("Priority property not set.");
-                }
+            // Load the MSG file as a MapiMessage
+            MapiMessage mapiMsg = MapiMessage.Load(inputPath);
 
-                // Set a new priority (e.g., 1 = High)
-                int newPriority = 1;
-                msg.SetProperty(new MapiProperty(KnownPropertyList.Priority, newPriority));
+            // Convert to MailMessage to work with the Priority property
+            MailConversionOptions conversionOpts = new MailConversionOptions();
+            MailMessage mailMsg = mapiMsg.ToMailMessage(conversionOpts);
 
-                // Save the updated message
-                msg.Save(outputPath);
-                Console.WriteLine($"Message saved with new priority to {outputPath}");
-            }
+            // Retrieve current priority
+            MailPriority currentPriority = mailMsg.Priority;
+            Console.WriteLine($"Current priority: {currentPriority}");
+
+            // Set a new priority (e.g., High)
+            mailMsg.Priority = MailPriority.High;
+            Console.WriteLine("Priority set to High.");
+
+            // Save the modified message back to MSG format
+            mailMsg.Save(outputPath);
+            Console.WriteLine($"Modified message saved to: {outputPath}");
         }
         catch (Exception ex)
         {

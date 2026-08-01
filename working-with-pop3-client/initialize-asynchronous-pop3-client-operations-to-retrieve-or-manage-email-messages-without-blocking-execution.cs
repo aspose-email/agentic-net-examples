@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Aspose.Email;
@@ -8,61 +7,47 @@ using Aspose.Email.Clients.Pop3;
 
 class Program
 {
-    static async Task Main(string[] args)
+    static async Task Main()
     {
         try
         {
-            // Placeholder connection settings
             string host = "pop.example.com";
+            int port = 110;
             string username = "user@example.com";
             string password = "password";
 
-            // Guard against executing real network calls with placeholder data
-            if (host.Contains("example.com"))
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
                 Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
                 return;
             }
 
-            // Initialize POP3 client
-            using (Pop3Client client = new Pop3Client(host, username, password, SecurityOptions.Auto))
+            IAsyncPop3Client pop3Client = await Pop3Client.CreateAsync(
+                host,
+                username,
+                null,
+                port,
+                SecurityOptions.Auto,
+                CancellationToken.None);
+
+            try
             {
-                // Validate credentials asynchronously
-                try
-                {
-                    await client.ValidateCredentialsAsync();
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Credential validation failed: {ex.Message}");
-                    return;
-                }
+                Pop3MessageInfoCollection messageInfos = await pop3Client.ListMessagesAsync();
 
-                // Get total message count asynchronously
-                int messageCount = await client.GetMessageCountAsync();
-                Console.WriteLine($"Total messages: {messageCount}");
-
-                // List messages asynchronously
-                Pop3MessageInfoCollection messageInfos = await client.ListMessagesAsync();
                 foreach (Pop3MessageInfo info in messageInfos)
                 {
-                    Console.WriteLine($"UID: {info.UniqueId}, Size: {info.Size} bytes");
+                    MailMessage message = await pop3Client.FetchMessageAsync(info.SequenceNumber);
+                    Console.WriteLine($"Subject: {message.Subject}");
                 }
-
-                // Fetch the first message and save to a memory stream asynchronously
-                if (messageCount > 0)
-                {
-                    using (MemoryStream memoryStream = new MemoryStream())
-                    {
-                        await client.SaveMessageAsync(1, memoryStream);
-                        Console.WriteLine($"Fetched first message, stream length: {memoryStream.Length} bytes");
-                    }
-                }
+            }
+            finally
+            {
+                pop3Client.Dispose();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

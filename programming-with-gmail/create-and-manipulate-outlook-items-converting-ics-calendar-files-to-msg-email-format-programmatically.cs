@@ -4,60 +4,44 @@ using Aspose.Email;
 using Aspose.Email.Calendar;
 using Aspose.Email.Mapi;
 
+// Author: Aspose.Email example - Convert iCalendar (.ics) to Outlook Message (.msg)
 class Program
 {
     static void Main()
     {
         try
         {
-            string inputIcsPath = "input.ics";
-            string outputMsgPath = "output.msg";
+            // Input iCalendar file path
+            string icsPath = "event.ics";
+            // Output MSG file path
+            string msgPath = "event.msg";
 
             // Verify input file exists
-            if (!File.Exists(inputIcsPath))
+            if (!File.Exists(icsPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputIcsPath}");
+                Console.Error.WriteLine($"Input file not found: {icsPath}");
                 return;
             }
 
             // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string outputDir = Path.GetDirectoryName(msgPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Error creating output directory: {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            try
-            {
-                // Load the iCalendar file into an Appointment object
-                Appointment appointment = Appointment.Load(inputIcsPath);
+            // Load the iCalendar file into an Appointment object
+            Appointment appointment = Appointment.Load(icsPath);
 
-                // Convert the Appointment to a MAPI message
-                using (MapiMessage mapiMessage = appointment.ToMapiMessage())
-                {
-                    // Save the MAPI message as a MSG file
-                    mapiMessage.Save(outputMsgPath);
-                }
+            // Convert the Appointment to a MAPI message
+            MapiMessage mapMessage = appointment.ToMapiMessage();
 
-                Console.WriteLine($"Successfully converted '{inputIcsPath}' to '{outputMsgPath}'.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error during conversion: {ex.Message}");
-                return;
-            }
+            // Save the MAPI message as a .msg file
+            mapMessage.Save(msgPath);
         }
-        catch (Exception outerEx)
+        catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {outerEx.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

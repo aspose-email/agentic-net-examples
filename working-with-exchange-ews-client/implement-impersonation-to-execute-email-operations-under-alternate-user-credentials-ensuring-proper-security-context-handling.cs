@@ -1,54 +1,46 @@
-using Aspose.Email.Clients.Exchange;
 using System;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-namespace ImpersonationSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // EWS service URL and admin credentials
+            string ewsUrl = "https://mail.example.com/EWS/Exchange.asmx";
+            string adminUser = "admin@example.com";
+            string adminPassword = "adminPassword";
+
+            // User to impersonate
+            string impersonatedUser = "user@example.com";
+
+            // Create the EWS client
+            using (IEWSClient ewsClient = EWSClient.GetEWSClient(ewsUrl, adminUser, adminPassword))
             {
-                // Placeholder connection details
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "username";
-                string password = "password";
-                string impersonatedUser = "impersonated@example.com";
+                // Impersonate the alternate user
+                ewsClient.ImpersonateUser(ItemChoice.PrimarySmtpAddress, impersonatedUser);
 
-                // Guard against placeholder credentials to avoid real network calls
-                if (mailboxUri.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine("Placeholder credentials detected. Skipping actual Exchange operations.");
-                    return;
-                }
+                // Compose a simple email
+                MailMessage message = new MailMessage();
+                message.From = new MailAddress(impersonatedUser);
+                message.To.Add(new MailAddress(impersonatedUser));
+                message.Subject = "Impersonation Test";
+                message.Body = "This email was sent while impersonating another user.";
 
-                // Create the EWS client inside a using block to ensure disposal
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-                {
-                    try
-                    {
-                        // Impersonate the alternate user
-                        client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, impersonatedUser);
+                // Send the email
+                ewsClient.Send(message);
 
-                        // List messages in the impersonated user's Inbox
-                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                        foreach (ExchangeMessageInfo messageInfo in messages)
-                        {
-                            Console.WriteLine("Subject: " + messageInfo.Subject);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Error during impersonation operation: " + ex.Message);
-                    }
-                }
+                // Reset impersonation (optional, ensures original context is restored)
+                ewsClient.ResetImpersonation();
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

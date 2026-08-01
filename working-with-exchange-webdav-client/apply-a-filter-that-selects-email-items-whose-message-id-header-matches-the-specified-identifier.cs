@@ -1,46 +1,52 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder server/credentials – replace with real values when available.
-            string serverUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Author: Aspose.Email example - filter messages by Message-ID header using Exchange WebDAV client
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
+            string folder = "Inbox"; // target folder
+            string targetMessageId = "<unique-message-id@example.com>";
 
-            // Guard against placeholder credentials to avoid unwanted network calls.
-            if (serverUrl.Contains("example.com"))
+
+            // Skip external calls when placeholder credentials are used
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password" || targetMessageId.Contains("example.com"))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping server call.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Initialize the WebDAV Exchange client.
-            using (ExchangeClient client = new ExchangeClient(serverUrl, username, password))
+            // Build a simple DASL query to match the Message-ID header
+            string query = $"Message-ID='{targetMessageId}'";
+
+            try
             {
-                // The Message-ID header value to filter by.
-                string targetMessageId = "<desired-message-id@example.com>";
-
-                // Retrieve messages from the Inbox that match the specified Message-ID.
-                ExchangeMessageInfoCollection messages = client.ListMessagesById("Inbox", targetMessageId);
-
-                foreach (ExchangeMessageInfo info in messages)
+                using (ExchangeClient client = new ExchangeClient(serviceUrl, username, password))
                 {
-                    // Fetch the full mail message using its unique URI.
-                    MailMessage message = client.FetchMessage(info.UniqueUri);
-                    Console.WriteLine($"Subject: {message.Subject}");
+                    // List messages that match the query; returns ExchangeMessageInfoCollection
+                    ExchangeMessageInfoCollection messages = client.ListMessages(folder, query);
+
+                    foreach (ExchangeMessageInfo info in messages)
+                    {
+                        Console.WriteLine($"Subject: {info.Subject}");
+                        Console.WriteLine($"From: {info.From}");
+                        Console.WriteLine($"Message-ID: {info.MessageId}");
+                        Console.WriteLine(new string('-', 40));
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

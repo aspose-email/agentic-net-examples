@@ -1,45 +1,62 @@
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Mapi;
 using System;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailEwsSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder connection details
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard against executing live calls with placeholder credentials
-            if (mailboxUri.Contains("example") || username == "username" || password == "password")
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping live EWS call.");
-                return;
-            }
+                // Define connection parameters
+                string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create and use the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                // Retrieve the Inbox folder URI
-                string inboxUri = client.MailboxInfo.InboxUri;
 
-                // List messages in the Inbox
-                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
-
-                // Output basic information for each message
-                foreach (ExchangeMessageInfo info in messages)
+                // Skip external calls when placeholder credentials are used
+                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Create the EWS client
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    // Get mailbox information to obtain the Inbox folder URI
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    string inboxUri = mailboxInfo.InboxUri;
+
+                    // List messages in the Inbox folder
+                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+
+                    Console.WriteLine($"Found {messages.Count} messages in Inbox.");
+
+                    // Retrieve each message and display its subject
+                    foreach (ExchangeMessageInfo msgInfo in messages)
+                    {
+                        // Fetch the full message as a MapiMessage
+                        MapiMessage mapiMessage = client.FetchItem(msgInfo.UniqueUri);
+
+                        // Convert to MailMessage for easy access to subject
+                        MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions());
+
+                        Console.WriteLine($"Subject: {mailMessage.Subject}");
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Gracefully exit
+                return;
+            }
         }
     }
 }

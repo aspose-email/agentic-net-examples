@@ -1,56 +1,43 @@
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailEwsSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials – in real scenarios replace with actual values.
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Skip actual network call when placeholders are detected.
-            if (serviceUrl.Contains("example.com"))
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping connection.");
-                return;
-            }
-
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Create the EWS client with authentication credentials.
             try
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+                // Define connection parameters
+                string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "P@ssw0rd";
+
+                // Create credentials object
+                NetworkCredential credentials = new NetworkCredential(username, password);
+
+                // Initialize the EWS client (implements IEWSClient)
+                using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, credentials))
                 {
-                    // Example operation: retrieve mailbox information.
-                    try
-                    {
-                        ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
-                        Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
-                        Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Error retrieving mailbox info: " + ex.Message);
-                    }
+                    // Optional: set a timeout (in milliseconds)
+                    ewsClient.Timeout = 120000; // 2 minutes
+
+                    // Example operation: retrieve mailbox information
+                    var mailboxInfo = ewsClient.GetMailboxInfo();
+
+                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                    Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                    Console.WriteLine("Calendar URI: " + mailboxInfo.CalendarUri);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Failed to create or connect EWS client: " + ex.Message);
-                return;
+                // Log any unexpected errors
+                Console.Error.WriteLine("Error: " + ex.Message);
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
         }
     }
 }

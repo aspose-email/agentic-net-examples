@@ -1,5 +1,5 @@
 using System;
-using System.Net;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -9,64 +9,77 @@ class Program
     {
         try
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Exchange Web Services connection parameters
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Skip real network calls when using placeholder credentials
-            if (mailboxUri.Contains("example.com"))
+            // Detect placeholder credentials and skip external calls
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            // Ensure the output directory exists
+            string outputDir = "ConversationMessages";
+            if (!Directory.Exists(outputDir))
             {
-                try
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Create the EWS client
+            using (IEWSClient ewsClient = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // Get the Inbox folder URI
+                string inboxUri = ewsClient.GetMailboxInfo().InboxUri;
+
+                // Find all conversations in the Inbox
+                ExchangeConversation[] conversations = ewsClient.FindConversations(inboxUri);
+                foreach (ExchangeConversation conversation in conversations)
                 {
-                    // Get Inbox folder URI
-                    string inboxUri = client.MailboxInfo.InboxUri;
+                    // Retrieve all messages belonging to the conversation
+                    MailMessageCollection messages = ewsClient.FetchConversationMessages(conversation.ConversationId);
+                    Console.WriteLine($"Conversation Id: {conversation.ConversationId}, Total messages: {messages.Count}");
 
-                    // Find conversations in the Inbox
-                    ExchangeConversation[] conversations = client.FindConversations(inboxUri);
-                    if (conversations == null || conversations.Length == 0)
+                    foreach (MailMessage message in messages)
                     {
-                        Console.WriteLine("No conversations found.");
-                        return;
-                    }
+                        // Output basic metadata
+                        Console.WriteLine($"  Subject: {message.Subject}");
+                        Console.WriteLine($"  From: {message.From}");
+                        Console.WriteLine($"  Date: {message.Date}");
 
-                    foreach (ExchangeConversation conversation in conversations)
-                    {
-                        Console.WriteLine($"Conversation ID: {conversation.ConversationId}");
-                        Console.WriteLine($"Topic: {conversation.ConversationTopic}");
-                        Console.WriteLine($"Total messages in conversation: {conversation.MessageCount}");
+                        // Build a safe file name for the message
+                        string safeSubject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : MakeFileNameSafe(message.Subject);
+                        string filePath = Path.Combine(outputDir,
+                            $"{conversation.ConversationId}_{safeSubject}_{Guid.NewGuid()}.eml");
 
-                        // Fetch all messages belonging to this conversation
-                        MailMessageCollection messages = client.FetchConversationMessages(conversation.ConversationId);
-                        foreach (MailMessage message in messages)
+                        try
                         {
-                            using (message)
-                            {
-                                Console.WriteLine("--------------------------------------------------");
-                                Console.WriteLine($"Subject: {message.Subject}");
-                                Console.WriteLine($"From: {message.From}");
-                                Console.WriteLine($"Date: {message.Date}");
-                            }
+                            // Save the message to a file
+                            message.Save(filePath);
                         }
-                        Console.WriteLine();
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message to '{filePath}': {ex.Message}");
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during EWS operations: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
+    }
+
+    // Helper method to replace invalid filename characters with an underscore
+    private static string MakeFileNameSafe(string name)
+    {
+        foreach (char c in Path.GetInvalidFileNameChars())
+        {
+            name = name.Replace(c, '_');
+        }
+        return name;
     }
 }

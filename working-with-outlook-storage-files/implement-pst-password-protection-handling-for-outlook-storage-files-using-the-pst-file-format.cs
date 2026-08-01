@@ -1,74 +1,61 @@
 using Aspose.Email;
+using Aspose.Email.Storage.Pst;
 using System;
 using System.IO;
-using Aspose.Email.Storage.Pst;
 
-class Program
+namespace AsposeEmailPstPasswordDemo
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string pstPath = "sample.pst";
+            // Path to the PST file
+            const string pstPath = "sample.pst";
 
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                Directory.CreateDirectory(pstDirectory);
-            }
-
-            // Guard file existence; create a minimal PST if missing
+            // Ensure a PST file exists; create a minimal one if missing
             if (!File.Exists(pstPath))
             {
-                try
-                {
-                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // No additional setup required for an empty PST
-                    }
-                    Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
-                    return;
-                }
+                // Create a new PST file with Unicode format
+                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                Console.WriteLine($"Created placeholder PST file at '{pstPath}'.");
             }
 
-            // Open the PST file with write access
+            // Existing password (if any) and the new password to set
+            const string existingPassword = "oldPassword";
+            const string newPassword = "newPassword";
+
             try
             {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
+                // Open PST in read‑only mode to inspect password protection
+                using (PersonalStorage pstReadOnly = PersonalStorage.FromFile(pstPath, true))
                 {
-                    bool isProtected = pst.Store.IsPasswordProtected;
-                    Console.WriteLine($"PST password protected: {isProtected}");
+                    bool isProtected = pstReadOnly.Store.IsPasswordProtected;
+                    Console.WriteLine($"Is password protected: {isProtected}");
 
-                    string password = "Secret123";
+                    if (isProtected)
+                    {
+                        bool isValid = pstReadOnly.Store.IsPasswordValid(existingPassword);
+                        Console.WriteLine($"Existing password valid: {isValid}");
 
-                    if (!isProtected)
-                    {
-                        // Set a password
-                        pst.Store.ChangePassword(password);
-                        Console.WriteLine("Password has been set on the PST file.");
+                        if (!isValid)
+                        {
+                            Console.Error.WriteLine("The provided existing password is invalid.");
+                            return;
+                        }
                     }
-                    else
-                    {
-                        // Validate the existing password
-                        bool isValid = pst.Store.IsPasswordValid(password);
-                        Console.WriteLine($"Provided password is {(isValid ? "valid" : "invalid")}.");
-                    }
+                }
+
+                // Open PST in writable mode to change the password
+                using (PersonalStorage pstWritable = PersonalStorage.FromFile(pstPath, false))
+                {
+                    pstWritable.Store.ChangePassword(newPassword);
+                    Console.WriteLine("Password has been changed successfully.");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error accessing PST file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

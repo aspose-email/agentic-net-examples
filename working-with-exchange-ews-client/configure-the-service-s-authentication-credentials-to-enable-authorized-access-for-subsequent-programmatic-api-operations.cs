@@ -1,48 +1,39 @@
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailEwsAuthSample
 {
-    static void Main()
+    // Author: Aspose.Email .NET sample
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials for demonstration purposes
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip actual network call when placeholders are detected
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping connection to Exchange server.");
-                return;
-            }
-
-            // Prepare network credentials
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Initialize the EWS client with the provided credentials
             try
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                // Define authentication parameters
+                string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "P@ssw0rd";
+
+                // Create the EWS client with credentials
+                IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password);
+
+                // The client is now authenticated and ready for further operations
+                Console.WriteLine("EWS client successfully authenticated.");
+
+                // Dispose the client when done
+                if (client is IDisposable disposableClient)
                 {
-                    // The client is now configured and ready for further API operations
-                    Console.WriteLine("EWS client configured successfully.");
-                    // Subsequent operations can be performed using 'client'
+                    disposableClient.Dispose();
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Gracefully exit without rethrowing
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

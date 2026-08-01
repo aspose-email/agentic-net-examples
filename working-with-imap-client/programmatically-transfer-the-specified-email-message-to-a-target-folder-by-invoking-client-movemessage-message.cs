@@ -1,68 +1,56 @@
-using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
-using Aspose.Email.Clients;
-using Aspose.Email.Tools.Search;
+using System;
+using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Clients.Exchange;
 
-namespace Sample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // Placeholder connection settings
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
-                string password = "password";
-                string destinationFolder = "Processed";
+            // Author note: Example demonstrates moving an email on an Exchange server using ExchangeClient.
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-                // Guard against executing real network calls with placeholder data
-                if (host.Contains("example.com") || username.Contains("example.com"))
+
+            // Skip external calls when placeholder credentials are used
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
+
+            // Create and use the Exchange client.
+            using (ExchangeClient client = new ExchangeClient(serviceUrl, username, password))
+            {
+                // Retrieve mailbox information to obtain folder URIs.
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+
+                // Source folder (Inbox) and destination folder (Deleted Items) URIs.
+                string sourceFolderUri = mailboxInfo.InboxUri;
+                string destinationFolderUri = mailboxInfo.DeletedItemsUri;
+
+                // List messages in the source folder.
+                ExchangeMessageInfoCollection messages = client.ListMessages(sourceFolderUri);
+                if (messages == null || messages.Count == 0)
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
+                    Console.WriteLine("No messages found in the source folder.");
                     return;
                 }
 
-                // Create and connect the IMAP client
-                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-                {
-                    try
-                    {
-                        // Select the source folder (INBOX)
-                        client.SelectFolder("INBOX");
+                // Take the first message to move.
+                ExchangeMessageInfo messageInfo = messages[0];
 
-                        // Retrieve the list of messages in the selected folder
-                        ImapMessageInfoCollection messages = client.ListMessages();
-
-                        if (messages == null || messages.Count == 0)
-                        {
-                            Console.WriteLine("No messages found to move.");
-                            return;
-                        }
-
-                        // Take the first message's unique identifier
-                        ImapMessageInfo firstMessage = messages[0];
-                        string uniqueId = firstMessage.UniqueId;
-
-                        // Move the message to the destination folder
-                        string newUniqueId = client.MoveMessage(uniqueId, destinationFolder);
-
-                        Console.WriteLine($"Message moved successfully. New UID: {newUniqueId}");
-                    }
-                    catch (ImapException imapEx)
-                    {
-                        Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
-                        return;
-                    }
-                }
+                // Move the message to the destination folder.
+                client.MoveMessage(messageInfo, destinationFolderUri);
+                Console.WriteLine($"Message '{messageInfo.Subject}' moved to the destination folder.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

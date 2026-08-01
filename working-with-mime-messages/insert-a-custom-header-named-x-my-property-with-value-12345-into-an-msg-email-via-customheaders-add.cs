@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
-using Aspose.Email.Mime;
 
 class Program
 {
@@ -10,48 +8,32 @@ class Program
     {
         try
         {
-            string inputPath = "input.msg";
+            // Output MSG file path
             string outputPath = "output.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Save(inputPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the MSG file, add a custom header, and save the result
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(inputPath))
-                {
-                    // Add custom header X-My-Property with value 12345
-                    message.Headers.Add("X-My-Property", "12345");
+            // Create a simple mail message
+            MailMessage message = new MailMessage();
+            message.From = new MailAddress("sender@example.com");
+            message.To.Add(new MailAddress("recipient@example.com"));
+            message.Subject = "Test Message";
+            message.Body = "This is a test email.";
 
-                    // Save the modified message
-                    message.Save(outputPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
-            }
+            // Insert custom header X-My-Property with value 12345
+            message.Headers.Add("X-My-Property", "12345");
+
+            // Save the message as MSG format
+            message.Save(outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

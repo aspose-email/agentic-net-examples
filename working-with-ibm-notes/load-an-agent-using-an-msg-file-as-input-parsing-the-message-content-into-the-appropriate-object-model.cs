@@ -9,76 +9,61 @@ class Program
     {
         try
         {
-            string inputPath = "agent.msg";
-            string outputDirectory = "output";
-            string outputPath = Path.Combine(outputDirectory, "parsed.txt");
+            // Path to the MSG file
+            string msgPath = @"c:\outlookmessage.msg";
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Guard input file existence, create minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            // Verify the MSG file exists
+            if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder Subject", "This is a placeholder body."))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                        placeholder.Save(inputPath, saveOptions);
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file and parse its content
-            try
-            {
-                using (MapiMessage mapiMessage = MapiMessage.Load(inputPath))
-                {
-                    using (MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions()))
-                    {
-                        // Display parsed information
-                        Console.WriteLine($"Subject: {mailMessage.Subject}");
-                        Console.WriteLine($"From: {mailMessage.From}");
-                        Console.WriteLine($"To: {mailMessage.To}");
-                        Console.WriteLine($"Body: {mailMessage.Body}");
-
-                        // Optionally write parsed details to a file
-                        try
-                        {
-                            using (StreamWriter writer = new StreamWriter(outputPath, false))
-                            {
-                                writer.WriteLine($"Subject: {mailMessage.Subject}");
-                                writer.WriteLine($"From: {mailMessage.From}");
-                                writer.WriteLine($"To: {mailMessage.To}");
-                                writer.WriteLine("Body:");
-                                writer.WriteLine(mailMessage.Body);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error writing parsed output: {ex.Message}");
-                            // Continue without aborting; parsed data already displayed on console
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading or parsing MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
+            }
+
+            // Load the Outlook message
+            MapiMessage msg = MapiMessage.Load(msgPath);
+
+            // Display basic properties
+            Console.WriteLine("Subject: " + msg.Subject);
+            Console.WriteLine("From: " + msg.SenderName);
+            Console.WriteLine("Body: " + msg.Body);
+
+            // Process attachments if any
+            foreach (MapiAttachment att in msg.Attachments)
+            {
+                Console.WriteLine("Attachment Name: " + att.FileName);
+
+                // Ensure the directory for the attachment exists
+                string attachmentPath = Path.Combine(Path.GetDirectoryName(msgPath) ?? "", att.FileName);
+                try
+                {
+                    att.Save(attachmentPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to save attachment '{att.FileName}': {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

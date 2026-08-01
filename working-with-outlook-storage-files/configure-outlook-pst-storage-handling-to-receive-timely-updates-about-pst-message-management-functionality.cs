@@ -1,115 +1,109 @@
+using Aspose.Email;
+using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 
-class Program
+namespace AsposeEmailPstDemo
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define PST file path
-            string pstPath = "sample.pst";
-
-            // Ensure PST file exists; create a minimal PST if missing
-            if (!File.Exists(pstPath))
+            try
             {
-                try
-                {
-                    // Create a new Unicode PST file
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine($"Created new PST file at '{pstPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
-                    return;
-                }
-            }
+                const string pstFilePath = "storage.pst";
+                const string outputDir = "output";
 
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Subscribe to the ItemMoved event to receive updates
-                pst.ItemMoved += OnItemMoved;
+                // Ensure the output directory exists
+                Directory.CreateDirectory(outputDir);
 
-                // Get the root folder
-                FolderInfo rootFolder = pst.RootFolder;
-
-                // Ensure a target folder exists (e.g., "Archive")
-                FolderInfo archiveFolder = null;
-                foreach (FolderInfo subFolder in rootFolder.GetSubFolders())
-                {
-                    if (string.Equals(subFolder.DisplayName, "Archive", StringComparison.OrdinalIgnoreCase))
-                    {
-                        archiveFolder = subFolder;
-                        break;
-                    }
-                }
-                if (archiveFolder == null)
+                // Ensure the PST file exists; create a minimal one if missing
+                if (!File.Exists(pstFilePath))
                 {
                     try
                     {
-                        archiveFolder = rootFolder.AddSubFolder("Archive");
-                        Console.WriteLine("Created folder 'Archive'.");
+                        PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
+                        Console.WriteLine($"Created new PST file at '{pstFilePath}'.");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error creating folder: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
                         return;
                     }
                 }
 
-                // Find the first message in the Inbox (or root) to move
-                MessageInfo messageToMove = null;
-                foreach (MessageInfo msgInfo in rootFolder.EnumerateMessages())
+                // Open the PST file
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
                 {
-                    messageToMove = msgInfo;
-                    break;
-                }
+                    // Display total items count in the store
+                    long totalItemsCount = pst.Store.GetTotalItemsCount();
+                    Console.WriteLine($"Total items count: {totalItemsCount}");
 
-                if (messageToMove == null)
-                {
-                    Console.WriteLine("No messages found to move.");
-                }
-                else
-                {
+                    // Add a new message to the root folder to demonstrate an update
+                    var newMessage = new MailMessage
+                    {
+                        From = new MailAddress("sender@example.com"),
+                        Subject = "Demo Message",
+                        Body = "This is a test message added to the PST."
+                    };
+                    newMessage.To.Add(new MailAddress("recipient@example.com"));
+
                     try
                     {
-                        // Move the message to the Archive folder
-                        pst.MoveItem(messageToMove, archiveFolder);
-                        Console.WriteLine($"Moved message with Subject: '{messageToMove.Subject}' to 'Archive'.");
+                        pst.RootFolder.AddMessage(MapiMessage.FromMailMessage(newMessage));
+                        Console.WriteLine("Added a new message to the root folder.");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error moving message: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to add message: {ex.Message}");
+                    }
+
+                    // Re‑enumerate subfolders and their messages
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                    {
+                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                        Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                        Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        {
+                            Console.WriteLine($"Subject: {messageInfo.Subject}");
+                            try
+                            {
+                                // Extract as MapiMessage then convert to MailMessage
+                                MapiMessage mapiMsg = pst.ExtractMessage(messageInfo);
+                                MailMessage extracted = mapiMsg.ToMailMessage(new MailConversionOptions());
+
+                                string subject = extracted.Subject ?? "Untitled";
+
+                                // Build a safe file name
+                                string safeFileName = string.Concat(subject.Split(Path.GetInvalidFileNameChars()));
+                                if (string.IsNullOrWhiteSpace(safeFileName))
+                                    safeFileName = "Untitled";
+
+                                string msgPath = Path.Combine(outputDir, $"{safeFileName}.msg");
+                                extracted.Save(msgPath);
+                                Console.WriteLine($"Saved message to '{msgPath}'.");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to extract/save message: {ex.Message}");
+                            }
+                        }
+                    }
+
+                    // Also process messages directly in the root folder (if any)
+                    foreach (MessageInfo rootMessageInfo in pst.RootFolder.EnumerateMessages())
+                    {
+                        Console.WriteLine($"[Root] Subject: {rootMessageInfo.Subject}");
                     }
                 }
-
-                // Unsubscribe from the event (optional, as disposing will clean up)
-                pst.ItemMoved -= OnItemMoved;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
-        }
-    }
-
-    // Event handler for ItemMoved event
-    private static void OnItemMoved(object sender, ItemMovedEventArgs e)
-    {
-        try
-        {
-            // Use EntryId property (SourceId does not exist)
-            string entryId = e.EntryId;
-            string destinationFolderName = e.DestinationFolder != null ? e.DestinationFolder.DisplayName : "Unknown";
-            Console.WriteLine($"Item moved. EntryId: {entryId}, Destination Folder: {destinationFolderName}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error in ItemMoved handler: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

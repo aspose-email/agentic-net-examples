@@ -1,8 +1,9 @@
-using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using System;
+using System.IO;
+using System.Net;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,44 +11,48 @@ class Program
     {
         try
         {
-            // Placeholder connection details
-            string ewsUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-            string domain = "domain";
-
-            // Skip real network call when placeholders are used
-            if (ewsUrl.Contains("example.com") ||
-                username.Equals("username", StringComparison.OrdinalIgnoreCase) ||
-                password.Equals("password", StringComparison.OrdinalIgnoreCase) ||
-                domain.Equals("domain", StringComparison.OrdinalIgnoreCase))
+            // Define log file path and ensure its directory exists
+            string logFilePath = "EwsLog.txt";
+            string fullLogPath = Path.GetFullPath(logFilePath);
+            string logDirectory = Path.GetDirectoryName(fullLogPath);
+            if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS connection.");
+                Directory.CreateDirectory(logDirectory);
+            }
+
+            // Prepare credentials for the Exchange server (placeholders)
+            string user = "username";
+            string pass = "password";
+            string dom = "domain";
+
+            // Guard: skip external calls when placeholders are used
+            bool placeholdersInUse = string.Equals(user, "username", StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(pass, "password", StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(dom, "domain", StringComparison.OrdinalIgnoreCase);
+
+            if (placeholdersInUse)
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
                 return;
             }
 
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password, domain))
+            NetworkCredential credentials = new NetworkCredential(user, pass, dom);
+
+            // Initialize the EWS client (preserve variable name 'client')
+            using (IEWSClient client = EWSClient.GetEWSClient("https://mail.example.com/EWS/Exchange.asmx", credentials))
             {
-                // Enable comprehensive logging
-                client.LogFileName = "ews_log.txt";
+                // Activate comprehensive logging
+                client.LogFileName = logFilePath;
                 client.UseDateInLogFileName = true;
 
-                try
-                {
-                    // Example operation: retrieve mailbox information
-                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
-                    Console.WriteLine($"Mailbox URI: {mailboxInfo.MailboxUri}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
-                }
+                // Sample operation: retrieve mailbox information
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

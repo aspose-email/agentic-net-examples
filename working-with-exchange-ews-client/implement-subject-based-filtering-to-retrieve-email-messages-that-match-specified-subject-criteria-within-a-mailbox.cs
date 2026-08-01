@@ -1,57 +1,52 @@
-using System;
-using System.Net;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Tools.Search;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace SubjectFilterExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials – replace with real values or skip execution.
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard against running with placeholder credentials.
-            if (mailboxUri.Contains("example") || username == "username")
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
+                // Example demonstrates how to filter Exchange EWS messages by subject.
+                string host = "ews.example.com";
+                string username = "user@example.com";
+                string password = "password";
+                string folder = "Inbox";
+                string subjectKeyword = "Invoice";
 
-            // Create the EWS client.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                try
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    // Build a subject‑based query.
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.Subject.Contains("Invoice");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Preserve the client variable name as required.
+                using (IEWSClient client = EWSClient.GetEWSClient(host, username, password))
+                {
+                    // Build a MailQuery that filters messages containing the subject keyword.
+                    MailQueryBuilder builder = new MailQueryBuilder();
+                    builder.Subject.Contains(subjectKeyword);
                     MailQuery query = builder.GetQuery();
 
-                    // Retrieve messages from the Inbox that match the subject filter.
-                    ExchangeMessageInfoCollection messages = client.ListMessages(
-                        client.MailboxInfo.InboxUri, query);
+                    // Retrieve messages matching the query from the specified folder.
+                    ExchangeMessageInfoCollection messages = client.ListMessages(folder, query);
 
-                    // Output the subjects of the matching messages.
                     foreach (ExchangeMessageInfo info in messages)
                     {
-                        Console.WriteLine($"Subject: {info.Subject}");
+                        Console.WriteLine($"Subject: {info.Subject}, From: {info.From}, Date: {info.InternalDate}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during message retrieval: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

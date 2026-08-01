@@ -1,46 +1,73 @@
-using Aspose.Email.Clients.Exchange;
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
+        const string mboxPath = "storage.mbox";
+        const string filterKeyword = "Important";
+
+        // Verify that the MBOX file exists before proceeding.
+        if (!File.Exists(mboxPath))
+        {
+            Console.Error.WriteLine($"Error: The file '{mboxPath}' does not exist.");
+            return;
+        }
+
         try
         {
-            // Placeholder connection data – replace with real values for actual use
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Create an MboxStorageReader instance.
+            MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
 
-            // If placeholders are detected, skip the network call to avoid runtime failures
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
+            // Iterate through each message info in the MBOX storage.
+            foreach (MboxMessageInfo mboxMessageInfo in mbox.EnumerateMessageInfo())
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping server connection.");
-                return;
-            }
-
-            // Create and dispose the Exchange client safely
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
-            {
-                // Retrieve messages from the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
-
-                // Filter messages whose subject contains the word "Test" (case‑insensitive)
-                foreach (var msgInfo in messages)
+                // Apply simple filtering: process only messages whose subject contains the keyword.
+                if (mboxMessageInfo.Subject != null && mboxMessageInfo.Subject.IndexOf(filterKeyword, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    if (!string.IsNullOrEmpty(msgInfo.Subject) &&
-                        msgInfo.Subject.IndexOf("Test", StringComparison.OrdinalIgnoreCase) >= 0)
+                    // Extract the full MIME message.
+                    MailMessage eml = mbox.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions());
+
+                    // Output basic information to the console.
+                    Console.WriteLine($"Subject: {eml.Subject}");
+                    Console.WriteLine($"From: {eml.From}");
+                    Console.WriteLine($"To: {string.Join(", ", eml.To)}");
+
+                    // Save the filtered message as an .eml file using the subject as part of the filename.
+                    string safeSubject = string.IsNullOrWhiteSpace(eml.Subject) ? "Untitled" : eml.Subject.Replace(Path.GetInvalidFileNameChars(), '_');
+                    string outputPath = $"{safeSubject}.eml";
+
+                    // Ensure the directory for the output file exists.
+                    string outputDir = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                     {
-                        Console.WriteLine($"Filtered message: {msgInfo.Subject}");
+                        Directory.CreateDirectory(outputDir);
                     }
+
+                    eml.Save(outputPath);
+                    Console.WriteLine($"Saved filtered message to '{outputPath}'.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred while processing the MBOX file: {ex.Message}");
         }
+    }
+}
+
+// Extension method to replace invalid filename characters.
+static class StringExtensions
+{
+    public static string Replace(this string str, char[] chars, char replacement)
+    {
+        foreach (char c in chars)
+        {
+            str = str.Replace(c, replacement);
+        }
+        return str;
     }
 }

@@ -1,29 +1,31 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mime;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string msgPath = "input.msg";
-            string outputDirectory = "output";
+            // Author note: This example loads an MSG file, extracts embedded linked resources,
+            // and saves each resource's content stream to a local file.
 
-            // Ensure input MSG exists; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
+            string inputMsgPath = "input.msg";
+
+            // Verify the input MSG file exists.
+            if (!File.Exists(inputMsgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(inputMsgPath);
                     }
                 }
                 catch (Exception ex)
@@ -32,41 +34,52 @@ class Program
                     return;
                 }
 
-                using (MailMessage placeholder = new MailMessage())
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+                return;
+            }
+
+            // Load the MSG file.
+            MapiMessage mapMsg = MapiMessage.Load(inputMsgPath);
+
+            // Convert the MAPI message to a MailMessage to access LinkedResources.
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            using (MailMessage mailMsg = mapMsg.ToMailMessage(conversionOptions))
+            {
+                // Ensure the output directory exists.
+                string outputDirectory = "output";
+                if (!Directory.Exists(outputDirectory))
                 {
-                    placeholder.From = "placeholder@example.com";
-                    placeholder.To = "recipient@example.com";
-                    placeholder.Subject = "Placeholder Message";
-                    placeholder.Body = "This is a placeholder MSG file.";
-                    placeholder.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+                    Directory.CreateDirectory(outputDirectory);
                 }
-            }
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Load the MSG file
-            using (MailMessage message = MailMessage.Load(msgPath))
-            {
-                foreach (LinkedResource resource in message.LinkedResources)
+                // Iterate over each linked resource in the email.
+                foreach (LinkedResource resource in mailMsg.LinkedResources)
                 {
-                    if (resource.ContentStream != null)
+                    // Skip if the resource does not have a content stream.
+                    if (resource.ContentStream == null)
                     {
-                        string fileName = string.IsNullOrEmpty(resource.ContentId) ? "resource.bin" : resource.ContentId + ".bin";
-                        string outputPath = Path.Combine(outputDirectory, fileName);
+                        continue;
+                    }
 
-                        // Save the content stream to a file
-                        using (FileStream fileStream = File.Create(outputPath))
+                    // Determine a file name for the resource.
+                    string fileName = resource.ContentId;
+                    if (string.IsNullOrEmpty(fileName))
+                    {
+                        fileName = "resource.bin";
+                    }
+                    string outputPath = Path.Combine(outputDirectory, fileName);
+
+                    try
+                    {
+                        // Save the content stream to the file.
+                        using (Stream outputFile = File.Create(outputPath))
                         {
-                            resource.ContentStream.CopyTo(fileStream);
+                            resource.ContentStream.CopyTo(outputFile);
                         }
-
-                        Console.WriteLine($"Linked resource saved to: {outputPath}");
-                        // Process only the first linked resource
-                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save linked resource to '{outputPath}': {ex.Message}");
                     }
                 }
             }

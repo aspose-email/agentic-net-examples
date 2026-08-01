@@ -1,53 +1,62 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace MboxProcessingSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection details
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Guard against placeholder credentials to avoid real network calls
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
+                // Path to the source MBOX file.
+                string mboxPath = "storage.mbox";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                try
+                // Verify that the MBOX file exists before attempting to read it.
+                if (!File.Exists(mboxPath))
                 {
-                    // List all messages in the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                    foreach (ExchangeMessageInfo messageInfo in messages)
+                    Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                    return;
+                }
+
+                // Ensure the output directory exists.
+                string outputDir = "output";
+                Directory.CreateDirectory(outputDir);
+
+                // Create the MboxStorageReader instance.
+                MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
+
+                // Iterate through each message info object in the MBOX storage.
+                foreach (MboxMessageInfo messageInfo in mbox.EnumerateMessageInfo())
+                {
+                    Console.WriteLine($"Subject: {messageInfo.Subject}");
+                    Console.WriteLine($"From: {messageInfo.From}");
+                    Console.WriteLine($"To: {messageInfo.To}");
+
+                    // Extract the full MIME message using the entry ID.
+                    MailMessage eml = mbox.ExtractMessage(messageInfo.EntryId, new EmlLoadOptions());
+
+                    // Prepare a safe filename for the extracted message.
+                    string subject = string.IsNullOrWhiteSpace(eml.Subject) ? "No_Subject" : eml.Subject;
+                    string fileName = $"{subject}.eml";
+                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
                     {
-                        // Fetch the full MailMessage for each item
-                        using (MailMessage message = client.FetchMessage(messageInfo.UniqueUri))
-                        {
-                            // Process each message (example: output subject)
-                            Console.WriteLine($"Subject: {message.Subject}");
-                        }
+                        fileName = fileName.Replace(invalidChar, '_');
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during message processing: {ex.Message}");
+
+                    // Combine with the output directory.
+                    string outputPath = Path.Combine(outputDir, fileName);
+
+                    // Save the extracted message as an .eml file.
+                    eml.Save(outputPath);
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

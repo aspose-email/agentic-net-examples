@@ -1,104 +1,67 @@
 using System;
 using System.IO;
+using System.Text;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string sourceDir = @"C:\SourceDirectory";
-            string destinationDir = @"C:\DestinationDirectory";
+            // Directories (use arguments or defaults)
+            string sourceDir = args.Length > 0 ? args[0] : @"C:\SourceFolder";
+            string destinationDir = args.Length > 1 ? args[1] : @"C:\DestinationFolder";
 
-            // Verify source directory exists
+            // Ensure source directory exists – create placeholder if missing
             if (!Directory.Exists(sourceDir))
             {
-                Console.Error.WriteLine($"Source directory does not exist: {sourceDir}");
-                return;
+                Directory.CreateDirectory(sourceDir);
+                // Create a minimal placeholder file that contains a reference to the source path
+                string placeholderFile = Path.Combine(sourceDir, "placeholder.txt");
+                File.WriteAllText(placeholderFile, $"This file references the source directory: {sourceDir}", Encoding.UTF8);
+                Console.WriteLine($"Created placeholder source directory and file at: {placeholderFile}");
             }
 
-            // Ensure destination directory exists or create it
-            try
+            // Ensure destination directory exists
+            if (!Directory.Exists(destinationDir))
             {
-                if (!Directory.Exists(destinationDir))
-                {
-                    Directory.CreateDirectory(destinationDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create destination directory: {ex.Message}");
-                return;
+                Directory.CreateDirectory(destinationDir);
             }
 
-            // Copy all files and subdirectories
-            try
+            // Copy subdirectories
+            foreach (string dirPath in Directory.GetDirectories(sourceDir, "*", SearchOption.AllDirectories))
             {
-                foreach (string dirPath in Directory.GetDirectories(sourceDir, "*", SearchOption.AllDirectories))
-                {
-                    string targetSubDir = dirPath.Replace(sourceDir, destinationDir);
-                    if (!Directory.Exists(targetSubDir))
-                    {
-                        Directory.CreateDirectory(targetSubDir);
-                    }
-                }
-
-                foreach (string filePath in Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories))
-                {
-                    string destFilePath = filePath.Replace(sourceDir, destinationDir);
-                    try
-                    {
-                        File.Copy(filePath, destFilePath, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to copy file '{filePath}': {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error during copy operation: {ex.Message}");
-                return;
+                string targetSubDir = dirPath.Replace(sourceDir, destinationDir);
+                Directory.CreateDirectory(targetSubDir);
             }
 
-            // Update internal file references in copied files
-            try
+            // Copy files
+            foreach (string filePath in Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories))
             {
-                foreach (string filePath in Directory.GetFiles(destinationDir, "*.*", SearchOption.AllDirectories))
+                string targetFilePath = filePath.Replace(sourceDir, destinationDir);
+                File.Copy(filePath, targetFilePath, true);
+            }
+
+            // Update internal references in copied text-based files
+            string[] textExtensions = new[] { ".txt", ".html", ".htm", ".config", ".xml", ".json", ".cs", ".js", ".css" };
+            foreach (string copiedFile in Directory.GetFiles(destinationDir, "*.*", SearchOption.AllDirectories))
+            {
+                try
                 {
-                    // Process only text-based files to avoid corrupting binaries
-                    string extension = Path.GetExtension(filePath).ToLowerInvariant();
-                    if (extension == ".txt" || extension == ".html" || extension == ".htm" || extension == ".eml" || extension == ".xml")
+                    if (Array.Exists(textExtensions, ext => ext.Equals(Path.GetExtension(copiedFile), StringComparison.OrdinalIgnoreCase)))
                     {
-                        try
+                        string content = File.ReadAllText(copiedFile, Encoding.UTF8);
+                        if (content.Contains(sourceDir))
                         {
-                            string content;
-                            using (StreamReader reader = new StreamReader(filePath))
-                            {
-                                content = reader.ReadToEnd();
-                            }
-
-                            if (content.Contains(sourceDir))
-                            {
-                                string updatedContent = content.Replace(sourceDir, destinationDir);
-                                using (StreamWriter writer = new StreamWriter(filePath, false))
-                                {
-                                    writer.Write(updatedContent);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to update references in file '{filePath}': {ex.Message}");
+                            string updated = content.Replace(sourceDir, destinationDir);
+                            File.WriteAllText(copiedFile, updated, Encoding.UTF8);
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error during reference update: {ex.Message}");
-                return;
+                catch
+                {
+                    // Ignore files that cannot be read as text
+                }
             }
 
             Console.WriteLine("Directory transfer completed successfully.");

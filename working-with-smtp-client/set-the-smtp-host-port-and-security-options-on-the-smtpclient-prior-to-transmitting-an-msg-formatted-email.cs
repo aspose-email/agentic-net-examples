@@ -5,106 +5,75 @@ using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailSmtpExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Paths for input and output MSG files
-            string inputMsgPath = "input.msg";
-            string outputMsgPath = "output.msg";
-
-            // Ensure the input MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputMsgPath))
+            try
             {
+                // Define SMTP server settings
+                string smtpHost = "smtp.example.com";
+                int smtpPort = 587;
+                string smtpUser = "user@example.com";
+                string smtpPass = "password";
+                SecurityOptions smtpSecurity = SecurityOptions.Auto; // Adjust as needed (e.g., SSLImplicit)
+
+                // Path to the MSG file to be sent
+                string msgPath = "sample.msg";
+
+                // Verify the MSG file exists
+                if (!File.Exists(msgPath))
+                {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
-                        "Placeholder body"))
+                        "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath);
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the MSG file into a MailMessage instance
-            MailMessage message;
-            try
-            {
-                message = MailMessage.Load(inputMsgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
-            }
-
-            using (message)
-            {
-                // Configure SMTP client (host, port, security)
-                SmtpClient client;
-                try
-                {
-                    client = new SmtpClient();
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create SmtpClient: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                using (client)
-                {
-                    client.Host = "smtp.example.com";
-                    client.Port = 587;
-                    client.SecurityOptions = SecurityOptions.Auto; // Adjust as needed
+                    Console.Error.WriteLine($"Input file not found: {msgPath}");
+                    return;
+                }
 
-                    // Guard against placeholder credentials/hosts – skip actual send
-                    if (client.Host.Contains("example.com"))
-                    {
-                        Console.WriteLine("Placeholder SMTP settings detected; skipping actual send.");
-                    }
-                    else
+                // Load the MSG file into a MapiMessage
+                MapiMessage mapMsg = MapiMessage.Load(msgPath);
+
+                // Convert MapiMessage to MailMessage
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mailMessage = mapMsg.ToMailMessage(conversionOptions))
+                {
+                    // Initialize the SMTP client with host, port, credentials, and security options
+                    using (SmtpClient smtpClient = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass, smtpSecurity))
                     {
                         try
                         {
-                            client.Send(message);
+                            // Send the email
+                            smtpClient.Send(mailMessage);
+                            Console.WriteLine("Email sent successfully.");
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Failed to send message: {ex.Message}");
-                            return;
+                            Console.Error.WriteLine($"Failed to send email: {ex.Message}");
                         }
-                    }
-
-                    // Save the (potentially sent) message as MSG with proper options
-                    try
-                    {
-                        MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
-                        {
-                            PreserveOriginalDates = true
-                        };
-                        message.Save(outputMsgPath, saveOptions);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

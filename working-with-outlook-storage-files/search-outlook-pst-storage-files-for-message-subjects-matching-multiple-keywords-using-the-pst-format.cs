@@ -1,6 +1,7 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
+using System.Linq;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
@@ -10,75 +11,69 @@ class Program
     {
         try
         {
-            string pstPath = "sample.pst";
+            // Path to the PST file
+            const string pstPath = "storage.pst";
 
-            // Ensure PST file exists; create minimal placeholder if missing
+            // Verify that the PST file exists before proceeding
             if (!File.Exists(pstPath))
             {
-                try
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                return;
+            }
+
+            // Directory where extracted messages will be saved
+            const string outputDir = "ExtractedMessages";
+
+            // Ensure the output directory exists
+            Directory.CreateDirectory(outputDir);
+
+            // Keywords to search for in message subjects (case‑insensitive)
+            string[] keywords = { "invoice", "report", "meeting" };
+
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                // Iterate through each subfolder of the root folder
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    using (PersonalStorage pstCreate = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    // Iterate through each message in the current folder
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
                     {
-                        // Create a default folder and a dummy message
-                        FolderInfo inboxFolder = pstCreate.RootFolder.AddSubFolder("Inbox");
-                        MapiMessage dummyMessage = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder body");
-                        inboxFolder.AddMessage(dummyMessage);
+                        // Guard against null subjects
+                        if (string.IsNullOrEmpty(messageInfo.Subject))
+                            continue;
+
+                        // Check if the subject contains any of the keywords
+                        bool matches = keywords.Any(k =>
+                            messageInfo.Subject.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                        if (!matches)
+                            continue;
+
+                        // Extract the full message object as a MapiMessage
+                        MapiMessage msg = pst.ExtractMessage(messageInfo);
+
+                        // Create a safe filename from the subject
+                        string safeSubject = string.Concat(messageInfo.Subject.Split(Path.GetInvalidFileNameChars()));
+                        if (string.IsNullOrWhiteSpace(safeSubject))
+                            safeSubject = "Untitled";
+
+                        // Optionally limit filename length to avoid filesystem limits
+                        const int maxFileNameLength = 100;
+                        if (safeSubject.Length > maxFileNameLength)
+                            safeSubject = safeSubject.Substring(0, maxFileNameLength);
+
+                        string outputPath = Path.Combine(outputDir, safeSubject + ".msg");
+
+                        // Save the message as a .msg file
+                        msg.Save(outputPath);
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Open the PST file for reading
-            try
-            {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-                {
-                    // Keywords to search for in message subjects
-                    List<string> keywords = new List<string> { "Invoice", "Report", "Meeting" };
-
-                    // Start recursive search from the root folder
-                    SearchFolder(pst.RootFolder, keywords);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    // Recursively searches a folder and its subfolders for messages whose subjects contain any of the keywords
-    static void SearchFolder(FolderInfo folder, List<string> keywords)
-    {
-        // Enumerate messages in the current folder
-        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-        {
-            if (messageInfo.Subject != null)
-            {
-                foreach (string keyword in keywords)
-                {
-                    if (messageInfo.Subject.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        Console.WriteLine($"Found matching subject: {messageInfo.Subject}");
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Recurse into subfolders
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            SearchFolder(subFolder, keywords);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

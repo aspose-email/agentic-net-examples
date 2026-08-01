@@ -1,37 +1,45 @@
 using System;
 using System.IO;
 
+// Author: Generated example for removing a directory safely
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Specify the directory to delete
-            string directoryPath = @"C:\Temp\MyFolder";
+            // Path of the directory to be removed
+            string directoryPath = @"C:\Temp\FolderToDelete";
 
-            // Guard: ensure the directory exists before attempting deletion
+            // Ensure the directory exists before attempting deletion
             if (!Directory.Exists(directoryPath))
             {
                 Console.Error.WriteLine($"Directory does not exist: {directoryPath}");
                 return;
             }
 
+            // Delete the directory and all its contents, handling possible errors
             try
             {
-                // Delete the directory and all its contents
-                Directory.Delete(directoryPath, true);
+                Directory.Delete(directoryPath, recursive: true);
                 Console.WriteLine($"Successfully deleted directory: {directoryPath}");
             }
-            catch (Exception deleteEx)
+            catch (IOException ioEx)
             {
-                Console.Error.WriteLine($"Error deleting directory: {deleteEx.Message}");
-                return;
+                Console.Error.WriteLine($"IO error while deleting directory: {ioEx.Message}");
+            }
+            catch (UnauthorizedAccessException uaEx)
+            {
+                Console.Error.WriteLine($"Access denied while deleting directory: {uaEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error while deleting directory: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Fatal error: {ex.Message}");
         }
     }
 }

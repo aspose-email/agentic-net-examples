@@ -1,40 +1,38 @@
 using System;
 using System.IO;
 
+// Author: Example code for deleting a directory safely
+
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Determine the directory to delete (first argument or a placeholder path)
-            string directoryPath = args.Length > 0 ? args[0] : @"C:\Temp\SampleDirectory";
+            // Path of the directory to be removed
+            string folderPath = @"C:\Temp\DeleteMe";
 
-            // Guard: ensure the directory exists before attempting deletion
-            if (!Directory.Exists(directoryPath))
+            // Verify that the directory exists before attempting deletion
+            if (!Directory.Exists(folderPath))
             {
-                Console.Error.WriteLine($"Error: Directory not found – {directoryPath}");
+                Console.Error.WriteLine($"Directory does not exist: {folderPath}");
                 return;
             }
 
             try
             {
                 // Delete the directory and all its contents permanently
-                Directory.Delete(directoryPath, recursive: true);
-                Console.WriteLine($"Directory deleted successfully: {directoryPath}");
+                Directory.Delete(folderPath, recursive: true);
+                Console.WriteLine($"Directory deleted: {folderPath}");
             }
             catch (Exception ex)
             {
-                // Handle any I/O errors (e.g., access denied, in use)
-                Console.Error.WriteLine($"Error deleting directory: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Failed to delete directory: {ex.Message}");
             }
         }
         catch (Exception ex)
         {
-            // Top-level exception guard
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            return;
         }
     }
 }

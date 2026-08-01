@@ -1,43 +1,47 @@
-using System;
+using Aspose.Email;
 using Aspose.Email.Clients;
+using System;
 
-class Program
+namespace GmailAuthCodeSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder values – replace with real credentials when available
-            string requestUrl = "https://example.com/token";
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-
-            // Guard against executing live network calls with placeholder credentials
-            if (clientId == "clientId" || clientSecret == "clientSecret")
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping token request.");
-                return;
-            }
+                // OAuth 2.0 token endpoint for Google
+                string requestUrl = "https://oauth2.googleapis.com/token";
 
-            // Create a TokenProvider instance for the OAuth flow
-            using (TokenProvider tokenProvider = TokenProvider.GetInstance(requestUrl, clientId, clientSecret, refreshToken))
-            {
-                try
+                // Replace the following placeholders with your actual credentials
+                string clientId = "YOUR_CLIENT_ID";
+                string clientSecret = "YOUR_CLIENT_SECRET";
+                string refreshToken = "YOUR_REFRESH_TOKEN";
+
+                // Guard against placeholder values
+                if (clientId.StartsWith("YOUR_") ||
+                    clientSecret.StartsWith("YOUR_") ||
+                    refreshToken.StartsWith("YOUR_"))
                 {
-                    // Retrieve the access token (authorization code)
+                    Console.Error.WriteLine("Error: Please replace the placeholder values with actual credentials before running the sample.");
+                    return;
+                }
+
+                // Create a TokenProvider instance using the required GetInstance overload
+                TokenProvider tokenProvider = TokenProvider.GetInstance(requestUrl, clientId, clientSecret, refreshToken);
+                using (tokenProvider)
+                {
+                    // Retrieve the OAuth access token
                     OAuthToken oauthToken = tokenProvider.GetAccessToken();
-                    Console.WriteLine("Authorization code: " + oauthToken.Token);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error obtaining token: " + ex.Message);
+
+                    // Output the access token (authorization code equivalent for this flow)
+                    Console.WriteLine("Access Token: " + oauthToken.Token);
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Error: " + ex.Message);
+            }
         }
     }
 }

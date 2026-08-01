@@ -3,62 +3,99 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define input and output MSG file paths
-            string inputMsgPath = "input.msg";
-            string outputMsgPath = "output.msg";
-
-            // Ensure the input MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputMsgPath))
+            try
             {
+                // Define input MSG file path (replace with a real path)
+                string msgPath = "sample.msg";
+
+                // Guard against placeholder paths
+                if (msgPath.Contains("example") || msgPath.Contains("sample"))
+                {
+                    Console.Error.WriteLine("Please provide a valid MSG file path before running the example.");
+                    return;
+                }
+
+                // Ensure the MSG file exists; create a placeholder if it does not
+                if (!File.Exists(msgPath))
+                {
+                    try
+                    {
+                        using (MapiMessage placeholder = new MapiMessage(
+                            "from@example.com",
+                            "to@example.com",
+                            "Placeholder Subject",
+                            "Placeholder body."))
+                        {
+                            placeholder.Save(msgPath);
+                        }
+                        Console.WriteLine($"Placeholder MSG file created at: {msgPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                        return;
+                    }
+                }
+
+                // Load the MSG file
+                MapiMessage mapMsg;
                 try
                 {
-                    // Create a simple placeholder MAPI message
-                    MapiMessage placeholderMessage = new MapiMessage(
-                        "Placeholder Subject",
-                        "This is a placeholder message body.",
-                        "sender@example.com",
-                        "receiver@example.com"
-                    );
-
-                    // Save the placeholder to the expected input path
-                    placeholderMessage.Save(inputMsgPath);
+                    mapMsg = MapiMessage.Load(msgPath);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the original MSG file and duplicate it
-            try
-            {
-                using (MapiMessage originalMessage = MapiMessage.Load(inputMsgPath))
+                // Convert MapiMessage to MailMessage
+                MailMessage mailMsg;
+                try
                 {
-                    // Clone the message to ensure a separate instance
-                    using (MapiMessage duplicatedMessage = originalMessage.Clone())
+                    MailConversionOptions conversionOpts = new MailConversionOptions();
+                    mailMsg = mapMsg.ToMailMessage(conversionOpts);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error converting MSG to MailMessage: {ex.Message}");
+                    return;
+                }
+
+                // Define output EML file path
+                string emlPath = Path.ChangeExtension(msgPath, ".eml");
+
+                // Ensure output directory exists
+                string outputDir = Path.GetDirectoryName(emlPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Save the MailMessage as EML
+                try
+                {
+                    using (mailMsg) // MailMessage implements IDisposable
                     {
-                        // Save the duplicated message to the output path
-                        duplicatedMessage.Save(outputMsgPath);
-                        Console.WriteLine($"Message duplicated successfully to '{outputMsgPath}'.");
+                        mailMsg.Save(emlPath);
                     }
+                    Console.WriteLine($"Successfully saved EML file to: {emlPath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error saving EML file: {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing MSG files: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

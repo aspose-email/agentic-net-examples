@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -9,43 +9,38 @@ class Program
     {
         try
         {
-            // Placeholder mailbox URI and credentials
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-            string domain = "EXAMPLE";
+            // Author note: This sample demonstrates configuring authentication for EWS using NetworkCredential.
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
 
-            // Guard against executing real network calls with placeholder data
+
+            // Skip external calls when placeholder credentials are used
             if (mailboxUri.Contains("example.com"))
             {
-                Console.Error.WriteLine("Placeholder mailbox URI detected. Skipping network call.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create a NetworkCredential instance with required details
-            NetworkCredential credentials = new NetworkCredential(username, password, domain);
+            // Create a NetworkCredential with username, password, and domain.
+            NetworkCredential credentials = new NetworkCredential("username", "password", "DOMAIN");
 
-            // Initialize the EWS client using the credentials
+            // Initialize the EWS client with the mailbox URI and credentials.
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
-                // Optionally assign the credentials explicitly (already set via factory)
-                client.Credentials = credentials;
-
-                // Example operation: fetch mailbox information (wrapped in its own try/catch)
                 try
                 {
+                    // Example operation: retrieve mailbox information.
                     var mailboxInfo = client.GetMailboxInfo();
-                    Console.WriteLine("Mailbox URI: " + mailboxInfo.MailboxUri);
+                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("Error during mailbox operation: " + ex.Message);
+                    Console.Error.WriteLine("EWS operation failed: " + ex.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

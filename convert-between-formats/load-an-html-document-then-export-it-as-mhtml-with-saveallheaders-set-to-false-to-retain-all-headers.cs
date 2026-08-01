@@ -8,61 +8,59 @@ class Program
     {
         try
         {
-            string inputPath = "input.html";
-            string outputPath = "output.mht";
+            // Input HTML file path
+            const string inputPath = "input.html";
+            // Output MHTML file path
+            const string outputPath = "output.mht";
 
-            // Ensure the input HTML file exists; create a minimal placeholder if missing.
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    File.WriteAllText(inputPath, "<html><body><p>Placeholder</p></body></html>");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder input file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
-            }
 
-            // Read the HTML content.
-            string htmlContent;
-            try
-            {
-                htmlContent = File.ReadAllText(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to read input file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Create a MailMessage with the HTML body.
-            using (MailMessage mail = new MailMessage())
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                mail.HtmlBody = htmlContent;
+                Directory.CreateDirectory(outputDir);
+            }
 
-                // Configure MHTML save options with SaveAllHeaders set to false.
-                MhtSaveOptions options = new MhtSaveOptions
+            // Load the HTML document as a MailMessage
+            using (MailMessage mail = MailMessage.Load(inputPath))
+            {
+                // Configure MHTML save options
+                MhtSaveOptions saveOptions = new MhtSaveOptions
                 {
-                    SaveAllHeaders = false
+                    SaveAllHeaders = false // retain all headers as per requirement
                 };
 
-                // Save the message as MHTML.
-                try
-                {
-                    mail.Save(outputPath, options);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MHTML: {ex.Message}");
-                    return;
-                }
+                // Save as MHTML
+                mail.Save(outputPath, saveOptions);
+                Console.WriteLine($"MHTML file saved to: {outputPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

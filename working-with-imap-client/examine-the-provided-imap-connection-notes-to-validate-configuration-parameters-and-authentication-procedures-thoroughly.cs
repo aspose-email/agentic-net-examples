@@ -1,76 +1,77 @@
-using Aspose.Email.Clients;
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients; // for SecurityOptions if needed
 
-class Program
+// Author: Aspose.Email .NET example author
+
+namespace ImapConnectionValidator
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // IMAP connection parameters
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Guard against placeholder credentials to avoid real network calls in CI
-            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
-            {
-                Console.Error.WriteLine("Placeholder IMAP credentials detected. Skipping connection.");
-                return;
-            }
-
-            // Create the IMAP client and validate the connection
             try
             {
-                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+                // Configuration parameters (replace with real values or retrieve from a secure source)
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "user@example.com";
+                string password = "P@ssw0rd";
+
+
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com"))
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Basic validation of configuration values
+                if (string.IsNullOrWhiteSpace(host))
+                {
+                    Console.Error.WriteLine("IMAP host is missing.");
+                    return;
+                }
+
+                if (port <= 0 || port > 65535)
+                {
+                    Console.Error.WriteLine("IMAP port must be between 1 and 65535.");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    Console.Error.WriteLine("IMAP username is missing.");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(password))
+                {
+                    Console.Error.WriteLine("IMAP password is missing.");
+                    return;
+                }
+
+                // Create the ImapClient instance using the validated parameters
+                using (ImapClient imapClient = new ImapClient(host, port, username, password))
                 {
                     try
                     {
-                        client.ValidateCredentials();
-                        Console.WriteLine("IMAP credentials are valid.");
-                    }
-                    catch (ImapException imapEx)
-                    {
-                        Console.Error.WriteLine($"IMAP validation failed: {imapEx.Message}");
-                        return;
+                        // Attempt to select the INBOX folder to verify authentication and connectivity
+                        imapClient.SelectFolder("INBOX");
+                        Console.WriteLine("IMAP connection and authentication succeeded.");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Unexpected error during validation: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to connect or authenticate to IMAP server: {ex.Message}");
                         return;
-                    }
-
-                    // Example additional check: list available folders
-                    try
-                    {
-                        var folders = client.ListFolders();
-                        Console.WriteLine("Available folders:");
-                        foreach (var folder in folders)
-                        {
-                            Console.WriteLine($"- {folder.Name}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to list folders: {ex.Message}");
                     }
                 }
             }
-            catch (ImapException imapEx)
-            {
-                Console.Error.WriteLine($"IMAP client error: {imapEx.Message}");
-            }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error creating IMAP client: {ex.Message}");
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
         }
     }
 }

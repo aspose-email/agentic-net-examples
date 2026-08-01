@@ -1,61 +1,68 @@
-using Aspose.Email.Tools.Search;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
+using Aspose.Email.Mime;
 
-class Program
+namespace Pop3RetrieveAndFilter
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder POP3 server credentials
-            string host = "pop.example.com";
-            int port = 110;
-            string username = "username";
-            string password = "password";
+            // POP3 server connection parameters (replace with real values)
+            const string host = "pop3.example.com";
+            const int port = 110; // use 995 for SSL
+            const string username = "user@example.com";
+            const string password = "password";
 
-            // Skip real network call when using placeholder credentials
-            if (host.Contains("example.com"))
+            // Guard: skip network calls when placeholder credentials are detected
+            bool placeholders = host.Contains("example.com") ||
+                                username.Contains("example.com") ||
+                                password.Equals("password", StringComparison.OrdinalIgnoreCase);
+
+            if (placeholders)
             {
-                Console.Error.WriteLine("Skipping POP3 operations due to placeholder credentials.");
+                Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
                 return;
             }
 
-            // Create and configure the POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.None))
+            try
             {
-                try
+                using (Pop3Client client = new Pop3Client(host, port, username, password))
                 {
-                    // Build a query to filter messages (e.g., subject contains "Invoice")
-                    MailQueryBuilder queryBuilder = new MailQueryBuilder();
-                    queryBuilder.Subject.Contains("Invoice");
-                    MailQuery query = queryBuilder.GetQuery();
+                    // Retrieve the list of all messages
+                    Pop3MessageInfoCollection allInfos = client.ListMessages();
 
-                    // Retrieve filtered message infos
-                    Pop3MessageInfoCollection messages = client.ListMessages(query);
+                    Console.WriteLine($"Total messages on server: {allInfos.Count}");
 
-                    // Process each message info
-                    foreach (Pop3MessageInfo info in messages)
+                    const string subjectFilter = "Invoice";
+                    int matchedCount = 0;
+
+                    // Iterate through messages and apply the filter
+                    for (int i = 0; i < allInfos.Count; i++)
                     {
-                        Console.WriteLine($"Subject: {info.Subject}");
-                        Console.WriteLine($"From: {info.From}");
-                        Console.WriteLine($"Date: {info.Date}");
-                        Console.WriteLine($"Size: {info.Size} bytes");
-                        Console.WriteLine(new string('-', 40));
+                        Pop3MessageInfo info = allInfos[i];
+                        MailMessage message = client.FetchMessage(info.UniqueId);
+
+                        if (!string.IsNullOrEmpty(message.Subject) &&
+                            message.Subject.IndexOf(subjectFilter, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            matchedCount++;
+                            Console.WriteLine($"--- Message {matchedCount} ---");
+                            Console.WriteLine($"Subject : {message.Subject}");
+                            Console.WriteLine($"From    : {message.From}");
+                            Console.WriteLine($"Date    : {message.Date}");
+                            Console.WriteLine();
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
-                    return;
+
+                    Console.WriteLine($"Found {matchedCount} message(s) matching the criteria.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

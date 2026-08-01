@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
@@ -9,18 +9,11 @@ class Program
     {
         try
         {
-            // Define input MSG file path and output directory for attachments
-            string msgFilePath = "input.msg";
-            string attachmentsFolder = "Attachments";
+            // Author note: Example to extract all attachments from an Outlook MSG file.
+            string msgPath = @"c:\outlookmessage.msg";
 
-            // Ensure the output directory exists
-            if (!Directory.Exists(attachmentsFolder))
-            {
-                Directory.CreateDirectory(attachmentsFolder);
-            }
-
-            // Guard against missing input file; create a minimal placeholder if absent
-            if (!File.Exists(msgFilePath))
+            // Verify the MSG file exists before attempting to load it.
+            if (!File.Exists(msgPath))
             {
                 try
                 {
@@ -30,7 +23,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgFilePath);
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -39,44 +32,33 @@ class Program
                     return;
                 }
 
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
+            }
+
+            // Load the MSG file.
+            MapiMessage msg = MapiMessage.Load(msgPath);
+
+            // Prepare output directory for extracted attachments.
+            string outputDir = Path.Combine(Path.GetDirectoryName(msgPath) ?? "", "Attachments");
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Extract and save each attachment in its original format.
+            foreach (MapiAttachment att in msg.Attachments)
+            {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Save(msgFilePath);
-                    }
-                    Console.WriteLine($"Placeholder MSG created at '{msgFilePath}'.");
+                    string outputPath = Path.Combine(outputDir, att.FileName);
+                    Console.WriteLine($"Saving attachment: {att.FileName}");
+                    att.Save(outputPath);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to save attachment '{att.FileName}': {ex.Message}");
                 }
-            }
-
-            // Load the MSG file and extract attachments
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(msgFilePath))
-                {
-                    foreach (MapiAttachment attachment in message.Attachments)
-                    {
-                        string fileName = attachment.FileName;
-                        if (string.IsNullOrEmpty(fileName))
-                        {
-                            fileName = $"attachment_{Guid.NewGuid()}.dat";
-                        }
-
-                        string outputPath = Path.Combine(attachmentsFolder, fileName);
-                        attachment.Save(outputPath);
-                        Console.WriteLine($"Saved attachment: {outputPath}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)

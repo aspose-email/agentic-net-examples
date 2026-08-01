@@ -1,38 +1,43 @@
 using System;
-using Aspose.Email.Clients;
+using Aspose.Email;
 using Aspose.Email.Clients.Google;
 
-class Program
+namespace AsposeEmailGmailExample
 {
-    static void Main()
+    // Author: Aspose.Email example demonstrating Gmail client creation with OAuth credentials.
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials – replace with real values to enable the operation
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string userEmail = "user@example.com";
-
-            // Guard against executing external calls with placeholder data
-            if (clientId == "clientId" || clientSecret == "clientSecret" ||
-                refreshToken == "refreshToken" || userEmail == "user@example.com")
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping external Gmail client operations.");
-                return;
-            }
+                // Replace the placeholders with actual values from Google Cloud Console.
+                string clientId = "YOUR_CLIENT_ID";
+                string clientSecret = "YOUR_CLIENT_SECRET";
+                string refreshToken = "YOUR_REFRESH_TOKEN";
+                string defaultEmail = "YOUR_EMAIL_ADDRESS";
 
-            // Create Gmail client (wrapped in using to ensure disposal)
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail))
-            {
-                // In a real scenario, you might open a browser to navigate to the Google Cloud console.
-                // This sample demonstrates safe client creation without performing external network calls.
-                Console.WriteLine("Gmail client created successfully. (Further operations are omitted.)");
+                // Guard against placeholder values.
+                if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_") ||
+                    string.IsNullOrWhiteSpace(clientSecret) || clientSecret.StartsWith("YOUR_") ||
+                    string.IsNullOrWhiteSpace(refreshToken) || refreshToken.StartsWith("YOUR_") ||
+                    string.IsNullOrWhiteSpace(defaultEmail) || defaultEmail.StartsWith("YOUR_"))
+                {
+                    Console.Error.WriteLine("Please replace the placeholder strings with valid Google OAuth credentials.");
+                    return;
+                }
+
+                // Create Gmail client instance.
+                using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+                {
+                    // Simple operation: output the default email address to verify the client is functional.
+                    Console.WriteLine($"Gmail client created for: {gmailClient.DefaultEmail}");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

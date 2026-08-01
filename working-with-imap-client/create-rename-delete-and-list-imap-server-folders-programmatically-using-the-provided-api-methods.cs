@@ -1,7 +1,7 @@
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 
 namespace ImapFolderManagement
@@ -10,66 +10,66 @@ namespace ImapFolderManagement
     {
         static void Main(string[] args)
         {
+            // Author note: Sample demonstrates creating, renaming, deleting, and listing IMAP folders.
             try
             {
-                // Placeholder credentials – skip actual network calls in CI environments
+                // Define connection parameters
                 string host = "imap.example.com";
                 int port = 993;
-                string username = "username";
+                string username = "user@example.com";
                 string password = "password";
-                SecurityOptions security = SecurityOptions.Auto;
 
-                if (host.Contains("example") || username == "username" || password == "password")
+
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping IMAP folder operations.");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
 
-                // Initialize the IMAP client
-                using (ImapClient client = new ImapClient(host, port, username, password, security))
+                // Initialize the IMAP client (IDisposable)
+                using (ImapClient imapClient = new ImapClient(host, port, username, password, SecurityOptions.Auto))
                 {
                     try
                     {
-                        // List existing folders
-                        Console.WriteLine("Existing folders:");
-                        ImapFolderInfoCollection folders = client.ListFolders();
+                        // Create a new folder named "DemoFolder"
+                        imapClient.CreateFolder("DemoFolder");
+                        Console.WriteLine("Folder 'DemoFolder' created.");
+
+                        // Rename the folder to "RenamedDemoFolder"
+                        imapClient.RenameFolder("DemoFolder", "RenamedDemoFolder");
+                        Console.WriteLine("Folder renamed to 'RenamedDemoFolder'.");
+
+                        // List all folders in the mailbox
+                        ImapFolderInfoCollection folders = imapClient.ListFolders();
+                        Console.WriteLine("Current folders:");
                         foreach (ImapFolderInfo folder in folders)
                         {
-                            Console.WriteLine("- " + folder.Name);
+                            Console.WriteLine($"- {folder.Name}");
                         }
 
-                        // Create a new folder
-                        string newFolder = "MyNewFolder";
-                        client.CreateFolder(newFolder);
-                        Console.WriteLine($"Folder '{newFolder}' created.");
-
-                        // Rename the newly created folder
-                        string renamedFolder = "MyRenamedFolder";
-                        client.RenameFolder(newFolder, renamedFolder);
-                        Console.WriteLine($"Folder '{newFolder}' renamed to '{renamedFolder}'.");
-
                         // Delete the renamed folder
-                        client.DeleteFolder(renamedFolder);
-                        Console.WriteLine($"Folder '{renamedFolder}' deleted.");
+                        imapClient.DeleteFolder("RenamedDemoFolder");
+                        Console.WriteLine("Folder 'RenamedDemoFolder' deleted.");
 
-                        // List folders again to confirm changes
-                        Console.WriteLine("Folders after operations:");
-                        ImapFolderInfoCollection updatedFolders = client.ListFolders();
-                        foreach (ImapFolderInfo folder in updatedFolders)
+                        // List folders again to confirm deletion
+                        ImapFolderInfoCollection finalFolders = imapClient.ListFolders();
+                        Console.WriteLine("Folders after deletion:");
+                        foreach (ImapFolderInfo folder in finalFolders)
                         {
-                            Console.WriteLine("- " + folder.Name);
+                            Console.WriteLine($"- {folder.Name}");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine("IMAP operation failed: " + ex.Message);
-                        // No rethrow – graceful exit
+                        Console.Error.WriteLine($"IMAP operation error: {ex.Message}");
+                        // Optionally, handle specific errors or cleanup here
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }

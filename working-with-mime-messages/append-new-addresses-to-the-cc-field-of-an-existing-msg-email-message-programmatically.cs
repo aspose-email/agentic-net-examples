@@ -1,95 +1,70 @@
-using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using System;
+using System.IO;
 
-
-class Program
+namespace AppendCcToMsg
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
-
-            // Ensure input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
-            {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage("Placeholder Subject", "Placeholder Body", "sender@example.com", "recipient@example.com"))
-                    {
-                        placeholder.Save(inputPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure output directory exists
             try
             {
-                string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-                if (!Directory.Exists(outputDir))
+                // Define input and output file paths.
+                string inputPath = "input.msg";
+                string outputPath = "output.msg";
+
+                // Guard input file existence.
+                if (!File.Exists(inputPath))
+                {
+                    // Create a placeholder MSG file if it does not exist.
+                    try
+                    {
+                        using (MapiMessage placeholder = new MapiMessage(
+                            "from@example.com",
+                            "to@example.com",
+                            "Placeholder Subject",
+                            "Placeholder body."))
+                        {
+                            placeholder.Save(inputPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                        return;
+                    }
+
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
+                    return;
+                }
+
+                // Ensure the output directory exists.
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
                     Directory.CreateDirectory(outputDir);
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
-                return;
-            }
 
-            // Load, modify, and save the message
-            try
-            {
-                using (MapiMessage msg = MapiMessage.Load(inputPath))
+                // Load the existing MSG file.
+                using (MapiMessage message = MapiMessage.Load(inputPath))
                 {
-                    // Convert to MailMessage for easier CC manipulation
-                    MailMessage mail = msg.ToMailMessage(new MailConversionOptions());
+                    // Add new CC recipients. Use numeric cast for CC type to avoid enum name differences.
+                    const MapiRecipientType ccType = (MapiRecipientType)2; // 2 corresponds to CC in MAPI
+                    message.Recipients.Add("alice@example.com", "Alice", ccType);
+                    message.Recipients.Add("bob@example.com", "Bob", ccType);
 
-                    // Append new CC addresses
-                    mail.CC.Add(new MailAddress("new1@example.com"));
-                    mail.CC.Add(new MailAddress("new2@example.com"));
-
-                    // Convert back to MapiMessage
-                    using (MapiMessage updatedMsg = MapiMessage.FromMailMessage(mail))
-                    {
-                        updatedMsg.Save(outputPath);
-                    }
+                    // Save the modified message.
+                    message.Save(outputPath);
                 }
+
+                Console.WriteLine($"Message saved with new CC recipients to: {outputPath}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

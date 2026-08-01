@@ -1,47 +1,45 @@
 using System;
 using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailExamples
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder service URL and credentials.
+            // Replace with actual Exchange service URL and credentials.
             string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
+            string domain = "example.com";
 
-            // Guard against executing with placeholder data.
-            if (serviceUrl.Contains("example.com"))
+            // Identifier of the distribution list to delete.
+            // This should be the Id property value obtained from ListDistributionLists or other means.
+            string distributionListId = "AAMkAD..."; // placeholder Id
+
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
+                // Create the EWS client. The client implements IDisposable, so we use a using block.
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password, domain))
+                {
+                    // Prepare the distribution list object with the known Id.
+                    ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                    distributionList.Id = distributionListId;
 
-            // Create the EWS client.
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
+                    // Delete the distribution list permanently.
+                    client.DeleteDistributionList(distributionList, true);
+                }
+
+                Console.WriteLine("Distribution list deleted successfully.");
+            }
+            catch (Exception ex)
             {
-                try
-                {
-                    // URI of the item to delete (replace with a real item URI).
-                    string itemUri = "https://exchange.example.com/EWS/ItemId=YOUR_ITEM_ID";
-
-                    // Permanently delete the item.
-                    client.DeleteItem(itemUri, DeletionOptions.DeletePermanently);
-                    Console.WriteLine("Item deleted permanently.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during deletion: {ex.Message}");
-                }
+                // Output any errors without throwing.
+                Console.Error.WriteLine($"Error deleting distribution list: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

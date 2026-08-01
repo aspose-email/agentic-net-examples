@@ -1,7 +1,7 @@
-using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Graph;
+using System;
+using System.IO;
+using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
 class Program
@@ -10,56 +10,63 @@ class Program
     {
         try
         {
-            // Placeholder credentials – replace with real values.
-            string clientId = "YOUR_CLIENT_ID";
-            string clientSecret = "YOUR_CLIENT_SECRET";
-            string refreshToken = "YOUR_REFRESH_TOKEN";
+            const string pstPath = "storage.pst";
+            const string outputDir = "ExtractedMessages";
 
-            // Guard against executing with placeholder credentials.
-            if (clientId.StartsWith("YOUR_") || clientSecret.StartsWith("YOUR_") || refreshToken.StartsWith("YOUR_"))
+            if (!File.Exists(pstPath))
             {
-                Console.Error.WriteLine("Please provide valid Microsoft Graph credentials before running the sample.");
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
                 return;
             }
 
-            // Create a token provider (3‑argument overload).
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
 
-            // Initialize the Graph client.
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
+            using (var pst = PersonalStorage.FromFile(pstPath))
             {
-                // Placeholder message identifier – replace with the actual message Id.
-                string messageId = "MESSAGE_ID";
-
-                // Fetch the message (optional, demonstrates retrieval).
-                MapiMessage message = client.FetchMessage(messageId);
-
-                // List attachments of the message.
-                MapiAttachmentCollection attachments = client.ListAttachments(messageId);
-                Console.WriteLine($"Found {attachments.Count} attachment(s) in the message.");
-
-                foreach (MapiAttachment att in attachments)
+                foreach (var folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    Console.WriteLine($"Attachment: {att.FileName}");
-                }
+                    foreach (var messageInfo in folderInfo.EnumerateMessages())
+                    {
+                        MapiMessage msg;
+                        try
+                        {
+                            msg = pst.ExtractMessage(messageInfo);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to extract message '{messageInfo.Subject}': {ex.Message}");
+                            continue;
+                        }
 
-                // Delete the first attachment as an example.
-                if (attachments.Count > 0)
-                {
-                    // Replace with the actual attachment Id obtained from Graph.
-                    string attachmentId = "ATTACHMENT_ID";
-                    client.DeleteAttachment(attachmentId);
-                    Console.WriteLine("Attachment deleted successfully.");
-                }
-                else
-                {
-                    Console.WriteLine("No attachments to delete.");
+                        // Remove all attachments (or modify as needed)
+                        if (msg.Attachments != null && msg.Attachments.Count > 0)
+                        {
+                            msg.Attachments.Clear();
+                        }
+
+                        string safeSubject = string.IsNullOrWhiteSpace(msg.Subject) ? "NoSubject" : msg.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            safeSubject = safeSubject.Replace(c, '_');
+
+                        string msgPath = Path.Combine(outputDir, $"{safeSubject}.msg");
+
+                        try
+                        {
+                            msg.Save(msgPath);
+                            Console.WriteLine($"Saved without attachments: {msgPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message to '{msgPath}': {ex.Message}");
+                        }
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

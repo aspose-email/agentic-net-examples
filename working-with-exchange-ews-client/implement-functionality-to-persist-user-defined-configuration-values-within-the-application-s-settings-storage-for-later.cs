@@ -1,47 +1,92 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailUserConfigSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection settings
-            string ewsUrl = "https://example.com/EWS/Exchange.asmx";
+            // Exchange service credentials (replace with real values)
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Skip execution when placeholders are detected
-            if (ewsUrl.Contains("example.com") || username.Contains("example.com"))
+            // Define user configuration name and folder
+            string configName = "MyConfig";
+            string folderId = "Inbox";
+
+            // Skip external calls when placeholder credentials are used
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client safely
-            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password))
+            // Prepare output path for local persistence
+            string outputDirectory = Path.Combine(Environment.CurrentDirectory, "Output");
+            string outputPath = Path.Combine(outputDirectory, "UserConfig.json");
+
+            // Ensure the output directory exists (validation rule)
+            if (!Directory.Exists(outputDirectory))
             {
-                // Build a user configuration name (name + folder identifier)
-                UserConfigurationName configName = new UserConfigurationName("MyConfig", client.MailboxInfo.InboxUri);
-
-                // Create a new user configuration and set some data
-                UserConfiguration configToCreate = new UserConfiguration(configName);
-                configToCreate.BinaryData = new byte[] { 0x01, 0x02, 0x03 };
-
-                // Persist the configuration on the server
-                client.CreateUserConfiguration(configToCreate);
-                Console.WriteLine("User configuration created successfully.");
-
-                // Retrieve the stored configuration
-                UserConfiguration fetchedConfig = client.GetUserConfiguration(configName);
-                Console.WriteLine("Fetched configuration binary length: " + fetchedConfig.BinaryData.Length);
+                Directory.CreateDirectory(outputDirectory);
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+
+            try
+            {
+                // Create EWS client
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    // Create a UserConfigurationName instance
+                    UserConfigurationName userConfigName = new UserConfigurationName(configName, folderId);
+
+                    // Initialize a new UserConfiguration
+                    UserConfiguration userConfig = new UserConfiguration(userConfigName);
+
+                    // Add custom key‑value pairs (Dictionary<object, object>)
+                    IDictionary<object, object> dict = userConfig.Dictionary;
+                    dict["Theme"] = "Dark";
+                    dict["PageSize"] = "20";
+
+                    // Create the configuration on the server
+                    client.CreateUserConfiguration(userConfig);
+
+                    // Retrieve the configuration back from the server
+                    UserConfiguration fetchedConfig = client.GetUserConfiguration(userConfigName);
+
+                    // Convert fetched dictionary to Dictionary<string,string> for JSON serialization
+                    var stringDict = new Dictionary<string, string>();
+                    foreach (KeyValuePair<object, object> kvp in fetchedConfig.Dictionary)
+                    {
+                        string key = kvp.Key?.ToString() ?? string.Empty;
+                        string value = kvp.Value?.ToString() ?? string.Empty;
+                        stringDict[key] = value;
+                    }
+
+                    // Serialize the dictionary to JSON and save locally
+                    string json = JsonSerializer.Serialize(stringDict, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(outputPath, json);
+                    Console.WriteLine($"User configuration saved to {outputPath}");
+
+                    // Update a value and push the change to the server
+                    fetchedConfig.Dictionary["PageSize"] = "50";
+                    client.UpdateUserConfiguration(fetchedConfig);
+                    Console.WriteLine("User configuration updated on the server.");
+
+                    // Clean up: delete the configuration from the server
+                    client.DeleteUserConfiguration(userConfigName);
+                    Console.WriteLine("User configuration deleted from the server.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

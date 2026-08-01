@@ -1,39 +1,40 @@
+using Aspose.Email;
 using System;
-using Aspose.Email.Tools.Verifications;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Imap;
 
-class Program
+namespace EmailVerificationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Create an instance of the email validator.
-            EmailValidator validator = new EmailValidator();
+            // Author note: Simple IMAP server connectivity verification using Aspose.Email.
+            string imapHost = "imap.example.com";
+            string imapUsername = "user@example.com";
+            string imapPassword = "password";
 
-            // Email address to be validated.
-            string emailAddress = "test@example.com";
-
-            // Perform validation using the default MailServer validation policy.
-            ValidationResult result;
-            validator.Validate(emailAddress, out result);
-
-            // Check the validation result using the ReturnCode property.
-            if (result.ReturnCode == ValidationResponseCode.ValidationSuccess)
+            // Guard against placeholder credentials – skip network call if they are not real.
+            if (imapHost.Contains("example") || imapUsername.Contains("example"))
             {
-                Console.WriteLine("The email address is valid and the mail server is reachable.");
+                Console.WriteLine("Skipping verification due to placeholder credentials.");
+                return;
             }
-            else
+
+            try
             {
-                Console.WriteLine($"Validation failed. Reason: {result.Message}");
-                if (result.LastException != null)
+                // Create the IMAP client with automatic security selection.
+                using (ImapClient client = new ImapClient(imapHost, imapUsername, imapPassword, SecurityOptions.Auto))
                 {
-                    Console.WriteLine($"Exception: {result.LastException.Message}");
+                    // Attempt to select the INBOX folder; this forces a connection and validates credentials.
+                    client.SelectFolder("INBOX");
+                    Console.WriteLine("IMAP server verification succeeded.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"An unexpected error occurred: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"IMAP server verification failed: {ex.Message}");
+            }
         }
     }
 }

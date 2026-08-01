@@ -2,90 +2,84 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-namespace AddAttachmentsExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Paths for the output MSG file and attachments
-                string outputMsgPath = "AddAttachments.msg";
-                string attachmentPath1 = "sample.txt";
-                string attachmentPath2 = "image.jpg";
+            // Author note: Example demonstrates adding multiple attachments to a MailMessage and saving as MSG.
+            string outputPath = "AddAttachments.msg";
 
-                // Ensure attachment files exist; create minimal placeholders if they do not
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Prepare attachment file paths
+            string[] attachmentFiles = { "1.txt", "1.jpg", "1.doc", "1.rar", "1.pdf" };
+
+            // Verify each attachment file exists; create a minimal placeholder if missing
+            foreach (string filePath in attachmentFiles)
+            {
                 try
                 {
-                    if (!File.Exists(attachmentPath1))
+                    if (!File.Exists(filePath))
                     {
-                        File.WriteAllText(attachmentPath1, "Placeholder text content.");
-                    }
-
-                    if (!File.Exists(attachmentPath2))
-                    {
-                        using (FileStream fs = File.Create(attachmentPath2))
+                        string ext = Path.GetExtension(filePath).ToLowerInvariant();
+                        if (ext == ".txt")
                         {
-                            // Create an empty placeholder image file
+                            File.WriteAllText(filePath, "Placeholder content");
+                        }
+                        else
+                        {
+                            // Write a few zero bytes for binary placeholders
+                            File.WriteAllBytes(filePath, new byte[] { 0x00, 0x01, 0x02 });
                         }
                     }
                 }
-                catch (Exception ioEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to prepare attachment files: {ioEx.Message}");
+                    Console.Error.WriteLine($"Failed to prepare attachment '{filePath}': {ex.Message}");
                     return;
                 }
+            }
 
-                // Ensure the directory for the output file exists
+            // Create the email message
+            using (MailMessage message = new MailMessage())
+            {
+                message.From = "sender@from.com";
+                message.To = "receiver@to.com";
+                message.Subject = "This is message";
+                message.Body = "This is body";
+
+                // Load and add the first attachment via the Attachments collection
+                Attachment firstAttachment = new Attachment("1.txt");
+                message.Attachments.Add(firstAttachment);
+
+                // Add remaining attachments using AddAttachment method
+                message.AddAttachment(new Attachment("1.jpg"));
+                message.AddAttachment(new Attachment("1.doc"));
+                message.AddAttachment(new Attachment("1.rar"));
+                message.AddAttachment(new Attachment("1.pdf"));
+
+                // Save the message as MSG
                 try
                 {
-                    string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
+                    message.Save(outputPath);
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
                     return;
                 }
-
-                // Create the email message and add attachments
-                using (MailMessage mailMessage = new MailMessage())
-                {
-                    mailMessage.From = "sender@example.com";
-                    mailMessage.To.Add("receiver@example.com");
-                    mailMessage.Subject = "Message with attachments";
-                    mailMessage.Body = "Please find the attachments.";
-
-                    // Load attachments and add them to the message
-                    using (Attachment attachment1 = new Attachment(attachmentPath1))
-                    using (Attachment attachment2 = new Attachment(attachmentPath2))
-                    {
-                        mailMessage.Attachments.Add(attachment1);
-                        mailMessage.AddAttachment(attachment2);
-                    }
-
-                    // Save the message as an Outlook MSG file
-                    try
-                    {
-                        mailMessage.Save(outputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                    }
-                    catch (Exception saveEx)
-                    {
-                        Console.Error.WriteLine($"Failed to save MSG file: {saveEx.Message}");
-                        return;
-                    }
-                }
-
-                Console.WriteLine("Message saved successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

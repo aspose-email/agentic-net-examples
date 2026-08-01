@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -8,21 +9,22 @@ class Program
     {
         try
         {
-            string inputPath = "sample.msg";
-            string outputPath = "sample_modified.msg";
-            string attachmentNameToRemove = "remove.txt";
+            // Paths for input and output MSG files
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(inputPath);
                     }
                 }
                 catch (Exception ex)
@@ -31,48 +33,56 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            using (MailMessage message = MailMessage.Load(inputPath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Locate the attachment to remove by name
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Load the Outlook MSG file
+            MapiMessage mapiMessage = MapiMessage.Load(inputPath);
+
+            // Convert to MailMessage for attachment manipulation
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+            {
+                // Define the attachment file name to remove
+                string targetFileName = "remove.txt";
+
+                // Locate the attachment
                 Attachment attachmentToRemove = null;
-                foreach (Attachment att in message.Attachments)
+                foreach (Attachment att in mailMessage.Attachments)
                 {
-                    if (string.Equals(att.Name, attachmentNameToRemove, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(att.Name, targetFileName, StringComparison.OrdinalIgnoreCase))
                     {
                         attachmentToRemove = att;
                         break;
                     }
                 }
 
+                // Remove if found
                 if (attachmentToRemove != null)
                 {
-                    // Remove the attachment
-                    message.Attachments.Remove(attachmentToRemove);
-
-                    // Save the modified message
-                    try
-                    {
-                        message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                        Console.WriteLine($"Attachment '{attachmentNameToRemove}' removed and message saved to {outputPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error saving message: {ex.Message}");
-                    }
+                    mailMessage.Attachments.Remove(attachmentToRemove);
+                    Console.WriteLine($"Removed attachment: {targetFileName}");
                 }
                 else
                 {
-                    Console.WriteLine($"Attachment '{attachmentNameToRemove}' not found in the message.");
+                    Console.WriteLine($"Attachment not found: {targetFileName}");
                 }
+
+                // Save the modified message back to MSG format
+                mailMessage.Save(outputPath);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

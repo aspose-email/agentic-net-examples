@@ -1,6 +1,8 @@
 using System;
-using Aspose.Email.Clients.Exchange.WebService;
+using System.Net;
+using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -8,43 +10,37 @@ class Program
     {
         try
         {
-            // Placeholder credentials and server URL
+            // Connection parameters – replace with real values.
             string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
+            string username = "user@example.com";
             string password = "password";
 
-            // Guard against placeholder values to avoid real network calls
-            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping connection.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create and use the EWS client
-            try
-            {
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-                {
-                    try
-                    {
-                        // Access mailbox information to verify the session
-                        ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
-                        Console.WriteLine($"Connected to mailbox. Inbox URI: {mailboxInfo.InboxUri}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error accessing mailbox info: {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create or connect EWS client: {ex.Message}");
-            }
+            // Create network credentials.
+            NetworkCredential credentials = new NetworkCredential(username, password);
+            // If a domain is required, use: new NetworkCredential(username, password, "DOMAIN");
+
+            // Initialize the EWS client (secure session).
+            IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, credentials);
+
+            // Example operation: retrieve mailbox information.
+            var mailboxInfo = ewsClient.GetMailboxInfo();
+            Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+        }
+        catch (ExchangeException ex)
+        {
+            Console.Error.WriteLine("Exchange error: " + ex.Message);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

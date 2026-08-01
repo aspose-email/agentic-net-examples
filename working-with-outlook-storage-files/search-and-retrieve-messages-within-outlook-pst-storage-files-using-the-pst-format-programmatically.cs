@@ -1,87 +1,87 @@
-using Aspose.Email.Mapi;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
-class Program
+namespace PSTMessageExtractor
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string pstPath = "sample.pst";
+            // Path to the PST file
+            string pstPath = "storage.pst";
 
-            // Ensure the PST file exists; create a minimal placeholder if it does not.
+            // Directory where extracted messages will be saved
+            string outputDir = "ExtractedMessages";
+
+            // Verify PST file exists
             if (!File.Exists(pstPath))
             {
-                try
-                {
-                    // Create an empty Unicode PST file.
-                    using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // No additional content needed for the placeholder.
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                return;
             }
 
-            // Open the PST file.
+            // Ensure the output directory exists
             try
             {
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+            }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                return;
+            }
+
+            try
+            {
+                // Open the PST file
                 using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    // Search keyword.
-                    string keyword = "Test";
+                    // Display total items count
+                    int totalItems = pst.Store.GetTotalItemsCount();
+                    Console.WriteLine($"Total items count: {totalItems}");
 
-                    // Process the root folder.
-                    ProcessFolder(pst.RootFolder, keyword, pst);
-
-                    // Recursively process subfolders.
-                    foreach (FolderInfo subFolder in pst.RootFolder.GetSubFolders())
+                    // Iterate through each subfolder of the root folder
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                     {
-                        ProcessFolder(subFolder, keyword, pst);
+                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                        Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                        Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                        // Enumerate messages in the current folder
+                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        {
+                            Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                            // Extract the full message as a MapiMessage
+                            using (MapiMessage mapiMsg = pst.ExtractMessage(messageInfo))
+                            {
+                                // Prepare a safe filename based on the subject
+                                string subject = string.IsNullOrEmpty(mapiMsg.Subject) ? "NoSubject" : mapiMsg.Subject;
+                                foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                                {
+                                    subject = subject.Replace(invalidChar, '_');
+                                }
+
+                                string outputPath = Path.Combine(outputDir, $"{subject}.msg");
+
+                                // Save the message as a .msg file
+                                mapiMsg.Save(outputPath);
+                                Console.WriteLine($"Saved: {outputPath}");
+                            }
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error accessing PST file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error processing PST: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    private static void ProcessFolder(FolderInfo folder, string keyword, PersonalStorage pst)
-    {
-        try
-        {
-            foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-            {
-                if (messageInfo.Subject != null && messageInfo.Subject.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    // Extract the full message.
-                    using (MapiMessage message = pst.ExtractMessage(messageInfo))
-                    {
-                        Console.WriteLine($"Found message in folder '{folder.DisplayName}': {messageInfo.Subject}");
-                        // Example: display sender and body preview.
-                        Console.WriteLine($"  From: {message.SenderEmailAddress}");
-                        Console.WriteLine($"  Body preview: {message.Body?.Substring(0, Math.Min(100, message.Body?.Length ?? 0))}");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error processing folder '{folder.DisplayName}': {ex.Message}");
         }
     }
 }

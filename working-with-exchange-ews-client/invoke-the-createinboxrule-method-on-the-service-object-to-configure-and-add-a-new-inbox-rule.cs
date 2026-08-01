@@ -1,54 +1,49 @@
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailInboxRuleSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Placeholder credentials – replace with real values for actual execution.
+            const string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+            const string username = "user@example.com";
+            const string password = "password";
 
-            // Guard against executing real network calls with placeholder data
-            if (mailboxUri.Contains("example.com"))
+            // Guard: skip network operations when placeholders are detected.
+            bool isPlaceholder = username.Contains("@example.com") || password.Equals("password", StringComparison.OrdinalIgnoreCase);
+            if (isPlaceholder)
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping network call.");
+                Console.WriteLine("Placeholder credentials detected. Skipping creation of inbox rule.");
                 return;
             }
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            try
             {
-                try
-                {
-                    // Define a new inbox rule: move messages from a specific sender to a folder
-                    MailAddress fromAddress = new MailAddress("sender@example.com");
-                    string destinationFolderId = client.MailboxInfo.InboxUri; // using Inbox as destination for demo
+                // Initialize EWS client (service) with real credentials.
+                IEWSClient service = EWSClient.GetEWSClient(mailboxUri, username, password);
 
-                    InboxRule rule = InboxRule.CreateRuleMoveFrom(fromAddress, destinationFolderId);
-                    rule.DisplayName = "Move messages from sender@example.com";
-                    rule.IsEnabled = true;
+                // Build an inbox rule that deletes messages from a specific sender.
+                MailAddress unwantedSender = new MailAddress("spam@example.com");
+                InboxRule rule = InboxRule.CreateRuleDeleteFrom(unwantedSender);
+                rule.DisplayName = "Delete spam from spam@example.com";
+                rule.IsEnabled = true;
+                rule.Priority = 1; // Run early
 
-                    // Add the rule to the mailbox
-                    client.CreateInboxRule(rule);
+                // Create the rule in the default mailbox.
+                service.CreateInboxRule(rule);
 
-                    Console.WriteLine("Inbox rule created successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error while creating inbox rule: {ex.Message}");
-                }
+                Console.WriteLine("Inbox rule created successfully.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Gracefully exit without rethrowing.
+            }
         }
     }
 }

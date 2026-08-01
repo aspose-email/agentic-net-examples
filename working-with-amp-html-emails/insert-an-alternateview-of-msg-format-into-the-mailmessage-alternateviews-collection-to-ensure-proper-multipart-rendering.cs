@@ -1,7 +1,7 @@
 using System;
 using System.IO;
+using System.Net.Mime;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,68 +9,55 @@ class Program
     {
         try
         {
-            // Define paths
-            string msgPath = "sample.msg";
-            string outputPath = "output.eml";
-
-            // Ensure the MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
+            // Prepare output path and ensure its directory exists
+            string outputPath = "EmbeddedImage_out.msg";
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body"))
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create the mail message
-            using (MailMessage mail = new MailMessage())
+            // Create the email message
+            using (MailMessage eml = new MailMessage())
             {
-                mail.From = "sender@example.com";
-                mail.To = "recipient@example.com";
-                mail.Subject = "Message with MSG Alternate View";
-                mail.Body = "This email contains an MSG format alternate view.";
+                eml.From = "AndrewIrwin@from.com";
+                eml.To = "SusanMarc@to.com";
+                eml.Subject = "This is an email";
 
-                // Create AlternateView from the MSG file
-                try
+                // Plain text view
+                AlternateView plainView = AlternateView.CreateAlternateViewFromString(
+                    "This is my plain text content", null, "text/plain");
+
+                // HTML view with a placeholder for an embedded image
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                    "Here is an embedded image. <img src=cid:barcode>", null, "text/html");
+
+                // Attempt to add the linked image resource if the file exists
+                string imagePath = "1.jpg";
+                if (File.Exists(imagePath))
                 {
-                    using (AlternateView altView = new AlternateView(msgPath, "application/vnd.ms-outlook"))
+                    LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg)
                     {
-                        mail.AlternateViews.Add(altView);
-                    }
+                        ContentId = "barcode"
+                    };
+                    eml.LinkedResources.Add(barcode);
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.Error.WriteLine($"Failed to add AlternateView: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Warning: Image file '{imagePath}' not found. Skipping linked resource.");
                 }
 
-                // Save the composed message
-                try
-                {
-                    mail.Save(outputPath);
-                    Console.WriteLine($"Message saved to {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MailMessage: {ex.Message}");
-                }
+                // Add alternate views to the message
+                eml.AlternateViews.Add(plainView);
+                eml.AlternateViews.Add(htmlView);
+
+                // Save the message in MSG format
+                eml.Save(outputPath, SaveOptions.DefaultMsgUnicode);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

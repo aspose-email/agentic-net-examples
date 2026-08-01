@@ -1,60 +1,56 @@
-using Aspose.Email;
-using System;
-using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Clients.Exchange;
+using System;
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Tools.Search;
 
-class Program
+namespace AsposeEmailExchangeQuerySample
 {
-    static void Main(string[] args)
+    class Program
     {
-        // Top‑level exception guard
-        try
+        static void Main()
         {
-            // Placeholder credentials – skip actual network call in CI
-            const string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            const string username = "username";
-            const string password = "password";
+            // Define connection parameters (replace with real values)
+            string mailboxUri = "https://exchange.example.com";
+            string username = "user@example.com";
+            string password = "password";
 
-            if (username == "username" && password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected – execution skipped.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Client connection safety guard
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            // Build a query that combines multiple criteria with logical AND
+            // Example: messages from a specific sender AND with a subject containing a keyword
+            MailQuery query = new MailQuery("(('From' Contains 'john@example.com') & 'Subject' Contains 'Invoice')");
+
+            try
             {
-                try
+                // Instantiate ExchangeClient inside a using block as required
+                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
                 {
-                    // Build a query that combines multiple criteria with logical AND
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.From.Contains("alice@example.com");
-                    builder.Subject.Contains("Report");
+                    // Retrieve messages from the Inbox folder that match the query
+                    ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", query.ToString());
 
-                    // The query returned by GetQuery() represents the AND of all added criteria
-                    MailQuery query = builder.GetQuery();
-
-                    // Retrieve messages from the Inbox that satisfy both conditions
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, true);
-
-                    // Output basic information for each matching message
-                    foreach (var msgInfo in messages)
+                    // Iterate over the results and display basic information
+                    foreach (ExchangeMessageInfo info in messages)
                     {
-                        Console.WriteLine($"Subject: {msgInfo.Subject} | From: {msgInfo.From}");
+                        Console.WriteLine($"Subject: {info.Subject}");
+                        Console.WriteLine($"From: {info.From}");
+                        // Use InternalDate as the supported date property
+                        Console.WriteLine($"Received: {info.InternalDate}");
+                        Console.WriteLine(new string('-', 40));
                     }
                 }
-                catch (Exception ex)
-                {
-                    // Friendly error output for client operations
-                    Console.Error.WriteLine($"Client error: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            // Global error handling
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Log any errors without throwing
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

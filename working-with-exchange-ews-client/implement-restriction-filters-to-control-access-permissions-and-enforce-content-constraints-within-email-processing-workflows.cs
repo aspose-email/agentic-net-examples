@@ -1,56 +1,61 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
 
-class Program
+namespace EmailRestrictionSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder values for demonstration purposes
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Placeholder Exchange server details.
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Detect placeholder credentials and skip actual server connection
-            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+            // Guard: skip external calls when placeholders are detected.
+            bool placeholdersDetected = mailboxUri.Contains("example.com") ||
+                                        username.Contains("example.com") ||
+                                        password.Equals("password", StringComparison.OrdinalIgnoreCase);
+
+            if (placeholdersDetected)
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping actual server connection.");
+                Console.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
                 return;
             }
 
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Create and use the EWS client within a using block to ensure proper disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, credentials))
+            try
             {
-                // Retrieve messages from the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+                // Initialize the Exchange client.
+                IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password);
 
-                // Iterate through each message and apply restriction filters
-                foreach (ExchangeMessageInfo messageInfo in messages)
+                // Build a query that matches all messages.
+                MailQueryBuilder queryBuilder = new MailQueryBuilder();
+                MailQuery query = queryBuilder.GetQuery();
+
+                // List up to 10 messages from the Inbox folder.
+                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", 10, query);
+
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    // Use InternalDate for the message's internal timestamp (avoid using Date property)
-                    DateTime internalDate = messageInfo.InternalDate;
+                    // Fetch each message using its unique URI.
+                    MailMessage message = client.FetchMessage(info.UniqueUri);
 
-                    // Example filter: only process messages older than 30 days
-                    if (internalDate < DateTime.UtcNow.AddDays(-30))
-                    {
-                        // Output subject and internal date for filtered messages
-                        Console.WriteLine("Subject: " + messageInfo.Subject);
-                        Console.WriteLine("Internal Date (UTC): " + internalDate.ToString("u"));
-                        Console.WriteLine();
-                    }
+                    // Output basic information to the console.
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine($"From: {message.From}");
+                    // Use InternalDate instead of Date/SentDate as per validation rules.
+                    Console.WriteLine($"Date: {info.InternalDate}");
+                    Console.WriteLine(new string('-', 40));
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // Log any unexpected errors without crashing the application
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                // Log any errors without throwing.
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

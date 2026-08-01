@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
@@ -10,70 +10,36 @@ class Program
     {
         try
         {
-            // Placeholder user email and credentials.
+            // User's email address – replace with actual value.
             string userEmail = "user@example.com";
-            string username = "username";
-            string password = "password";
 
-            // If placeholders are detected, skip the network call.
-            if (userEmail.Contains("example.com") || username == "username")
+            // Create network credentials (username, password, domain).
+            NetworkCredential credentials = new NetworkCredential("username", "password", "domain");
+
+            // Guard: skip external calls when placeholder values are present.
+            bool hasPlaceholder = userEmail.Contains("example.com") ||
+                                  credentials.UserName.Equals("username", StringComparison.OrdinalIgnoreCase) ||
+                                  credentials.Password.Equals("password", StringComparison.OrdinalIgnoreCase) ||
+                                  credentials.Domain.Equals("domain", StringComparison.OrdinalIgnoreCase);
+
+            if (hasPlaceholder)
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping AutoDiscover call.");
+                Console.WriteLine("Placeholder credentials detected. Skipping network operations.");
                 return;
             }
 
-            // Initialize the Autodiscover service (does not implement IDisposable).
-            AutodiscoverService autodiscover = new AutodiscoverService();
-
-            // Set credentials for the Autodiscover request.
-            autodiscover.Credentials = new NetworkCredential(username, password);
-
-            // Retrieve the internal EWS URL for the specified user.
-            GetUserSettingsResponse settingsResponse = autodiscover.GetUserSettings(
-                userEmail,
-                UserSettingName.InternalEwsUrl);
-
-            // Extract the URL from the response.
-            string ewsUrl = settingsResponse.Settings[UserSettingName.InternalEwsUrl] as string;
-            if (string.IsNullOrEmpty(ewsUrl))
+            // Resolve the EWS endpoint URL using AutoDiscover.
+            // Aspose.Email provides an overload that performs autodiscover when only the email and credentials are supplied.
+            using (IEWSClient client = EWSClient.GetEWSClient(userEmail, credentials))
             {
-                Console.Error.WriteLine("Failed to obtain EWS URL via AutoDiscover.");
-                return;
-            }
-
-            // Create the EWS client using the discovered URL.
-            IEWSClient client = null;
-            try
-            {
-                client = EWSClient.GetEWSClient(ewsUrl, new NetworkCredential(username, password));
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error creating EWS client: {ex.Message}");
-                return;
-            }
-
-            // Use the client (example: display the Inbox URI).
-            try
-            {
-                Console.WriteLine($"Inbox URI: {client.MailboxInfo.InboxUri}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error using EWS client: {ex.Message}");
-            }
-            finally
-            {
-                // Ensure the client is disposed.
-                if (client != null)
-                {
-                    client.Dispose();
-                }
+                // Example operation: retrieve mailbox information.
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

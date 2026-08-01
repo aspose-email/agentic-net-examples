@@ -9,70 +9,52 @@ class Program
     {
         try
         {
-            // Path to the MSG file
-            string msgPath = "sample.msg";
+            // Input MSG file path
+            string inputPath = "sample.msg";
 
-            // Ensure the file exists; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
-                try
-                {
-                    // Create an empty MAPI message and save it as a placeholder
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Save(msgPath);
-                    }
-                    Console.WriteLine($"Placeholder MSG created at '{msgPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
             }
 
+            // Ensure output directory exists for any saved attachment
+            string outputDir = "output";
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
+
             // Open the MSG file with MapiMessageReader
-            using (MapiMessageReader reader = new MapiMessageReader(msgPath))
+            using (MapiMessageReader reader = new MapiMessageReader(inputPath))
             {
-                // Read all attachments from the message
-                MapiAttachmentCollection attachments = reader.ReadAttachments();
+                // NOTE: The property 'CurrentAttachment' is not documented in the current Aspose.Email version.
+                // The following line is a placeholder to illustrate the intended usage.
+                // Replace it with the actual API when available.
+                Attachment attachment = null; // reader.CurrentAttachment;
 
-                if (attachments != null && attachments.Count > 0)
+                // Fallback: retrieve the first attachment from the message if CurrentAttachment is unavailable
+                MapiMessage message = reader.ReadMessage();
+                if (message.Attachments.Count > 0)
                 {
-                    // Retrieve the first attachment (as the "current" one)
-                    MapiAttachment attachment = attachments[0];
+                    MapiAttachment mapiAtt = message.Attachments[0];
+                    string attPath = Path.Combine(outputDir, mapiAtt.FileName);
+                    mapiAtt.Save(attPath);
+                    attachment = new Attachment(attPath);
+                }
 
-                    // Example: display attachment name and size
-                    Console.WriteLine($"Attachment Name: {attachment.FileName}");
-                    Console.WriteLine($"Attachment Size: {attachment.BinaryData?.Length ?? 0} bytes");
-
-                    // Optionally, save the attachment to disk
-                    string outputDir = "Attachments";
-                    try
-                    {
-                        if (!Directory.Exists(outputDir))
-                        {
-                            Directory.CreateDirectory(outputDir);
-                        }
-
-                        string outputPath = Path.Combine(outputDir, attachment.FileName);
-                        File.WriteAllBytes(outputPath, attachment.BinaryData ?? Array.Empty<byte>());
-                        Console.WriteLine($"Attachment saved to '{outputPath}'.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save attachment: {ex.Message}");
-                    }
+                if (attachment != null)
+                {
+                    Console.WriteLine($"Attachment retrieved: {attachment.Name}");
                 }
                 else
                 {
-                    Console.WriteLine("No attachments found in the MSG file.");
+                    Console.WriteLine("No attachment found in the MSG file.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

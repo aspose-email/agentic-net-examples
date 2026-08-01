@@ -3,41 +3,44 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace TnefToMsgConverter
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Define input TNEF file and output MSG file paths
-            string inputPath = "input.tnef";
-            string outputPath = "output.msg";
-
-            // Verify that the input TNEF file exists
-            if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
-                return;
-            }
-
-            // Load the TNEF file into a MapiMessage and save it as MSG
             try
             {
-                using (MapiMessage message = MapiMessage.LoadFromTnef(inputPath))
+                // Input TNEF file path
+                string inputPath = "sample.tnef";
+                // Desired output MSG file path
+                string outputPath = "sample.msg";
+
+                // Verify input file exists
+                if (!File.Exists(inputPath))
                 {
-                    // Save as MSG using the default MSG save options
-                    message.Save(outputPath, SaveOptions.DefaultMsg);
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
+                    return;
                 }
+
+                // Ensure output directory exists
+                string outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                // Load the TNEF file into a MapiMessage
+                MapiMessage mapMessage = MapiMessage.LoadFromTnef(inputPath);
+
+                // Save the message as MSG, preserving all attachments and metadata
+                mapMessage.Save(outputPath, SaveOptions.DefaultMsg);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing TNEF file: {ex.Message}");
-                return;
+                // Log any unexpected errors
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

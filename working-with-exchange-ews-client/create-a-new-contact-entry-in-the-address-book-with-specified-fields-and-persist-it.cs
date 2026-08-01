@@ -1,42 +1,51 @@
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.PersonalInfo;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.PersonalInfo;
 
 class Program
 {
     static void Main()
     {
+        // Placeholder values – replace with real credentials to run against Exchange
+        string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+
+        // Guard: skip external calls when placeholders are still in use
+        if (mailboxUri.Contains("outlook.office365.com") &&
+            username.Contains("example.com") &&
+            password == "password")
+        {
+            Console.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+            return;
+        }
+
         try
         {
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Skip execution when placeholder credentials are detected
-            if (mailboxUri.Contains("example.com") || username == "username")
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping contact creation.");
-                return;
-            }
-
-            // Create and connect the EWS client
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Build a new contact
-                Contact contact = new Contact
+                // Create a new contact with desired fields
+                Contact newContact = new Contact
                 {
-                    DisplayName = "John Doe",
                     GivenName = "John",
                     Surname = "Doe",
-                    CompanyName = "Acme Corp"
+                    DisplayName = "John Doe"
                 };
-                contact.EmailAddresses.Add(new EmailAddress("john.doe@acme.com", "John Doe"));
 
-                // Create the contact on the Exchange server
-                string contactUri = client.CreateContact(contact);
-                Console.WriteLine($"Contact created. URI: {contactUri}");
+                // Add email address
+                newContact.EmailAddresses.Add(new EmailAddress("john.doe@example.com"));
+
+                // Add phone number using property initialization
+                newContact.PhoneNumbers.Add(new PhoneNumber
+                {
+                    Number = "555-1234",
+                    Category = PhoneNumberCategory.Work
+                });
+
+                // Persist the contact in the Exchange store
+                string contactId = client.CreateContact(newContact);
+                Console.WriteLine($"Contact created with ID: {contactId}");
             }
         }
         catch (Exception ex)

@@ -3,16 +3,33 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailMsgLoader
 {
-    static void Main()
+    // Author: Example code for loading MSG files using Aspose.Email
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "sample.msg";
-
-            if (!File.Exists(msgPath))
+            try
             {
+                // Directory that contains the MSG files
+                string messagesFolder = "Messages";
+
+                // Verify the directory exists
+                if (!Directory.Exists(messagesFolder))
+                {
+                    Console.Error.WriteLine($"Directory not found: {messagesFolder}");
+                    return;
+                }
+
+                // Process each MSG file in the directory
+                foreach (string msgFilePath in Directory.GetFiles(messagesFolder, "*.msg"))
+                {
+                    try
+                    {
+                        // Guard against missing file (should not happen after GetFiles)
+                        if (!File.Exists(msgFilePath))
+                        {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
@@ -21,7 +38,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath);
+                        placeholder.Save(msgFilePath);
                     }
                 }
                 catch (Exception ex)
@@ -30,58 +47,47 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
-                return;
-            }
-
-            // Load the MSG file into a MapiMessage instance
-            using (MapiMessage message = MapiMessage.Load(msgPath))
-            {
-                // Display basic properties
-                Console.WriteLine($"Subject: {message.Subject}");
-                Console.WriteLine($"From: {message.SenderName} <{message.SenderEmailAddress}>");
-                Console.WriteLine($"Body: {message.Body}");
-
-                // Iterate attachments if any
-                foreach (MapiAttachment attachment in message.Attachments)
-                {
-                    Console.WriteLine($"Attachment: {attachment.FileName} ({attachment.BinaryData?.Length ?? 0} bytes)");
-                    // Save attachment to disk
-                    string attachmentPath = Path.Combine("Attachments", attachment.FileName);
-                    try
-                    {
-                        string attachmentDir = Path.GetDirectoryName(attachmentPath);
-                        if (!Directory.Exists(attachmentDir))
-                        {
-                            Directory.CreateDirectory(attachmentDir);
+                            Console.Error.WriteLine($"File not found: {msgFilePath}");
+                            continue;
                         }
-                        File.WriteAllBytes(attachmentPath, attachment.BinaryData);
+
+                        // Load the Outlook message
+                        MapiMessage msg = MapiMessage.Load(msgFilePath);
+
+                        // Display basic properties
+                        Console.WriteLine($"Loaded: {Path.GetFileName(msgFilePath)}");
+                        Console.WriteLine($"Subject: {msg.Subject}");
+                        Console.WriteLine($"From: {msg.SenderName}");
+                        Console.WriteLine($"Body: {msg.Body}");
+
+                        // List attachments and optionally save them
+                        foreach (MapiAttachment attachment in msg.Attachments)
+                        {
+                            Console.WriteLine($"Attachment: {attachment.FileName}");
+                            // Save attachment to the same folder (overwrite if exists)
+                            string attachmentPath = Path.Combine(messagesFolder, attachment.FileName);
+                            attachment.Save(attachmentPath);
+                        }
+
+                        // Example manipulation: prepend a tag to the subject
+                        msg.Subject = $"[Processed] {msg.Subject}";
+
+                        // Save the modified message to a new file
+                        string processedPath = Path.Combine(messagesFolder, $"Processed_{Path.GetFileName(msgFilePath)}");
+                        msg.Save(processedPath);
+                        Console.WriteLine($"Saved modified message to: {processedPath}");
+                        Console.WriteLine();
                     }
-                    catch (Exception ex)
+                    catch (Exception exFile)
                     {
-                        Console.Error.WriteLine($"Error saving attachment '{attachment.FileName}': {ex.Message}");
+                        Console.Error.WriteLine($"Error processing file '{msgFilePath}': {exFile.Message}");
                     }
-                }
-
-                // Example manipulation: change subject
-                message.Subject = "Updated Subject";
-
-                // Save modified message to a new file
-                string outputPath = "modified.msg";
-                try
-                {
-                    message.Save(outputPath);
-                    Console.WriteLine($"Modified message saved to {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving modified message: {ex.Message}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

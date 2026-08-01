@@ -1,59 +1,52 @@
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email;
+using System;
+using System.Net;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailExchangeExample
 {
-    static void Main()
+    // Author: Aspose.Email example for IEWSClient usage
+    class Program
     {
-        try
+        static void Main()
         {
-            // Verify that the Aspose.Email license file exists
-            string licensePath = "Aspose.Email.lic";
-            if (!File.Exists(licensePath))
+            // Exchange server connection parameters (replace with real values)
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+            string domain = "EXAMPLE";
+
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine($"License file not found at '{licensePath}'. Continuing without a license.");
-            }
-            else
-            {
-                try
-                {
-                    License license = new License();
-                    license.SetLicense(licensePath);
-                    Console.WriteLine("Aspose.Email license loaded successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to load Aspose.Email license: {ex.Message}");
-                }
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
             }
 
-            // Verify .NET runtime information
-            string frameworkDescription = RuntimeInformation.FrameworkDescription;
-            Console.WriteLine($".NET runtime: {frameworkDescription}");
-
-            // Verify operating system information
-            string osDescription = RuntimeInformation.OSDescription;
-            Console.WriteLine($"Operating System: {osDescription}");
-
-            // Verify that Aspose.Email assembly is accessible and report its version
             try
             {
-                Type mailMessageType = typeof(MailMessage);
-                string assemblyVersion = mailMessageType.Assembly.GetName().Version.ToString();
-                Console.WriteLine($"Aspose.Email assembly version: {assemblyVersion}");
+                // Initialize the Exchange client with credentials
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password, domain))
+                {
+                    // Retrieve mailbox information
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+
+                    // Get information about the Inbox folder
+                    ExchangeFolderInfo inboxInfo = client.GetFolderInfo(mailboxInfo.InboxUri);
+
+                    // Output basic folder details
+                    Console.WriteLine($"Inbox URI: {inboxInfo.Uri}");
+                    Console.WriteLine($"Total Items in Inbox: {inboxInfo.TotalCount}");
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unable to verify Aspose.Email assembly: {ex.Message}");
+                // Log any errors without crashing the application
+                Console.Error.WriteLine($"Error accessing Exchange server: {ex.Message}");
             }
-
-            // Additional environment checks can be placed here
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

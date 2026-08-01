@@ -1,67 +1,65 @@
-using System;
-using System.Net;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailUserConfigExample
 {
-    static void Main()
+    class Program
     {
-        // Top‑level exception guard
-        try
+        static void Main()
         {
-            // Placeholder connection details – replace with real values when needed
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip real network calls when placeholders are detected
-            if (mailboxUri.Contains("example.com"))
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
-                return;
-            }
-
-            // Create the EWS client safely
-            IEWSClient client = null;
             try
             {
-                client = EWSClient.GetEWSClient(mailboxUri, username, password);
+                // Define connection parameters
+                string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
+
+
+                // Skip external calls when placeholder credentials are used
+                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Create and connect the EWS client
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    // Retrieve mailbox information to obtain a folder identifier (e.g., Inbox)
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    string inboxFolderId = mailboxInfo.InboxUri;
+
+                    // Define a user configuration name associated with the Inbox folder
+                    UserConfigurationName configName = new UserConfigurationName("MyUserConfig", inboxFolderId);
+
+                    // Create a new user configuration object
+                    UserConfiguration userConfig = new UserConfiguration(configName);
+                    // Example: add a simple key/value pair to the configuration
+                    userConfig.Dictionary["SampleKey"] = "SampleValue";
+
+                    // Create the user configuration on the server
+                    client.CreateUserConfiguration(userConfig);
+                    Console.WriteLine("User configuration created successfully.");
+
+                    // Retrieve the created configuration to verify
+                    UserConfiguration retrievedConfig = client.GetUserConfiguration(configName);
+                    if (retrievedConfig != null && retrievedConfig.Dictionary.ContainsKey("SampleKey"))
+                    {
+                        Console.WriteLine("Retrieved configuration value: " + retrievedConfig.Dictionary["SampleKey"]);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to retrieve the created configuration.");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
-                return;
+                // Log any unexpected errors without crashing the application
+                Console.Error.WriteLine("Error: " + ex.Message);
             }
-
-            // Ensure the client is disposed
-            using (client)
-            {
-                // Build a user configuration name (folderId can be any valid folder identifier, e.g., "Inbox")
-                UserConfigurationName configName = new UserConfigurationName("MyConfig", "Inbox");
-
-                // Create the user configuration object
-                UserConfiguration userConfig = new UserConfiguration(configName);
-
-                // Example: store simple XML data in the configuration (optional)
-                // string xml = "<settings><option name=\"example\" value=\"true\"/></settings>";
-                // userConfig.XmlData = System.Text.Encoding.UTF8.GetBytes(xml);
-
-                // Attempt to create the configuration on the server
-                try
-                {
-                    client.CreateUserConfiguration(userConfig);
-                    Console.WriteLine("User configuration created successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create user configuration: {ex.Message}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

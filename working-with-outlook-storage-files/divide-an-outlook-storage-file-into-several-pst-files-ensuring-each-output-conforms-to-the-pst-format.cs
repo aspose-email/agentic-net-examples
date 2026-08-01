@@ -9,36 +9,58 @@ class Program
     {
         try
         {
-            // Paths for input PST and output folder
-            string inputPstPath = "input.pst";
-            string outputFolderPath = "output_parts";
+            // Input PST file path
+            string inputPstPath = "storage.pst";
 
-            // Desired chunk size (e.g., 10 MB)
+            // Output folder where split parts will be created
+            string outputFolder = "SplitParts";
+
+            // Approximate size of each split part (e.g., 10 MB)
             long chunkSize = 10L * 1024L * 1024L;
 
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputFolderPath))
-            {
-                Directory.CreateDirectory(outputFolderPath);
-            }
+            // Prefix for split part file names
+            string partFileNamePrefix = "part_";
 
-            // Verify the input PST file; create a minimal placeholder if it does not exist
+            // Ensure the input PST file exists; create a minimal placeholder if missing
             if (!File.Exists(inputPstPath))
             {
-                Console.Error.WriteLine($"Input PST not found. Creating placeholder at '{inputPstPath}'.");
-                using (PersonalStorage placeholder = PersonalStorage.Create(inputPstPath, FileFormatVersion.Unicode))
+                try
                 {
-                    // Create a default Inbox folder to keep the PST valid
-                    placeholder.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
+                    using (PersonalStorage placeholder = PersonalStorage.Create(inputPstPath, FileFormatVersion.Unicode))
+                    {
+                        // Optionally create a root folder or leave empty
+                    }
+                    Console.WriteLine($"Placeholder PST created at '{inputPstPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
+                    return;
                 }
             }
 
-            // Open the PST file and split it into smaller PST parts
+            // Ensure the output directory exists
+            try
+            {
+                if (!Directory.Exists(outputFolder))
+                {
+                    Directory.CreateDirectory(outputFolder);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare output folder '{outputFolder}': {ex.Message}");
+                return;
+            }
+
+            // Load the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(inputPstPath))
             {
-                pst.SplitInto(chunkSize, outputFolderPath);
-                Console.WriteLine($"PST split completed. Parts are stored in '{outputFolderPath}'.");
+                // Split the PST into smaller parts
+                pst.SplitInto(chunkSize, partFileNamePrefix, outputFolder);
             }
+
+            Console.WriteLine("PST split operation completed successfully.");
         }
         catch (Exception ex)
         {

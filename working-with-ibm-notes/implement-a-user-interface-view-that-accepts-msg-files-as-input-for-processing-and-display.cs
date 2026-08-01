@@ -1,81 +1,87 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
+// Author: Aspose.Email example - console UI for processing MSG files
 class Program
 {
     static void Main()
     {
         try
         {
-            Console.Write("Enter the path to the MSG file: ");
-            string msgPath = Console.ReadLine();
+            Console.WriteLine("Enter the full path to the MSG file:");
+            string inputPath = Console.ReadLine();
 
-            if (string.IsNullOrWhiteSpace(msgPath))
+            if (string.IsNullOrWhiteSpace(inputPath))
             {
-                Console.Error.WriteLine("Error: No path provided.");
+                Console.Error.WriteLine("No file path was provided.");
                 return;
             }
 
-            // Ensure the directory exists
-            string directory = Path.GetDirectoryName(msgPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Guard file existence
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(directory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create directory – {ex.Message}");
-                    return;
-                }
-            }
-
-            // Guard file existence; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
-            {
-                try
-                {
-                    MailMessage placeholder = new MailMessage();
-                    placeholder.Subject = "Placeholder Subject";
-                    placeholder.Body = "This is a placeholder message.";
-                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                    placeholder.Save(msgPath, saveOptions);
-                    Console.WriteLine($"Placeholder MSG created at: {msgPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create placeholder MSG – {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load and display the MSG file
-            using (MapiMessage message = MapiMessage.Load(msgPath))
-            {
-                Console.WriteLine($"Subject: {message.Subject}");
-                Console.WriteLine($"Sender Email: {message.SenderEmailAddress}");
-                Console.WriteLine($"Body: {message.Body}");
-
-                if (message.Attachments != null && message.Attachments.Count > 0)
-                {
-                    Console.WriteLine("Attachments:");
-                    foreach (MapiAttachment attachment in message.Attachments)
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        Console.WriteLine($"- {attachment.FileName}");
+                        placeholder.Save(inputPath);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Console.WriteLine("No attachments found.");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
                 }
+
+                Console.Error.WriteLine($"File not found: {inputPath}");
+                return;
+            }
+
+            // Load the Outlook Message file
+            MapiMessage msg = MapiMessage.Load(inputPath);
+
+            // Display basic properties
+            Console.WriteLine($"Subject: {msg.Subject}");
+            Console.WriteLine($"From: {msg.SenderName}");
+            Console.WriteLine($"Body: {msg.Body}");
+
+            // Process attachments if any
+            if (msg.Attachments != null && msg.Attachments.Count > 0)
+            {
+                Console.WriteLine("Attachments:");
+                foreach (MapiAttachment att in msg.Attachments)
+                {
+                    Console.WriteLine($"- {att.FileName}");
+
+                    // Save attachment to the same directory as the input file
+                    string outputDirectory = Path.GetDirectoryName(inputPath) ?? string.Empty;
+                    string outputPath = Path.Combine(outputDirectory, att.FileName);
+
+                    try
+                    {
+                        att.Save(outputPath);
+                        Console.WriteLine($"  Saved to: {outputPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"  Failed to save attachment '{att.FileName}': {ex.Message}");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("No attachments found.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }

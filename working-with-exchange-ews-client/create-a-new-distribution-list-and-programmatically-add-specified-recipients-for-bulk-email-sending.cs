@@ -1,67 +1,66 @@
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace DistributionListSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection details
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Skip real network call when using placeholder credentials
-            if (mailboxUri.Contains("example.com") || username == "username")
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
-                return;
-            }
+                // EWS service connection parameters (replace with real values)
+                string serviceUrl = "https://ews.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                try
+
+                // Skip external calls when placeholder credentials are used
+                if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    // Create a new distribution list object
-                    ExchangeDistributionList distributionList = new ExchangeDistributionList
-                    {
-                        DisplayName = "Sample Distribution List"
-                    };
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
 
-                    // Prepare initial members
-                    MailAddressCollection initialMembers = new MailAddressCollection
-                    {
-                        new MailAddress("alice@example.com"),
-                        new MailAddress("bob@example.com")
-                    };
+                // Create and use the EWS client
+                using (IEWSClient ewsClient = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    // Define a new distribution list
+                    ExchangeDistributionList distributionList = new ExchangeDistributionList();
+                    distributionList.DisplayName = "Bulk Email List";
+
+                    // Initial members to add
+                    MailAddressCollection initialMembers = new MailAddressCollection();
+                    initialMembers.Add(new MailAddress("alice@example.com"));
+                    initialMembers.Add(new MailAddress("bob@example.com"));
 
                     // Create the distribution list on the server
-                    string listId = client.CreateDistributionList(distributionList, initialMembers);
-                    Console.WriteLine($"Distribution List created with Id: {listId}");
+                    string distributionListId = ewsClient.CreateDistributionList(distributionList, initialMembers);
+                    Console.WriteLine($"Distribution List created with Id: {distributionListId}");
 
-                    // Add additional members
-                    MailAddressCollection additionalMembers = new MailAddressCollection
-                    {
-                        new MailAddress("carol@example.com"),
-                        new MailAddress("dave@example.com")
-                    };
-                    client.AddToDistributionList(distributionList, additionalMembers);
+                    // Add additional members (optional)
+                    MailAddressCollection extraMembers = new MailAddressCollection();
+                    extraMembers.Add(new MailAddress("carol@example.com"));
+                    ewsClient.AddToDistributionList(distributionList, extraMembers);
                     Console.WriteLine("Additional members added to the distribution list.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
+
+                    // Fetch and display all members of the distribution list
+                    MailAddressCollection allMembers = ewsClient.FetchDistributionList(distributionList);
+                    Console.WriteLine("Current members of the distribution list:");
+                    foreach (MailAddress address in allMembers)
+                    {
+                        Console.WriteLine($"- {address.Address}");
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Graceful exit on failure
+                return;
+            }
         }
     }
 }

@@ -1,7 +1,8 @@
 using Aspose.Email.PersonalInfo;
+using Aspose.Email;
 using System;
-using System.Net;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -9,40 +10,33 @@ class Program
     {
         try
         {
-            // Placeholder credentials and service URL
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
+            // Connection settings – replace with actual values
+            string serviceUrl = "https://ews.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
-
-            // Detect placeholder values and skip actual network call
-            if (serviceUrl.Contains("example.com") || username == "username")
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping operation.");
-                return;
-            }
 
             // Create the EWS client
             using (IEWSClient service = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                try
-                {
-                    // Identifier of the contact to be deleted
-                    string contactUri = "contact-uri-to-delete";
+                // URI of the contact to delete – replace with the real contact URI
+                string contactUri = "https://ews.example.com/EWS/Exchange.asmx/Contacts/12345";
 
-                    // Permanently delete the contact using the static DeletePermanently option
-                    service.DeleteItem(contactUri, DeletionOptions.DeletePermanently);
 
-                    Console.WriteLine("Contact deleted permanently.");
-                }
-                catch (Exception ex)
+                // Skip external calls when placeholder credentials are used
+                if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password" || contactUri.Contains("example.com"))
                 {
-                    Console.Error.WriteLine($"Error during deletion: {ex.Message}");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
                 }
+
+                // Permanently delete the contact
+                service.DeleteItem(contactUri, DeletionOptions.DeletePermanently);
+                Console.WriteLine("Contact deleted permanently.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

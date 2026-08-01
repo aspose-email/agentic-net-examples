@@ -1,48 +1,44 @@
-using System;
 using Aspose.Email;
+using System;
+using System.Net;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // Placeholder credentials – replace with real values when needed.
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "username";
-                string password = "password";
+            // Author: Sample code to configure EWS authentication credentials
+            // Define the EWS service URL (mailbox URI) and user credentials
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-                // Detect placeholder values and skip actual network call.
-                if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
-                {
-                    Console.WriteLine("Placeholder credentials detected. Skipping connection to Exchange server.");
-                    return;
-                }
 
-                // Create the EWS client with authentication credentials.
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-                {
-                    try
-                    {
-                        // Retrieve mailbox information to verify authentication.
-                        ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
-                        Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
-                        Console.WriteLine($"Sent Items URI: {mailboxInfo.SentItemsUri}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error while accessing mailbox: {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
+            // Skip external calls when placeholder credentials are used
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
             }
+
+            // Create a NetworkCredential instance with the supplied username and password
+            NetworkCredential credentials = new NetworkCredential(username, password);
+
+            // Initialize the EWS client using the mailbox URI and credentials
+            using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, credentials))
+            {
+                // Retrieve mailbox information to verify successful authentication
+                ExchangeMailboxInfo mailboxInfo = ewsClient.GetMailboxInfo();
+                Console.WriteLine("Connected successfully. Mailbox display name: " + mailboxInfo.MailboxUri);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Output any errors without crashing the application
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

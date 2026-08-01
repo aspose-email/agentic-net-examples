@@ -1,59 +1,120 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailSample
 {
-    static void Main()
+    // Author: Aspose.Email .NET sample
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPath = "sample.msg";
-
-            // Verify the input file exists before attempting to load it
-            if (!File.Exists(inputPath))
+            try
             {
-                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
-                return;
-            }
+                // Input MSG file path
+                string inputPath = "sample.msg";
+                // Output EML file path
+                string outputPath = "sample.eml";
 
-            // Load the message from the file
-            using (MailMessage message = MailMessage.Load(inputPath))
-            {
-                // Iterate through each AlternateView in the message
-                foreach (AlternateView view in message.AlternateViews)
+                // Guard file existence
+                if (!File.Exists(inputPath))
                 {
-                    // Iterate through each linked resource (embedded image) in the view
-                    foreach (LinkedResource resource in view.LinkedResources)
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        try
-                        {
-                            // Create a unique file name for the extracted resource
-                            string resourceId = string.IsNullOrEmpty(resource.ContentId) ? "resource" : resource.ContentId;
-                            string outputPath = $"{resourceId}_{Guid.NewGuid()}.msg";
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
 
-                            // Save the resource's content stream to a MSG file
-                            using (FileStream fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
-                            {
-                                if (resource.ContentStream != null)
-                                {
-                                    resource.ContentStream.CopyTo(fileStream);
-                                }
-                            }
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
+                    return;
+                }
 
-                            Console.WriteLine($"Saved linked resource to '{outputPath}'.");
-                        }
-                        catch (Exception ex)
+                // Ensure output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+                    catch (Exception dirEx)
+                    {
+                        Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                        return;
+                    }
+                }
+
+                // Load MSG file
+                MapiMessage mapMsg;
+                try
+                {
+                    mapMsg = MapiMessage.Load(inputPath);
+                }
+                catch (Exception loadEx)
+                {
+                    Console.Error.WriteLine($"Failed to load MSG file: {loadEx.Message}");
+                    return;
+                }
+
+                // Convert to MailMessage
+                MailMessage mailMsg;
+                try
+                {
+                    mailMsg = mapMsg.ToMailMessage(new MailConversionOptions());
+                }
+                catch (Exception convEx)
+                {
+                    Console.Error.WriteLine($"Conversion to MailMessage failed: {convEx.Message}");
+                    return;
+                }
+
+                // Use using to ensure disposal of MailMessage
+                using (mailMsg)
+                {
+                    // Display basic information
+                    Console.WriteLine($"Subject: {mailMsg.Subject}");
+                    Console.WriteLine($"From: {mailMsg.From}");
+                    Console.WriteLine($"To: {mailMsg.To}");
+                    Console.WriteLine($"Body (Text): {mailMsg.Body}");
+
+                    // List attachments if any
+                    if (mailMsg.Attachments != null && mailMsg.Attachments.Count > 0)
+                    {
+                        Console.WriteLine("Attachments:");
+                        foreach (Attachment attachment in mailMsg.Attachments)
                         {
-                            Console.Error.WriteLine($"Failed to save linked resource: {ex.Message}");
+                            Console.WriteLine($" - {attachment.Name}");
                         }
+                    }
+
+                    // Save as EML
+                    try
+                    {
+                        mailMsg.Save(outputPath);
+                        Console.WriteLine($"Message saved as EML to: {outputPath}");
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Console.Error.WriteLine($"Failed to save EML file: {saveEx.Message}");
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

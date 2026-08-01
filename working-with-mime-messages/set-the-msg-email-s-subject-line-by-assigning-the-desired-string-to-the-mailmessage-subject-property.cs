@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -8,21 +9,22 @@ class Program
     {
         try
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
+            // Define input and output MSG file paths
+            string inputMsgPath = "input.msg";
+            string outputMsgPath = "output.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(inputPath))
+            // Verify that the input file exists
+            if (!File.Exists(inputMsgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(inputMsgPath);
                     }
                 }
                 catch (Exception ex)
@@ -31,32 +33,29 @@ class Program
                     return;
                 }
 
-                // Create a simple placeholder message.
-                using (MailMessage placeholder = new MailMessage("from@example.com", "to@example.com", "Placeholder Subject", "Placeholder body"))
-                {
-                    placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                }
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
+                return;
             }
 
-            // Ensure the output directory exists.
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Load the MSG file into a MapiMessage
+            MapiMessage mapMsg = MapiMessage.Load(inputMsgPath);
+
+            // Convert MapiMessage to MailMessage for easy manipulation
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            using (MailMessage mailMsg = mapMsg.ToMailMessage(conversionOptions))
             {
-                Directory.CreateDirectory(outputDirectory);
+                // Set the desired subject line
+                mailMsg.Subject = "Updated Subject Line";
+
+                // Save the modified message back to MSG format
+                mailMsg.Save(outputMsgPath);
             }
 
-            // Load the MSG file, set a new subject, and save it.
-            using (MailMessage message = MailMessage.Load(inputPath))
-            {
-                message.Subject = "New Subject Line";
-                message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-            }
-
-            Console.WriteLine("Subject updated and saved to: " + outputPath);
+            Console.WriteLine($"Message saved with new subject to: {outputMsgPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

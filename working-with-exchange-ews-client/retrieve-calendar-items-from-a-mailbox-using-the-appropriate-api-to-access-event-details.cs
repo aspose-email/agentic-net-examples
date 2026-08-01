@@ -1,8 +1,8 @@
-using Aspose.Email.Calendar;
 using System;
+using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
-using Aspose.Email.PersonalInfo;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,52 +10,41 @@ class Program
     {
         try
         {
-            // Placeholder credentials – replace with real values for actual execution
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string defaultEmail = "user@example.com";
+            // Replace with your actual EWS endpoint and credentials
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Skip external call when placeholders are used
-            if (clientId == "clientId" || clientSecret == "clientSecret" ||
-                refreshToken == "refreshToken" || defaultEmail == "user@example.com")
+
+            // Skip external calls when placeholder credentials are used
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client call.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create Gmail client
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+            // Create the EWS client (IEWSClient) and ensure it is disposed properly
+            using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                try
+                // Obtain mailbox information to locate the Calendar folder URI
+                ExchangeMailboxInfo mailboxInfo = ewsClient.GetMailboxInfo();
+                string calendarUri = mailboxInfo.CalendarUri;
+
+                // Retrieve calendar items (appointments) from the Calendar folder
+                ExchangeMessageInfoCollection calendarItems = ewsClient.ListMessages(calendarUri);
+
+                Console.WriteLine($"Found {calendarItems.Count} calendar item(s):");
+                foreach (ExchangeMessageInfo itemInfo in calendarItems)
                 {
-                    // Retrieve list of calendars
-                    Calendar[] calendars = gmailClient.ListCalendars();
-
-                    foreach (Calendar calendar in calendars)
-                    {
-                        Console.WriteLine($"Calendar ID: {calendar.Id}, Summary: {calendar.Summary}");
-
-                        // Retrieve appointments for each calendar
-                        Appointment[] appointments = gmailClient.ListAppointments(calendar.Id);
-
-                        foreach (Appointment appointment in appointments)
-                        {
-                            Console.WriteLine($"  Appointment: {appointment.Summary}");
-                            Console.WriteLine($"    Start: {appointment.StartDate}");
-                            Console.WriteLine($"    End:   {appointment.EndDate}");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error retrieving calendar items: {ex.Message}");
+                    // For demonstration, output the subject of each calendar item
+                    Console.WriteLine($"- Subject: {itemInfo.Subject}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            // Gracefully report any errors
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

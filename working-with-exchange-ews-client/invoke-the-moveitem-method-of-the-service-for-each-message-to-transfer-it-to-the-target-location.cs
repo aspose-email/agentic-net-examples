@@ -1,66 +1,52 @@
-using Aspose.Email.Clients.Exchange;
-using System;
-using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
+using System;
 class Program
 {
     static void Main()
     {
         try
         {
-            // Placeholder values – replace with real credentials when available.
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Replace with your actual Exchange server details
+            string host = "exchange.example.com";
             string username = "user@example.com";
             string password = "password";
+            string domain = "example.com";
 
-            // Guard against executing with placeholder credentials.
-            if (serviceUrl.Contains("example.com"))
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password" || domain.Contains("example.com"))
             {
-                Console.Error.WriteLine("Placeholder service URL detected. Skipping network operation.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client.
-            IEWSClient client = null;
-            try
+            // Initialize the Exchange DAV client
+            using (IEWSClient client = EWSClient.GetEWSClient(host, username, password, domain))
             {
-                client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password));
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
-                return;
-            }
+                // Get mailbox information to obtain folder URIs
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
 
-            // Destination folder URI – placeholder.
-            string destinationFolderUri = client.MailboxInfo.InboxUri; // Example: move to Inbox.
+                // Source folder (Inbox) and destination folder URIs
+                string sourceFolderUri = mailboxInfo.InboxUri;
+                string destinationFolderUri = mailboxInfo.DeletedItemsUri; // example target folder
 
-            // List messages in the source folder (e.g., Drafts).
-            ExchangeMessageInfoCollection messages = null;
-            try
-            {
-                messages = client.ListMessages(client.MailboxInfo.DraftsUri);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
-                return;
-            }
+                // List messages in the source folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(sourceFolderUri);
 
-            // Move each message to the destination folder.
-            foreach (ExchangeMessageInfo info in messages)
-            {
-                try
+                // Move each message to the destination folder
+                foreach (ExchangeMessageInfo msgInfo in messages)
                 {
-                    // Use the message's UniqueUri with the MoveItem method.
-                    string movedUri = client.MoveItem(info.UniqueUri, destinationFolderUri);
-                    Console.WriteLine($"Moved message {info.UniqueUri} to {destinationFolderUri}. New URI: {movedUri}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to move message {info.UniqueUri}: {ex.Message}");
+                    try
+                    {
+                        client.MoveItem(msgInfo.UniqueUri, destinationFolderUri);
+                        Console.WriteLine($"Moved message with Subject: '{msgInfo.Subject}'");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to move message '{msgInfo.Subject}': {ex.Message}");
+                    }
                 }
             }
         }

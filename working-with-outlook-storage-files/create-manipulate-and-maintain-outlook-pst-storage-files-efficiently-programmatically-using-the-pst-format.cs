@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -10,102 +10,74 @@ class Program
     {
         try
         {
-            // Define paths
-            string emlPath = "sample.eml";
-            string pstPath = "sample.pst";
+            const string pstPath = "storage.pst";
+            const string outputDir = "ExtractedMessages";
 
-            // Ensure the input EML file exists; create a minimal placeholder if missing
-            if (!File.Exists(emlPath))
+            // Ensure the PST file exists; create a minimal one if missing
+            if (!File.Exists(pstPath))
             {
-                try
+                // Create a new Unicode PST file
+                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                Console.WriteLine($"Created new PST file at '{pstPath}'.");
+            }
+
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                // Total items in the PST store
+                int totalItemsCount = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Total items count: {totalItemsCount}");
+
+                // Iterate through each subfolder of the root folder
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
+                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                    // Enumerate messages in the current folder
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
                     {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                        try
+                        {
+                            // Extract the MAPI message
+                            using (MapiMessage mapiMsg = pst.ExtractMessage(messageInfo))
+                            {
+                                // Convert to MailMessage for easier handling/saving
+                                using (MailMessage msg = mapiMsg.ToMailMessage(new MailConversionOptions()))
+                                {
+                                    // Build a safe filename from the subject
+                                    string safeSubject = string.IsNullOrWhiteSpace(msg.Subject) ? "NoSubject" : msg.Subject;
+                                    foreach (char c in Path.GetInvalidFileNameChars())
+                                    {
+                                        safeSubject = safeSubject.Replace(c, '_');
+                                    }
+
+                                    string msgPath = Path.Combine(outputDir, $"{safeSubject}.msg");
+                                    msg.Save(msgPath);
+                                    Console.WriteLine($"Saved message to '{msgPath}'.");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to extract/save message '{messageInfo.Subject}': {ex.Message}");
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    string placeholderEml = "From: test@example.com\r\nTo: test@example.com\r\nSubject: Sample Email\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(emlPath, placeholderEml);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder EML: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure the directory for the PST file exists
-            try
-            {
-                string pstDirectory = Path.GetDirectoryName(Path.GetFullPath(pstPath));
-                if (!Directory.Exists(pstDirectory))
-                {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error preparing PST directory: {ex.Message}");
-                return;
-            }
-
-            // Load the EML file into a MailMessage
-            MailMessage mailMessage;
-            try
-            {
-                mailMessage = MailMessage.Load(emlPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading EML file: {ex.Message}");
-                return;
-            }
-
-            // Convert MailMessage to MapiMessage
-            MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
-
-            // Create a new PST file (Unicode version)
-            using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-            {
-                // Get the default Inbox folder; create it if it does not exist
-                FolderInfo inboxFolder;
-                try
-                {
-                    inboxFolder = pst.RootFolder.GetSubFolder("Inbox");
-                }
-                catch
-                {
-                    // If the Inbox subfolder is missing, create it
-                    inboxFolder = pst.RootFolder.AddSubFolder("Inbox");
-                }
-
-                // Add the MapiMessage to the Inbox folder
-                try
-                {
-                    string entryId = inboxFolder.AddMessage(mapiMessage);
-                    Console.WriteLine($"Message added to PST with EntryId: {entryId}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error adding message to PST: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

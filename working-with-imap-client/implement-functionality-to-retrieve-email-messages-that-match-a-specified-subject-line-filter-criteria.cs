@@ -1,7 +1,8 @@
 using System;
-using System.Collections.Generic;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Pop3;
+using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -9,55 +10,57 @@ class Program
     {
         try
         {
-            // Placeholder connection settings
-            string host = "pop3.example.com";
-            int port = 110;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip actual network call when placeholders are used
-            if (host.Contains("example.com"))
+            // Path to the source MBOX file.
+            const string mboxPath = "storage.mbox";
+            if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine("Placeholder POP3 server detected. Skipping connection.");
+                Console.Error.WriteLine($"Input file not found: {mboxPath}");
                 return;
             }
 
-            // Subject filter criteria
-            string subjectFilter = "Important Report";
+            // Directory where matched messages will be saved.
+            const string outputDir = "output";
+            Directory.CreateDirectory(outputDir);
 
-            // Connect to POP3 server
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Create the MboxStorageReader.
+            MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
+
+            // Build a query to filter messages by subject line.
+            MailQueryBuilder queryBuilder = new MailQueryBuilder();
+            queryBuilder.Subject.Contains("Your Subject Filter"); // replace with desired text
+            MailQuery subjectQuery = queryBuilder.GetQuery();
+
+            // Enumerate messages that match the subject filter.
+            foreach (MailMessage message in mboxReader.EnumerateMessages(subjectQuery))
             {
-                try
-                {
-                    // Retrieve list of message infos
-                    Pop3MessageInfoCollection messagesInfo = client.ListMessages();
+                Console.WriteLine($"Subject: {message.Subject}");
+                Console.WriteLine($"From: {message.From}");
+                Console.WriteLine($"To: {message.To}");
 
-                    List<MailMessage> matchingMessages = new List<MailMessage>();
-
-                    // Iterate through each message info and fetch the full message
-                    foreach (Pop3MessageInfo info in messagesInfo)
-                    {
-                        MailMessage message = client.FetchMessage(info.UniqueId);
-                        if (message != null && message.Subject != null && message.Subject.Contains(subjectFilter))
-                        {
-                            matchingMessages.Add(message);
-                            Console.WriteLine($"Found matching message: Subject=\"{message.Subject}\"");
-                        }
-                    }
-
-                    Console.WriteLine($"Total messages matching \"{subjectFilter}\": {matchingMessages.Count}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during POP3 operations: {ex.Message}");
-                    return;
-                }
+                // Save the matched message as an .eml file.
+                string safeFileName = $"{SanitizeFileName(message.Subject)}.eml";
+                string fullPath = Path.Combine(outputDir, safeFileName);
+                message.Save(fullPath);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
+    }
+
+    // Replaces invalid filename characters with an underscore.
+    private static string SanitizeFileName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return "unnamed";
+
+        foreach (char c in Path.GetInvalidFileNameChars())
+        {
+            name = name.Replace(c, '_');
+        }
+
+        // Trim to a reasonable length.
+        return name.Length > 100 ? name.Substring(0, 100) : name;
     }
 }

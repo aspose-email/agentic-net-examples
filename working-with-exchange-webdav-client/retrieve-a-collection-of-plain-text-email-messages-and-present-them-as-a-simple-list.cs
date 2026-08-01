@@ -1,8 +1,7 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Storage.Mbox;
 
 class Program
 {
@@ -10,48 +9,38 @@ class Program
     {
         try
         {
-            // Placeholder connection settings
-            string host = "exchange.example.com";
-            string username = "user@example.com";
-            string password = "password";
+            const string mboxPath = "storage.mbox";
 
-            // Guard against placeholder credentials
-            if (host.Contains("example.com"))
+            // Verify that the MBOX file exists before attempting to read it.
+            if (!File.Exists(mboxPath))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // Create and use the Exchange WebDAV client
-            using (ExchangeClient client = new ExchangeClient(host, new NetworkCredential(username, password)))
-            {
-                try
-                {
-                    // List messages in the Inbox folder
-                    string inboxUri = client.MailboxInfo.InboxUri;
-                    ExchangeMessageInfoCollection messageInfos = client.ListMessages(inboxUri);
+            // Create the MboxStorageReader.
+            MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
 
-                    foreach (ExchangeMessageInfo messageInfo in messageInfos)
-                    {
-                        // Fetch each message
-                        using (MailMessage mail = client.FetchMessage(messageInfo.UniqueUri))
-                        {
-                            // Output subject and plain‑text body
-                            Console.WriteLine("Subject: " + mail.Subject);
-                            Console.WriteLine("Body: " + mail.Body);
-                            Console.WriteLine(new string('-', 40));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error during message retrieval: " + ex.Message);
-                }
+            // Iterate through each message info object in the MBOX storage.
+            foreach (MboxMessageInfo mboxMessageInfo in mbox.EnumerateMessageInfo())
+            {
+                Console.WriteLine("--------------------------------------------------");
+                Console.WriteLine($"Subject: {mboxMessageInfo.Subject}");
+                Console.WriteLine($"From: {mboxMessageInfo.From}");
+                Console.WriteLine($"To: {mboxMessageInfo.To}");
+
+                // Extract the full MIME message object from the MBOX storage.
+                MailMessage eml = mbox.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions());
+
+                // Display the plain‑text body of the message, if available.
+                string bodyText = eml.Body ?? string.Empty;
+                Console.WriteLine("Body (plain text):");
+                Console.WriteLine(bodyText);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
