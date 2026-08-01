@@ -32,6 +32,56 @@ Examples are organized by feature category:
 
 Each category contains standalone `.cs` files that can be compiled and run independently.
 
+## Frequently Asked Questions
+
+### How do I load and save EML or MSG files with Aspose.Email for .NET?
+
+Use `MailMessage.Load(path)` for MIME formats such as EML and `MapiMessage.Load(path)` for Outlook MSG/OFT files. Save with verified options such as `SaveOptions.DefaultEml` or `SaveOptions.DefaultMsgUnicode`. See the message conversion and Outlook item folders for standalone examples.
+
+### How do I convert email messages to HTML, MHTML, PDF, or other formats?
+
+Load the source message, save through an Aspose.Email format such as MHTML when needed, and use Aspose.Words for visual exports like PDF or DOCX. Conversion examples live in the format conversion and MIME message categories.
+
+### How do I send email using SMTP in Aspose.Email for .NET?
+
+Create a `MailMessage`, configure `SmtpClient` with host, port, credentials, and `SecurityOptions`, then call `Send` inside a try/catch block. The SMTP category includes examples for sending, timeouts, delivery notifications, and retry/error handling.
+
+### How do I receive or list email messages with IMAP or POP3?
+
+Use `ImapClient` or `Pop3Client` from `Aspose.Email.Clients`, validate placeholder credentials before network calls, select or list folders where applicable, and dispose clients with `using`. IMAP and POP3 categories contain compile-validated examples.
+
+### How do I work with Exchange EWS in Aspose.Email for .NET?
+
+Create `IEWSClient` with `EWSClient.GetEWSClient(...)`, use Exchange folder/message types from the verified namespaces, and keep EWS samples separate from WebDav or Graph client patterns. See the Exchange EWS category for appointment, message, and folder examples.
+
+### How do I use Microsoft Graph examples with Aspose.Email for .NET?
+
+Use `Aspose.Email.Clients.Graph`, create `IGraphClient` with `GraphClient.GetClient(tokenProvider, tenantId)`, prefer `KnownFolders.Inbox`, and use verified overloads such as `ListMessages(folderId, null)`. The Graph category contains examples for mailbox, folder, and classification workflows.
+
+### How do I process PST, OST, MBOX, or Zimbra TGZ storage files?
+
+Use the storage APIs under `Aspose.Email.Storage.*` for PersonalStorage, MBOX readers, and Zimbra TGZ export flows. The storage and conversion categories include examples for extracting messages, preserving folders, retrying IO, and reporting conversion results.
+
+### How do I create or read calendar appointments and ICS files?
+
+Use `Appointment` for iCalendar/ICS flows and `MapiCalendar` for Outlook MSG calendar items. Exchange appointment CRUD should use EWS APIs such as `CreateAppointment` and `CancelAppointment`. Calendar and Outlook item categories show the supported patterns.
+
+### How do I work with contacts and VCF files?
+
+Use `Aspose.Email.PersonalInfo.Contact` and related email/phone/address collections, then save contacts with VCard formats when needed. Contact extraction and VCF examples are available in the Outlook item, MIME, and contact-related categories.
+
+### How do I extract or save email attachments?
+
+Load the message, iterate its attachment collection, create output directories before saving files, and wrap file operations in try/catch. Attachment examples appear across MIME, MSG, Exchange, Graph, and storage categories.
+
+### Can these examples be used by AI coding agents like Claude, Copilot, or Cursor?
+
+Yes. The repository includes root and per-category `AGENTS.md`, `llms.txt`, `readiness.json`, and `index.json` files so AI coding agents can navigate examples, categories, namespaces, and validation metadata programmatically.
+
+### Do I need an Aspose.Email license to run these examples?
+
+Aspose.Email can run in evaluation mode with product limitations, but production usage requires a valid license. Apply a license before production workflows and see https://purchase.aspose.com/buy or the temporary license page for evaluation options.
+
 ## Getting Started
 
 ### Prerequisites
@@ -136,4 +186,4 @@ Other Aspose products with agentic, build-validated example repositories:
 All examples use [Aspose.Email for .NET](https://products.aspose.com/email/net/) and require a valid license for production use. See [licensing options](https://purchase.aspose.com/buy).
 
 ---
-*Generated and validated by a product-specific examples generator using shared Examples RAG/MCP infrastructure. See the [agentic examples metrics section](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-07-21*
+*Generated and validated by a product-specific examples generator using shared Examples RAG/MCP infrastructure. See the [agentic examples metrics section](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-08-01*
