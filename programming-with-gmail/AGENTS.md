@@ -18,38 +18,41 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (142 file(s))
-- `using Aspose.Email;` (138 file(s))
-- `using Aspose.Email.Clients.Google;` (100 file(s))
-- `using Aspose.Email.Clients;` (52 file(s))
-- `using System.IO;` (40 file(s))
-- `using System.Collections.Generic;` (36 file(s))
-- `using Aspose.Email.Calendar;` (20 file(s))
+- `using System;` (154 file(s))
+- `using Aspose.Email;` (150 file(s))
+- `using Aspose.Email.Clients.Google;` (109 file(s))
+- `using Aspose.Email.Clients;` (54 file(s))
+- `using System.IO;` (43 file(s))
+- `using System.Collections.Generic;` (41 file(s))
+- `using Aspose.Email.Calendar;` (22 file(s))
 - `using Aspose.Email.Clients.Imap;` (16 file(s))
+- `using Aspose.Email.PersonalInfo;` (13 file(s))
 - `using Aspose.Email.Clients.Smtp;` (9 file(s))
 - `using Aspose.Email.Storage.Mbox;` (9 file(s))
-- `using Aspose.Email.PersonalInfo;` (9 file(s))
 - `using Aspose.Email.Storage;` (7 file(s))
 - `using Aspose.Email.Storage.Pst;` (7 file(s))
-- `using System.Text;` (6 file(s))
+- `using System.Text;` (7 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (5 file(s))
 - `using Aspose.Email.Mapi;` (5 file(s))
+- `using System.Text.Json;` (4 file(s))
+- `using System.Net;` (4 file(s))
 - `using System.Threading;` (4 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (3 file(s))
 - `using Aspose.Email.Clients.Imap.Models;` (3 file(s))
-- `using System.Net;` (3 file(s))
 - `using System.Net.Mime;` (3 file(s))
 - `using Aspose.Email.Clients.Base;` (3 file(s))
 - `using Aspose.Email.Clients.Pop3;` (3 file(s))
-- `using System.Text.Json;` (2 file(s))
+- `using Aspose.Email.Clients.Exchange;` (2 file(s))
 - `using System.Text.RegularExpressions;` (2 file(s))
 - `using Aspose.Email.Tools.Search;` (2 file(s))
 - `using System.Linq;` (2 file(s))
 - `using System.Security.Cryptography.X509Certificates;` (2 file(s))
 - `using Aspose.Email.Calendar.Recurrences;` (1 file(s))
+- `using Aspose.Email.Clients.Graph;` (1 file(s))
 - `using System.Xml;` (1 file(s))
 - `using Aspose.Email.Amp;` (1 file(s))
 - `using System.Net.Http;` (1 file(s))
 - `using System.Diagnostics;` (1 file(s))
+- `using System.Security.Cryptography;` (1 file(s))
 - `using System.Net.Security;` (1 file(s))
 
 ## Files in this folder
@@ -65,6 +68,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [authenticate-to-gmail-smtp-using-oauth2-and-send-a-plain-text-email-to-multiple-recipients.cs](./authenticate-to-gmail-smtp-using-oauth2-and-send-a-plain-text-email-to-multiple-recipients.cs) | authenticate to gmail smtp using oauth2 and send a plain text email to multiple recipients |
 | [authenticate-with-oauth2-refresh-token-and-send-a-calendar-invitation-email-via-gmail-smtp-with-icalendar-attachment.cs](./authenticate-with-oauth2-refresh-token-and-send-a-calendar-invitation-email-via-gmail-smtp-with-icalendar-attachment.cs) | authenticate with oauth2 refresh token and send a calendar invitation email via gmail smtp with icalendar attachment |
 | [batch-delete-gmail-messages-older-than-one-year-using-imap-and-verify-removal-through-folder-count.cs](./batch-delete-gmail-messages-older-than-one-year-using-imap-and-verify-removal-through-folder-count.cs) | batch delete gmail messages older than one year using imap and verify removal through folder count |
+| [batch-update-google-contacts-organization-fields-based-on-data-from-an-external-json-configuration-file.cs](./batch-update-google-contacts-organization-fields-based-on-data-from-an-external-json-configuration-file.cs) | batch update google contacts organization fields based on data from an external json configuration file |
 | [batch-update-labels-of-multiple-gmail-messages-by-adding-a-reviewed-tag-using-igmailclient.cs](./batch-update-labels-of-multiple-gmail-messages-by-adding-a-reviewed-tag-using-igmailclient.cs) | batch update labels of multiple gmail messages by adding a reviewed tag using igmailclient |
 | [cache-calendar-ids-locally-to-reduce-api-calls-during-frequent-appointment-lookups.cs](./cache-calendar-ids-locally-to-reduce-api-calls-during-frequent-appointment-lookups.cs) | cache calendar ids locally to reduce api calls during frequent appointment lookups |
 | [capture-the-user-s-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs](./capture-the-user-s-country-and-mobile-number-inputs-then-trigger-the-send-verification-code-action.cs) | capture the user s country and mobile number inputs then trigger the send verification code action |
@@ -78,12 +82,16 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [convert-gmail-message-plain-text-bodies-to-utf-8-encoding-and-save-the-converted-files.cs](./convert-gmail-message-plain-text-bodies-to-utf-8-encoding-and-save-the-converted-files.cs) | convert gmail message plain text bodies to utf 8 encoding and save the converted files |
 | [copy-a-batch-of-messages-from-the-inbox-to-the-archive-folder-using-imapclient-while-preserving-flags.cs](./copy-a-batch-of-messages-from-the-inbox-to-the-archive-folder-using-imapclient-while-preserving-flags.cs) | copy a batch of messages from the inbox to the archive folder using imapclient while preserving flags |
 | [create-a-custom-mime-email-with-multipart-alternative-sections-for-html-and-plain-text-then-send-via-gmail.cs](./create-a-custom-mime-email-with-multipart-alternative-sections-for-html-and-plain-text-then-send-via-gmail.cs) | create a custom mime email with multipart alternative sections for html and plain text then send via gmail |
+| [create-a-diagnostic-log-entry-each-time-igmailclient-method-throws-an-exception-including-method-name-and-error-code.cs](./create-a-diagnostic-log-entry-each-time-igmailclient-method-throws-an-exception-including-method-name-and-error-code.cs) | create a diagnostic log entry each time igmailclient method throws an exception including method name and error code |
 | [create-a-draft-gmail-message-add-custom-headers-and-save-it-using-the-api.cs](./create-a-draft-gmail-message-add-custom-headers-and-save-it-using-the-api.cs) | create a draft gmail message add custom headers and save it using the api |
+| [create-a-gmail-filter-programmatically-to-automatically-archive-promotional-emails-older-than-thirty-days.cs](./create-a-gmail-filter-programmatically-to-automatically-archive-promotional-emails-older-than-thirty-days.cs) | create a gmail filter programmatically to automatically archive promotional emails older than thirty days |
+| [create-a-google-contact-group-add-multiple-contacts-and-assign-a-custom-color-label.cs](./create-a-google-contact-group-add-multiple-contacts-and-assign-a-custom-color-label.cs) | create a google contact group add multiple contacts and assign a custom color label |
 | [create-a-google-contact-with-name-email-and-organization-fields-using-the-api.cs](./create-a-google-contact-with-name-email-and-organization-fields-using-the-api.cs) | create a google contact with name email and organization fields using the api |
 | [create-a-nested-folder-structure-projects-2024-alpha-in-gmail-using-imapclient-and-verify-existence.cs](./create-a-nested-folder-structure-projects-2024-alpha-in-gmail-using-imapclient-and-verify-existence.cs) | create a nested folder structure projects 2024 alpha in gmail using imapclient and verify existence |
 | [create-a-new-calendar-with-specified-summary-and-time-zone-via-igmailclient-createcalendar.cs](./create-a-new-calendar-with-specified-summary-and-time-zone-via-igmailclient-createcalendar.cs) | create a new calendar with specified summary and time zone via igmailclient createcalendar |
 | [create-a-new-gmail-label-named-projectx-using-imap-and-move-matching-inbox-messages.cs](./create-a-new-gmail-label-named-projectx-using-imap-and-move-matching-inbox-messages.cs) | create a new gmail label named projectx using imap and move matching inbox messages |
 | [create-a-new-google-contact-with-name-email-and-organization-fields-using-the-api.cs](./create-a-new-google-contact-with-name-email-and-organization-fields-using-the-api.cs) | create a new google contact with name email and organization fields using the api |
+| [create-an-appointment-with-title-start-and-end-times-in-a-chosen-calendar-via-igmailclient-createappointment.cs](./create-an-appointment-with-title-start-and-end-times-in-a-chosen-calendar-via-igmailclient-createappointment.cs) | create an appointment with title start and end times in a chosen calendar via igmailclient createappointment |
 | [create-and-insert-calendar-events-into-a-google-calendar-account-using-the-appropriate-api-calls.cs](./create-and-insert-calendar-events-into-a-google-calendar-account-using-the-appropriate-api-calls.cs) | create and insert calendar events into a google calendar account using the appropriate api calls |
 | [create-and-manipulate-outlook-items-convert-ics-files-to-msg-handle-outlook-storage-files-and-process-smtp-communication.cs](./create-and-manipulate-outlook-items-convert-ics-files-to-msg-handle-outlook-storage-files-and-process-smtp-communication.cs) | create and manipulate outlook items convert ics files to msg handle outlook storage files and process smtp communication |
 | [create-and-manipulate-outlook-items-converting-ics-calendar-files-to-msg-email-format-programmatically.cs](./create-and-manipulate-outlook-items-converting-ics-calendar-files-to-msg-email-format-programmatically.cs) | create and manipulate outlook items converting ics calendar files to msg email format programmatically |
@@ -92,9 +100,13 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [create-update-retrieve-and-delete-google-calendar-appointments-programmatically-using-the-provided-api-endpoints.cs](./create-update-retrieve-and-delete-google-calendar-appointments-programmatically-using-the-provided-api-endpoints.cs) | create update retrieve and delete google calendar appointments programmatically using the provided api endpoints |
 | [delete-a-calendar-permanently-by-providing-its-identifier-to-igmailclient-deletecalendar.cs](./delete-a-calendar-permanently-by-providing-its-identifier-to-igmailclient-deletecalendar.cs) | delete a calendar permanently by providing its identifier to igmailclient deletecalendar |
 | [delete-a-specific-gmail-message-by-id-using-igmailclient-from-the-mailbox.cs](./delete-a-specific-gmail-message-by-id-using-igmailclient-from-the-mailbox.cs) | delete a specific gmail message by id using igmailclient from the mailbox |
+| [delete-all-gmail-messages-older-than-30-days-using-igmailclient-batch-delete-operation.cs](./delete-all-gmail-messages-older-than-30-days-using-igmailclient-batch-delete-operation.cs) | delete all gmail messages older than 30 days using igmailclient batch delete operation |
+| [delete-google-contacts-by-email-address-after-confirming-existence-in-the-contact-list.cs](./delete-google-contacts-by-email-address-after-confirming-existence-in-the-contact-list.cs) | delete google contacts by email address after confirming existence in the contact list |
+| [delete-specific-google-contacts-by-their-email-address-after-confirming-their-existence-in-the-contact-list.cs](./delete-specific-google-contacts-by-their-email-address-after-confirming-their-existence-in-the-contact-list.cs) | delete specific google contacts by their email address after confirming their existence in the contact list |
 | [deserialize-encrypted-json-back-into-a-googleuser-object-to-re-establish-authenticated-session.cs](./deserialize-encrypted-json-back-into-a-googleuser-object-to-re-establish-authenticated-session.cs) | deserialize encrypted json back into a googleuser object to re establish authenticated session |
 | [detect-and-resolve-conflicting-appointments-by-checking-overlapping-time-ranges-before-creation.cs](./detect-and-resolve-conflicting-appointments-by-checking-overlapping-time-ranges-before-creation.cs) | detect and resolve conflicting appointments by checking overlapping time ranges before creation |
 | [develop-programmatic-integrations-with-thunderbird-using-its-apis-for-email-composition-retrieval-and-management.cs](./develop-programmatic-integrations-with-thunderbird-using-its-apis-for-email-composition-retrieval-and-management.cs) | develop programmatic integrations with thunderbird using its apis for email composition retrieval and management |
+| [download-all-attachments-from-gmail-messages-matching-a-specific-subject-line-and-save-them-to-azure-blob-storage.cs](./download-all-attachments-from-gmail-messages-matching-a-specific-subject-line-and-save-them-to-azure-blob-storage.cs) | download all attachments from gmail messages matching a specific subject line and save them to azure blob storage |
 | [download-all-unread-gmail-messages-mark-them-as-read-and-store-attachments-in-a-local-directory.cs](./download-all-unread-gmail-messages-mark-them-as-read-and-store-attachments-in-a-local-directory.cs) | download all unread gmail messages mark them as read and store attachments in a local directory |
 | [exchange-authorization-code-for-access-and-refresh-tokens-via-googleoauthhelper-token-request.cs](./exchange-authorization-code-for-access-and-refresh-tokens-via-googleoauthhelper-token-request.cs) | exchange authorization code for access and refresh tokens via googleoauthhelper token request |
 | [exchange-the-provided-authorization-code-for-a-refresh-token-using-the-oauth2-authentication-endpoint.cs](./exchange-the-provided-authorization-code-for-a-refresh-token-using-the-oauth2-authentication-endpoint.cs) | exchange the provided authorization code for a refresh token using the oauth2 authentication endpoint |
@@ -129,6 +141,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [implement-pagination-when-listing-calendars-using-igmailclient-listcalendars-with-page-token.cs](./implement-pagination-when-listing-calendars-using-igmailclient-listcalendars-with-page-token.cs) | implement pagination when listing calendars using igmailclient listcalendars with page token |
 | [implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs](./implement-permission-based-access-control-for-calendar-resources-enabling-read-write-and-share-restrictions-per-user.cs) | implement permission based access control for calendar resources enabling read write and share restrictions per user |
 | [implement-secure-google-oauth-2-0-authentication-flow-ensuring-token-handling-and-data-transmission-meet-industry-standards.cs](./implement-secure-google-oauth-2-0-authentication-flow-ensuring-token-handling-and-data-transmission-meet-industry-standards.cs) | implement secure google oauth 2 0 authentication flow ensuring token handling and data transmission meet industry standards |
+| [implement-token-refresh-logic-to-maintain-continuous-oauth-2-0-authentication-for-long-running-gmail-operations.cs](./implement-token-refresh-logic-to-maintain-continuous-oauth-2-0-authentication-for-long-running-gmail-operations.cs) | implement token refresh logic to maintain continuous oauth 2 0 authentication for long running gmail operations |
 | [initialize-a-new-cloud-console-project-by-configuring-the-required-settings-and-enabling-necessary-apis.cs](./initialize-a-new-cloud-console-project-by-configuring-the-required-settings-and-enabling-necessary-apis.cs) | initialize a new cloud console project by configuring the required settings and enabling necessary apis |
 | [initialize-igmailclient-with-authenticated-googleuser-to-access-gmail-calendar-apis.cs](./initialize-igmailclient-with-authenticated-googleuser-to-access-gmail-calendar-apis.cs) | initialize igmailclient with authenticated googleuser to access gmail calendar apis |
 | [list-access-control-rules-for-a-specific-calendar-using-igmailclient-listaccessrules.cs](./list-access-control-rules-for-a-specific-calendar-using-igmailclient-listaccessrules.cs) | list access control rules for a specific calendar using igmailclient listaccessrules |
@@ -182,6 +195,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [send-an-email-with-a-pdf-and-an-image-attachment-through-gmail-smtp-using-starttls.cs](./send-an-email-with-a-pdf-and-an-image-attachment-through-gmail-smtp-using-starttls.cs) | send an email with a pdf and an image attachment through gmail smtp using starttls |
 | [send-an-email-with-embedded-inline-images-using-cid-references-through-gmail-smtp-service.cs](./send-an-email-with-embedded-inline-images-using-cid-references-through-gmail-smtp-service.cs) | send an email with embedded inline images using cid references through gmail smtp service |
 | [send-an-email-with-multiple-attachments-including-pdf-and-image-files-through-gmail-smtp-server.cs](./send-an-email-with-multiple-attachments-including-pdf-and-image-files-through-gmail-smtp-server.cs) | send an email with multiple attachments including pdf and image files through gmail smtp server |
+| [serialize-googleuser-credentials-to-encrypted-json-for-secure-storage-and-later-deserialization.cs](./serialize-googleuser-credentials-to-encrypted-json-for-secure-storage-and-later-deserialization.cs) | serialize googleuser credentials to encrypted json for secure storage and later deserialization |
 | [set-default-reminder-settings-for-a-calendar-via-igmailclient-updatecalendar-defaultreminders-collection.cs](./set-default-reminder-settings-for-a-calendar-via-igmailclient-updatecalendar-defaultreminders-collection.cs) | set default reminder settings for a calendar via igmailclient updatecalendar defaultreminders collection |
 | [set-up-oauth-2-0-authentication-to-authorize-api-calls-to-google-services-within-your-net-application.cs](./set-up-oauth-2-0-authentication-to-authorize-api-calls-to-google-services-within-your-net-application.cs) | set up oauth 2 0 authentication to authorize api calls to google services within your net application |
 | [specify-load-options-to-control-how-messages-are-read-from-an-mbox-file-during-the-import-process.cs](./specify-load-options-to-control-how-messages-are-read-from-an-mbox-file-during-the-import-process.cs) | specify load options to control how messages are read from an mbox file during the import process |
@@ -189,6 +203,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [synchronize-deleted-gmail-messages-with-a-local-archive-by-moving-them-to-a-deleted-folder-before-removal.cs](./synchronize-deleted-gmail-messages-with-a-local-archive-by-moving-them-to-a-deleted-folder-before-removal.cs) | synchronize deleted gmail messages with a local archive by moving them to a deleted folder before removal |
 | [synchronize-google-contacts-with-an-internal-crm-system-by-comparing-email-fields-and-updating-differences.cs](./synchronize-google-contacts-with-an-internal-crm-system-by-comparing-email-fields-and-updating-differences.cs) | synchronize google contacts with an internal crm system by comparing email fields and updating differences |
 | [transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs](./transform-an-icalendar-ics-file-into-an-outlook-msg-message-handling-associated-outlook-items-and-storage-files.cs) | transform an icalendar ics file into an outlook msg message handling associated outlook items and storage files |
+| [update-an-existing-appointment-location-or-details-using-igmailclient-updateappointment-method.cs](./update-an-existing-appointment-location-or-details-using-igmailclient-updateappointment-method.cs) | update an existing appointment location or details using igmailclient updateappointment method |
 | [update-an-existing-calendar-description-or-color-using-igmailclient-updatecalendar-method.cs](./update-an-existing-calendar-description-or-color-using-igmailclient-updatecalendar-method.cs) | update an existing calendar description or color using igmailclient updatecalendar method |
 | [update-gmail-client-settings-such-as-default-time-format-using-igmailclient-updateclientsettings.cs](./update-gmail-client-settings-such-as-default-time-format-using-igmailclient-updateclientsettings.cs) | update gmail client settings such as default time format using igmailclient updateclientsettings |
 | [update-google-contact-phone-number-identified-by-its-unique-resource-identifier.cs](./update-google-contact-phone-number-identified-by-its-unique-resource-identifier.cs) | update google contact phone number identified by its unique resource identifier |
@@ -199,7 +214,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [validate-gmail-smtp-server-certificate-chain-and-enforce-tls-1-2-encryption-for-secure-transmission.cs](./validate-gmail-smtp-server-certificate-chain-and-enforce-tls-1-2-encryption-for-secure-transmission.cs) | validate gmail smtp server certificate chain and enforce tls 1 2 encryption for secure transmission |
 
 ## Category Statistics
-- Total examples: 142
+- Total examples: 154
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -208,5 +223,5 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-06-23 | `20260623_163422_590290_7c4847fe` | [examples/batch-20260623_163422_590290_7c4847fe](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260623_163422_590290_7c4847fe) |
+| 2026-07-03 | `20260703_195250_975767_98f5eb68` | [examples/batch-20260703_195250_975767_98f5eb68](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260703_195250_975767_98f5eb68) |
 <!-- AUTOGENERATED:END -->

@@ -18,13 +18,14 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (40 file(s))
-- `using Aspose.Email.Tools.Verifications;` (39 file(s))
-- `using Aspose.Email;` (38 file(s))
-- `using System.Collections.Generic;` (10 file(s))
-- `using System.IO;` (8 file(s))
+- `using System;` (42 file(s))
+- `using Aspose.Email;` (40 file(s))
+- `using Aspose.Email.Tools.Verifications;` (40 file(s))
+- `using System.Collections.Generic;` (11 file(s))
+- `using System.IO;` (9 file(s))
 - `using System.Text.Json;` (3 file(s))
 - `using Aspose.Email.Clients.Smtp;` (2 file(s))
+- `using Aspose.Email.Mime;` (1 file(s))
 - `using System.Net;` (1 file(s))
 - `using System.Diagnostics;` (1 file(s))
 - `using System.Threading.Tasks;` (1 file(s))
@@ -34,6 +35,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 ## Files in this folder
 | File | Description |
 |------|-------------|
+| [add-command-line-arguments-to-specify-input-file-path-and-output-log-location-for-batch-verification.cs](./add-command-line-arguments-to-specify-input-file-path-and-output-log-location-for-batch-verification.cs) | add command line arguments to specify input file path and output log location for batch verification |
 | [add-support-for-validating-internationalized-email-addresses-using-unicode-domain-handling-in-emailvalidator.cs](./add-support-for-validating-internationalized-email-addresses-using-unicode-domain-handling-in-emailvalidator.cs) | add support for validating internationalized email addresses using unicode domain handling in emailvalidator |
 | [configure-emailvalidator-timeout-settings-to-limit-mail-server-connection-attempts-to-five-seconds.cs](./configure-emailvalidator-timeout-settings-to-limit-mail-server-connection-attempts-to-five-seconds.cs) | configure emailvalidator timeout settings to limit mail server connection attempts to five seconds |
 | [configure-emailvalidator-to-use-a-custom-dns-server-for-domain-verification-in-restricted-networks.cs](./configure-emailvalidator-to-use-a-custom-dns-server-for-domain-verification-in-restricted-networks.cs) | configure emailvalidator to use a custom dns server for domain verification in restricted networks |
@@ -60,6 +62,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [integrate-email-address-validation-into-an-asp-net-core-web-api-endpoint-returning-json-response.cs](./integrate-email-address-validation-into-an-asp-net-core-web-api-endpoint-returning-json-response.cs) | integrate email address validation into an asp net core web api endpoint returning json response |
 | [integrate-email-verification-into-a-background-worker-service-that-processes-user-registration-queues.cs](./integrate-email-verification-into-a-background-worker-service-that-processes-user-registration-queues.cs) | integrate email verification into a background worker service that processes user registration queues |
 | [log-validation-results-to-a-csv-file-including-email-address-boolean-status-and-timestamp.cs](./log-validation-results-to-a-csv-file-including-email-address-boolean-status-and-timestamp.cs) | log validation results to a csv file including email address boolean status and timestamp |
+| [use-dependency-injection-to-provide-emailvalidator-instance-to-services-in-an-asp-net-core-application.cs](./use-dependency-injection-to-provide-emailvalidator-instance-to-services-in-an-asp-net-core-application.cs) | use dependency injection to provide emailvalidator instance to services in an asp net core application |
 | [validate-a-domain-name-s-existence-and-format-using-the-net-verifications-component-s-validation-method.cs](./validate-a-domain-name-s-existence-and-format-using-the-net-verifications-component-s-validation-method.cs) | validate a domain name s existence and format using the net verifications component s validation method |
 | [validate-a-mail-server-s-configuration-authentication-and-connectivity-using-the-verifications-library-to-ensure-reliability.cs](./validate-a-mail-server-s-configuration-authentication-and-connectivity-using-the-verifications-library-to-ensure-reliability.cs) | validate a mail server s configuration authentication and connectivity using the verifications library to ensure reliability |
 | [validate-an-email-address-by-establishing-a-connection-to-the-mail-server-and-performing-mailserver-verification.cs](./validate-an-email-address-by-establishing-a-connection-to-the-mail-server-and-performing-mailserver-verification.cs) | validate an email address by establishing a connection to the mail server and performing mailserver verification |
@@ -76,7 +79,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [write-documentation-examples-demonstrating-how-to-capture-emailvalidator-result-messages-for-ui-display.cs](./write-documentation-examples-demonstrating-how-to-capture-emailvalidator-result-messages-for-ui-display.cs) | write documentation examples demonstrating how to capture emailvalidator result messages for ui display |
 
 ## Category Statistics
-- Total examples: 40
+- Total examples: 42
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -85,5 +88,5 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-06-23 | `20260623_163422_590290_7c4847fe` | [examples/batch-20260623_163422_590290_7c4847fe](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260623_163422_590290_7c4847fe) |
+| 2026-07-03 | `20260703_195250_975767_98f5eb68` | [examples/batch-20260703_195250_975767_98f5eb68](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260703_195250_975767_98f5eb68) |
 <!-- AUTOGENERATED:END -->

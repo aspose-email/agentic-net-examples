@@ -18,22 +18,22 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (557 file(s))
-- `using Aspose.Email;` (517 file(s))
-- `using Aspose.Email.Clients.Exchange.WebService;` (489 file(s))
-- `using System.Net;` (316 file(s))
-- `using Aspose.Email.Clients.Exchange;` (277 file(s))
-- `using Aspose.Email.Calendar;` (99 file(s))
-- `using System.IO;` (98 file(s))
-- `using Aspose.Email.Tools.Search;` (58 file(s))
-- `using System.Collections.Generic;` (54 file(s))
-- `using Aspose.Email.Storage.Pst;` (52 file(s))
-- `using Aspose.Email.Mapi;` (41 file(s))
+- `using System;` (568 file(s))
+- `using Aspose.Email;` (527 file(s))
+- `using Aspose.Email.Clients.Exchange.WebService;` (500 file(s))
+- `using System.Net;` (324 file(s))
+- `using Aspose.Email.Clients.Exchange;` (283 file(s))
+- `using System.IO;` (102 file(s))
+- `using Aspose.Email.Calendar;` (102 file(s))
+- `using Aspose.Email.Tools.Search;` (59 file(s))
+- `using System.Collections.Generic;` (57 file(s))
+- `using Aspose.Email.Storage.Pst;` (54 file(s))
+- `using Aspose.Email.Mapi;` (43 file(s))
 - `using Aspose.Email.PersonalInfo;` (24 file(s))
-- `using System.Text;` (23 file(s))
-- `using System.Threading.Tasks;` (18 file(s))
-- `using System.Threading;` (17 file(s))
-- `using Aspose.Email.Clients;` (16 file(s))
+- `using System.Text;` (24 file(s))
+- `using System.Threading.Tasks;` (22 file(s))
+- `using System.Threading;` (20 file(s))
+- `using Aspose.Email.Clients;` (17 file(s))
 - `using Aspose.Email.Calendar.Recurrences;` (9 file(s))
 - `using System.Linq;` (8 file(s))
 - `using Aspose.Email.Clients.Google;` (7 file(s))
@@ -44,11 +44,11 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - `using Aspose.Email.Clients.Base;` (3 file(s))
 - `using System.Diagnostics;` (3 file(s))
 - `using Aspose.Email.Clients.Imap;` (3 file(s))
+- `using System.IO.Compression;` (2 file(s))
 - `using System.ComponentModel;` (2 file(s))
 - `using System.Xml.Linq;` (2 file(s))
 - `using System.Reflection;` (2 file(s))
 - `using System.Security.Cryptography.X509Certificates;` (1 file(s))
-- `using System.IO.Compression;` (1 file(s))
 - `using Aspose.Email.Clients.Smtp;` (1 file(s))
 - `using AspNetCore = Aspose.Email.Clients.Exchange.WebService;` (1 file(s))
 - `using CancellationTokenSource cts = new CancellationTokenSource();` (1 file(s))
@@ -65,6 +65,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs](./acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs) | acquire an oauth access token for authenticating api requests using the appropriate authorization flow |
 | [activate-comprehensive-logging-to-capture-detailed-diagnostic-information-for-troubleshooting-and-performance-analysis-within-t.cs](./activate-comprehensive-logging-to-capture-detailed-diagnostic-information-for-troubleshooting-and-performance-analysis-within-t.cs) | activate comprehensive logging to capture detailed diagnostic information for troubleshooting and performance analysis within t |
 | [add-a-category-label-to-selected-emails-and-verify-that-the-label-appears-in-outlook-client-view.cs](./add-a-category-label-to-selected-emails-and-verify-that-the-label-appears-in-outlook-client-view.cs) | add a category label to selected emails and verify that the label appears in outlook client view |
+| [add-a-custom-category-to-a-calendar-event-and-ensure-it-appears-in-the-outlook-category-list.cs](./add-a-custom-category-to-a-calendar-event-and-ensure-it-appears-in-the-outlook-category-list.cs) | add a custom category to a calendar event and ensure it appears in the outlook category list |
 | [add-a-custom-disclaimer-to-the-footer-of-every-email-sent-from-a-specific-shared-mailbox.cs](./add-a-custom-disclaimer-to-the-footer-of-every-email-sent-from-a-specific-shared-mailbox.cs) | add a custom disclaimer to the footer of every email sent from a specific shared mailbox |
 | [add-a-custom-header-to-outgoing-messages-to-embed-correlation-identifiers-for-downstream-processing.cs](./add-a-custom-header-to-outgoing-messages-to-embed-correlation-identifiers-for-downstream-processing.cs) | add a custom header to outgoing messages to embed correlation identifiers for downstream processing |
 | [add-a-custom-property-to-a-folder-to-store-metadata-about-its-archival-status-for-later-processing.cs](./add-a-custom-property-to-a-folder-to-store-metadata-about-its-archival-status-for-later-processing.cs) | add a custom property to a folder to store metadata about its archival status for later processing |
@@ -108,6 +109,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [archive-email-messages-older-than-a-specified-date-into-a-compressed-archive-for-long-term-storage.cs](./archive-email-messages-older-than-a-specified-date-into-a-compressed-archive-for-long-term-storage.cs) | archive email messages older than a specified date into a compressed archive for long term storage |
 | [archive-exchange-email-messages-via-the-ews-api-ensuring-they-are-stored-securely-and-indexed-appropriately.cs](./archive-exchange-email-messages-via-the-ews-api-ensuring-they-are-stored-securely-and-indexed-appropriately.cs) | archive exchange email messages via the ews api ensuring they are stored securely and indexed appropriately |
 | [archive-multiple-emails-simultaneously-by-passing-a-collection-of-uniqueuris-to-archiveitem.cs](./archive-multiple-emails-simultaneously-by-passing-a-collection-of-uniqueuris-to-archiveitem.cs) | archive multiple emails simultaneously by passing a collection of uniqueuris to archiveitem |
+| [archive-only-messages-containing-a-specific-extended-property-value-that-matches-defined-criteria.cs](./archive-only-messages-containing-a-specific-extended-property-value-that-matches-defined-criteria.cs) | archive only messages containing a specific extended property value that matches defined criteria |
 | [assign-a-high-importance-flag-to-a-task-and-confirm-it-appears-at-the-top-of-the-view.cs](./assign-a-high-importance-flag-to-a-task-and-confirm-it-appears-at-the-top-of-the-view.cs) | assign a high importance flag to a task and confirm it appears at the top of the view |
 | [assign-the-obtained-oauth-token-to-the-exchangeservice-credentials-property-to-enable-authenticated-operations-for-subsequent.cs](./assign-the-obtained-oauth-token-to-the-exchangeservice-credentials-property-to-enable-authenticated-operations-for-subsequent.cs) | assign the obtained oauth token to the exchangeservice credentials property to enable authenticated operations for subsequent |
 | [attach-a-custom-file-to-a-task-request-message-before-sending-it-through-the-exchange-service.cs](./attach-a-custom-file-to-a-task-request-message-before-sending-it-through-the-exchange-service.cs) | attach a custom file to a task request message before sending it through the exchange service |
@@ -171,6 +173,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [copy-selected-conversation-threads-from-the-inbox-to-the-archive-folder-preserving-read-status.cs](./copy-selected-conversation-threads-from-the-inbox-to-the-archive-folder-preserving-read-status.cs) | copy selected conversation threads from the inbox to the archive folder preserving read status |
 | [create-a-batch-of-ten-different-mailquery-filters-and-execute-them-sequentially-to-gather-results.cs](./create-a-batch-of-ten-different-mailquery-filters-and-execute-them-sequentially-to-gather-results.cs) | create a batch of ten different mailquery filters and execute them sequentially to gather results |
 | [create-a-custom-extended-property-definition-of-type-string-with-a-unique-tag.cs](./create-a-custom-extended-property-definition-of-type-string-with-a-unique-tag.cs) | create a custom extended property definition of type string with a unique tag |
+| [create-a-custom-imap-folder-move-selected-messages-into-it-and-verify-folder-existence-via-list-command.cs](./create-a-custom-imap-folder-move-selected-messages-into-it-and-verify-folder-existence-via-list-command.cs) | create a custom imap folder move selected messages into it and verify folder existence via list command |
 | [create-a-distribution-list-add-members-from-an-ldap-query-and-save-it-to-the-exchange-address-book.cs](./create-a-distribution-list-add-members-from-an-ldap-query-and-save-it-to-the-exchange-address-book.cs) | create a distribution list add members from an ldap query and save it to the exchange address book |
 | [create-a-distribution-list-and-assign-it-a-custom-attribute-for-department-identification.cs](./create-a-distribution-list-and-assign-it-a-custom-attribute-for-department-identification.cs) | create a distribution list and assign it a custom attribute for department identification |
 | [create-a-distribution-list-and-set-its-membership-approval-requirement-to-manual-for-added-security.cs](./create-a-distribution-list-and-set-its-membership-approval-requirement-to-manual-for-added-security.cs) | create a distribution list and set its membership approval requirement to manual for added security |
@@ -294,6 +297,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [export-all-email-messages-from-a-folder-to-a-pst-file-while-preserving-folder-hierarchy-and-metadata.cs](./export-all-email-messages-from-a-folder-to-a-pst-file-while-preserving-folder-hierarchy-and-metadata.cs) | export all email messages from a folder to a pst file while preserving folder hierarchy and metadata |
 | [export-calendar-items-fetched-with-a-specific-organizer-to-a-csv-file.cs](./export-calendar-items-fetched-with-a-specific-organizer-to-a-csv-file.cs) | export calendar items fetched with a specific organizer to a csv file |
 | [export-distribution-list-members-and-their-email-addresses-to-an-excel-spreadsheet.cs](./export-distribution-list-members-and-their-email-addresses-to-an-excel-spreadsheet.cs) | export distribution list members and their email addresses to an excel spreadsheet |
+| [export-task-details-including-attachments-to-a-zip-archive-for-offline-archival.cs](./export-task-details-including-attachments-to-a-zip-archive-for-offline-archival.cs) | export task details including attachments to a zip archive for offline archival |
 | [export-the-body-of-fetched-emails-to-plain-text-files-for-archival-and-analysis-purposes.cs](./export-the-body-of-fetched-emails-to-plain-text-files-for-archival-and-analysis-purposes.cs) | export the body of fetched emails to plain text files for archival and analysis purposes |
 | [extract-the-plain-text-body-from-an-html-email-and-store-it-in-a-separate-database-column.cs](./extract-the-plain-text-body-from-an-html-email-and-store-it-in-a-separate-database-column.cs) | extract the plain text body from an html email and store it in a separate database column |
 | [fetch-a-private-distribution-list-by-its-unique-identifier-and-list-all-member-email-addresses.cs](./fetch-a-private-distribution-list-by-its-unique-identifier-and-list-all-member-email-addresses.cs) | fetch a private distribution list by its unique identifier and list all member email addresses |
@@ -302,6 +306,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [fetch-all-items-belonging-to-a-specific-conversation-while-maintaining-their-chronological-order-and-metadata.cs](./fetch-all-items-belonging-to-a-specific-conversation-while-maintaining-their-chronological-order-and-metadata.cs) | fetch all items belonging to a specific conversation while maintaining their chronological order and metadata |
 | [fetch-all-messages-from-a-user-s-inbox-programmatically-handling-authentication-and-optional-filtering-criteria.cs](./fetch-all-messages-from-a-user-s-inbox-programmatically-handling-authentication-and-optional-filtering-criteria.cs) | fetch all messages from a user s inbox programmatically handling authentication and optional filtering criteria |
 | [fetch-all-private-distribution-lists-owned-by-a-specific-user-and-list-their-member-counts.cs](./fetch-all-private-distribution-lists-owned-by-a-specific-user-and-list-their-member-counts.cs) | fetch all private distribution lists owned by a specific user and list their member counts |
+| [fetch-email-attachments-asynchronously-and-save-them-to-a-local-directory-preserving-original-filenames.cs](./fetch-email-attachments-asynchronously-and-save-them-to-a-local-directory-preserving-original-filenames.cs) | fetch email attachments asynchronously and save them to a local directory preserving original filenames |
 | [fetch-only-the-headers-of-imap-messages-to-reduce-data-transfer-when-scanning-large-mailboxes.cs](./fetch-only-the-headers-of-imap-messages-to-reduce-data-transfer-when-scanning-large-mailboxes.cs) | fetch only the headers of imap messages to reduce data transfer when scanning large mailboxes |
 | [fetch-private-distribution-lists-owned-by-a-group-and-enumerate-each-member-email-address.cs](./fetch-private-distribution-lists-owned-by-a-group-and-enumerate-each-member-email-address.cs) | fetch private distribution lists owned by a group and enumerate each member email address |
 | [fetch-the-complete-set-of-inbox-rules-using-the-getinboxrules-method-on-the-service-object.cs](./fetch-the-complete-set-of-inbox-rules-using-the-getinboxrules-method-on-the-service-object.cs) | fetch the complete set of inbox rules using the getinboxrules method on the service object |
@@ -313,6 +318,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [filter-calendar-items-between-two-dates-and-retrieve-only-those-with-high-importance-flag.cs](./filter-calendar-items-between-two-dates-and-retrieve-only-those-with-high-importance-flag.cs) | filter calendar items between two dates and retrieve only those with high importance flag |
 | [filter-email-messages-to-retrieve-those-with-timestamps-earlier-than-the-specified-cutoff-date.cs](./filter-email-messages-to-retrieve-those-with-timestamps-earlier-than-the-specified-cutoff-date.cs) | filter email messages to retrieve those with timestamps earlier than the specified cutoff date |
 | [filter-listed-messages-by-unread-status-before-processing-to-prioritize-new-email-handling.cs](./filter-listed-messages-by-unread-status-before-processing-to-prioritize-new-email-handling.cs) | filter listed messages by unread status before processing to prioritize new email handling |
+| [filter-tasks-by-priority-high-and-status-inprogress-then-send-reminder-emails-for-each.cs](./filter-tasks-by-priority-high-and-status-inprogress-then-send-reminder-emails-for-each.cs) | filter tasks by priority high and status inprogress then send reminder emails for each |
 | [filter-tasks-by-status-completed-using-exchangequerybuilder-status-and-return-matching-items.cs](./filter-tasks-by-status-completed-using-exchangequerybuilder-status-and-return-matching-items.cs) | filter tasks by status completed using exchangequerybuilder status and return matching items |
 | [find-all-conversation-threads-in-the-inbox-folder-containing-unread-messages-using-ewsclient.cs](./find-all-conversation-threads-in-the-inbox-folder-containing-unread-messages-using-ewsclient.cs) | find all conversation threads in the inbox folder containing unread messages using ewsclient |
 | [generate-a-follow-up-task-based-on-the-current-item-to-track-subsequent-actions-within-the-application-workflow.cs](./generate-a-follow-up-task-based-on-the-current-item-to-track-subsequent-actions-within-the-application-workflow.cs) | generate a follow up task based on the current item to track subsequent actions within the application workflow |
@@ -532,6 +538,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [search-the-mailbox-for-messages-containing-a-specific-keyword-in-the-subject-using-a-filtered-query.cs](./search-the-mailbox-for-messages-containing-a-specific-keyword-in-the-subject-using-a-filtered-query.cs) | search the mailbox for messages containing a specific keyword in the subject using a filtered query |
 | [send-a-batch-of-20-personalized-emails-asynchronously-each-with-unique-subject-and-body-content.cs](./send-a-batch-of-20-personalized-emails-asynchronously-each-with-unique-subject-and-body-content.cs) | send a batch of 20 personalized emails asynchronously each with unique subject and body content |
 | [send-a-mailmessage-through-iewsclient-and-capture-the-resulting-sent-item-uri-for-later-reference.cs](./send-a-mailmessage-through-iewsclient-and-capture-the-resulting-sent-item-uri-for-later-reference.cs) | send a mailmessage through iewsclient and capture the resulting sent item uri for later reference |
+| [send-a-meeting-invitation-email-with-icalendar-attachment-asynchronously-and-confirm-acceptance-via-response-tracking.cs](./send-a-meeting-invitation-email-with-icalendar-attachment-asynchronously-and-confirm-acceptance-via-response-tracking.cs) | send a meeting invitation email with icalendar attachment asynchronously and confirm acceptance via response tracking |
 | [send-a-meeting-invitation-that-includes-an-icalendar-attachment-for-cross-platform-compatibility.cs](./send-a-meeting-invitation-that-includes-an-icalendar-attachment-for-cross-platform-compatibility.cs) | send a meeting invitation that includes an icalendar attachment for cross platform compatibility |
 | [send-a-meeting-invitation-that-requests-responses-and-automatically-declines-if-the-time-conflicts.cs](./send-a-meeting-invitation-that-requests-responses-and-automatically-declines-if-the-time-conflicts.cs) | send a meeting invitation that requests responses and automatically declines if the time conflicts |
 | [send-a-meeting-request-to-multiple-attendees-with-a-custom-agenda-and-reminder-settings.cs](./send-a-meeting-request-to-multiple-attendees-with-a-custom-agenda-and-reminder-settings.cs) | send a meeting request to multiple attendees with a custom agenda and reminder settings |
@@ -544,6 +551,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [send-an-email-with-a-large-attachment-exceeding-10-mb-to-test-asynchronous-streaming-capabilities.cs](./send-an-email-with-a-large-attachment-exceeding-10-mb-to-test-asynchronous-streaming-capabilities.cs) | send an email with a large attachment exceeding 10 mb to test asynchronous streaming capabilities |
 | [send-an-email-with-a-read-receipt-request-and-delivery-notification-then-log-both-callbacks-after-sending.cs](./send-an-email-with-a-read-receipt-request-and-delivery-notification-then-log-both-callbacks-after-sending.cs) | send an email with a read receipt request and delivery notification then log both callbacks after sending |
 | [send-an-email-with-high-importance-flag-set-and-verify-the-flag-appears-in-the-recipient-view.cs](./send-an-email-with-high-importance-flag-set-and-verify-the-flag-appears-in-the-recipient-view.cs) | send an email with high importance flag set and verify the flag appears in the recipient view |
+| [send-an-html-formatted-email-with-multiple-attachments-using-sendmessageasync-and-verify-delivery-status.cs](./send-an-html-formatted-email-with-multiple-attachments-using-sendmessageasync-and-verify-delivery-status.cs) | send an html formatted email with multiple attachments using sendmessageasync and verify delivery status |
 | [send-task-request-messages-to-multiple-recipients-by-loading-a-template-msg-and-customizing-each-recipient-field.cs](./send-task-request-messages-to-multiple-recipients-by-loading-a-template-msg-and-customizing-each-recipient-field.cs) | send task request messages to multiple recipients by loading a template msg and customizing each recipient field |
 | [set-a-custom-email-address-as-the-reply-to-for-all-messages-sent-from-a-departmental-mailbox.cs](./set-a-custom-email-address-as-the-reply-to-for-all-messages-sent-from-a-departmental-mailbox.cs) | set a custom email address as the reply to for all messages sent from a departmental mailbox |
 | [set-a-custom-email-address-as-the-reply-to-for-all-messages-sent-from-a-shared-service-mailbox.cs](./set-a-custom-email-address-as-the-reply-to-for-all-messages-sent-from-a-shared-service-mailbox.cs) | set a custom email address as the reply to for all messages sent from a shared service mailbox |
@@ -587,6 +595,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [update-a-distribution-list-to-include-a-new-custom-property-for-compliance-tracking.cs](./update-a-distribution-list-to-include-a-new-custom-property-for-compliance-tracking.cs) | update a distribution list to include a new custom property for compliance tracking |
 | [update-an-existing-appointment-start-time-and-add-a-new-attendee-using-updateappointment-method.cs](./update-an-existing-appointment-start-time-and-add-a-new-attendee-using-updateappointment-method.cs) | update an existing appointment start time and add a new attendee using updateappointment method |
 | [update-an-existing-distribution-list-to-add-a-new-manager-role-attribute-for-governance.cs](./update-an-existing-distribution-list-to-add-a-new-manager-role-attribute-for-governance.cs) | update an existing distribution list to add a new manager role attribute for governance |
+| [update-custom-extended-properties-such-as-x-custom-tag-on-email-items-using-updateitemsasync-with-property-bag.cs](./update-custom-extended-properties-such-as-x-custom-tag-on-email-items-using-updateitemsasync-with-property-bag.cs) | update custom extended properties such as x custom tag on email items using updateitemsasync with property bag |
 | [update-or-customize-predefined-validation-rules-within-the-library-s-rule-engine-to-meet-specific-requirements.cs](./update-or-customize-predefined-validation-rules-within-the-library-s-rule-engine-to-meet-specific-requirements.cs) | update or customize predefined validation rules within the library s rule engine to meet specific requirements |
 | [update-the-assigned-user-of-an-existing-task-and-notify-the-new-assignee-via-a-task-request.cs](./update-the-assigned-user-of-an-existing-task-and-notify-the-new-assignee-via-a-task-request.cs) | update the assigned user of an existing task and notify the new assignee via a task request |
 | [update-the-body-of-a-task-to-include-a-markdown-formatted-checklist-and-save-changes.cs](./update-the-body-of-a-task-to-include-a-markdown-formatted-checklist-and-save-changes.cs) | update the body of a task to include a markdown formatted checklist and save changes |
@@ -596,9 +605,11 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [update-the-due-date-of-all-deferred-tasks-to-the-next-business-day-using-a-filtered-batch-operation.cs](./update-the-due-date-of-all-deferred-tasks-to-the-next-business-day-using-a-filtered-batch-operation.cs) | update the due date of all deferred tasks to the next business day using a filtered batch operation |
 | [update-the-location-field-of-an-existing-appointment-and-notify-all-attendees-of-the-change.cs](./update-the-location-field-of-an-existing-appointment-and-notify-all-attendees-of-the-change.cs) | update the location field of an existing appointment and notify all attendees of the change |
 | [update-the-reminder-settings-of-a-task-to-trigger-an-alert-fifteen-minutes-before-its-due-time.cs](./update-the-reminder-settings-of-a-task-to-trigger-an-alert-fifteen-minutes-before-its-due-time.cs) | update the reminder settings of a task to trigger an alert fifteen minutes before its due time |
+| [update-the-sensitivity-flag-of-confidential-emails-to-private-using-updateitemsasync-with-property-mapping.cs](./update-the-sensitivity-flag-of-confidential-emails-to-private-using-updateitemsasync-with-property-mapping.cs) | update the sensitivity flag of confidential emails to private using updateitemsasync with property mapping |
 | [update-the-start-and-end-times-of-a-recurring-appointment-series-while-preserving-exception-dates.cs](./update-the-start-and-end-times-of-a-recurring-appointment-series-while-preserving-exception-dates.cs) | update the start and end times of a recurring appointment series while preserving exception dates |
 | [update-the-subject-line-of-a-meeting-request-to-include-the-project-code-before-sending-updates.cs](./update-the-subject-line-of-a-meeting-request-to-include-the-project-code-before-sending-updates.cs) | update the subject line of a meeting request to include the project code before sending updates |
 | [update-the-subject-line-of-all-conversation-threads-in-a-folder-to-include-a-project-tag.cs](./update-the-subject-line-of-all-conversation-threads-in-a-folder-to-include-a-project-tag.cs) | update the subject line of all conversation threads in a folder to include a project tag |
+| [update-the-subject-line-of-multiple-messages-in-bulk-using-updateitemsasync-with-a-custom-property-map.cs](./update-the-subject-line-of-multiple-messages-in-bulk-using-updateitemsasync-with-a-custom-property-map.cs) | update the subject line of multiple messages in bulk using updateitemsasync with a custom property map |
 | [update-the-time-zone-of-an-existing-appointment-to-utc-and-notify-attendees-of-the-change.cs](./update-the-time-zone-of-an-existing-appointment-to-utc-and-notify-attendees-of-the-change.cs) | update the time zone of an existing appointment to utc and notify attendees of the change |
 | [update-the-time-zone-of-an-existing-task-without-altering-other-properties-using-partial-update.cs](./update-the-time-zone-of-an-existing-task-without-altering-other-properties-using-partial-update.cs) | update the time zone of an existing task without altering other properties using partial update |
 | [update-the-value-of-an-existing-extended-property-on-a-specific-message.cs](./update-the-value-of-an-existing-extended-property-on-a-specific-message.cs) | update the value of an existing extended property on a specific message |
@@ -620,7 +631,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [wrap-iewsclient-usage-inside-a-using-statement-to-ensure-automatic-resource-cleanup.cs](./wrap-iewsclient-usage-inside-a-using-statement-to-ensure-automatic-resource-cleanup.cs) | wrap iewsclient usage inside a using statement to ensure automatic resource cleanup |
 
 ## Category Statistics
-- Total examples: 557
+- Total examples: 568
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -629,5 +640,5 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-06-23 | `20260623_163422_590290_7c4847fe` | [examples/batch-20260623_163422_590290_7c4847fe](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260623_163422_590290_7c4847fe) |
+| 2026-07-03 | `20260703_195250_975767_98f5eb68` | [examples/batch-20260703_195250_975767_98f5eb68](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260703_195250_975767_98f5eb68) |
 <!-- AUTOGENERATED:END -->

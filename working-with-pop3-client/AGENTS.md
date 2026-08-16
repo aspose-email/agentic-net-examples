@@ -18,20 +18,20 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (166 file(s))
-- `using Aspose.Email.Clients.Pop3;` (158 file(s))
-- `using Aspose.Email;` (154 file(s))
-- `using Aspose.Email.Clients;` (130 file(s))
+- `using System;` (176 file(s))
+- `using Aspose.Email.Clients.Pop3;` (168 file(s))
+- `using Aspose.Email;` (164 file(s))
+- `using Aspose.Email.Clients;` (139 file(s))
 - `using System.Threading;` (59 file(s))
-- `using System.Threading.Tasks;` (58 file(s))
-- `using System.IO;` (29 file(s))
+- `using System.Threading.Tasks;` (59 file(s))
+- `using System.IO;` (31 file(s))
 - `using Aspose.Email.Tools.Search;` (20 file(s))
 - `using System.Collections.Generic;` (9 file(s))
 - `using System.Net;` (5 file(s))
 - `using Aspose.Email.Clients.Pop3.Models;` (4 file(s))
+- `using Aspose.Email.Mime;` (4 file(s))
+- `using System.Diagnostics;` (3 file(s))
 - `using System.Linq;` (2 file(s))
-- `using System.Diagnostics;` (2 file(s))
-- `using Aspose.Email.Mime;` (2 file(s))
 - `using System.Text.Json;` (1 file(s))
 - `using System.Text.Json.Nodes;` (1 file(s))
 - `using Aspose.Email.Clients.Exchange.Dav;` (1 file(s))
@@ -42,6 +42,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 |------|-------------|
 | [access-messagecount-property-from-pop3mailboxinfo-to-report-number-of-available-messages.cs](./access-messagecount-property-from-pop3mailboxinfo-to-report-number-of-available-messages.cs) | access messagecount property from pop3mailboxinfo to report number of available messages |
 | [add-a-pop3diagnosticlog-entry-to-appsettings-json-to-configure-pop3-activity-logging.cs](./add-a-pop3diagnosticlog-entry-to-appsettings-json-to-configure-pop3-activity-logging.cs) | add a pop3diagnosticlog entry to appsettings json to configure pop3 activity logging |
+| [add-a-safeguard-that-prevents-deletemessage-execution-when-the-pop3-client-is-not-connected.cs](./add-a-safeguard-that-prevents-deletemessage-execution-when-the-pop3-client-is-not-connected.cs) | add a safeguard that prevents deletemessage execution when the pop3 client is not connected |
 | [add-a-subject-filter-containing-newsletter-and-combine-it-with-the-date-filter-using-and.cs](./add-a-subject-filter-containing-newsletter-and-combine-it-with-the-date-filter-using-and.cs) | add a subject filter containing newsletter and combine it with the date filter using and |
 | [apply-a-case-sensitive-subject-filter-for-the-exact-match-invoice-during-message-retrieval.cs](./apply-a-case-sensitive-subject-filter-for-the-exact-match-invoice-during-message-retrieval.cs) | apply a case sensitive subject filter for the exact match invoice during message retrieval |
 | [apply-a-mailquery-to-filter-messages-from-a-particular-sender-address-asynchronously.cs](./apply-a-mailquery-to-filter-messages-from-a-particular-sender-address-asynchronously.cs) | apply a mailquery to filter messages from a particular sender address asynchronously |
@@ -62,6 +63,8 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [combine-mailquery-criteria-using-logical-or-to-broaden-asynchronous-message-retrieval-scope.cs](./combine-mailquery-criteria-using-logical-or-to-broaden-asynchronous-message-retrieval-scope.cs) | combine mailquery criteria using logical or to broaden asynchronous message retrieval scope |
 | [combine-multiple-mailquery-criteria-using-logical-and-to-narrow-down-asynchronous-message-selection.cs](./combine-multiple-mailquery-criteria-using-logical-and-to-narrow-down-asynchronous-message-selection.cs) | combine multiple mailquery criteria using logical and to narrow down asynchronous message selection |
 | [compare-performance-metrics-of-synchronous-versus-asynchronous-pop3-retrieval-in-a-benchmark-test.cs](./compare-performance-metrics-of-synchronous-versus-asynchronous-pop3-retrieval-in-a-benchmark-test.cs) | compare performance metrics of synchronous versus asynchronous pop3 retrieval in a benchmark test |
+| [configure-a-generic-proxy-by-setting-proxyhost-proxyport-proxyusername-and-proxypassword-on-the-client.cs](./configure-a-generic-proxy-by-setting-proxyhost-proxyport-proxyusername-and-proxypassword-on-the-client.cs) | configure a generic proxy by setting proxyhost proxyport proxyusername and proxypassword on the client |
+| [configure-an-http-proxy-by-setting-httpproxyhost-and-httpproxyport-before-establishing-the-connection.cs](./configure-an-http-proxy-by-setting-httpproxyhost-and-httpproxyport-before-establishing-the-connection.cs) | configure an http proxy by setting httpproxyhost and httpproxyport before establishing the connection |
 | [configure-logging-for-the-pop3-client-to-capture-connection-and-authentication-details-during-email-retrieval.cs](./configure-logging-for-the-pop3-client-to-capture-connection-and-authentication-details-during-email-retrieval.cs) | configure logging for the pop3 client to capture connection and authentication details during email retrieval |
 | [configure-mailquerybuilder-to-filter-messages-by-sender-domain-example-com-and-execute-the-query.cs](./configure-mailquerybuilder-to-filter-messages-by-sender-domain-example-com-and-execute-the-query.cs) | configure mailquerybuilder to filter messages by sender domain example com and execute the query |
 | [configure-pop3client-with-server-address-port-username-and-password-before-asynchronous-operations.cs](./configure-pop3client-with-server-address-port-username-and-password-before-asynchronous-operations.cs) | configure pop3client with server address port username and password before asynchronous operations |
@@ -79,6 +82,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [create-a-mailquerybuilder-and-add-a-date-filter-for-messages-received-today.cs](./create-a-mailquerybuilder-and-add-a-date-filter-for-messages-received-today.cs) | create a mailquerybuilder and add a date filter for messages received today |
 | [create-a-unit-test-confirming-mailquerybuilder-correctly-combines-filters-using-both-and-and-or.cs](./create-a-unit-test-confirming-mailquerybuilder-correctly-combines-filters-using-both-and-and-or.cs) | create a unit test confirming mailquerybuilder correctly combines filters using both and and or |
 | [define-a-custom-operation-timeout-by-assigning-a-millisecond-value-to-the-timeout-property.cs](./define-a-custom-operation-timeout-by-assigning-a-millisecond-value-to-the-timeout-property.cs) | define a custom operation timeout by assigning a millisecond value to the timeout property |
+| [define-a-pop3diagnosticlog-key-in-app-config-with-a-valid-file-path-to-enable-logging.cs](./define-a-pop3diagnosticlog-key-in-app-config-with-a-valid-file-path-to-enable-logging.cs) | define a pop3diagnosticlog key in app config with a valid file path to enable logging |
 | [delete-a-single-message-by-its-positive-index-after-confirming-the-index-is-greater-than-zero.cs](./delete-a-single-message-by-its-positive-index-after-confirming-the-index-is-greater-than-zero.cs) | delete a single message by its positive index after confirming the index is greater than zero |
 | [delete-selected-emails-from-a-pop3-server-using-the-pop3-client-api-ensuring-proper-session-handling.cs](./delete-selected-emails-from-a-pop3-server-using-the-pop3-client-api-ensuring-proper-session-handling.cs) | delete selected emails from a pop3 server using the pop3 client api ensuring proper session handling |
 | [detect-and-handle-corrupted-messages-during-asynchronous-fetch-by-skipping-and-logging-them.cs](./detect-and-handle-corrupted-messages-during-asynchronous-fetch-by-skipping-and-logging-them.cs) | detect and handle corrupted messages during asynchronous fetch by skipping and logging them |
@@ -86,6 +90,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [develop-a-unit-test-ensuring-deletemessage-throws-an-exception-for-zero-or-negative-indices.cs](./develop-a-unit-test-ensuring-deletemessage-throws-an-exception-for-zero-or-negative-indices.cs) | develop a unit test ensuring deletemessage throws an exception for zero or negative indices |
 | [dispose-pop3client-properly-after-completing-all-mailbox-operations-to-release-network-resources.cs](./dispose-pop3client-properly-after-completing-all-mailbox-operations-to-release-network-resources.cs) | dispose pop3client properly after completing all mailbox operations to release network resources |
 | [dispose-the-pop3client-instance-after-completing-all-asynchronous-operations-to-release-resources.cs](./dispose-the-pop3client-instance-after-completing-all-asynchronous-operations-to-release-resources.cs) | dispose the pop3client instance after completing all asynchronous operations to release resources |
+| [enable-apop-authentication-by-setting-useapop-to-true-prior-to-calling-connect.cs](./enable-apop-authentication-by-setting-useapop-to-true-prior-to-calling-connect.cs) | enable apop authentication by setting useapop to true prior to calling connect |
 | [enable-explicit-tls-stls-after-a-plain-connection-asynchronously-to-upgrade-security.cs](./enable-explicit-tls-stls-after-a-plain-connection-asynchronously-to-upgrade-security.cs) | enable explicit tls stls after a plain connection asynchronously to upgrade security |
 | [enable-multiconnection-mode-by-setting-pop3client-usemulticonnection-to-true-before-fetching-messages.cs](./enable-multiconnection-mode-by-setting-pop3client-usemulticonnection-to-true-before-fetching-messages.cs) | enable multiconnection mode by setting pop3client usemulticonnection to true before fetching messages |
 | [enable-pop3-activity-logging-by-setting-enablelogging-to-true-before-connecting.cs](./enable-pop3-activity-logging-by-setting-enablelogging-to-true-before-connecting.cs) | enable pop3 activity logging by setting enablelogging to true before connecting |
@@ -107,6 +112,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [implement-a-progress-reporter-that-updates-after-each-message-is-successfully-retrieved-from-the-pop3-server.cs](./implement-a-progress-reporter-that-updates-after-each-message-is-successfully-retrieved-from-the-pop3-server.cs) | implement a progress reporter that updates after each message is successfully retrieved from the pop3 server |
 | [implement-an-email-archiving-workflow-that-moves-asynchronously-retrieved-messages-to-archive-storage.cs](./implement-an-email-archiving-workflow-that-moves-asynchronously-retrieved-messages-to-archive-storage.cs) | implement an email archiving workflow that moves asynchronously retrieved messages to archive storage |
 | [implement-asynchronous-email-retrieval-processing-and-deletion-using-the-pop3-client-class-pop3client-in-net-applications.cs](./implement-asynchronous-email-retrieval-processing-and-deletion-using-the-pop3-client-class-pop3client-in-net-applications.cs) | implement asynchronous email retrieval processing and deletion using the pop3 client class pop3client in net applications |
+| [implement-parallel-fetching-of-message-headers-with-parallel-foreach-while-multiconnection-mode-is-enabled.cs](./implement-parallel-fetching-of-message-headers-with-parallel-foreach-while-multiconnection-mode-is-enabled.cs) | implement parallel fetching of message headers with parallel foreach while multiconnection mode is enabled |
 | [implement-pop3-client-callback-handling-to-process-server-events-and-responses-appropriately-within-an-asynchronous-workflow.cs](./implement-pop3-client-callback-handling-to-process-server-events-and-responses-appropriately-within-an-asynchronous-workflow.cs) | implement pop3 client callback handling to process server events and responses appropriately within an asynchronous workflow |
 | [implement-pop3-client-functionality-to-connect-to-a-mail-server-and-fetch-email-messages.cs](./implement-pop3-client-functionality-to-connect-to-a-mail-server-and-fetch-email-messages.cs) | implement pop3 client functionality to connect to a mail server and fetch email messages |
 | [implement-pop3-client-functionality-to-filter-retrieved-messages-based-on-specified-criteria-and-process-them-accordingly.cs](./implement-pop3-client-functionality-to-filter-retrieved-messages-based-on-specified-criteria-and-process-them-accordingly.cs) | implement pop3 client functionality to filter retrieved messages based on specified criteria and process them accordingly |
@@ -136,6 +142,8 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [log-each-successful-message-fetch-with-its-sequence-number-and-timestamp-to-the-diagnostic-log.cs](./log-each-successful-message-fetch-with-its-sequence-number-and-timestamp-to-the-diagnostic-log.cs) | log each successful message fetch with its sequence number and timestamp to the diagnostic log |
 | [log-the-total-number-of-messages-retrieved-after-applying-a-mailquery-filter-for-debugging-purposes.cs](./log-the-total-number-of-messages-retrieved-after-applying-a-mailquery-filter-for-debugging-purposes.cs) | log the total number of messages retrieved after applying a mailquery filter for debugging purposes |
 | [log-timestamps-of-each-asynchronous-pop3-operation-to-create-an-audit-trail-for-debugging.cs](./log-timestamps-of-each-asynchronous-pop3-operation-to-create-an-audit-trail-for-debugging.cs) | log timestamps of each asynchronous pop3 operation to create an audit trail for debugging |
+| [loop-through-sequence-numbers-ten-to-twenty-and-call-fetchheaders-to-retrieve-each-header-batch.cs](./loop-through-sequence-numbers-ten-to-twenty-and-call-fetchheaders-to-retrieve-each-header-batch.cs) | loop through sequence numbers ten to twenty and call fetchheaders to retrieve each header batch |
+| [measure-retrieval-time-using-stopwatch-to-compare-single-connection-and-multiconnection-pop3-modes.cs](./measure-retrieval-time-using-stopwatch-to-compare-single-connection-and-multiconnection-pop3-modes.cs) | measure retrieval time using stopwatch to compare single connection and multiconnection pop3 modes |
 | [measure-the-round-trip-time-of-the-connect-call-by-recording-timestamps-before-and-after-the-method.cs](./measure-the-round-trip-time-of-the-connect-call-by-recording-timestamps-before-and-after-the-method.cs) | measure the round trip time of the connect call by recording timestamps before and after the method |
 | [mock-mailquery-results-for-listmessagesasync-in-unit-tests-to-simulate-filtered-message-sets.cs](./mock-mailquery-results-for-listmessagesasync-in-unit-tests-to-simulate-filtered-message-sets.cs) | mock mailquery results for listmessagesasync in unit tests to simulate filtered message sets |
 | [monitor-progress-of-asynchronous-message-retrieval-using-iprogress-t-to-update-ui-elements.cs](./monitor-progress-of-asynchronous-message-retrieval-using-iprogress-t-to-update-ui-elements.cs) | monitor progress of asynchronous message retrieval using iprogress t to update ui elements |
@@ -155,6 +163,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [retrieve-a-message-list-via-pop3-download-a-selected-email-remove-it-from-the-server-and-close-the-connection.cs](./retrieve-a-message-list-via-pop3-download-a-selected-email-remove-it-from-the-server-and-close-the-connection.cs) | retrieve a message list via pop3 download a selected email remove it from the server and close the connection |
 | [retrieve-a-message-using-the-uidl-command-asynchronously-for-unique-identifier-based-retrieval.cs](./retrieve-a-message-using-the-uidl-command-asynchronously-for-unique-identifier-based-retrieval.cs) | retrieve a message using the uidl command asynchronously for unique identifier based retrieval |
 | [retrieve-a-single-email-message-asynchronously-by-its-sequence-number-from-the-mailbox.cs](./retrieve-a-single-email-message-asynchronously-by-its-sequence-number-from-the-mailbox.cs) | retrieve a single email message asynchronously by its sequence number from the mailbox |
+| [retrieve-a-specific-email-message-by-its-identifier-using-retrievemessage-after-any-proxy-configuration.cs](./retrieve-a-specific-email-message-by-its-identifier-using-retrievemessage-after-any-proxy-configuration.cs) | retrieve a specific email message by its identifier using retrievemessage after any proxy configuration |
 | [retrieve-all-attachments-from-an-email-asynchronously-and-process-each-attachment-stream-individually.cs](./retrieve-all-attachments-from-an-email-asynchronously-and-process-each-attachment-stream-individually.cs) | retrieve all attachments from an email asynchronously and process each attachment stream individually |
 | [retrieve-all-message-identifiers-with-listmessages-and-store-them-in-a-local-collection-for-later-processing.cs](./retrieve-all-message-identifiers-with-listmessages-and-store-them-in-a-local-collection-for-later-processing.cs) | retrieve all message identifiers with listmessages and store them in a local collection for later processing |
 | [retrieve-an-email-message-asynchronously-using-its-unique-identifier-uid-for-precise-selection.cs](./retrieve-an-email-message-asynchronously-using-its-unique-identifier-uid-for-precise-selection.cs) | retrieve an email message asynchronously using its unique identifier uid for precise selection |
@@ -172,6 +181,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [serialize-a-retrieved-email-to-an-in-memory-eml-format-asynchronously-for-further-processing.cs](./serialize-a-retrieved-email-to-an-in-memory-eml-format-asynchronously-for-further-processing.cs) | serialize a retrieved email to an in memory eml format asynchronously for further processing |
 | [set-a-custom-client-timeout-of-fifteen-seconds-to-prevent-long-running-pop3-operations-from-hanging.cs](./set-a-custom-client-timeout-of-fifteen-seconds-to-prevent-long-running-pop3-operations-from-hanging.cs) | set a custom client timeout of fifteen seconds to prevent long running pop3 operations from hanging |
 | [set-a-custom-network-timeout-for-asynchronous-pop3-methods-to-avoid-indefinite-waiting-periods.cs](./set-a-custom-network-timeout-for-asynchronous-pop3-methods-to-avoid-indefinite-waiting-periods.cs) | set a custom network timeout for asynchronous pop3 methods to avoid indefinite waiting periods |
+| [set-enablessl-to-true-before-connect-to-establish-a-secure-ssl-tls-pop3-session.cs](./set-enablessl-to-true-before-connect-to-establish-a-secure-ssl-tls-pop3-session.cs) | set enablessl to true before connect to establish a secure ssl tls pop3 session |
 | [set-pop3client-connectionsquantity-to-five-to-configure-the-number-of-concurrent-pop3-connections.cs](./set-pop3client-connectionsquantity-to-five-to-configure-the-number-of-concurrent-pop3-connections.cs) | set pop3client connectionsquantity to five to configure the number of concurrent pop3 connections |
 | [set-pop3client-diagnosticlog-property-in-code-to-enable-pop3-client-logging-programmatically.cs](./set-pop3client-diagnosticlog-property-in-code-to-enable-pop3-client-logging-programmatically.cs) | set pop3client diagnosticlog property in code to enable pop3 client logging programmatically |
 | [set-servicepointmanager-securityprotocol-to-tls-1-2-before-connecting-to-enforce-tls-1-2-usage.cs](./set-servicepointmanager-securityprotocol-to-tls-1-2-before-connecting-to-enforce-tls-1-2-usage.cs) | set servicepointmanager securityprotocol to tls 1 2 before connecting to enforce tls 1 2 usage |
@@ -208,7 +218,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [write-code-that-filters-messages-whose-subject-starts-with-re-using-a-case-sensitive-comparison.cs](./write-code-that-filters-messages-whose-subject-starts-with-re-using-a-case-sensitive-comparison.cs) | write code that filters messages whose subject starts with re using a case sensitive comparison |
 
 ## Category Statistics
-- Total examples: 166
+- Total examples: 176
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -217,5 +227,5 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-06-23 | `20260623_163422_590290_7c4847fe` | [examples/batch-20260623_163422_590290_7c4847fe](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260623_163422_590290_7c4847fe) |
+| 2026-07-03 | `20260703_195250_975767_98f5eb68` | [examples/batch-20260703_195250_975767_98f5eb68](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260703_195250_975767_98f5eb68) |
 <!-- AUTOGENERATED:END -->
