@@ -1,10 +1,7 @@
-using Aspose.Email;
 using System;
 using System.IO;
-using System.Text;
 using System.Threading;
-using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
+using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
 class Program
@@ -13,22 +10,14 @@ class Program
     {
         try
         {
-            string mboxPath = "sample.mbox";
-            string pstPath = "output.pst";
+            const string mboxPath = "storage.mbox";
 
-            // Ensure the MBOX file exists; create a minimal placeholder if it does not.
+            // Ensure the MBOX file exists; create an empty placeholder if missing.
             if (!File.Exists(mboxPath))
             {
                 try
                 {
-                    using (FileStream placeholderStream = new FileStream(mboxPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                    {
-                        // Minimal MBOX content: a single empty message.
-                        string placeholderContent = "From - Mon Jan 01 00:00:00 2000\r\nSubject: Placeholder\r\n\r\n";
-                        byte[] bytes = Encoding.UTF8.GetBytes(placeholderContent);
-                        placeholderStream.Write(bytes, 0, bytes.Length);
-                    }
-                    Console.WriteLine($"Created placeholder MBOX file at '{mboxPath}'.");
+                    File.WriteAllText(mboxPath, string.Empty);
                 }
                 catch (Exception ex)
                 {
@@ -37,50 +26,67 @@ class Program
                 }
             }
 
-            // Retry logic for opening the MBOX file stream.
+            // Retry logic for transient I/O errors when opening the MBOX reader.
             const int maxRetries = 3;
-            const int delayMilliseconds = 1000;
-            FileStream mboxStream = null;
             int attempt = 0;
-            while (attempt < maxRetries)
+            MboxStorageReader mbox = null;
+
+            while (true)
             {
                 try
                 {
-                    mboxStream = new FileStream(mboxPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    break; // Successfully opened.
+                    mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
+                    break; // Success
                 }
                 catch (IOException ioEx)
                 {
                     attempt++;
-                    Console.Error.WriteLine($"Attempt {attempt} to open MBOX file failed: {ioEx.Message}");
                     if (attempt >= maxRetries)
                     {
-                        Console.Error.WriteLine("Maximum retry attempts reached. Aborting.");
+                        Console.Error.WriteLine($"Unable to open MBOX file after {maxRetries} attempts: {ioEx.Message}");
                         return;
                     }
-                    Thread.Sleep(delayMilliseconds);
+                    Thread.Sleep(1000);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Unexpected error opening MBOX file: {ex.Message}");
+                    Console.Error.WriteLine($"Unexpected error while opening MBOX file: {ex.Message}");
                     return;
                 }
             }
 
-            // Convert the MBOX stream to PST.
-            try
+            // Ensure output directory exists.
+            string outputDir = "output";
+            Directory.CreateDirectory(outputDir);
+
+            using (mbox)
             {
-                using (FileStream mboxStreamDisposable = mboxStream)
+                while (true)
                 {
-                    using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxStreamDisposable, pstPath))
+                    MailMessage eml = mbox.ReadNextMessage();
+                    if (eml == null)
+                        break;
+
+                    using (eml)
                     {
-                        Console.WriteLine($"MBOX converted to PST successfully. PST saved at '{pstPath}'.");
+                        string safeSubject = string.IsNullOrWhiteSpace(eml.Subject) ? "NoSubject" : eml.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        string outputPath = Path.Combine(outputDir, $"{safeSubject}.eml");
+                        try
+                        {
+                            eml.Save(outputPath);
+                            Console.WriteLine($"Saved: {outputPath}");
+                        }
+                        catch (Exception saveEx)
+                        {
+                            Console.Error.WriteLine($"Failed to save message '{safeSubject}': {saveEx.Message}");
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
             }
         }
         catch (Exception ex)

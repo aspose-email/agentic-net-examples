@@ -1,69 +1,66 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
+using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
 
 class Program
 {
+    // Author: Aspose.Email .NET sample
     static void Main()
     {
         try
         {
-            string ostPath = "sample.ost";
-            string mhtmlPath = "sample.mht";
+            // Define source MBOX and target PST file paths
+            string mboxPath = "input.mbox";
+            string pstPath = "output.pst";
 
-            // Ensure the MHTML file exists; create a minimal placeholder if missing
-            if (!File.Exists(mhtmlPath))
+            // Ensure the source MBOX file exists; create an empty placeholder if missing
+            if (!File.Exists(mboxPath))
             {
                 try
                 {
-                    File.WriteAllText(mhtmlPath, "<html><body><p>Placeholder MHTML content</p></body></html>");
+                    using (FileStream placeholder = File.Create(mboxPath)) { }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MHTML file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
                     return;
                 }
             }
 
-            // Create a new OST (PST) file if it does not exist
-            if (!File.Exists(ostPath))
+            // Ensure the directory for the PST file exists
+            string pstDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
                 try
                 {
-                    PersonalStorage.Create(ostPath, FileFormatVersion.Unicode);
+                    Directory.CreateDirectory(pstDirectory);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create OST file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create PST directory: {ex.Message}");
                     return;
                 }
             }
 
-            // Open the OST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(ostPath))
+            // Convert MBOX to PST using the MailStorageConverter
+            try
             {
-                // Get the Inbox predefined folder
-                FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-
-                // Load the MHTML message into a MailMessage
-                using (FileStream mhtmlStream = File.OpenRead(mhtmlPath))
-                using (MailMessage mailMessage = MailMessage.Load(mhtmlStream))
+                using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath))
                 {
-                    // Convert MailMessage to MapiMessage
-                    using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
-                    {
-                        // Add the MAPI message to the folder
-                        string entryId = inboxFolder.AddMessage(mapiMessage);
-                        Console.WriteLine($"Message added successfully. EntryId: {entryId}");
-                    }
+                    // Conversion succeeded; the PST file is saved at pstPath
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Conversion error: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

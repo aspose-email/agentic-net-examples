@@ -4,18 +4,22 @@ using Aspose.Email;
 using Aspose.Words;
 using Aspose.Words.Saving;
 
-class Program
+namespace HtmlEmailToPdf
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputHtmlPath = "email.html";
-            string outputPdfPath = "output.pdf";
-
-            // Verify input file exists
-            if (!File.Exists(inputHtmlPath))
+            try
             {
+                // Input .eml file containing the HTML email
+                string inputPath = "email.eml";
+                // Desired output PDF file
+                string outputPath = "email.pdf";
+
+                // Verify input file exists; create a placeholder if it does not
+                if (!File.Exists(inputPath))
+                {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -24,7 +28,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputHtmlPath, Aspose.Email.SaveOptions.DefaultEml);
+                        placeholder.Save(inputPath, Aspose.Email.SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -33,47 +37,54 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputHtmlPath}");
-                return;
-            }
+                    try
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                        return;
+                    }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPdfPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
+                    return;
+                }
+
+                // Ensure output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
                     Directory.CreateDirectory(outputDir);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
 
-            // Load the HTML email into a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(inputHtmlPath, new HtmlLoadOptions()))
+                // Load the email message
+                using (MailMessage mailMessage = MailMessage.Load(inputPath))
+                {
+                    // Save the email as MHTML into a memory stream
+                    using (MemoryStream mhtmlStream = new MemoryStream())
+                    {
+                        mailMessage.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
+                        mhtmlStream.Position = 0;
+
+                        // Load the MHTML into Aspose.Words Document
+                        Document wordsDoc = new Document(mhtmlStream);
+
+                        // Save the document as PDF, preserving hyperlinks
+                        Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions
+                        {
+                            // Ensure hyperlinks are retained (default behavior)
+                            PreserveFormFields = true
+                        };
+                        wordsDoc.Save(outputPath, pdfOptions);
+                    }
+                }
+
+                Console.WriteLine($"PDF successfully created at: {outputPath}");
+            }
+            catch (Exception ex)
             {
-                // Save the MailMessage as MHTML into a memory stream
-                using (MemoryStream mhtmlStream = new MemoryStream())
-                {
-                    mailMessage.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
-                    mhtmlStream.Position = 0;
-
-                    // Load the MHTML into an Aspose.Words Document
-                    Document doc = new Document(mhtmlStream);
-
-                    // Save the document as PDF, preserving hyperlinks
-                    doc.Save(outputPdfPath, Aspose.Words.SaveFormat.Pdf);
-                }
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            Console.WriteLine($"Conversion completed successfully. PDF saved to: {outputPdfPath}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

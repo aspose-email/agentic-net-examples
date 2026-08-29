@@ -1,86 +1,124 @@
-using Aspose.Email.Storage.Pst;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
+using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
-class Program
+namespace AsposeEmailMessageExtractor
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Input and output file paths
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
-
-            // Verify MBOX file existence; create an empty placeholder if missing
-            if (!File.Exists(mboxPath))
-            {
-                try
-                {
-                    using (FileStream placeholder = File.Create(mboxPath))
-                    {
-                        // Empty MBOX placeholder created
-                    }
-                    Console.WriteLine($"Placeholder MBOX file created at '{mboxPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Counters for the conversion process
-            int totalConverted = 0;
-            int totalSkipped = 0;
-            List<string> errorMessages = new List<string>();
-
-            // Define the MailHandler delegate to process each message during conversion
-            MailStorageConverter.MailHandler handler = delegate (MailMessage message)
-            {
-                try
-                {
-                    // Increment the converted counter for each successfully read message
-                    totalConverted++;
-                }
-                catch (Exception ex)
-                {
-                    // Record any errors that occur while handling a message
-                    errorMessages.Add($"Message handling error: {ex.Message}");
-                }
-            };
-
-            // Perform the conversion inside a guarded block
             try
             {
-                using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath, handler))
+                string pstPath = "storage.pst";
+
+                // Verify PST file exists
+                if (!File.Exists(pstPath))
                 {
-                    // Conversion succeeded; the PST is automatically saved to pstPath
+                    Console.Error.WriteLine($"Input file not found: {pstPath}");
+                    return;
+                }
+
+                // Define output directory and ensure it exists
+                string outputDir = "ExtractedMessages";
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                int totalConverted = 0;
+                int totalSkipped = 0;
+                List<string> errorMessages = new List<string>();
+
+                // Open the PST file
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    // Iterate through each subfolder of the root folder
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                    {
+                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                        Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                        Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                        // Enumerate messages in the current folder
+                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        {
+                            Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                            try
+                            {
+                                // Extract the full message object as MapiMessage
+                                MapiMessage msg = pst.ExtractMessage(messageInfo);
+
+                                // Build a safe filename using the subject
+                                string safeSubject = SanitizeFileName(msg.Subject);
+                                if (string.IsNullOrWhiteSpace(safeSubject))
+                                {
+                                    safeSubject = "Untitled";
+                                }
+
+                                // Ensure unique filename
+                                string fileName = $"{safeSubject}.msg";
+                                string outputPath = Path.Combine(outputDir, fileName);
+                                int duplicateIndex = 1;
+                                while (File.Exists(outputPath))
+                                {
+                                    fileName = $"{safeSubject}_{duplicateIndex}.msg";
+                                    outputPath = Path.Combine(outputDir, fileName);
+                                    duplicateIndex++;
+                                }
+
+                                // Save the message as a .msg file
+                                msg.Save(outputPath);
+                                totalConverted++;
+                            }
+                            catch (Exception ex)
+                            {
+                                // Record any errors for this message and continue
+                                totalSkipped++;
+                                errorMessages.Add($"Failed to process message '{messageInfo.Subject}': {ex.Message}");
+                                Console.Error.WriteLine($"Error: {ex.Message}");
+                            }
+                        }
+                    }
+                }
+
+                // Summary report
+                Console.WriteLine();
+                Console.WriteLine("=== Extraction Summary ===");
+                Console.WriteLine($"Total messages converted: {totalConverted}");
+                Console.WriteLine($"Total messages skipped:   {totalSkipped}");
+                if (errorMessages.Count > 0)
+                {
+                    Console.WriteLine("Errors encountered:");
+                    foreach (string err in errorMessages)
+                    {
+                        Console.WriteLine($"- {err}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                // Capture conversion-level errors
-                errorMessages.Add($"Conversion error: {ex.Message}");
-            }
-
-            // Output the summary report
-            Console.WriteLine("=== Conversion Summary ===");
-            Console.WriteLine($"Total messages converted: {totalConverted}");
-            Console.WriteLine($"Total messages skipped: {totalSkipped}");
-            Console.WriteLine($"Errors encountered: {errorMessages.Count}");
-            foreach (string err in errorMessages)
-            {
-                Console.WriteLine($"- {err}");
+                // Top‑level exception guard
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
-        catch (Exception ex)
+
+        // Helper to replace invalid filename characters
+        private static string SanitizeFileName(string fileName)
         {
-            // Top-level exception guard
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            if (string.IsNullOrEmpty(fileName))
+                return fileName;
+
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            foreach (char c in invalidChars)
+            {
+                fileName = fileName.Replace(c, '_');
+            }
+            return fileName;
         }
     }
 }

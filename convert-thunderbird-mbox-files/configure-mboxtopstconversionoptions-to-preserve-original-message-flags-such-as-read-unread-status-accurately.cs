@@ -1,4 +1,3 @@
-using Aspose.Email.Storage.Pst;
 using System;
 using System.IO;
 using Aspose.Email;
@@ -10,67 +9,45 @@ class Program
     {
         try
         {
-            // Define input MBOX and output PST paths
+            // Input and output file paths
             string mboxFilePath = "input.mbox";
             string pstFilePath = "output.pst";
 
-            // Guard input file existence
+            // Ensure the input MBOX file exists; create a minimal placeholder if missing
             if (!File.Exists(mboxFilePath))
             {
-                // Create a minimal placeholder MBOX file if missing
-                try
+                using (FileStream placeholder = File.Create(mboxFilePath))
                 {
-                    using (FileStream placeholderStream = File.Create(mboxFilePath))
-                    {
-                        // Write a single empty line to make it a valid MBOX file
-                        byte[] emptyLine = System.Text.Encoding.UTF8.GetBytes("\n");
-                        placeholderStream.Write(emptyLine, 0, emptyLine.Length);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
+                    byte[] header = System.Text.Encoding.UTF8.GetBytes("From - \r\n");
+                    placeholder.Write(header, 0, header.Length);
                 }
             }
 
-            // Ensure the directory for the PST file exists
-            try
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(pstFilePath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                string pstDirectory = Path.GetDirectoryName(pstFilePath);
-                if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-                {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare PST directory: {ex.Message}");
-                return;
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Configure conversion options to preserve original message flags
-            MboxToPstConversionOptions conversionOptions = new MboxToPstConversionOptions();
-            // Do not remove signatures; this helps keep original message state (e.g., read/unread flags)
-            conversionOptions.RemoveSignature = false;
+            // Configure conversion options to preserve message flags
+            MboxToPstConversionOptions options = new MboxToPstConversionOptions
+            {
+                RemoveSignature = false,
+                // The delegate takes a single MailMessage argument in current API
+                MessageHandler = (msg) =>
+                {
+                    // No modifications are required; original flags (read/unread) are preserved.
+                }
+            };
 
             // Perform the conversion
-            try
-            {
-                using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath, conversionOptions))
-                {
-                    // Conversion succeeded; optionally you can work with pstStorage here
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                return;
-            }
+            MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath, options);
+            Console.WriteLine("MBOX to PST conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

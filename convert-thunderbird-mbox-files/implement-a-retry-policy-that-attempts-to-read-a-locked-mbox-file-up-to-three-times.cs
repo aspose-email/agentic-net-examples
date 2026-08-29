@@ -10,19 +10,15 @@ class Program
     {
         try
         {
-            const string mboxPath = "sample.mbox";
+            const string mboxFilePath = "storage.mbox";
+            const string outputDir = "output";
 
-            // Ensure the MBOX file exists; create a minimal placeholder if missing.
-            if (!File.Exists(mboxPath))
+            // Ensure the MBOX file exists; create an empty placeholder if missing.
+            if (!File.Exists(mboxFilePath))
             {
                 try
                 {
-                    using (FileStream placeholder = File.Create(mboxPath))
-                    {
-                        // Write a minimal MBOX separator to make the file valid.
-                        byte[] separator = System.Text.Encoding.UTF8.GetBytes("From - \r\n");
-                        placeholder.Write(separator, 0, separator.Length);
-                    }
+                    File.WriteAllText(mboxFilePath, string.Empty);
                 }
                 catch (Exception ex)
                 {
@@ -31,75 +27,72 @@ class Program
                 }
             }
 
-            MboxStorageReader reader = null;
-            const int maxAttempts = 3;
-            int attempt = 0;
-            bool readerCreated = false;
+            // Ensure output directory exists.
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
 
-            // Retry policy for opening the MBOX reader.
-            while (attempt < maxAttempts && !readerCreated)
+            const int maxAttempts = 3;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                attempt++;
                 try
                 {
-                    reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
-                    readerCreated = true;
+                    using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
+                    {
+                        MailMessage message;
+                        while ((message = mbox.ReadNextMessage()) != null)
+                        {
+                            using (message)
+                            {
+                                Console.WriteLine($"Subject: {message.Subject}");
+                                Console.WriteLine($"From: {message.From}");
+                                Console.WriteLine($"To: {message.To}");
+
+                                // Prepare a safe file name.
+                                string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "Untitled" : message.Subject;
+                                foreach (char c in Path.GetInvalidFileNameChars())
+                                    safeSubject = safeSubject.Replace(c, '_');
+
+                                string outputPath = Path.Combine(outputDir, $"{safeSubject}.eml");
+
+                                try
+                                {
+                                    message.Save(outputPath);
+                                    Console.WriteLine($"Saved: {outputPath}");
+                                }
+                                catch (Exception saveEx)
+                                {
+                                    Console.Error.WriteLine($"Failed to save message '{safeSubject}': {saveEx.Message}");
+                                }
+                            }
+                        }
+                    }
+
+                    // Success – exit the retry loop.
+                    break;
                 }
                 catch (IOException ioEx)
                 {
-                    Console.Error.WriteLine($"Attempt {attempt} - I/O error while opening MBOX: {ioEx.Message}");
-                    if (attempt < maxAttempts)
+                    // Likely a file lock; retry unless max attempts reached.
+                    if (attempt == maxAttempts)
                     {
-                        Thread.Sleep(500); // Wait before retrying.
+                        Console.Error.WriteLine($"Unable to read MBOX after {maxAttempts} attempts: {ioEx.Message}");
+                        return;
                     }
+
+                    // Wait briefly before retrying.
+                    Thread.Sleep(500);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Attempt {attempt} - Unexpected error while opening MBOX: {ex.Message}");
+                    // Non‑IO errors are not retriable.
+                    Console.Error.WriteLine($"Error reading MBOX: {ex.Message}");
                     return;
-                }
-            }
-
-            if (!readerCreated || reader == null)
-            {
-                Console.Error.WriteLine("Failed to open the MBOX file after multiple attempts.");
-                return;
-            }
-
-            using (reader)
-            {
-                while (true)
-                {
-                    MailMessage message = null;
-                    try
-                    {
-                        message = reader.ReadNextMessage();
-                        if (message == null)
-                        {
-                            break; // No more messages.
-                        }
-
-                        // Process the message (example: output subject).
-                        Console.WriteLine($"Subject: {message.Subject}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error reading a message: {ex.Message}");
-                        break;
-                    }
-                    finally
-                    {
-                        if (message != null)
-                        {
-                            message.Dispose();
-                        }
-                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

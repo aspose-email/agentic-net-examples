@@ -9,53 +9,50 @@ class Program
     {
         try
         {
-            string mboxPath = "sample.mbox";
+            const string mboxPath = "storage.mbox";
 
-            // Ensure the MBOX file exists; create a minimal placeholder if it does not.
             if (!File.Exists(mboxPath))
             {
-                try
-                {
-                    // Minimal MBOX content with a single message.
-                    string placeholder = "From - Mon Jan 01 00:00:00 2020\r\nSubject: Placeholder\r\n\r\nThis is a placeholder message.\r\n";
-                    File.WriteAllText(mboxPath, placeholder);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                return;
             }
 
-            // Open the MBOX file within a FileStream.
-            try
+            string outputDir = "output";
+            Directory.CreateDirectory(outputDir);
+
+            using (FileStream fileStream = new FileStream(mboxPath, FileMode.Open, FileAccess.Read))
             {
-                using (FileStream fileStream = File.OpenRead(mboxPath))
+                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(fileStream, new MboxLoadOptions()))
                 {
-                    // Create the MboxStorageReader with load options.
-                    using (MboxStorageReader reader = MboxStorageReader.CreateReader(fileStream, new MboxLoadOptions()))
+                    int index = 0;
+                    while (true)
                     {
-                        // Read messages sequentially.
-                        MailMessage message = reader.ReadNextMessage();
-                        while (message != null)
+                        MailMessage message = mboxReader.ReadNextMessage();
+                        if (message == null)
+                            break;
+
+                        using (message)
                         {
-                            Console.WriteLine($"Subject: {message.Subject}");
-                            // Dispose the message after use.
-                            message.Dispose();
-                            message = reader.ReadNextMessage();
+                            string safeSubject = string.IsNullOrWhiteSpace(message.Subject)
+                                ? $"Message_{index}"
+                                : message.Subject;
+
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                                safeSubject = safeSubject.Replace(c, '_');
+
+                            string fileName = $"{safeSubject}_{index}.eml";
+                            string outputPath = Path.Combine(outputDir, fileName);
+                            message.Save(outputPath);
+                            Console.WriteLine($"Saved: {outputPath}");
+                            index++;
                         }
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MBOX file: {ex.Message}");
-                return;
-            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

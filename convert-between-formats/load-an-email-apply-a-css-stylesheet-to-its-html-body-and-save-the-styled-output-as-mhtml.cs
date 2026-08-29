@@ -8,10 +8,11 @@ class Program
     {
         try
         {
+            // Author note: This sample loads an email, injects a CSS stylesheet into its HTML body, and saves it as MHTML.
             string inputPath = "input.eml";
-            string outputPath = "styled_output.mht";
+            string outputPath = "styled_output.mhtml";
 
-            // Verify input file exists
+            // Guard input file existence
             if (!File.Exists(inputPath))
             {
                 try
@@ -35,40 +36,38 @@ class Program
                 return;
             }
 
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
             // Load the email message
-            MailMessage mailMessage;
-            try
+            using (MailMessage mailMessage = MailMessage.Load(inputPath))
             {
-                mailMessage = MailMessage.Load(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load email: {ex.Message}");
-                return;
-            }
+                // Define CSS stylesheet
+                const string css = "body { font-family: Arial, sans-serif; color: #333333; }";
 
-            // Ensure the message is disposed after use
-            using (mailMessage)
-            {
-                // Prepare MHTML save options with CSS styling
-                MhtSaveOptions saveOptions = new MhtSaveOptions();
-                saveOptions.CssStyles = "body { font-family: Arial, sans-serif; color: #333333; }";
+                // Inject CSS into HTML body
+                if (!string.IsNullOrEmpty(mailMessage.HtmlBody))
+                {
+                    // Simple injection: prepend a <style> block
+                    mailMessage.HtmlBody = $"<style>{css}</style>{mailMessage.HtmlBody}";
+                }
+                else
+                {
+                    // If no HTML body, create a minimal one with the style
+                    mailMessage.HtmlBody = $"<html><head><style>{css}</style></head><body></body></html>";
+                }
 
-                // Save the styled message as MHTML
-                try
-                {
-                    mailMessage.Save(outputPath, saveOptions);
-                    Console.WriteLine($"Message saved with CSS to: {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MHTML: {ex.Message}");
-                }
+                // Save as MHTML using default options
+                mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

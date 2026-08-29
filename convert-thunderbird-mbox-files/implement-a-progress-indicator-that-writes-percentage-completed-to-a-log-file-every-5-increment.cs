@@ -1,8 +1,11 @@
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Storage;
+using System.Linq;
+using System.Collections.Generic;
 using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Storage;
+using Aspose.Email;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -10,101 +13,90 @@ class Program
     {
         try
         {
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
-            string logPath = "conversion.log";
+            // Paths
+            const string mboxPath = "input.mbox";
+            const string outputFolder = "ExtractedMessages";
+            const string logPath = "progress.log";
 
-            // Ensure the log directory exists
-            try
-            {
-                string logDir = Path.GetDirectoryName(logPath);
-                if (!string.IsNullOrEmpty(logDir) && !Directory.Exists(logDir))
-                {
-                    Directory.CreateDirectory(logDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare log directory: {ex.Message}");
-                return;
-            }
-
-            // Verify MBOX file existence; create minimal placeholder if missing
+            // Guard file system access
             if (!File.Exists(mboxPath))
             {
-                try
-                {
-                    using (FileStream placeholder = File.Create(mboxPath))
-                    {
-                        // Write an empty MBOX file (no messages)
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                return;
             }
 
-            // Determine total number of messages for progress calculation
-            int totalMessages;
             try
             {
-                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
-                {
-                    totalMessages = mboxReader.GetTotalItemsCount();
-                }
+                Directory.CreateDirectory(outputFolder);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to read MBOX file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                 return;
             }
 
-            if (totalMessages == 0)
+            // Initialize log file
+            try
             {
-                Console.WriteLine("MBOX file contains no messages. Conversion skipped.");
+                File.WriteAllText(logPath, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to initialize log file: {ex.Message}");
                 return;
             }
 
-            int processedCount = 0;
-            int lastLoggedPercent = 0;
-
-            // Open log writer once for the whole conversion
-            using (StreamWriter logWriter = new StreamWriter(logPath, true))
+            // Read MBOX storage
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                // Define the progress handler
-                MailStorageConverter.MailHandler progressHandler = (MailMessage message) =>
+                // Collect all message infos to determine total count
+                List<MboxMessageInfo> allInfos = mbox.EnumerateMessageInfo().ToList();
+                int total = allInfos.Count;
+                if (total == 0)
                 {
-                    processedCount++;
-                    int percent = (processedCount * 100) / totalMessages;
-                    if (percent >= lastLoggedPercent + 5 || percent == 100)
-                    {
-                        logWriter.WriteLine($"{DateTime.Now}: {percent}% completed.");
-                        logWriter.Flush();
-                        lastLoggedPercent = percent;
-                    }
-                };
-
-                // Perform the conversion with the progress handler
-                try
-                {
-                    MailStorageConverter.MboxToPst(mboxPath, pstPath, progressHandler);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Conversion failed: {ex.Message}");
+                    Console.WriteLine("No messages found in the MBOX file.");
                     return;
                 }
 
-                // Ensure final 100% is logged if not already
-                if (lastLoggedPercent < 100)
+                int lastLoggedPercent = -5; // ensures first log at 0%
+                for (int i = 0; i < total; i++)
                 {
-                    logWriter.WriteLine($"{DateTime.Now}: 100% completed.");
+                    MboxMessageInfo info = allInfos[i];
+                    // Extract full MIME message
+                    MailMessage eml = mbox.ExtractMessage(info.EntryId, new EmlLoadOptions());
+
+                    // Save as .eml file (sanitize file name)
+                    string safeSubject = string.Concat(eml.Subject.Split(Path.GetInvalidFileNameChars()));
+                    string emlPath = Path.Combine(outputFolder, $"{safeSubject}_{i + 1}.eml");
+                    try
+                    {
+                        eml.Save(emlPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save message '{eml.Subject}': {ex.Message}");
+                        // Continue processing other messages
+                    }
+
+                    // Progress calculation
+                    int percent = (i + 1) * 100 / total;
+                    if (percent % 5 == 0 && percent != lastLoggedPercent)
+                    {
+                        string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Processed {percent}% of messages.";
+                        try
+                        {
+                            File.AppendAllText(logPath, logEntry + Environment.NewLine);
+                        }
+                        catch
+                        {
+                            // Swallow logging errors to avoid breaking processing
+                        }
+                        lastLoggedPercent = percent;
+                    }
                 }
             }
 
-            Console.WriteLine("MBOX to PST conversion completed successfully.");
+            Console.WriteLine("MBOX processing completed.");
         }
         catch (Exception ex)
         {

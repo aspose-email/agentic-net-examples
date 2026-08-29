@@ -10,74 +10,88 @@ class Program
     {
         try
         {
-            string inputHtmlPath = "email.html";
-            if (!File.Exists(inputHtmlPath))
-            {
-                Console.Error.WriteLine($"Input file '{inputHtmlPath}' does not exist.");
-                return;
-            }
+            // Input EML file containing the HTML email
+            string inputPath = "input.eml";
 
-            string htmlContent;
-            try
-            {
-                htmlContent = File.ReadAllText(inputHtmlPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to read input file: {ex.Message}");
-                return;
-            }
+            // Temporary MHTML file path
+            string mhtmlPath = "temp.mhtml";
 
-            string tempMhtmlPath = "temp.mhtml";
-            try
-            {
-                using (MailMessage mailMessage = new MailMessage())
-                {
-                    mailMessage.HtmlBody = htmlContent;
-                    mailMessage.Save(tempMhtmlPath, Aspose.Email.SaveOptions.DefaultMhtml);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create MHTML file: {ex.Message}");
-                return;
-            }
+            // Output JPEG file path
+            string outputPath = "output.jpg";
 
-            string outputJpegPath = "output.jpeg";
-            try
-            {
-                Document document = new Document(tempMhtmlPath);
-            {
-                    ImageSaveOptions jpegOptions = new ImageSaveOptions(SaveFormat.Jpeg);
-                    jpegOptions.JpegQuality = 80; // Adjust quality to balance size and clarity
-                    document.Save(outputJpegPath, jpegOptions);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to render JPEG: {ex.Message}");
-                return;
-            }
-            finally
+            // Ensure input file exists; create a placeholder if it does not
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    if (File.Exists(tempMhtmlPath))
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        File.Delete(tempMhtmlPath);
+                        placeholder.Save(inputPath, Aspose.Email.SaveOptions.DefaultEml);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Suppress any cleanup errors
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
                 }
+
+                try
+                {
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file '{inputPath}' not found. Placeholder created.");
+                // Continue with the newly created placeholder
             }
 
-            Console.WriteLine($"JPEG image saved to '{outputJpegPath}'.");
+            // Load the email message
+            using (MailMessage message = MailMessage.Load(inputPath))
+            {
+                // Save the email as MHTML (required for visual export)
+                message.Save(mhtmlPath, Aspose.Email.SaveOptions.DefaultMhtml);
+            }
+
+            // Load the MHTML into Aspose.Words Document
+            Document doc = new Document(mhtmlPath);
+
+            // Configure JPEG save options with desired quality (0-100)
+            ImageSaveOptions jpegOptions = new ImageSaveOptions(SaveFormat.Jpeg)
+            {
+                // Set the compression quality (e.g., 80 for good balance)
+                JpegQuality = 80,
+                // Render the first page only (email is usually a single page)
+                PageSet = new PageSet(0)
+            };
+
+            // Save the document as JPEG
+            doc.Save(outputPath, jpegOptions);
+
+            // Clean up temporary MHTML file
+            try
+            {
+                if (File.Exists(mhtmlPath))
+                {
+                    File.Delete(mhtmlPath);
+                }
+            }
+            catch (Exception cleanupEx)
+            {
+                Console.Error.WriteLine($"Cleanup warning: {cleanupEx.Message}");
+            }
+
+            Console.WriteLine($"Email successfully converted to JPEG: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

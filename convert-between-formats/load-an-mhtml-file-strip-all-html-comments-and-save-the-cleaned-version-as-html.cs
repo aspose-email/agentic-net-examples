@@ -3,13 +3,18 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Aspose.Email;
 
-class Program
+namespace AsposeEmailMhtmlToHtml
 {
-    static void Main()
+    // Author: Aspose.Email example - loads MHTML, removes HTML comments, saves as HTML.
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPath = "input.mht";
+            // Define input and output file paths.
+            string inputPath = "input.mhtml";
+            string outputPath = "output.html";
+
+            // Guard against missing input file.
             if (!File.Exists(inputPath))
             {
                 try
@@ -33,30 +38,47 @@ class Program
                 return;
             }
 
-            // Load the MHTML file
-            MhtmlLoadOptions loadOptions = new MhtmlLoadOptions();
-            using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
+            // Ensure the output directory exists.
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                string htmlBody = message.HtmlBody ?? string.Empty;
-
-                // Remove HTML comments (<!-- comment -->)
-                string cleanedHtml = Regex.Replace(htmlBody, "<!--.*?-->", string.Empty, RegexOptions.Singleline);
-
-                string outputPath = "output.html";
                 try
                 {
-                    File.WriteAllText(outputPath, cleanedHtml);
-                    Console.WriteLine($"Cleaned HTML saved to: {outputPath}");
+                    Directory.CreateDirectory(outputDir);
                 }
-                catch (Exception writeEx)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Failed to write output file: {writeEx.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+
+            try
+            {
+                // Load the MHTML message.
+                using (MailMessage mailMessage = MailMessage.Load(inputPath, new MhtmlLoadOptions()))
+                {
+                    // Remove HTML comments from the body.
+                    string originalHtml = mailMessage.HtmlBody ?? string.Empty;
+                    string cleanedHtml = Regex.Replace(
+                        originalHtml,
+                        "<!--.*?-->",
+                        string.Empty,
+                        RegexOptions.Singleline);
+
+                    mailMessage.HtmlBody = cleanedHtml;
+
+                    // Save the cleaned message as HTML.
+                    HtmlSaveOptions saveOptions = new HtmlSaveOptions();
+                    mailMessage.Save(outputPath, saveOptions);
+                }
+
+                Console.WriteLine($"Successfully saved cleaned HTML to: {outputPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            }
         }
     }
 }

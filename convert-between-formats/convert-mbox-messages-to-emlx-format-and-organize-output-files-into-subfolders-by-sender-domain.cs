@@ -9,81 +9,57 @@ class Program
     {
         try
         {
-            string mboxPath = "input.mbox";
-            string outputRoot = "output";
+            // Convert MBOX messages to EMLX files organized by sender domain.
+            string mboxFilePath = "storage.mbox";
+            string outputRootPath = "output";
 
-            // Guard input file existence
-            if (!File.Exists(mboxPath))
+            if (!File.Exists(mboxFilePath))
             {
-                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
+                Console.Error.WriteLine($"Input MBOX file not found: {mboxFilePath}");
                 return;
             }
 
-            // Ensure output root directory exists
-            try
-            {
-                Directory.CreateDirectory(outputRoot);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                return;
-            }
+            Directory.CreateDirectory(outputRootPath);
 
-            // Create MBOX reader using the required factory method
-            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
             {
-                while (true)
+                MailMessage mailMessage;
+                int messageCounter = 0;
+
+                while ((mailMessage = mboxReader.ReadNextMessage()) != null)
                 {
-                    MailMessage message = reader.ReadNextMessage();
-                    if (message == null)
-                        break;
-
-                    using (message)
+                    // Determine sender domain
+                    string senderAddress = mailMessage.From?.Address ?? "unknown";
+                    string senderDomain = "unknown";
+                    int atPos = senderAddress.IndexOf('@');
+                    if (atPos >= 0 && atPos < senderAddress.Length - 1)
                     {
-                        // Determine sender domain
-                        string fromAddress = message.From?.Address ?? "unknown@unknown.com";
-                        string domain = "unknown";
-                        int atIndex = fromAddress.IndexOf('@');
-                        if (atIndex >= 0 && atIndex < fromAddress.Length - 1)
-                            domain = fromAddress.Substring(atIndex + 1);
-
-                        // Create domain subfolder
-                        string domainFolder = Path.Combine(outputRoot, domain);
-                        try
-                        {
-                            Directory.CreateDirectory(domainFolder);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to create domain folder '{domainFolder}': {ex.Message}");
-                            continue;
-                        }
-
-                        // Build a safe file name
-                        string subjectPart = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
-                        foreach (char c in Path.GetInvalidFileNameChars())
-                            subjectPart = subjectPart.Replace(c, '_');
-
-                        string fileName = $"{subjectPart}_{Guid.NewGuid():N}.emlx";
-                        string outputPath = Path.Combine(domainFolder, fileName);
-
-                        // Save the message as .emlx (treated as .eml format)
-                        try
-                        {
-                            message.Save(outputPath);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save message to '{outputPath}': {ex.Message}");
-                        }
+                        senderDomain = senderAddress.Substring(atPos + 1);
                     }
+
+                    // Create domain subfolder
+                    string domainFolderPath = Path.Combine(outputRootPath, senderDomain);
+                    Directory.CreateDirectory(domainFolderPath);
+
+                    // Prepare a safe file name from the subject
+                    string subject = string.IsNullOrEmpty(mailMessage.Subject) ? "NoSubject" : mailMessage.Subject;
+                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                    {
+                        subject = subject.Replace(invalidChar, '_');
+                    }
+
+                    // Ensure unique file name
+                    string fileName = $"{subject}_{messageCounter++}.emlx";
+                    string outputFilePath = Path.Combine(domainFolderPath, fileName);
+
+                    // Save the message as EMLX
+                    mailMessage.Save(outputFilePath);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

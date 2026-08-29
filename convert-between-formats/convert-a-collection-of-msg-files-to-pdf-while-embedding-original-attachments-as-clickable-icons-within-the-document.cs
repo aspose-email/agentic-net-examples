@@ -1,157 +1,98 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 using Aspose.Words;
 using Aspose.Words.Saving;
 
-class Program
+namespace ConvertMsgToPdf
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Define input and output directories
-            string inputDirectory = "InputMsgs";
-            string outputDirectory = "OutputPdfs";
-
-            // Verify input directory exists
-            if (!Directory.Exists(inputDirectory))
-            {
-                Console.Error.WriteLine($"Input directory '{inputDirectory}' does not exist. No files to process.");
-                return;
-            }
-
-            // Ensure output directory exists
             try
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Failed to create output directory '{outputDirectory}': {dirEx.Message}");
-                return;
-            }
+                string inputDirectory = "InputMsgs";
+                string outputDirectory = "OutputPdfs";
+                string attachmentsDirectory = "Attachments";
 
-            // Get all MSG files in the input directory
-            string[] msgFiles;
-            try
-            {
-                msgFiles = Directory.GetFiles(inputDirectory, "*.msg");
-            }
-            catch (Exception fileEx)
-            {
-                Console.Error.WriteLine($"Error accessing files in '{inputDirectory}': {fileEx.Message}");
-                return;
-            }
-
-            if (msgFiles.Length == 0)
-            {
-                Console.Error.WriteLine($"No MSG files found in '{inputDirectory}'.");
-                return;
-            }
-
-            foreach (string msgFilePath in msgFiles)
-            {
-                try
+                if (!Directory.Exists(inputDirectory))
                 {
-                    // Load the MSG file
-                    using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
+                    Console.Error.WriteLine($"Input directory '{inputDirectory}' does not exist. Creating it.");
+                    Directory.CreateDirectory(inputDirectory);
+                }
+
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                if (!Directory.Exists(attachmentsDirectory))
+                {
+                    Directory.CreateDirectory(attachmentsDirectory);
+                }
+
+                string[] msgFiles = Directory.GetFiles(inputDirectory, "*.msg");
+                foreach (string msgFilePath in msgFiles)
+                {
+                    try
                     {
-                        // Convert to MailMessage (needed for MHTML export)
+                        MapiMessage mapMsg = MapiMessage.Load(msgFilePath);
+
                         MailConversionOptions conversionOptions = new MailConversionOptions();
-                        using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+                        using (MailMessage mailMessage = mapMsg.ToMailMessage(conversionOptions))
                         {
-                            // Save to a temporary MHTML file
-                            string tempMhtmlPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".mhtml");
-                            try
-                            {
-                                mailMessage.Save(tempMhtmlPath, Aspose.Email.SaveOptions.DefaultMhtml);
-                            }
-                            catch (Exception saveEx)
-                            {
-                                Console.Error.WriteLine($"Failed to save MHTML for '{msgFilePath}': {saveEx.Message}");
-                                continue;
-                            }
+                            string tempMhtmlPath = Path.Combine(Path.GetTempPath(),
+                                Path.GetFileNameWithoutExtension(msgFilePath) + ".mhtml");
 
-                            // Load the MHTML into Aspose.Words Document
-                            Document wordDocument = new Document(tempMhtmlPath);
-                            DocumentBuilder builder = new DocumentBuilder(wordDocument);
+                            mailMessage.Save(tempMhtmlPath, Aspose.Email.SaveOptions.DefaultMhtml);
 
-                            // Insert a heading for attachments
-                            builder.Writeln();
-                            builder.Font.Size = 14;
-                            builder.Font.Bold = true;
-                            builder.Writeln("Attachments:");
+                            Document wordDoc = new Document(tempMhtmlPath);
+                            DocumentBuilder builder = new DocumentBuilder(wordDoc);
 
-                            // Process each attachment
-                            foreach (MapiAttachment attachment in mapiMessage.Attachments)
+                            foreach (MapiAttachment attachment in mapMsg.Attachments)
                             {
-                                // Save attachment to a temporary file
-                                string tempAttachmentPath = Path.Combine(Path.GetTempPath(), attachment.FileName);
-                                try
+                                string attachmentPath = Path.Combine(attachmentsDirectory, attachment.FileName);
+                                string uniqueAttachmentPath = attachmentPath;
+                                int duplicateCount = 1;
+                                while (File.Exists(uniqueAttachmentPath))
                                 {
-                                    attachment.Save(tempAttachmentPath);
-                                }
-                                catch (Exception attSaveEx)
-                                {
-                                    Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}' from '{msgFilePath}': {attSaveEx.Message}");
-                                    continue;
+                                    string fileNameWithoutExt = Path.GetFileNameWithoutExtension(attachment.FileName);
+                                    string ext = Path.GetExtension(attachment.FileName);
+                                    uniqueAttachmentPath = Path.Combine(attachmentsDirectory,
+                                        $"{fileNameWithoutExt}_{duplicateCount}{ext}");
+                                    duplicateCount++;
                                 }
 
-                                // Insert a hyperlink to the attachment file
-                                builder.Font.Size = 12;
-                                builder.Font.Bold = false;
-                                // InsertHyperlink(string url, string text, bool isBookmark)
-                                builder.InsertHyperlink(tempAttachmentPath, attachment.FileName, false);
-                                builder.Writeln();
+                                attachment.Save(uniqueAttachmentPath);
 
-                                // Clean up the temporary attachment file
-                                try
-                                {
-                                    File.Delete(tempAttachmentPath);
-                                }
-                                catch
-                                {
-                                    // Ignored – non‑critical cleanup
-                                }
+                                builder.MoveToDocumentEnd();
+                                builder.InsertHyperlink(attachment.FileName, uniqueAttachmentPath, false);
+                                builder.InsertParagraph();
                             }
 
-                            // Save the final PDF
-                            string pdfFileName = Path.GetFileNameWithoutExtension(msgFilePath) + ".pdf";
-                            string pdfOutputPath = Path.Combine(outputDirectory, pdfFileName);
-                            try
-                            {
-                                wordDocument.Save(pdfOutputPath, Aspose.Words.SaveFormat.Pdf);
-                                Console.WriteLine($"Converted '{msgFilePath}' to PDF with attachments: '{pdfOutputPath}'.");
-                            }
-                            catch (Exception pdfEx)
-                            {
-                                Console.Error.WriteLine($"Failed to save PDF for '{msgFilePath}': {pdfEx.Message}");
-                            }
+                            string pdfFilePath = Path.Combine(outputDirectory,
+                                Path.GetFileNameWithoutExtension(msgFilePath) + ".pdf");
+                            Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions();
+                            wordDoc.Save(pdfFilePath, pdfOptions);
 
-                            // Delete the temporary MHTML file
-                            try
+                            if (File.Exists(tempMhtmlPath))
                             {
                                 File.Delete(tempMhtmlPath);
                             }
-                            catch
-                            {
-                                // Ignored – non‑critical cleanup
-                            }
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error processing file '{msgFilePath}': {ex.Message}");
+                    catch (Exception exFile)
+                    {
+                        Console.Error.WriteLine($"Failed to process '{msgFilePath}': {exFile.Message}");
+                    }
                 }
             }
-        }
-        catch (Exception outerEx)
-        {
-            Console.Error.WriteLine($"Unexpected error: {outerEx.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

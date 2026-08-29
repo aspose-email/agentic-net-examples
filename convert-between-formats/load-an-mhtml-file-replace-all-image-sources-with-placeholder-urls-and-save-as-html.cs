@@ -9,7 +9,9 @@ class Program
     {
         try
         {
-            string inputPath = "input.mht";
+            // Input MHTML file path
+            string inputPath = "input.mhtml";
+            // Output HTML file path
             string outputPath = "output.html";
 
             // Verify input file exists
@@ -37,32 +39,23 @@ class Program
             }
 
             // Load the MHTML message
-            using (MailMessage message = MailMessage.Load(inputPath, new MhtmlLoadOptions()))
-            {
-                // Ensure the message contains HTML body
-                if (string.IsNullOrEmpty(message.HtmlBody))
-                {
-                    Console.Error.WriteLine("The loaded message does not contain an HTML body.");
-                    return;
-                }
+            MailMessage mailMessage = MailMessage.Load(inputPath, new MhtmlLoadOptions());
 
-                // Replace all image sources with a placeholder URL
-                string pattern = @"src\s*=\s*""[^""]+""";
-                string replacement = @"src=""https://example.com/placeholder.png""";
-                string updatedHtml = Regex.Replace(message.HtmlBody, pattern, replacement, RegexOptions.IgnoreCase);
+            // Save as HTML (resources embedded by default)
+            HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
+            mailMessage.Save(outputPath, htmlOptions);
 
-                // Assign the modified HTML back to the message
-                message.HtmlBody = updatedHtml;
+            // Read the generated HTML
+            string htmlContent = File.ReadAllText(outputPath);
 
-                // Save as HTML
-                HtmlSaveOptions saveOptions = new HtmlSaveOptions
-                {
-                    ResourceRenderingMode = ResourceRenderingMode.None
-                };
+            // Replace all image sources (cid: or data:) with a placeholder URL
+            // This regex matches src="cid:..." or src='cid:...' or src="data:..."
+            string pattern = @"src\s*=\s*[""'](?:cid:|data:)[^""']*[""']";
+            string replacement = @"src=""https://example.com/placeholder.png""";
+            string updatedHtml = Regex.Replace(htmlContent, pattern, replacement, RegexOptions.IgnoreCase);
 
-                message.Save(outputPath, saveOptions);
-                Console.WriteLine($"HTML file saved to: {outputPath}");
-            }
+            // Write the updated HTML back to the file
+            File.WriteAllText(outputPath, updatedHtml);
         }
         catch (Exception ex)
         {

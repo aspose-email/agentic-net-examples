@@ -1,57 +1,73 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Paths for PST and sample EML file
-            string pstPath = "output.pst";
-            string emlPath = "sample.eml";
+            const string msgPath = "message.msg";
+            const string pstPath = "output.pst";
 
-            // Ensure the directory for PST exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            // Verify the MSG file exists
+            if (!File.Exists(msgPath))
             {
-                Directory.CreateDirectory(pstDirectory);
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
             }
 
-            // Create a sample EML file if it does not exist
-            if (!File.Exists(emlPath))
+            // Ensure the PST file exists; create a minimal PST if it does not
+            if (!File.Exists(pstPath))
             {
-                MailMessage sampleMessage = new MailMessage();
-                sampleMessage.From = new MailAddress("sender@example.com");
-                sampleMessage.To.Add(new MailAddress("recipient@example.com"));
-                sampleMessage.Subject = "Test Email";
-                sampleMessage.Body = "This is a test email.";
-                sampleMessage.Date = DateTime.Now;
-                sampleMessage.Save(emlPath);
+                try
+                {
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                }
+                catch (Exception createEx)
+                {
+                    Console.Error.WriteLine($"Failed to create PST file: {createEx.Message}");
+                    return;
+                }
             }
 
-            // Load the MailMessage from the EML file
-            MailMessage mailMessage;
-            using (FileStream emlStream = File.OpenRead(emlPath))
+            // Load the MSG file as a MAPI message
+            using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
             {
-                mailMessage = MailMessage.Load(emlStream);
-            }
+                // Convert to MailMessage to read headers
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+                {
+                    Console.WriteLine($"From: {mailMessage.From}");
+                    Console.WriteLine($"To: {mailMessage.To}");
+                    Console.WriteLine($"Date: {mailMessage.Date}");
+                }
 
-            // Convert MailMessage to MapiMessage (preserves headers)
-            MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
-
-            // Create a new PST file (Unicode format)
-            using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-            {
-                // Get the predefined Inbox folder
-                FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-
-                // Add the message to the PST folder
-                string entryId = inboxFolder.AddMessage(mapiMessage);
-                Console.WriteLine($"Message added to PST with EntryId: {entryId}");
+                // Open the PST and add the original MAPI message, preserving all headers
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    pst.RootFolder.AddMessage(mapiMessage);
+                }
             }
         }
         catch (Exception ex)

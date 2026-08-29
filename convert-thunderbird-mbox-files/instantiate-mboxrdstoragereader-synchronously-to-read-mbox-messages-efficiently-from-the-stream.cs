@@ -5,82 +5,66 @@ using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string mboxPath = "sample.mbox";
-            string outputHtmlPath = "firstMessage.html";
+            const string mboxPath = "storage.mbox";
+            const string outputDir = "output";
 
-            // Verify input MBOX file exists
+            // Ensure the MBOX file exists.
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"Input file not found: {mboxPath}");
+                Console.Error.WriteLine($"Input file not found: '{mboxPath}'.");
                 return;
             }
 
-            // Ensure the output directory exists
-            try
-            {
-                string outputDir = Path.GetDirectoryName(outputHtmlPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Failed to prepare output directory: {dirEx.Message}");
-                return;
-            }
+            // Ensure the output directory exists.
+            Directory.CreateDirectory(outputDir);
 
-            // Open the MBOX file stream
-            try
+            // Open the MBOX file as a read‑only stream.
+            using (FileStream fileStream = new FileStream(mboxPath, FileMode.Open, FileAccess.Read))
             {
-                using (FileStream fileStream = new FileStream(mboxPath, FileMode.Open, FileAccess.Read))
+                // Create a reader with default load options.
+                using (var reader = MboxStorageReader.CreateReader(fileStream, new MboxLoadOptions()))
                 {
-                    MboxLoadOptions loadOptions = new MboxLoadOptions();
-
-                    // Create the reader using the factory method
-                    using (MboxStorageReader reader = MboxStorageReader.CreateReader(fileStream, loadOptions))
+                    int index = 0;
+                    while (true)
                     {
-                        MailMessage message;
-                        // Read messages sequentially
-                        while ((message = reader.ReadNextMessage()) != null)
+                        // Read the next message; returns null when no more messages.
+                        MailMessage message = reader.ReadNextMessage();
+                        if (message == null)
+                            break;
+
+                        using (message)
                         {
+                            // Build a safe file name.
+                            string subject = string.IsNullOrWhiteSpace(message.Subject) ? $"Message_{index}" : message.Subject;
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                                subject = subject.Replace(c, '_');
+
+                            string fileName = $"{subject}_{index}.eml";
+                            string outputPath = Path.Combine(outputDir, fileName);
+
                             try
                             {
-                                // Save the first message as HTML
-                                HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
-                                message.Save(outputHtmlPath, htmlOptions);
-                                Console.WriteLine($"First message saved to {outputHtmlPath}");
+                                message.Save(outputPath);
+                                Console.WriteLine($"Saved: {outputPath}");
                             }
-                            catch (Exception saveEx)
+                            catch (Exception ex)
                             {
-                                Console.Error.WriteLine($"Failed to save message: {saveEx.Message}");
-                            }
-                            finally
-                            {
-                                // Dispose the message after processing
-                                if (message != null)
-                                    message.Dispose();
+                                Console.Error.WriteLine($"Failed to save message '{fileName}': {ex.Message}");
                             }
 
-                            // Process only the first message for this example
-                            break;
+                            index++;
                         }
                     }
                 }
             }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine($"File I/O error: {ioEx.Message}");
-                return;
-            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

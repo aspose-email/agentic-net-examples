@@ -1,9 +1,7 @@
 using System;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -11,67 +9,72 @@ class Program
     {
         try
         {
-            // Define input and output file paths
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
+            // Author note: This sample demonstrates EML to MSG conversion with diagnostics.
+            string inputPath = "TestEml.eml";
+            string outputPath = "output.msg";
 
-            // Ensure the input MBOX file exists; create a minimal placeholder if missing
-            if (!File.Exists(mboxPath))
+            // Ensure input file exists; create a minimal placeholder if missing.
+            if (!File.Exists(inputPath))
             {
-                using (FileStream placeholderStream = File.Create(mboxPath))
+                try
                 {
-                    string placeholderEmail = "From - Mon Jan 01 00:00:00 2020\r\nSubject: Test\r\nFrom: test@example.com\r\nTo: recipient@example.com\r\n\r\nThis is a test message.\r\n\r\n";
-                    byte[] bytes = System.Text.Encoding.UTF8.GetBytes(placeholderEmail);
-                    placeholderStream.Write(bytes, 0, bytes.Length);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    string placeholder = "From: test@example.com\r\nTo: recipient@example.com\r\nSubject: Test\r\n\r\nHello";
+                    File.WriteAllText(inputPath, placeholder);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    return;
                 }
             }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Capture memory usage before conversion
+            // Prepare diagnostics.
             long memoryBefore = GC.GetTotalMemory(true);
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            Stopwatch sw = Stopwatch.StartNew();
 
-            // Perform the MBOX to PST conversion
-            PersonalStorage pstStorage = null;
-            try
+            // Load EML with options.
+            EmlLoadOptions emlLoadOptions = new EmlLoadOptions
             {
-                pstStorage = MailStorageConverter.MboxToPst(mboxPath, pstPath);
-            }
-            catch (Exception conversionEx)
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
+            };
+
+            using (MailMessage message = MailMessage.Load(inputPath, emlLoadOptions))
             {
-                Console.Error.WriteLine($"Conversion error: {conversionEx.Message}");
-                return;
-            }
-            finally
-            {
-                if (pstStorage != null)
-                {
-                    pstStorage.Dispose();
-                }
+                // Convert and save as MSG.
+                message.Save(outputPath, SaveOptions.DefaultMsg);
             }
 
-            // Stop timing and capture memory usage after conversion
-            stopwatch.Stop();
+            sw.Stop();
             long memoryAfter = GC.GetTotalMemory(true);
             long memoryUsed = memoryAfter - memoryBefore;
 
-            // Output diagnostic report
-            Console.WriteLine("Conversion Report:");
-            Console.WriteLine($"Input MBOX: {mboxPath}");
-            Console.WriteLine($"Output PST: {pstPath}");
-            Console.WriteLine($"Time elapsed: {stopwatch.Elapsed}");
-            Console.WriteLine($"Memory used (bytes): {memoryUsed}");
+            // Report diagnostics.
+            Console.WriteLine("Conversion completed.");
+            Console.WriteLine($"Time elapsed: {sw.Elapsed.TotalSeconds:F2} seconds");
+            Console.WriteLine($"Memory used: {memoryUsed / 1024.0:F2} KB");
             Console.WriteLine("Warnings: None");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,74 +1,62 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
-using Aspose.Email.Storage.Pst;
 
-class Program
+namespace MboxReaderExample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main()
         {
-            string mboxPath = "sample.mbox";
-            string pstPath = "output.pst";
-
-            // Ensure the MBOX file exists; create a minimal placeholder if missing
-            if (!File.Exists(mboxPath))
+            try
             {
-                try
+                const string mboxPath = "storage.mbox";
+                const string outputDir = "output";
+
+                if (!File.Exists(mboxPath))
                 {
-                    File.WriteAllText(mboxPath, string.Empty);
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ioEx.Message}");
+                    Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                     return;
                 }
-            }
 
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
+                Directory.CreateDirectory(outputDir);
+
+                MboxStorageReader mbox = null;
                 try
                 {
-                    Directory.CreateDirectory(pstDirectory);
+                    mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
+
+                    MailMessage message;
+                    while ((message = mbox.ReadNextMessage()) != null)
+                    {
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"To: {message.To}");
+
+                        string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        string emlFileName = Path.Combine(outputDir, $"{safeSubject}.eml");
+                        message.Save(emlFileName);
+                    }
                 }
-                catch (Exception dirEx)
+                finally
                 {
-                    Console.Error.WriteLine($"Failed to create PST directory: {dirEx.Message}");
-                    return;
+                    if (mbox != null)
+                    {
+                        mbox.Dispose();
+                        Console.WriteLine("MboxStorageReader disposed.");
+                    }
                 }
             }
-
-            // Create MBOX reader with default load options
-            MboxLoadOptions loadOptions = new MboxLoadOptions();
-            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
+            catch (Exception ex)
             {
-                int messageCount = 0;
-                foreach (var messageInfo in mboxReader.EnumerateMessageInfo())
-                {
-                    messageCount++;
-                    // Example of extracting a message (optional)
-                    // MailMessage message = mboxReader.ExtractMessage(messageInfo.EntryId, new EmlLoadOptions());
-                    // message.Dispose();
-                }
-                Console.WriteLine($"Processed {messageCount} messages from MBOX.");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            // Log disposal of the reader
-            Console.WriteLine("MboxStorageReader disposed.");
-
-            // Convert MBOX to PST using the static converter
-            PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxPath, pstPath);
-            pstStorage.Dispose();
-            Console.WriteLine("PST file created successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

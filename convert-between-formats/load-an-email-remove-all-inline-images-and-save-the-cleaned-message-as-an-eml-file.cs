@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Aspose.Email;
 
@@ -9,11 +8,12 @@ class Program
     {
         try
         {
-            string inputPath = "input.eml";
-            string outputPath = "cleaned.eml";
+            // Define source and target file paths
+            string sourcePath = "source.eml";
+            string targetPath = "cleaned.eml";
 
-            // Guard input file existence
-            if (!File.Exists(inputPath))
+            // Verify source file exists
+            if (!File.Exists(sourcePath))
             {
                 try
                 {
@@ -23,7 +23,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                        placeholder.Save(sourcePath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -32,62 +32,31 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            try
-            {
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Failed to prepare output directory: {dirEx.Message}");
+                Console.Error.WriteLine($"Source file not found: {sourcePath}");
                 return;
             }
 
             // Load the email message
-            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+            using (MailMessage mailMessage = MailMessage.Load(sourcePath))
             {
-                // Collect inline attachments (images) to remove
-                List<Attachment> inlineAttachments = new List<Attachment>();
-                foreach (Attachment attachment in mailMessage.Attachments)
+                // Remove all inline attachments (identified by a non‑empty ContentId)
+                for (int i = mailMessage.Attachments.Count - 1; i >= 0; i--)
                 {
-                    // Inline attachments usually have a ContentId or a disposition type of "inline"
-                    if (!string.IsNullOrEmpty(attachment.ContentId) ||
-                        (attachment.ContentDisposition != null &&
-                         string.Equals(attachment.ContentDisposition.DispositionType, "inline", StringComparison.OrdinalIgnoreCase)))
+                    Attachment attachment = mailMessage.Attachments[i];
+                    if (!string.IsNullOrEmpty(attachment.ContentId))
                     {
-                        inlineAttachments.Add(attachment);
+                        mailMessage.Attachments.RemoveAt(i);
                     }
                 }
 
-                // Remove collected inline attachments
-                foreach (Attachment inlineAttachment in inlineAttachments)
-                {
-                    mailMessage.Attachments.Remove(inlineAttachment);
-                }
-
-                // Save the cleaned message
-                try
-                {
-                    mailMessage.Save(outputPath);
-                    Console.WriteLine($"Cleaned email saved to: {outputPath}");
-                }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Failed to save cleaned email: {saveEx.Message}");
-                }
+                // Save the cleaned message as EML
+                mailMessage.Save(targetPath);
+                Console.WriteLine($"Cleaned email saved to: {targetPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

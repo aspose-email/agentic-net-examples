@@ -1,117 +1,74 @@
 using System;
 using System.IO;
-using System.Text;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
-using Aspose.Email.Storage.Pst;
 
-class Program
+namespace MboxMultiThreadedConversion
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define input MBOX path and ensure it exists.
-            string mboxPath = "input.mbox";
-            if (!File.Exists(mboxPath))
-            {
-                try
-                {
-                    using (FileStream fs = File.Create(mboxPath))
-                    {
-                        string placeholder = "From - Mon Jan 01 00:00:00 2020\r\nSubject: Test\r\n\r\nThis is a test message.\r\n";
-                        byte[] bytes = Encoding.UTF8.GetBytes(placeholder);
-                        fs.Write(bytes, 0, bytes.Length);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Prepare output directory for split chunks.
-            string outputDir = "output";
             try
             {
+                string mboxPath = "input.mbox";
+                string outputDir = "output";
+
+                if (!File.Exists(mboxPath))
+                {
+                    File.WriteAllText(mboxPath, string.Empty);
+                }
+
                 if (!Directory.Exists(outputDir))
                 {
                     Directory.CreateDirectory(outputDir);
                 }
+
+                // Read all messages sequentially using ReadNextMessage()
+                var messages = new List<(MailMessage Message, int Index)>();
+                using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                {
+                    int idx = 0;
+                    while (true)
+                    {
+                        MailMessage msg = reader.ReadNextMessage();
+                        if (msg == null)
+                            break;
+                        messages.Add((msg, idx));
+                        idx++;
+                    }
+                }
+
+                // Process each message in parallel
+                Parallel.ForEach(messages, item =>
+                {
+                    try
+                    {
+                        MailMessage eml = item.Message;
+                        int index = item.Index;
+
+                        string subject = string.IsNullOrEmpty(eml.Subject) ? "NoSubject" : eml.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            subject = subject.Replace(c, '_');
+                        }
+
+                        string outPath = Path.Combine(outputDir, $"{subject}_{index}.eml");
+                        eml.Save(outPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to process message {item.Index}: {ex.Message}");
+                    }
+                });
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-
-            // Split the MBOX into smaller chunks.
-            string splitFolder = Path.Combine(outputDir, "chunks");
-            try
-            {
-                if (!Directory.Exists(splitFolder))
-                {
-                    Directory.CreateDirectory(splitFolder);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create split folder: {ex.Message}");
-                return;
-            }
-
-            try
-            {
-                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
-                {
-                    long chunkSize = 1024 * 1024; // 1 MB per chunk
-                    mboxReader.SplitInto(chunkSize, splitFolder);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to split MBOX file: {ex.Message}");
-                return;
-            }
-
-            // Get all generated chunk files.
-            string[] chunkFiles;
-            try
-            {
-                chunkFiles = Directory.GetFiles(splitFolder, "*.mbox");
-                if (chunkFiles.Length == 0)
-                {
-                    Console.Error.WriteLine("No chunk files were created.");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to enumerate chunk files: {ex.Message}");
-                return;
-            }
-
-            // Convert each chunk to a separate PST file in parallel.
-            Parallel.ForEach(chunkFiles, chunkPath =>
-            {
-                string pstPath = Path.ChangeExtension(chunkPath, ".pst");
-                try
-                {
-                    MailStorageConverter.MboxToPst(chunkPath, pstPath);
-                    Console.WriteLine($"Converted '{Path.GetFileName(chunkPath)}' to '{Path.GetFileName(pstPath)}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to convert '{chunkPath}': {ex.Message}");
-                }
-            });
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

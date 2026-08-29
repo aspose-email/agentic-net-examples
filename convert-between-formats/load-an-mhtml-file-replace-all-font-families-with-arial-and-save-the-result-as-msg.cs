@@ -5,13 +5,15 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string inputPath = "input.mht";
+            // Author note: This sample loads an MHTML file, replaces all font families with Arial, and saves as MSG.
+            string inputPath = "input.mhtml";
             string outputPath = "output.msg";
 
+            // Guard input file existence
             if (!File.Exists(inputPath))
             {
                 try
@@ -35,29 +37,28 @@ class Program
                 return;
             }
 
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            MhtmlLoadOptions loadOptions = new MhtmlLoadOptions();
+            // Load the MHTML message
+            MailMessage message = MailMessage.Load(inputPath, new MhtmlLoadOptions());
 
-            using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
-            {
-                string html = message.HtmlBody;
-                if (!string.IsNullOrEmpty(html))
-                {
-                    string updatedHtml = Regex.Replace(
-                        html,
-                        @"font-family\s*:\s*[^;""']+",
-                        "font-family:Arial",
-                        RegexOptions.IgnoreCase);
-                    message.HtmlBody = updatedHtml;
-                }
+            // Replace all font-family declarations with Arial
+            string htmlBody = message.HtmlBody ?? string.Empty;
+            string updatedHtml = Regex.Replace(
+                htmlBody,
+                @"font-family\s*:\s*[^;""']+",
+                "font-family: Arial",
+                RegexOptions.IgnoreCase);
 
-                message.Save(outputPath, SaveOptions.DefaultMsg);
-            }
+            message.HtmlBody = updatedHtml;
+
+            // Save as MSG format
+            message.Save(outputPath, SaveOptions.DefaultMsg);
         }
         catch (Exception ex)
         {

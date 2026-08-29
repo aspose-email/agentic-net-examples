@@ -1,11 +1,12 @@
+using Aspose.Email.Storage.Pst;
 using Aspose.Email;
 using System;
 using System.IO;
 using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
 
-namespace MboxToPstTool
+namespace MboxToPstConverter
 {
+    // Author: Generated example using Aspose.Email for .NET
     class Program
     {
         static void Main(string[] args)
@@ -13,16 +14,16 @@ namespace MboxToPstTool
             try
             {
                 // Validate arguments
-                if (args == null || args.Length < 2)
+                if (args.Length < 2)
                 {
-                    Console.Error.WriteLine("Usage: MboxToPstTool <input.mbox> <output.pst>");
+                    Console.Error.WriteLine("Usage: MboxToPstConverter <input.mbox> <output.pst>");
                     return;
                 }
 
                 string mboxPath = args[0];
                 string pstPath = args[1];
 
-                // Verify input MBOX file exists
+                // Guard input file existence
                 if (!File.Exists(mboxPath))
                 {
                     Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
@@ -30,25 +31,19 @@ namespace MboxToPstTool
                 }
 
                 // Ensure output directory exists
-                string pstDirectory = Path.GetDirectoryName(pstPath);
-                if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+                string outputDirectory = Path.GetDirectoryName(pstPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
                 {
-                    try
-                    {
-                        Directory.CreateDirectory(pstDirectory);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create directory '{pstDirectory}': {dirEx.Message}");
-                        return;
-                    }
+                    Directory.CreateDirectory(outputDirectory);
                 }
 
-                // Perform conversion using Aspose.Email's MailStorageConverter
-                using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath))
+                // Perform conversion
+                using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxPath, pstPath))
                 {
-                    Console.WriteLine($"Conversion completed successfully. PST saved to: {pstPath}");
+                    // The conversion is completed when the method returns.
                 }
+
+                Console.WriteLine("MBOX to PST conversion completed successfully.");
             }
             catch (Exception ex)
             {

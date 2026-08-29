@@ -1,77 +1,47 @@
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Words;
 
 class Program
 {
     static void Main()
     {
+        // Paths for input HTML email and output PDF
+        string htmlPath = "email.html";   // TODO: replace with actual HTML file path
+        string pdfPath = "output.pdf";    // TODO: replace with desired PDF output path
+
+        // Verify input file exists
+        if (!File.Exists(htmlPath))
+        {
+            Console.Error.WriteLine($"Input HTML file not found: {htmlPath}");
+            return;
+        }
+
+        // Ensure output directory exists
+        string outputDirectory = Path.GetDirectoryName(pdfPath);
+        if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+        {
+            Directory.CreateDirectory(outputDirectory);
+        }
+
         try
         {
-            string inputHtmlPath = "input.html";
-            string outputPdfPath = "output.pdf";
+            // Load the HTML content into a Word document
+            Document document = new Document(htmlPath);
 
-            // Ensure input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputHtmlPath))
-            {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputHtmlPath, Aspose.Email.SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
+            // Insert a Table of Contents at the beginning of the document
+            DocumentBuilder builder = new DocumentBuilder(document);
+            builder.MoveToDocumentStart();
+            builder.InsertTableOfContents("\\o \"1-3\" \\h \\z \\u");
 
-                Directory.CreateDirectory(Path.GetDirectoryName(inputHtmlPath) ?? ".");
-                File.WriteAllText(inputHtmlPath, "<html><body><h1>Sample Title</h1><p>Content.</p></body></html>");
-                Console.Error.WriteLine($"Input file not found. Created placeholder at '{inputHtmlPath}'.");
-            }
+            // Save the document as PDF
+            document.Save(pdfPath, Aspose.Words.SaveFormat.Pdf);
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPdfPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-
-            // Load the HTML email using Aspose.Email with explicit HtmlLoadOptions
-            Aspose.Email.HtmlLoadOptions htmlLoadOptions = new Aspose.Email.HtmlLoadOptions();
-            using (MailMessage email = MailMessage.Load(inputHtmlPath, htmlLoadOptions))
-            {
-                // Save the email to MHTML in a memory stream
-                using (MemoryStream mhtmlStream = new MemoryStream())
-                {
-                    email.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
-                    mhtmlStream.Position = 0; // Reset stream position for reading
-
-                    // Load the MHTML into Aspose.Words Document
-                    Document doc = new Document(mhtmlStream);
-
-                    // Insert a Table of Contents at the beginning of the document
-                    DocumentBuilder builder = new DocumentBuilder(doc);
-                    builder.MoveToDocumentStart();
-                    builder.InsertTableOfContents("\\o \"1-3\" \\h \\z \\u");
-
-                    // Save the final document as PDF
-                    doc.Save(outputPdfPath, Aspose.Words.SaveFormat.Pdf);
-                }
-            }
-
-            Console.WriteLine($"Conversion completed. PDF saved to '{outputPdfPath}'.");
+            Console.WriteLine($"PDF successfully created at: {pdfPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Conversion failed: {ex.Message}");
         }
     }
 }

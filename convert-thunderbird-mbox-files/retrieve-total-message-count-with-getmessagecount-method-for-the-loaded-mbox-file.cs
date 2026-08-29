@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
 class Program
@@ -9,39 +9,34 @@ class Program
     {
         try
         {
-            string mboxPath = "sample.mbox";
+            const string mboxPath = "storage.mbox";
 
-            // Ensure the MBOX file exists; create an empty placeholder if missing.
             if (!File.Exists(mboxPath))
             {
-                try
-                {
-                    File.WriteAllText(mboxPath, string.Empty);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Input file not found: {mboxPath}");
+                return;
             }
 
-            // Load the MBOX storage and retrieve the total message count.
-            MboxLoadOptions loadOptions = new MboxLoadOptions();
-            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
+            // Create the MBOX reader with load options as required by validation.
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                int totalMessages = 0;
-                MailMessage message;
-                while ((message = reader.ReadNextMessage()) != null)
+                int messageCount = 0;
+                // Read messages sequentially until no more are available.
+                while (true)
                 {
-                    totalMessages++;
+                    var message = mboxReader.ReadNextMessage();
+                    if (message == null)
+                        break;
+
+                    messageCount++;
                 }
 
-                Console.WriteLine($"Total messages in MBOX: {totalMessages}");
+                Console.WriteLine($"Total messages in '{mboxPath}': {messageCount}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

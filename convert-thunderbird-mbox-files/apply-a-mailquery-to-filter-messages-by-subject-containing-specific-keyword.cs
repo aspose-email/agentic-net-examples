@@ -1,45 +1,64 @@
-using Aspose.Email;
+using Aspose.Email.Clients;
 using System;
+using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
-class Program
+namespace MailQueryExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string host = "imap.example.com";
-            int port = 993;
-            bool useSsl = true;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip execution when placeholder credentials are detected
-            if (host.Contains("example.com") || username.Contains("example.com"))
+            // Configure IMAP client with placeholder values.
+            ImapClient imapClient = new ImapClient
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping network call.");
+                Host = "imap.example.com",
+                Port = 993,
+                Username = "user@example.com",
+                Password = "password",
+                SecurityOptions = SecurityOptions.Auto
+            };
+
+            // Guard: skip network operations when placeholders are detected.
+            bool hasPlaceholder = imapClient.Host.Contains("example.com") ||
+                                  imapClient.Username.Contains("example.com") ||
+                                  imapClient.Password == "password";
+
+            if (hasPlaceholder)
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping network operations.");
                 return;
             }
 
-            using (ImapClient client = new ImapClient(host, port, username, password, useSsl))
+            try
             {
-                // Build a query to filter messages where the subject contains a specific keyword (case‑insensitive)
-                MailQueryBuilder builder = new MailQueryBuilder();
-                builder.Subject.Contains("keyword", true);
-                MailQuery query = builder.GetQuery();
-
-                // Retrieve messages matching the query
-                Aspose.Email.Clients.Imap.ImapMessageInfoCollection messages = client.ListMessages(query);
-                foreach (Aspose.Email.Clients.Imap.ImapMessageInfo info in messages)
+                using (imapClient)
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
+                    // Select the folder to search.
+                    imapClient.SelectFolder("INBOX");
+
+                    // Build a MailQuery that looks for a keyword in the subject.
+                    MailQueryBuilder queryBuilder = new MailQueryBuilder();
+                    queryBuilder.Subject.Contains("Important");
+                    MailQuery subjectQuery = queryBuilder.GetQuery();
+
+                    // Retrieve messages that match the query.
+                    ImapMessageInfoCollection matchedMessages = imapClient.ListMessages(subjectQuery);
+
+                    // Iterate over the matched messages and display their subjects.
+                    foreach (ImapMessageInfo messageInfo in matchedMessages)
+                    {
+                        // Fetch the full message to access its Subject property.
+                        MailMessage fullMessage = imapClient.FetchMessage(messageInfo.UniqueId);
+                        Console.WriteLine($"Subject: {fullMessage.Subject}");
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

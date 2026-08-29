@@ -2,18 +2,22 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace MhtmlToEmlConverter
 {
-    static void Main()
+    // Author: Aspose.Email sample author
+    class Program
     {
-        try
+        static void Main()
         {
-            string inputPath = "input.mhtml";
-            string outputPath = "output.eml";
-
-            // Verify input file exists
-            if (!File.Exists(inputPath))
+            try
             {
+                // Define input and output file paths
+                string inputFilePath = "sample.mhtml";
+                string outputFilePath = "sample.eml";
+
+                // Verify input file exists
+                if (!File.Exists(inputFilePath))
+                {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -22,7 +26,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                        placeholder.Save(inputFilePath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -31,43 +35,36 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    Console.Error.WriteLine($"Input file not found: {inputFilePath}");
                     return;
                 }
-            }
 
-            // Load the MHTML file with default load options
-            MhtmlLoadOptions loadOptions = new MhtmlLoadOptions();
-            using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
-            {
-                // Save as EML preserving attachments using the default EML save options
-                try
+                // Ensure output directory exists
+                string outputDir = Path.GetDirectoryName(outputFilePath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
-                    message.Save(outputPath, SaveOptions.DefaultEml);
+                    Directory.CreateDirectory(outputDir);
                 }
-                catch (Exception saveEx)
+
+                // Load MHTML with options to preserve attachments and embedded messages
+                MhtmlLoadOptions loadOptions = new MhtmlLoadOptions
                 {
-                    Console.Error.WriteLine($"Error saving EML file: {saveEx.Message}");
+                    PreserveEmbeddedMessageFormat = true,
+                    PreserveTnefAttachments = true
+                };
+
+                using (MailMessage message = MailMessage.Load(inputFilePath, loadOptions))
+                {
+                    // Save as EML using default EML save options (preserves attachments)
+                    message.Save(outputFilePath, SaveOptions.DefaultEml);
                 }
+
+                Console.WriteLine($"Conversion completed successfully. EML saved to: {outputFilePath}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            }
         }
     }
 }

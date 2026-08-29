@@ -1,99 +1,89 @@
-using Aspose.Email;
 using System;
-using System.Diagnostics;
 using System.IO;
-using Aspose.Email.Storage;
+using System.Diagnostics;
+using Aspose.Email;
 
-class Program
+namespace EmailConversionSample
 {
-    static void Main()
+    // Author: Generated example for EML to MSG conversion with CPU utilization monitoring
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define input and output file paths
-            string mboxFilePath = "input.mbox";
-            string pstFilePath = "output.pst";
-
-            // Ensure the input MBOX file exists; create a minimal placeholder if missing
-            if (!File.Exists(mboxFilePath))
-            {
-                try
-                {
-                    // Create an empty placeholder MBOX file
-                    using (FileStream placeholder = File.Create(mboxFilePath))
-                    {
-                        // No content needed for placeholder
-                    }
-                    Console.WriteLine($"Placeholder MBOX file created at '{mboxFilePath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstFilePath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create PST directory '{pstDirectory}': {ex.Message}");
-                    return;
-                }
-            }
-
-            // Measure CPU usage before conversion
-            Process currentProcess = Process.GetCurrentProcess();
-            TimeSpan cpuStart = currentProcess.TotalProcessorTime;
-            DateTime wallStart = DateTime.UtcNow;
-
-            // Perform the conversion inside a guarded file I/O block
             try
             {
-                using (FileStream mboxStream = File.OpenRead(mboxFilePath))
-                using (FileStream pstStream = File.Create(pstFilePath))
+                string inputPath = "TestEml.eml";
+                string outputPath = "output.msg";
+
+                // Verify input file exists
+                if (!File.Exists(inputPath))
                 {
-                    MailStorageConverter.MboxToPst(mboxStream, pstStream);
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                    Console.Error.WriteLine($"Input file '{inputPath}' not found.");
+                    return;
+                }
+
+                // Ensure output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Start CPU usage measurement
+                Process currentProcess = Process.GetCurrentProcess();
+                TimeSpan cpuStart = currentProcess.TotalProcessorTime;
+                DateTime wallStart = DateTime.UtcNow;
+
+                // Initialize load options for EML
+                EmlLoadOptions emlLoadOptions = new EmlLoadOptions()
+                {
+                    PreserveTnefAttachments = true,
+                    PreserveEmbeddedMessageFormat = true
+                };
+
+                // Load the EML file and convert to MSG
+                using (MailMessage message = MailMessage.Load(inputPath, emlLoadOptions))
+                {
+                    message.Save(outputPath, SaveOptions.DefaultMsg);
+                }
+
+                // End CPU usage measurement
+                currentProcess.Refresh();
+                TimeSpan cpuEnd = currentProcess.TotalProcessorTime;
+                TimeSpan cpuUsed = cpuEnd - cpuStart;
+                TimeSpan wallElapsed = DateTime.UtcNow - wallStart;
+
+                Console.WriteLine($"CPU time used: {cpuUsed.TotalMilliseconds} ms");
+                Console.WriteLine($"Wall time elapsed: {wallElapsed.TotalMilliseconds} ms");
+
+                // Example threshold check (adjust as needed)
+                double cpuThresholdMs = 500.0;
+                if (cpuUsed.TotalMilliseconds > cpuThresholdMs)
+                {
+                    Console.Error.WriteLine($"CPU utilization exceeded threshold of {cpuThresholdMs} ms.");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            // Measure CPU usage after conversion
-            TimeSpan cpuEnd = currentProcess.TotalProcessorTime;
-            DateTime wallEnd = DateTime.UtcNow;
-
-            TimeSpan cpuUsed = cpuEnd - cpuStart;
-            TimeSpan wallElapsed = wallEnd - wallStart;
-
-            // Calculate CPU utilization percentage
-            double cpuUtilization = 0;
-            if (wallElapsed.TotalMilliseconds > 0)
-            {
-                cpuUtilization = (cpuUsed.TotalMilliseconds / (Environment.ProcessorCount * wallElapsed.TotalMilliseconds)) * 100.0;
-            }
-
-            Console.WriteLine($"Conversion completed. CPU utilization: {cpuUtilization:F2}% over {wallElapsed.TotalSeconds:F2} seconds.");
-
-            // Threshold check (example: 80%)
-            const double cpuThreshold = 80.0;
-            if (cpuUtilization > cpuThreshold)
-            {
-                Console.WriteLine($"Warning: CPU utilization exceeded the threshold of {cpuThreshold}%.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

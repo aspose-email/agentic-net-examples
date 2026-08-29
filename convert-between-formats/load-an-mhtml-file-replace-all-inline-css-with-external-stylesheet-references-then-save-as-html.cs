@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using Aspose.Email;
 
@@ -9,9 +10,12 @@ class Program
     {
         try
         {
-            string inputMhtmlPath = "input.mht";
-            string outputHtmlPath = "output.html";
-            string externalCssPath = "styles.css";
+            // Input MHTML file path
+            const string inputMhtmlPath = "input.mhtml";
+            // Output HTML file path
+            const string outputHtmlPath = "output.html";
+            // External CSS file path
+            const string externalCssPath = "styles.css";
 
             // Verify input file exists
             if (!File.Exists(inputMhtmlPath))
@@ -38,70 +42,70 @@ class Program
             }
 
             // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputHtmlPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
+            string outputDir = Path.GetDirectoryName(outputHtmlPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
+
+            // Ensure CSS directory exists
+            string cssDir = Path.GetDirectoryName(externalCssPath);
+            if (!string.IsNullOrEmpty(cssDir) && !Directory.Exists(cssDir))
+                Directory.CreateDirectory(cssDir);
 
             // Load the MHTML message
-            using (MailMessage message = MailMessage.Load(inputMhtmlPath, new MhtmlLoadOptions()))
+            using (MailMessage mailMessage = MailMessage.Load(inputMhtmlPath, new MhtmlLoadOptions()))
             {
-                string htmlBody = message.HtmlBody ?? string.Empty;
+                string htmlBody = mailMessage.HtmlBody ?? string.Empty;
+                var cssBuilder = new StringBuilder();
 
-                // Extract inline <style> blocks
-                string cssContent = string.Empty;
-                string stylePattern = @"<style[^>]*>(.*?)</style>";
-                MatchCollection styleMatches = Regex.Matches(htmlBody, stylePattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
-                foreach (Match match in styleMatches)
+                // Extract <style>...</style> blocks
+                var styleBlockMatches = Regex.Matches(htmlBody, "<style[^>]*>(.*?)</style>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                foreach (Match match in styleBlockMatches)
                 {
-                    cssContent += match.Groups[1].Value.Trim() + Environment.NewLine;
+                    if (match.Groups.Count > 1)
+                        cssBuilder.AppendLine(match.Groups[1].Value.Trim());
                 }
 
-                // Write extracted CSS to external file
-                try
-                {
-                    File.WriteAllText(externalCssPath, cssContent);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to write CSS file: {ex.Message}");
-                    return;
-                }
+                // Remove the <style> blocks from HTML
+                htmlBody = Regex.Replace(htmlBody, "<style[^>]*>.*?</style>", string.Empty, RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
-                // Remove all <style> blocks from HTML
-                string htmlWithoutStyle = Regex.Replace(htmlBody, stylePattern, string.Empty, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                // Remove inline style attributes
+                htmlBody = Regex.Replace(htmlBody, @"\sstyle\s*=\s*""[^""]*""", string.Empty, RegexOptions.IgnoreCase);
 
-                // Insert external stylesheet reference into <head>
-                string linkTag = $"<link rel=\"stylesheet\" type=\"text/css\" href=\"{Path.GetFileName(externalCssPath)}\" />";
-                string headPattern = @"<head[^>]*>";
-                if (Regex.IsMatch(htmlWithoutStyle, headPattern, RegexOptions.IgnoreCase))
+                // Write extracted CSS to external file (if any)
+                if (cssBuilder.Length > 0)
                 {
-                    htmlWithoutStyle = Regex.Replace(htmlWithoutStyle, headPattern, m => m.Value + Environment.NewLine + linkTag, RegexOptions.IgnoreCase);
+                    File.WriteAllText(externalCssPath, cssBuilder.ToString());
                 }
                 else
                 {
-                    // If no <head>, prepend it
-                    htmlWithoutStyle = $"<head>{Environment.NewLine}{linkTag}{Environment.NewLine}</head>{Environment.NewLine}{htmlWithoutStyle}";
+                    // Create an empty CSS file to keep the reference valid
+                    File.WriteAllText(externalCssPath, string.Empty);
+                }
+
+                // Insert link to external stylesheet after <head> tag
+                if (Regex.IsMatch(htmlBody, "<head[^>]*>", RegexOptions.IgnoreCase))
+                {
+                    htmlBody = Regex.Replace(htmlBody, "(<head[^>]*>)", $"$1<link rel=\"stylesheet\" href=\"{Path.GetFileName(externalCssPath)}\" />", RegexOptions.IgnoreCase);
+                }
+                else
+                {
+                    // If no <head>, prepend the link at the beginning
+                    htmlBody = $"<link rel=\"stylesheet\" href=\"{Path.GetFileName(externalCssPath)}\" />{Environment.NewLine}{htmlBody}";
                 }
 
                 // Update the message body
-                message.HtmlBody = htmlWithoutStyle;
+                mailMessage.HtmlBody = htmlBody;
 
                 // Save as HTML
-                try
-                {
-                    message.Save(outputHtmlPath, new HtmlSaveOptions());
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save HTML file: {ex.Message}");
-                }
+                var htmlSaveOptions = new HtmlSaveOptions();
+                mailMessage.Save(outputHtmlPath, htmlSaveOptions);
             }
+
+            Console.WriteLine("Conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

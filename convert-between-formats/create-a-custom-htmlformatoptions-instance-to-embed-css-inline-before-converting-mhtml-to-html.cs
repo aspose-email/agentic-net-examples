@@ -2,18 +2,21 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace AsposeEmailMhtmlToHtml
 {
-    static void Main()
+    // Author: Generated example for embedding CSS inline when converting MHTML to HTML.
+    class Program
     {
-        try
+        static void Main()
         {
-            string inputPath = "input.mht";
-            string outputPath = "output.html";
-
-            // Guard input file existence
-            if (!File.Exists(inputPath))
+            try
             {
+                // Input MHTML file path
+                string inputPath = "input.mhtml";
+
+                // Verify input file exists
+                if (!File.Exists(inputPath))
+                {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -31,45 +34,38 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
-                return;
-            }
+                    Console.Error.WriteLine($"Input file '{inputPath}' not found.");
+                    return;
+                }
 
-            // Load the MHTML message
-            MailMessage message;
-            try
-            {
-                message = MailMessage.Load(inputPath, new MhtmlLoadOptions());
-            }
-            catch (Exception loadEx)
-            {
-                Console.Error.WriteLine($"Failed to load MHTML file: {loadEx.Message}");
-                return;
-            }
-
-            using (message)
-            {
-                // Create HtmlSaveOptions with custom CSS and embed it inline
-                HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
-                htmlOptions.CssStyles = "body { font-family: Arial, sans-serif; margin: 0; padding: 0; }";
-                // Ensure no additional format flags are set (default is None)
-                htmlOptions.HtmlFormatOptions = HtmlFormatOptions.None;
-
-                // Save as HTML
-                try
+                // Load the MHTML message
+                using (MailMessage message = MailMessage.Load(inputPath))
                 {
+                    // Create HtmlSaveOptions with custom inline CSS
+                    HtmlSaveOptions htmlOptions = new HtmlSaveOptions
+                    {
+                        CssStyles = "body { font-family: Arial, sans-serif; color: #333; } " +
+                                    "img { max-width: 100%; height: auto; }"
+                    };
+
+                    // Output HTML file path
+                    string outputPath = "output.html";
+
+                    // Ensure output directory exists
+                    string outputDir = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+
+                    // Save the message as HTML with the custom options
                     message.Save(outputPath, htmlOptions);
-                    Console.WriteLine($"HTML file saved to '{outputPath}'.");
-                }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Failed to save HTML file: {saveEx.Message}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

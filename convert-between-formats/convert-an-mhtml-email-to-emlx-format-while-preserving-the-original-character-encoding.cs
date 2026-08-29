@@ -8,7 +8,8 @@ class Program
     {
         try
         {
-            string inputPath = "input.mhtml";
+            // Author note: Simple conversion from MHTML to EMLX preserving original encoding.
+            string inputPath = "input.mht";
             string outputPath = "output.emlx";
 
             // Verify input file exists
@@ -36,26 +37,26 @@ class Program
             }
 
             // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
             // Load the MHTML message
-            using (MailMessage message = MailMessage.Load(inputPath))
+            MailMessage message = MailMessage.Load(inputPath);
+            try
             {
-                // Configure save options to preserve original encoding
-                EmlSaveOptions saveOptions = new EmlSaveOptions(MailMessageSaveType.EmlxFormat)
-                {
-                    CheckBodyContentEncoding = true
-                };
-
-                // Save as EMLX
-                message.Save(outputPath, saveOptions);
+                // Save as EMLX using default options (preserves original encoding)
+                message.Save(outputPath, SaveOptions.DefaultEmlx);
+            }
+            finally
+            {
+                // Dispose the MailMessage
+                message.Dispose();
             }
 
-            Console.WriteLine("MHTML successfully converted to EMLX.");
+            Console.WriteLine($"Conversion completed: {outputPath}");
         }
         catch (Exception ex)
         {

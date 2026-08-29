@@ -9,93 +9,67 @@ class Program
     {
         try
         {
-            const string mboxPath = "input.mbox";
-            const string outputDirectory = "output";
+            const string mboxPath = "storage.mbox";
+            const int chunkSize = 2000;
+            const string outputDir = "ExtractedMessages";
 
-            // Verify input file exists
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // Ensure output directory exists
             try
             {
-                if (!Directory.Exists(outputDirectory))
-                    Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
-            catch (Exception ex)
+            catch (Exception dirEx)
             {
-                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                Console.Error.WriteLine($"Failed to create output directory '{outputDir}': {dirEx.Message}");
                 return;
             }
 
-            // Process messages in chunks of 2000
-            const int chunkSize = 2000;
-            int processedCount = 0;
-
-            try
+            using (var mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                int processed = 0;
+                while (true)
                 {
-                    while (true)
+                    MailMessage message = mboxReader.ReadNextMessage();
+                    if (message == null)
+                        break;
+
+                    processed++;
+
+                    Console.WriteLine($"Processing message {processed}: Subject=\"{message.Subject}\" From=\"{message.From}\" To=\"{message.To}\"");
+
+                    try
                     {
-                        int currentChunk = 0;
-                        while (currentChunk < chunkSize)
-                        {
-                            MailMessage message = reader.ReadNextMessage();
-                            if (message == null)
-                                break; // No more messages
+                        string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            safeSubject = safeSubject.Replace(c, '_');
 
-                            using (message)
-                            {
-                                string safeSubject = GetSafeFileName(message.Subject);
-                                string outputPath = Path.Combine(outputDirectory, $"{processedCount}_{safeSubject}.html");
+                        // Ensure unique file name in case of duplicates
+                        string fileName = $"{processed:D6}_{safeSubject}.eml";
+                        string emlPath = Path.Combine(outputDir, fileName);
+                        message.Save(emlPath);
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Console.Error.WriteLine($"Failed to save message #{processed}: {saveEx.Message}");
+                    }
 
-                                try
-                                {
-                                    message.Save(outputPath, new HtmlSaveOptions());
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.Error.WriteLine($"Failed to save message #{processedCount}: {ex.Message}");
-                                }
-                            }
-
-                            processedCount++;
-                            currentChunk++;
-                        }
-
-                        if (currentChunk == 0) // No messages read in this iteration
-                            break;
+                    if (processed % chunkSize == 0)
+                    {
+                        Console.WriteLine($"--- Processed {processed} messages ---");
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MBOX file: {ex.Message}");
-                return;
-            }
 
-            Console.WriteLine($"Processed {processedCount} messages.");
+                Console.WriteLine($"Finished processing. Total messages extracted: {processed}");
+            }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
-    }
-
-    // Helper to create a file‑system safe name from the subject
-    private static string GetSafeFileName(string subject)
-    {
-        if (string.IsNullOrWhiteSpace(subject))
-            return "NoSubject";
-
-        foreach (char c in Path.GetInvalidFileNameChars())
-            subject = subject.Replace(c, '_');
-
-        // Limit length to avoid overly long file names
-        return subject.Length > 50 ? subject.Substring(0, 50) : subject;
     }
 }
