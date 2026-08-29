@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mime;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,50 +9,99 @@ class Program
     {
         try
         {
-            string inputPath = "sample.eml";
-            if (!File.Exists(inputPath))
+            // Input EML file containing embedded images
+            string inputEmlPath = "input.eml";
+            // Output MSG file
+            string outputMsgPath = "output.msg";
+            // Path to save the extracted image
+            string extractedImagePath = "extracted_image.jpg";
+
+            // Guard input file existence
+            if (!File.Exists(inputEmlPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputEmlPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {inputEmlPath}");
                 return;
             }
 
-            string outputPath = "extracted_image.msg";
-
-            try
+            // Ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                using (MailMessage originalMessage = MailMessage.Load(inputPath))
+                try
                 {
-                    if (originalMessage.LinkedResources.Count == 0)
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
+                }
+            }
+
+            // Load the email message
+            using (MailMessage mailMessage = MailMessage.Load(inputEmlPath))
+            {
+                // Extract the first linked resource (embedded image) if any
+                if (mailMessage.LinkedResources.Count > 0)
+                {
+                    // Assuming the first linked resource is the image we want
+                    LinkedResource linkedResource = mailMessage.LinkedResources[0];
+                    using (Stream contentStream = linkedResource.ContentStream)
                     {
-                        Console.Error.WriteLine("No linked resources found in the email.");
-                        return;
-                    }
-
-                    LinkedResource linked = originalMessage.LinkedResources[0];
-
-                    using (MemoryStream imageStream = new MemoryStream())
-                    {
-                        linked.ContentStream.CopyTo(imageStream);
-                        imageStream.Position = 0;
-
-                        using (MailMessage extractedMessage = new MailMessage())
+                        if (contentStream != null)
                         {
-                            extractedMessage.From = "extracted@example.com";
-                            extractedMessage.To = "extracted@example.com";
-                            extractedMessage.Subject = "Extracted Image";
-
-                            Attachment attachment = new Attachment(imageStream, linked.ContentType);
-                            extractedMessage.Attachments.Add(attachment);
-
-                            extractedMessage.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+                            try
+                            {
+                                using (FileStream fileStream = new FileStream(extractedImagePath, FileMode.Create, FileAccess.Write))
+                                {
+                                    contentStream.CopyTo(fileStream);
+                                }
+                                Console.WriteLine($"Extracted image saved to: {extractedImagePath}");
+                            }
+                            catch (Exception ioEx)
+                            {
+                                Console.Error.WriteLine($"Failed to write extracted image: {ioEx.Message}");
+                                // Continue without aborting; the MSG will still be saved
+                            }
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing email: {ex.Message}");
-                return;
+                else
+                {
+                    Console.WriteLine("No linked resources (embedded images) found in the email.");
+                }
+
+                // Convert the MailMessage to a MapiMessage (preserves embedded resources)
+                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                {
+                    // Save as MSG file
+                    try
+                    {
+                        mapiMessage.Save(outputMsgPath);
+                        Console.WriteLine($"MSG file saved to: {outputMsgPath}");
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Console.Error.WriteLine($"Failed to save MSG file: {saveEx.Message}");
+                    }
+                }
             }
         }
         catch (Exception ex)
