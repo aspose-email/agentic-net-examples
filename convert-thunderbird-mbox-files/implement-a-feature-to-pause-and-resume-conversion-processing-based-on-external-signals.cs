@@ -26,7 +26,7 @@ namespace ConvertMboxWithPauseResume
                 }
 
                 // Ensure output directory exists
-                string pstDirectory = Path.GetDirectoryName(pstPath);
+                string? pstDirectory = Path.GetDirectoryName(pstPath);
                 if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
                 {
                     Directory.CreateDirectory(pstDirectory);
@@ -34,40 +34,43 @@ namespace ConvertMboxWithPauseResume
 
                 // Pause/Resume control
                 ManualResetEventSlim pauseEvent = new ManualResetEventSlim(true);
-
-                // Background thread to listen for console commands
-                Thread commandThread = new Thread(() =>
-                {
-                    Console.WriteLine("Press 'p' to pause, 'r' to resume, 'q' to quit.");
-                    while (true)
-                    {
-                        ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-                        if (keyInfo.KeyChar == 'p')
-                        {
-                            pauseEvent.Reset();
-                            Console.WriteLine("Processing paused.");
-                        }
-                        else if (keyInfo.KeyChar == 'r')
-                        {
-                            pauseEvent.Set();
-                            Console.WriteLine("Processing resumed.");
-                        }
-                        else if (keyInfo.KeyChar == 'q')
-                        {
-                            Console.WriteLine("Exiting.");
-                            Environment.Exit(0);
-                        }
-                    }
-                });
-                commandThread.IsBackground = true;
-                commandThread.Start();
+                string pauseSignalPath = "pause.signal";
+                string resumeSignalPath = "resume.signal";
+                string stopSignalPath = "stop.signal";
 
                 // Set up conversion options with a message handler that respects pause/resume
                 MboxToPstConversionOptions conversionOptions = new MboxToPstConversionOptions();
                 conversionOptions.MessageHandler = new MailStorageConverter.MailHandler((MailMessage message) =>
                 {
-                    // Wait here if the process is paused
-                    pauseEvent.Wait();
+                    if (File.Exists(stopSignalPath))
+                    {
+                        throw new OperationCanceledException("Conversion stopped by external signal.");
+                    }
+
+                    if (File.Exists(pauseSignalPath))
+                    {
+                        pauseEvent.Reset();
+                    }
+
+                    while (!pauseEvent.IsSet)
+                    {
+                        if (File.Exists(stopSignalPath))
+                        {
+                            throw new OperationCanceledException("Conversion stopped by external signal.");
+                        }
+
+                        if (!File.Exists(pauseSignalPath) || File.Exists(resumeSignalPath))
+                        {
+                            pauseEvent.Set();
+                            if (File.Exists(resumeSignalPath))
+                            {
+                                File.Delete(resumeSignalPath);
+                            }
+                            break;
+                        }
+
+                        Thread.Sleep(250);
+                    }
 
                     // Example: you could modify the message here if needed
                     // For this sample we leave it unchanged
