@@ -1,94 +1,67 @@
+using Aspose.Email;
 using System;
 using System.IO;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
-class Program
+namespace ExtractPstAttachments
 {
-    static void Main()
+    class Program
     {
-        try
-        {
-            string pstPath = "sample.pst";
-            string outputDirectory = "Attachments";
-
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // Create a minimal placeholder PST if the input file does not exist
-            if (!File.Exists(pstPath))
-            {
-                try
-                {
-                    using (PersonalStorage placeholderPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // No additional content needed for placeholder
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Process messages in the root folder
-                ProcessFolder(pst.RootFolder, pst, outputDirectory);
-
-                // Process each subfolder recursively
-                foreach (FolderInfo subFolder in pst.RootFolder.GetSubFolders())
-                {
-                    ProcessFolder(subFolder, pst, outputDirectory);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    private static void ProcessFolder(FolderInfo folder, PersonalStorage pst, string outputDirectory)
-    {
-        // Enumerate messages in the current folder
-        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
+        static void Main(string[] args)
         {
             try
             {
-                // Extract attachments without loading the full message
-                MapiAttachmentCollection attachments = pst.ExtractAttachments(messageInfo);
-                foreach (MapiAttachment attachment in attachments)
+                // Path to the PST file
+                string pstPath = "storage.pst";
+
+                // Verify PST file exists
+                if (!File.Exists(pstPath))
                 {
-                    string fileName = !string.IsNullOrEmpty(attachment.LongFileName)
-                        ? attachment.LongFileName
-                        : attachment.FileName;
+                    Console.Error.WriteLine($"PST file not found: {pstPath}");
+                    return;
+                }
 
-                    if (string.IsNullOrEmpty(fileName))
-                    {
-                        fileName = "attachment.bin";
-                    }
+                // Ensure output directory exists
+                string outputDir = "Attachments";
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
 
-                    string outputPath = Path.Combine(outputDirectory, fileName);
-                    try
+                // Open the PST file
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    // Iterate through each subfolder of the root folder
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                     {
-                        attachment.Save(outputPath);
-                        Console.WriteLine($"Saved attachment: {outputPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save attachment '{fileName}': {ex.Message}");
+                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                        Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                        Console.WriteLine($"Unread items: {folderInfo.ContentUnreadCount}");
+
+                        // Enumerate messages in the current folder
+                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        {
+                            Console.WriteLine($"Processing message: {messageInfo.Subject}");
+
+                            // Extract attachments without loading the full message
+                            MapiAttachmentCollection attachments = pst.ExtractAttachments(messageInfo);
+
+                            foreach (MapiAttachment attachment in attachments)
+                            {
+                                // Replace invalid filename characters with underscore
+                                string safeFileName = string.Join("_", attachment.FileName.Split(Path.GetInvalidFileNameChars()));
+                                string attachmentPath = Path.Combine(outputDir, safeFileName);
+                                Console.WriteLine($"Saving attachment: {attachmentPath}");
+                                attachment.Save(attachmentPath);
+                            }
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error extracting attachments for message '{messageInfo.Subject}': {ex.Message}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }

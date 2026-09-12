@@ -1,66 +1,64 @@
-using Aspose.Email.Clients;
 using System;
-using System.Threading;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
-class Program
+namespace ImapQuerySample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials – replace with real values to run against an actual server.
-            string host = "imap.example.com";
+            // Define connection parameters (replace with real values)
+            string host = "your_imap_host";
             int port = 993;
-            string username = "user@example.com";
-            string password = "password";
+            string username = "your_username";
+            string password = "your_password";
 
-            // Guard against executing live network calls with placeholder data.
-            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
+            // Guard against placeholder credentials
+            if (host.Contains("your_") || username.Contains("your_") || password.Contains("your_"))
             {
-                Console.Error.WriteLine("Placeholder IMAP credentials detected. Skipping server query.");
+                Console.WriteLine("Placeholder credentials detected – skipping IMAP operation.");
                 return;
             }
 
-            // Create and connect the IMAP client inside a using block to ensure disposal.
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            try
             {
-                try
-                {
-                    // Select the INBOX folder.
-                    client.SelectFolder("INBOX");
+                // Initialize and configure the IMAP client
+                ImapClient client = new ImapClient();
+                client.Host = host;
+                client.Port = port;
+                client.SecurityOptions = SecurityOptions.Auto;
+                client.Username = username;
+                client.Password = password;
 
-                    // Build a search query: messages whose subject contains "Report".
-                    ImapQueryBuilder builder = new ImapQueryBuilder();
-                    builder.Subject.Contains("Report");
-                    MailQuery query = builder.GetQuery();
+                // Select the INBOX folder
+                client.SelectFolder("INBOX");
 
-                    // Retrieve up to 100 matching messages asynchronously, then wait for the result.
-                    ImapMessageInfoCollection messageInfos = client.ListMessagesAsync(query, 100, CancellationToken.None).Result;
+                // Build a simple search query (e.g., messages with "Invoice" in the subject)
+                MailQueryBuilder queryBuilder = new MailQueryBuilder();
+                queryBuilder.Subject.Contains("Invoice");
+                MailQuery query = queryBuilder.GetQuery();
 
-                    // Iterate through the results and fetch each message's subject.
-                    foreach (ImapMessageInfo info in messageInfos)
-                    {
-                        // Fetch the full message using its unique identifier.
-                        MailMessage message = client.FetchMessage(info.UniqueId);
-                        Console.WriteLine($"UID: {info.UniqueId}, Subject: {message.Subject}");
-                    }
-                }
-                catch (ImapException imapEx)
+                // Retrieve messages matching the query
+                ImapMessageInfoCollection messages = client.ListMessages(query);
+
+                // Output basic information about each matched message
+                foreach (ImapMessageInfo info in messages)
                 {
-                    Console.Error.WriteLine($"IMAP operation failed: {imapEx.Message}");
+                    Console.WriteLine($"UID: {info.UniqueId}, Subject: {info.Subject}, From: {info.From}");
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                }
+
+                // Dispose the client
+                client.Dispose();
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Fatal error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Gracefully handle any errors (network, authentication, etc.)
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return;
+            }
         }
     }
 }

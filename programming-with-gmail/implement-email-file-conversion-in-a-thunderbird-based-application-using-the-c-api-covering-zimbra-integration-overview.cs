@@ -3,6 +3,7 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Storage.Mbox;
 
 class Program
 {
@@ -10,57 +11,78 @@ class Program
     {
         try
         {
-            // Define input and output file paths
-            string mboxFilePath = "input.mbox";
-            string pstFilePath = "output.pst";
+            // ---------- EML to MSG conversion ----------
+            string emlInputPath = "TestEml.eml";
+            string msgOutputPath = "output.msg";
 
-            // Ensure the directory for the input file exists
-            string mboxDirectory = Path.GetDirectoryName(mboxFilePath);
-            if (!string.IsNullOrEmpty(mboxDirectory) && !Directory.Exists(mboxDirectory))
-            {
-                Directory.CreateDirectory(mboxDirectory);
-            }
-
-            // Ensure the directory for the output file exists
-            string pstDirectory = Path.GetDirectoryName(pstFilePath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                Directory.CreateDirectory(pstDirectory);
-            }
-
-            // Guard file I/O: create a minimal placeholder if the MBOX file is missing
-            if (!File.Exists(mboxFilePath))
+            if (!File.Exists(emlInputPath))
             {
                 try
                 {
-                    File.WriteAllText(mboxFilePath, string.Empty);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(emlInputPath, SaveOptions.DefaultEml);
+                    }
                 }
-                catch (Exception ioEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ioEx.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Input EML file not found: {emlInputPath}");
+                return;
             }
 
-            // Perform the conversion inside a try/catch to handle conversion errors
-            try
+            // Ensure the output directory exists
+            string msgOutputDir = Path.GetDirectoryName(msgOutputPath);
+            if (!string.IsNullOrEmpty(msgOutputDir) && !Directory.Exists(msgOutputDir))
             {
-                // Convert MBOX to PST; the returned PersonalStorage must be disposed
-                using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath))
-                {
-                    // Conversion succeeded; optionally, you can work with pstStorage here
-                    Console.WriteLine($"Conversion completed successfully. PST saved to: {pstFilePath}");
-                }
+                Directory.CreateDirectory(msgOutputDir);
             }
-            catch (Exception convEx)
+
+            EmlLoadOptions emlLoadOptions = new EmlLoadOptions
             {
-                Console.Error.WriteLine($"Conversion failed: {convEx.Message}");
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
+            };
+
+            using (MailMessage message = MailMessage.Load(emlInputPath, emlLoadOptions))
+            {
+                // Save as MSG using default options
+                message.Save(msgOutputPath, SaveOptions.DefaultMsg);
+            }
+
+            // ---------- MBOX to PST conversion ----------
+            string mboxInputPath = "input.mbox";
+            string pstOutputPath = "output.pst";
+
+            if (!File.Exists(mboxInputPath))
+            {
+                Console.Error.WriteLine($"Input MBOX file not found: {mboxInputPath}");
                 return;
+            }
+
+            // Ensure the output directory exists
+            string pstOutputDir = Path.GetDirectoryName(pstOutputPath);
+            if (!string.IsNullOrEmpty(pstOutputDir) && !Directory.Exists(pstOutputDir))
+            {
+                Directory.CreateDirectory(pstOutputDir);
+            }
+
+            // Convert MBOX to PST; the returned PersonalStorage should be disposed
+            using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxInputPath, pstOutputPath))
+            {
+                // Conversion completed; PST file is written to pstOutputPath
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

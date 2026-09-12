@@ -3,6 +3,7 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
+// Author: Aspose.Email example - retrieve plain‑text body from an MSG file
 class Program
 {
     static void Main()
@@ -11,47 +12,46 @@ class Program
         {
             string msgPath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if missing.
+            // Verify the input file exists
             if (!File.Exists(msgPath))
             {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "receiver@example.com",
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
-                        "This is a placeholder plain‑text body."))
+                        "Placeholder body."))
                     {
                         placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
             }
 
-            // Load the MSG file as a MailMessage.
-            try
+            // Load the Outlook MSG file
+            MapiMessage mapiMsg = MapiMessage.Load(msgPath);
+
+            // Convert MapiMessage to MailMessage
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            using (MailMessage mailMessage = mapiMsg.ToMailMessage(conversionOptions))
             {
-                using (MailMessage mailMessage = MailMessage.Load(msgPath, new MsgLoadOptions()))
-                {
-                    // Retrieve the plain‑text body.
-                    string plainText = mailMessage.Body;
-                    Console.WriteLine("Plain‑text body:");
-                    Console.WriteLine(plainText);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
+                // Retrieve the plain‑text body content
+                string plainText = mailMessage.Body; // MailMessage.Body returns the plain‑text body
+                Console.WriteLine("Plain‑text body:");
+                Console.WriteLine(plainText);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

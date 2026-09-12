@@ -23,7 +23,15 @@ class Program
                         "Placeholder Body",
                         DateTime.Now,
                         DateTime.Now.AddHours(1));
-                    placeholder.Save(msgPath, new MapiCalendarMsgSaveOptions());
+                    if (string.IsNullOrEmpty(placeholder.Subject))
+                    {
+                        placeholder.Subject = "Placeholder Subject";
+                    }
+                    if (string.IsNullOrEmpty(placeholder.Body))
+                    {
+                        placeholder.Body = "Placeholder Body";
+                    }
+                    placeholder.Save(msgPath, MapiCalendarSaveOptions.DefaultMsg);
                 }
                 catch (Exception ex)
                 {

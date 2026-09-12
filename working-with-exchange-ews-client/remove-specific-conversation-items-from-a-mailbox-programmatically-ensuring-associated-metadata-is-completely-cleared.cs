@@ -1,54 +1,61 @@
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
     static void Main()
     {
-        // Top-level exception guard
+        // Author note: This sample demonstrates how to delete specific conversation items from an Exchange mailbox using EWS.
+        // Connection parameters – replace with actual values.
+        string serviceUrl = "https://mail.example.com/EWS/Exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+
+
+        // Skip external calls when placeholder credentials are used
+        if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+        {
+            Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+            return;
+        }
+
         try
         {
-            // Placeholder credentials – skip execution in CI environments
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            if (mailboxUri.Contains("example.com") ||
-                string.Equals(username, "username", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(password, "password", StringComparison.OrdinalIgnoreCase))
+            // Create and dispose the EWS client.
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
+                // Retrieve mailbox information to obtain the Inbox folder URI.
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                string inboxUri = mailboxInfo.InboxUri;
 
-            // Create the EWS client using the verified factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                // Conversation identifier to be removed
-                string conversationId = "YOUR_CONVERSATION_ID";
+                // Find all conversations in the Inbox folder.
+                ExchangeConversation[] conversations = client.FindConversations(inboxUri);
 
-                // Optional: specify a folder URI to limit deletion; null deletes from all folders
-                string contextFolderId = null;
-
-                try
+                foreach (ExchangeConversation conversation in conversations)
                 {
-                    // Delete all items belonging to the specified conversation
-                    client.DeleteConversationItems(conversationId, contextFolderId);
-                    Console.WriteLine("Conversation items deleted successfully.");
-                }
-                catch (Exception ex)
-                {
-                    // Client‑level error handling
-                    Console.Error.WriteLine($"Error deleting conversation items: {ex.Message}");
+                    // Fetch messages belonging to the current conversation.
+                    MailMessageCollection messages = client.FetchConversationMessages(conversation.ConversationId);
+
+                    // Ensure there is at least one message to examine.
+                    if (messages != null && messages.Count > 0)
+                    {
+                        // Use the subject of the first message as a simple filter criterion.
+                        string subject = messages[0].Subject;
+                        if (!string.IsNullOrEmpty(subject) && subject.Contains("Test"))
+                        {
+                            // Delete all items of the matching conversation.
+                            client.DeleteConversationItems(conversation.ConversationId);
+                            Console.WriteLine($"Deleted conversation with subject: {subject}");
+                        }
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            // Global error handling
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

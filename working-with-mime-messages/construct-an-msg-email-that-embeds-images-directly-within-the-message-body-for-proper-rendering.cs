@@ -9,53 +9,44 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string outputMsgPath = "EmbeddedImage.msg";
+            string imagePath = "1.jpg";
+            string outputPath = "EmbeddedImage_out.msg";
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputMsgPath);
+            if (!File.Exists(imagePath))
+            {
+                byte[] placeholderJpeg = new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 };
+                File.WriteAllBytes(imagePath, placeholderJpeg);
+            }
+
+            string outputDir = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
                 Directory.CreateDirectory(outputDir);
-            }
 
-            // Create a new mail message
-            using (MailMessage message = new MailMessage("sender@example.com", "recipient@example.com", "Test email with embedded image", string.Empty))
+            MailMessage email = new MailMessage();
+            email.From = "AndrewIrwin@from.com";
+            email.To.Add("SusanMarc@to.com");
+            email.Subject = "This is an email";
+
+            AlternateView plainView = AlternateView.CreateAlternateViewFromString(
+                "This is my plain text content", new ContentType("text/plain"));
+
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                "Here is an embedded image. <img src=cid:barcode>", new ContentType("text/html"));
+
+            LinkedResource barcode = new LinkedResource(imagePath, new ContentType("image/jpeg"))
             {
-                // Enable HTML body
-                message.IsBodyHtml = true;
+                ContentId = "barcode"
+            };
 
-                // HTML body referencing the embedded image via Content-ID
-                string htmlBody = "<html><body><h1>Hello</h1><img src=\"cid:image1\"></body></html>";
-                message.HtmlBody = htmlBody;
+            email.LinkedResources.Add(barcode);
+            email.AlternateViews.Add(plainView);
+            email.AlternateViews.Add(htmlView);
 
-                // Prepare a minimal placeholder PNG (1x1 pixel) if the image file is missing
-                byte[] imageBytes = Convert.FromBase64String(
-                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/5+hHgAFgwJ/lKXK5wAAAABJRU5ErkJggg==");
-
-                // Add the image as a linked resource with a Content-ID matching the HTML reference
-                using (MemoryStream imageStream = new MemoryStream(imageBytes))
-                {
-                    LinkedResource resource = new LinkedResource(imageStream, "image/png")
-                    {
-                        ContentId = "image1"
-                    };
-                    message.LinkedResources.Add(resource);
-                }
-
-                // Save the message as MSG with preserved original dates
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
-                {
-                    PreserveOriginalDates = true
-                };
-                message.Save(outputMsgPath, saveOptions);
-            }
-
-            Console.WriteLine("MSG file created successfully: " + outputMsgPath);
+            email.Save(outputPath, SaveOptions.DefaultMsgUnicode);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

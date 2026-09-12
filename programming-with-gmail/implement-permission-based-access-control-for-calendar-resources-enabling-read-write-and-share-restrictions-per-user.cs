@@ -1,69 +1,102 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using System.Collections.Generic;
+
+enum CalendarPermission
+{
+    None = 0,
+    Read = 1,
+    Write = 2,
+    Share = 3
+}
+
+class CalendarResource
+{
+    private readonly string _name;
+    private readonly Dictionary<string, CalendarPermission> _userPermissions = new Dictionary<string, CalendarPermission>(StringComparer.OrdinalIgnoreCase);
+
+    public CalendarResource(string name)
+    {
+        _name = name;
+    }
+
+    public void GrantPermission(string userEmail, CalendarPermission permission)
+    {
+        _userPermissions[userEmail] = permission;
+        Console.WriteLine($"Granted {permission} permission to {userEmail} on calendar '{_name}'.");
+    }
+
+    private bool HasPermission(string userEmail, CalendarPermission required)
+    {
+        if (!_userPermissions.TryGetValue(userEmail, out var userPerm))
+            return false;
+
+        // Permission hierarchy: Share > Write > Read
+        return userPerm >= required;
+    }
+
+    public bool CanRead(string userEmail) => HasPermission(userEmail, CalendarPermission.Read);
+    public bool CanWrite(string userEmail) => HasPermission(userEmail, CalendarPermission.Write);
+    public bool CanShare(string userEmail) => HasPermission(userEmail, CalendarPermission.Share);
+
+    public void ReadEvent(string userEmail)
+    {
+        if (CanRead(userEmail))
+            Console.WriteLine($"{userEmail} reads events from calendar '{_name}'.");
+        else
+            Console.WriteLine($"{userEmail} does NOT have read permission on calendar '{_name}'.");
+    }
+
+    public void WriteEvent(string userEmail, string eventTitle)
+    {
+        if (CanWrite(userEmail))
+            Console.WriteLine($"{userEmail} writes event '{eventTitle}' to calendar '{_name}'.");
+        else
+            Console.WriteLine($"{userEmail} does NOT have write permission on calendar '{_name}'.");
+    }
+
+    public void ShareCalendar(string userEmail, string targetUserEmail)
+    {
+        if (CanShare(userEmail))
+        {
+            // Default shared permission is Read
+            GrantPermission(targetUserEmail, CalendarPermission.Read);
+            Console.WriteLine($"{userEmail} shared calendar '{_name}' with {targetUserEmail} (Read permission).");
+        }
+        else
+        {
+            Console.WriteLine($"{userEmail} does NOT have share permission on calendar '{_name}'.");
+        }
+    }
+}
 
 class Program
 {
     static void Main()
     {
-        try
-        {
-            // Placeholder OAuth credentials
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string defaultEmail = "user@example.com";
+        var calendar = new CalendarResource("Team Meetings");
 
-            // Skip real network calls when placeholders are used
-            if (clientId == "clientId" || clientSecret == "clientSecret" || refreshToken == "refreshToken")
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client operations.");
-                return;
-            }
+        // Owner gets full permissions
+        string owner = "owner@example.com";
+        calendar.GrantPermission(owner, CalendarPermission.Share);
 
-            // Create Gmail client instance
-            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-            try
-            {
-                // Calendar identifier (use "primary" for the default calendar)
-                string calendarId = "primary";
+        // Other users
+        string alice = "alice@example.com";
+        string bob = "bob@example.com";
 
-                // Define a user to grant read access
-                string userEmail = "alice@example.com";
+        // Owner shares with Alice (read)
+        calendar.ShareCalendar(owner, alice);
 
-                // Construct ACL scope using the enum (not a string)
-                AclScope scope = new AclScope(AclScopeType.user, userEmail);
+        // Owner grants write permission to Bob
+        calendar.GrantPermission(bob, CalendarPermission.Write);
 
-                // Create an access control rule with read permission
-                AccessControlRule rule = new AccessControlRule(scope, AccessRole.reader);
+        // Test operations
+        calendar.ReadEvent(alice); // should succeed
+        calendar.WriteEvent(alice, "Sprint Review"); // should fail
 
-                // Add the rule to the calendar
-                AccessControlRule createdRule = gmailClient.CreateAccessRule(calendarId, rule);
-                Console.WriteLine($"Created rule for {createdRule.Scope.Value} with role {createdRule.Role}");
+        calendar.ReadEvent(bob); // should succeed (write includes read)
+        calendar.WriteEvent(bob, "Sprint Planning"); // should succeed
 
-                // List all ACL rules for the calendar
-                AccessControlRule[] existingRules = gmailClient.ListAccessRules(calendarId);
-                foreach (AccessControlRule existingRule in existingRules)
-                {
-                    Console.WriteLine($"User: {existingRule.Scope.Value}, Role: {existingRule.Role}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Gmail operation failed: {ex.Message}");
-            }
-            finally
-            {
-                if (gmailClient != null)
-                {
-                    gmailClient.Dispose();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
+        // Bob tries to share (should fail)
+        calendar.ShareCalendar(bob, "charlie@example.com");
     }
 }

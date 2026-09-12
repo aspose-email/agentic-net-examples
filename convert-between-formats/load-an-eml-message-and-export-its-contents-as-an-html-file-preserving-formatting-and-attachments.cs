@@ -4,70 +4,63 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define input and output paths
-            string inputPath = "sample.eml";
-            string outputPath = "sample.html";
+            // Input EML file path
+            string sourcePath = "source.eml";
+            // Desired HTML output path
+            string outputPath = "output.html";
 
-            // Ensure the input EML file exists; create a minimal placeholder if it does not
-            if (!File.Exists(inputPath))
+            // Verify the source file exists
+            if (!File.Exists(sourcePath))
             {
                 try
                 {
-                    string placeholder = "Subject: Placeholder\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(inputPath, placeholder);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(sourcePath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Source file '{sourcePath}' not found.");
+                return;
             }
 
             // Ensure the output directory exists
-            try
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            // Load the EML message
+            using (MailMessage mailMessage = MailMessage.Load(sourcePath))
+            {
+                // Configure HTML save options to embed resources (images, attachments) into the HTML
+                HtmlSaveOptions htmlOptions = new HtmlSaveOptions
                 {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
-                return;
-            }
+                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                };
 
-            // Load the EML message with default load options
-            try
-            {
-                using (MailMessage message = MailMessage.Load(inputPath, new EmlLoadOptions()))
-                {
-                    // Configure HTML save options to embed resources (images, etc.)
-                    HtmlSaveOptions saveOptions = new HtmlSaveOptions
-                    {
-                        ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
-                    };
-
-                    // Save the message as HTML
-                    message.Save(outputPath, saveOptions);
-                }
+                // Save the message as HTML
+                mailMessage.Save(outputPath, htmlOptions);
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing EML file: {ex.Message}");
-                return;
-            }
-
-            Console.WriteLine($"EML message successfully exported to HTML: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Log any unexpected errors
+            Console.Error.WriteLine(ex.Message);
         }
     }
 }

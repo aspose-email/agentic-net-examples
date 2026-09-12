@@ -11,74 +11,57 @@ class Program
     {
         try
         {
-            // Paths for PST file and optional messages folder
-            string pstFilePath = "BulkMessages.pst";
+            // Author note: This sample demonstrates bulk insertion of messages into a PST file.
+            string pstPath = "BulkMessages.pst";
 
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstFilePath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            // Ensure the PST file exists; create a new one if missing.
+            if (!File.Exists(pstPath))
             {
                 try
                 {
-                    Directory.CreateDirectory(pstDirectory);
+                    // Create a new PST with Unicode format.
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Unable to create directory – {pstDirectory}. {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
                     return;
                 }
             }
 
-            // Create a collection of MAPI messages to be added in bulk
-            List<MapiMessage> bulkMessages = new List<MapiMessage>();
-            for (int i = 1; i <= 1000; i++)
+            // Open the PST file.
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                MapiMessage message = new MapiMessage(
-                    "sender@example.com",
-                    "recipient@example.com",
-                    $"Bulk Subject {i}",
-                    $"This is the body of bulk message #{i}.");
-                bulkMessages.Add(message);
-            }
+                // Use the root folder for bulk insertion.
+                FolderInfo rootFolder = pst.RootFolder;
 
-            // Open existing PST or create a new one
-            PersonalStorage pstStorage = null;
-            try
-            {
-                if (File.Exists(pstFilePath))
-                {
-                    pstStorage = PersonalStorage.FromFile(pstFilePath);
-                }
-                else
-                {
-                    pstStorage = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
-                }
-            }
-            catch (Exception pstEx)
-            {
-                Console.Error.WriteLine($"Error: Unable to open or create PST file – {pstFilePath}. {pstEx.Message}");
-                return;
-            }
+                // Prepare a collection of MapiMessage objects.
+                List<MapiMessage> messages = new List<MapiMessage>();
 
-            using (pstStorage)
-            {
-                // Get the Inbox folder (creates it if it does not exist)
-                FolderInfo inboxFolder = pstStorage.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                if (inboxFolder == null)
+                // Example: create 5 dummy messages.
+                for (int i = 1; i <= 5; i++)
                 {
-                    Console.Error.WriteLine("Error: Unable to retrieve the Inbox folder.");
-                    return;
+                    MapiMessage msg = new MapiMessage
+                    {
+                        Subject = $"Bulk Message {i}",
+                        Body = $"This is the body of bulk message {i}.",
+                        SenderName = "Bulk Sender",
+                        SenderEmailAddress = "sender@example.com"
+                    };
+                    // Add a recipient.
+                    msg.Recipients.Add("recipient@example.com", "Recipient", MapiRecipientType.MAPI_TO);
+                    messages.Add(msg);
                 }
 
-                // Add messages in bulk – this is much faster than adding one by one
                 try
                 {
-                    inboxFolder.AddMessages(bulkMessages);
-                    Console.WriteLine($"Successfully added {bulkMessages.Count} messages to the PST.");
+                    // Add all messages to the folder in bulk.
+                    rootFolder.AddMessages(messages);
+                    Console.WriteLine($"Successfully added {messages.Count} messages to the PST.");
                 }
-                catch (Exception addEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error: Failed to add messages in bulk. {addEx.Message}");
+                    Console.Error.WriteLine($"Failed to add messages: {ex.Message}");
                 }
             }
         }

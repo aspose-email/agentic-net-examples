@@ -1,77 +1,48 @@
 using System;
-using System.Net;
-using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Placeholder connection details
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
 
-            // Skip real network call when placeholders are used
-            if (mailboxUri.Contains("example.com"))
+            if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(clientSecret) || clientSecret.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(refreshToken) || refreshToken.StartsWith("YOUR_"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                Console.Error.WriteLine("Provide valid OAuth credentials.");
                 return;
             }
 
-            // Create EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            using (TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken))
             {
-                try
+                OAuthNetworkCredential credentials = new OAuthNetworkCredential(tokenProvider);
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
                 {
-                    // List existing inbox rules
-                    InboxRule[] existingRules = client.GetInboxRules();
-                    Console.WriteLine($"Existing rules count: {existingRules.Length}");
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                    Console.WriteLine("Mailbox URI: " + mailboxInfo.MailboxUri);
+                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                    Console.WriteLine("Drafts URI: " + mailboxInfo.DraftsUri);
 
-                    // Define a new rule: move messages from a specific sender to the Inbox folder
-                    MailAddress fromAddress = new MailAddress("sender@example.com");
-                    string destinationFolderId = client.MailboxInfo.InboxUri; // Use Inbox as destination
-                    InboxRule newRule = InboxRule.CreateRuleMoveFrom(fromAddress, destinationFolderId);
-                    newRule.DisplayName = "Move from specific sender";
-                    newRule.IsEnabled = true;
-
-                    // Create the rule on the server
-                    client.CreateInboxRule(newRule);
-                    Console.WriteLine("New rule created.");
-
-                    // Retrieve the rule back (by listing again) to demonstrate update
-                    InboxRule[] updatedRules = client.GetInboxRules();
-                    foreach (InboxRule rule in updatedRules)
+                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
+                    foreach (ExchangeMessageInfo message in messages)
                     {
-                        if (rule.DisplayName == "Move from specific sender")
-                        {
-                            // Disable the rule as an example of update
-                            rule.IsEnabled = false;
-                            client.UpdateInboxRule(rule);
-                            Console.WriteLine("Rule updated (disabled).");
-
-                            // Delete the rule as cleanup
-                            if (!string.IsNullOrEmpty(rule.RuleId))
-                            {
-                                client.DeleteInboxRule(rule.RuleId);
-                                Console.WriteLine("Rule deleted.");
-                            }
-                            break;
-                        }
+                        Console.WriteLine(message.Subject);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

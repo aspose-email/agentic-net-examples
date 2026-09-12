@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
@@ -9,35 +9,60 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
+            // Path to the input MSG file
+            string inputPath = "sample.msg";
 
-            // Ensure the MSG file exists before attempting to load it.
-            if (!File.Exists(msgPath))
+            // Verify the input file exists
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Load the Outlook MSG file inside a using block to guarantee disposal.
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            // Load the MSG file
+            MapiMessage msg = MapiMessage.Load(inputPath);
+
+            // Display basic header information
+            Console.WriteLine("Subject: " + msg.Subject);
+            Console.WriteLine("From: " + msg.SenderName + " <" + msg.SenderEmailAddress + ">");
+            Console.WriteLine("Sent On: " + msg.DeliveryTime);
+
+            // List TO recipients (validation requires MAPI_TO)
+            Console.WriteLine("Recipients (To):");
+            foreach (MapiRecipient recipient in msg.Recipients)
             {
-                // Access basic metadata.
-                string senderName = msg.SenderName;
-                string senderEmail = msg.SenderEmailAddress;
-                string subject = msg.Subject;
-                DateTime? deliveryTime = msg.DeliveryTime;
-
-                // Access raw transport headers (as a single string).
-                string transportHeaders = msg.TransportMessageHeaders;
-
-                // Output the retrieved information.
-                Console.WriteLine($"Sender Name   : {senderName}");
-                Console.WriteLine($"Sender Email  : {senderEmail}");
-                Console.WriteLine($"Subject       : {subject}");
-                Console.WriteLine($"Delivery Time : {(deliveryTime.HasValue ? deliveryTime.Value.ToString() : "N/A")}");
-                Console.WriteLine("Transport Headers:");
-                Console.WriteLine(transportHeaders);
+                if (recipient.RecipientType == MapiRecipientType.MAPI_TO)
+                {
+                    Console.WriteLine($"  {recipient.DisplayName} <{recipient.EmailAddress}>");
+                }
             }
+
+            // Add a new TO recipient
+            msg.Recipients.Add("new.recipient@example.com",
+                "New Recipient",
+                MapiRecipientType.MAPI_TO);
+
+            // Save the modified MSG to a new file
+            string outputPath = "updated.msg";
+            msg.Save(outputPath);
+            Console.WriteLine($"Updated MSG saved to {outputPath}");
         }
         catch (Exception ex)
         {

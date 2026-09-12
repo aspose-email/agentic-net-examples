@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -9,30 +9,34 @@ class Program
     {
         try
         {
-            // Placeholder OAuth token obtained from authentication flow
-            string oauthToken = "OAuthToken";
+            // Input parameters (replace with real values)
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+            string oauthToken = "your_oauth_token";
 
-            // Guard against placeholder credentials to avoid external calls during CI
-            if (string.IsNullOrWhiteSpace(oauthToken) || oauthToken == "OAuthToken")
+
+            // Skip external calls when placeholder credentials are used
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("OAuth token is not provided. Skipping Exchange operations.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Placeholder mailbox URI for the Exchange server
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Create the EWS client
+            IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, username, password);
 
-            // Create the EWS client and assign the OAuth token as credentials
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, new NetworkCredential(oauthToken, string.Empty)))
-            {
-                // The client is now ready for authenticated operations
-                Console.WriteLine("EWS client initialized with OAuth token.");
-                // Subsequent API calls can be performed here using 'client'
-            }
+            // Assign the OAuth token to the Credentials property
+            // NetworkCredential implements ICredentials and can hold the token as the user name.
+            ewsClient.Credentials = new NetworkCredential(oauthToken, string.Empty);
+
+            // Example operation: retrieve mailbox information
+            var mailboxInfo = ewsClient.GetMailboxInfo();
+            Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

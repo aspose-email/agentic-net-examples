@@ -8,13 +8,26 @@ class Program
     {
         try
         {
-            // Define input and output MSG file paths
-            string inputMsgPath = "input.msg";
-            string outputMsgPath = "output.msg";
-            string targetAttachmentName = "target.txt";
+            const string emlPath = "sample.eml";
+            const string msgPath = "output.msg";
+            const string attachmentPath = "sample.txt";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputMsgPath))
+            // Ensure placeholder attachment exists
+            if (!File.Exists(attachmentPath))
+            {
+                try
+                {
+                    File.WriteAllText(attachmentPath, "Sample attachment content.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create attachment file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Ensure input EML exists; create minimal placeholder if missing
+            if (!File.Exists(emlPath))
             {
                 try
                 {
@@ -24,88 +37,59 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
 
                 try
                 {
-                    // Create a simple placeholder message with a dummy attachment
-                    using (MailMessage placeholder = new MailMessage())
+                    using (var placeholder = new MailMessage())
                     {
-                        placeholder.Subject = "Placeholder Message";
-                        placeholder.Body = "This is a placeholder MSG file.";
-                        // Add a dummy attachment so the file is a valid MSG with attachments
-                        using (Attachment dummy = new Attachment("dummy.txt"))
-                        {
-                            placeholder.Attachments.Add(dummy);
-                        }
-
-                        // Ensure the directory for the input path exists
-                        string inputDir = Path.GetDirectoryName(inputMsgPath);
-                        if (!string.IsNullOrEmpty(inputDir) && !Directory.Exists(inputDir))
-                        {
-                            Directory.CreateDirectory(inputDir);
-                        }
-
-                        placeholder.Save(inputMsgPath, SaveOptions.DefaultMsgUnicode);
+                        placeholder.From = "sender@example.com";
+                        placeholder.To = "receiver@example.com";
+                        placeholder.Subject = "Placeholder EML";
+                        placeholder.Body = "This is a placeholder EML message.";
+                        placeholder.Save(emlPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder EML: {ex.Message}");
                     return;
                 }
             }
 
-            // Load the MSG file
-            using (MailMessage message = MailMessage.Load(inputMsgPath))
+            // Load EML with options preserving TNEF and embedded messages
+            var emlLoadOptions = new EmlLoadOptions
             {
-                // Find the attachment to remove
-                Attachment attachmentToRemove = null;
-                foreach (Attachment attachment in message.Attachments)
-                {
-                    if (string.Equals(attachment.Name, targetAttachmentName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        attachmentToRemove = attachment;
-                        break;
-                    }
-                }
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
+            };
 
-                // Remove the targeted attachment if found
-                if (attachmentToRemove != null)
+            try
+            {
+                using (MailMessage message = MailMessage.Load(emlPath, emlLoadOptions))
                 {
-                    message.Attachments.Remove(attachmentToRemove);
-                    Console.WriteLine($"Removed attachment: {targetAttachmentName}");
-                }
-                else
-                {
-                    Console.WriteLine($"Attachment '{targetAttachmentName}' not found.");
-                }
+                    // Add attachment from file system
+                    var attachment = new Attachment(attachmentPath);
+                    message.Attachments.Add(attachment);
 
-                // Ensure the output directory exists
-                string outputDir = Path.GetDirectoryName(outputMsgPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-
-                // Save the modified MSG file
-                try
-                {
-                    message.Save(outputMsgPath, SaveOptions.DefaultMsgUnicode);
-                    Console.WriteLine($"Modified MSG saved to: {outputMsgPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save modified MSG file: {ex.Message}");
+                    // Save as MSG using default MSG save options
+                    message.Save(msgPath, SaveOptions.DefaultMsg);
                 }
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing EML file: {ex.Message}");
+                return;
+            }
+
+            Console.WriteLine($"Conversion completed. MSG saved to '{msgPath}'.");
         }
         catch (Exception ex)
         {

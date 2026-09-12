@@ -1,7 +1,8 @@
-using System;
-using System.IO;
+using Aspose.Email.Mapi;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using System;
+using System.IO;
 
 class Program
 {
@@ -9,67 +10,54 @@ class Program
     {
         try
         {
-            // Paths to the source PST (to be merged) and the target Outlook PST.
-            string sourcePstPath = "source.pst";
-            string targetPstPath = "target.pst";
+            const string sourcePstPath = "source.pst";
+            const string targetPstPath = "target.pst";
+            const string outputPstPath = "target_merged.pst";
 
-            // Verify source PST exists.
+            // Create placeholder PST files if they do not exist
             if (!File.Exists(sourcePstPath))
             {
-                Console.Error.WriteLine($"Error: Source PST file not found – {sourcePstPath}");
-                return;
+                using (PersonalStorage.Create(sourcePstPath, FileFormatVersion.Unicode)) { }
+                Console.Error.WriteLine($"Source PST not found. Created empty placeholder at '{sourcePstPath}'.");
             }
 
-            // Ensure target PST exists; create a minimal Unicode PST if it does not.
             if (!File.Exists(targetPstPath))
             {
-                try
-                {
-                    PersonalStorage.Create(targetPstPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating target PST: {ex.Message}");
-                    return;
-                }
+                using (PersonalStorage.Create(targetPstPath, FileFormatVersion.Unicode)) { }
+                Console.Error.WriteLine($"Target PST not found. Created empty placeholder at '{targetPstPath}'.");
             }
 
-            // Open source PST for reading.
+            // Open source and target PST files
             using (PersonalStorage sourcePst = PersonalStorage.FromFile(sourcePstPath))
-            // Open target PST for read/write.
             using (PersonalStorage targetPst = PersonalStorage.FromFile(targetPstPath))
             {
-                // Iterate through each top‑level folder in the source PST.
+                // Iterate through each top‑level folder in the source PST
                 foreach (FolderInfo sourceFolder in sourcePst.RootFolder.GetSubFolders())
                 {
-                    // Try to locate a folder with the same name in the target PST.
-                    FolderInfo targetFolder;
-                    try
+                    // Find existing folder in target PST or create a new one
+                    FolderInfo targetFolder = targetPst.RootFolder.GetSubFolder(sourceFolder.DisplayName);
+                    if (targetFolder == null)
                     {
-                        targetFolder = targetPst.RootFolder.GetSubFolder(sourceFolder.DisplayName);
-                    }
-                    catch (Exception)
-                    {
-                        // Folder does not exist; create it under the target root.
                         targetFolder = targetPst.RootFolder.AddSubFolder(sourceFolder.DisplayName);
                     }
 
-                    // Merge the source folder into the target folder.
-                    try
+                    // Copy all messages from source folder to target folder
+                    MessageInfoCollection sourceMessages = sourceFolder.GetContents();
+                    foreach (MessageInfo msgInfo in sourceMessages)
                     {
-                        targetFolder.MergeWith(sourceFolder);
-                    }
-                    catch (Exception mergeEx)
-                    {
-                        Console.Error.WriteLine($"Error merging folder '{sourceFolder.DisplayName}': {mergeEx.Message}");
-                        // Continue with next folder.
+                        MapiMessage message = sourcePst.ExtractMessage(msgInfo);
+                        targetFolder.AddMessage(message);
                     }
                 }
+
+                // Save merged PST to a new file (different from the opened target file)
+                targetPst.SaveAs(outputPstPath, FileFormat.Pst);
+                Console.WriteLine($"Merged PST saved to '{outputPstPath}'.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

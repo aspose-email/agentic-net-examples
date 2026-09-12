@@ -1,52 +1,47 @@
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
 
-class Program
+public class Program
 {
-    static void Main()
+    public static void Main()
     {
         try
         {
-            // Placeholder values – in a real scenario replace with actual server URL and credentials.
-            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
+            // Connection settings (replace with real credentials)
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Skip execution when placeholder credentials are detected.
-            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+            // Skip external calls when placeholder credentials are used
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client inside a using block to ensure proper disposal.
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
-            {
-                // Define the cutoff date.
-                DateTime cutoffDate = new DateTime(2023, 1, 1);
+            // Cutoff date: retrieve messages dated earlier than this
+            DateTime cutoffDate = new DateTime(2023, 1, 1);
 
-                // Retrieve the inbox folder URI.
+            // Create the EWS client
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // Build a simple query string for messages before the cutoff date
+                string queryString = $"InternalDate < '{cutoffDate:yyyy-MM-dd}'";
+                MailQuery query = new MailQuery(queryString);
+
+                // Get the Inbox folder URI from the mailbox info
                 string inboxUri = client.MailboxInfo.InboxUri;
 
-                // List all messages in the inbox.
-                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+                // List messages in the Inbox that match the query
+                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri, query);
 
-                // Iterate through the messages and filter by InternalDate.
-                foreach (ExchangeMessageInfo info in messages)
+                // Process the filtered messages
+                foreach (ExchangeMessageInfo msgInfo in messages)
                 {
-                    // Use InternalDate for comparison as per validation rules.
-                    DateTime internalDate = info.InternalDate;
-
-                    if (internalDate < cutoffDate)
-                    {
-                        Console.WriteLine($"Subject: {info.Subject}");
-                        Console.WriteLine($"Internal Date: {internalDate}");
-                        Console.WriteLine($"URI: {info.UniqueUri}");
-                        Console.WriteLine(new string('-', 40));
-                    }
+                    Console.WriteLine($"Subject: {msgInfo.Subject}, Received: {msgInfo.InternalDate}");
                 }
             }
         }

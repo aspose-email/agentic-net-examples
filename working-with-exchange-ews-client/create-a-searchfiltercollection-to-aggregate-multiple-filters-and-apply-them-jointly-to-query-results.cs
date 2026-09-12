@@ -1,53 +1,68 @@
-using Aspose.Email.Clients.Exchange;
 using System;
 using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Tools.Search;
 
-class Program
+namespace AsposeEmailSearchFilterExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder connection details
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Guard against executing real network calls with placeholder data
-            if (mailboxUri.Contains("example.com"))
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping live EWS call.");
-                return;
-            }
+                // Define connection parameters (replace with real values)
+                string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+                string username = "username";
+                string password = "password";
 
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                // Build a composite query (equivalent to a SearchFilterCollection)
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.Subject.Contains("Report");
-                builder.From.Contains("test@example.com");
-                MailQuery query = builder.GetQuery();
-
-                // Apply the query to list messages from the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-
-                // Output basic information about the retrieved messages
-                foreach (ExchangeMessageInfo info in messages)
+                // Guard against placeholder credentials
+                if (username == "username" || password == "password")
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
-                    Console.WriteLine($"From: {info.From}");
-                    Console.WriteLine($"Received: {info.InternalDate}");
-                    Console.WriteLine(new string('-', 40));
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping network operation.");
+                    return;
+                }
+
+                // Build a composite query (acts as a SearchFilterCollection)
+                MailQueryBuilder queryBuilder = new MailQueryBuilder();
+                queryBuilder.From.Contains("alice@example.com");
+                queryBuilder.Subject.Contains("Invoice");
+                MailQuery compositeQuery = queryBuilder.GetQuery();
+
+                // Connect to EWS
+                IEWSClient ewsClient = null;
+                try
+                {
+                    ewsClient = EWSClient.GetEWSClient(mailboxUri, username, password);
+                    // Query the Inbox folder with the composite query
+                    string folderName = "Inbox";
+                    ExchangeMessageInfoCollection messages = ewsClient.ListMessages(folderName, compositeQuery);
+
+                    // Output results
+                    foreach (ExchangeMessageInfo messageInfo in messages)
+                    {
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
+                }
+                finally
+                {
+                    // Dispose the client if it implements IDisposable
+                    if (ewsClient is IDisposable disposableClient)
+                    {
+                        disposableClient.Dispose();
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

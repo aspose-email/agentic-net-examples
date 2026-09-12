@@ -1,49 +1,44 @@
-using System;
 using Aspose.Email;
+using System;
+using System.Net;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
-using System.Net;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Define connection parameters (replace with real values)
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+            string sharedMailbox = "shared@example.com";
+
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password" || sharedMailbox.Contains("example.com"))
             {
-                // Placeholder connection settings – replace with real values for actual use.
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
-                string sharedMailbox = "shared@example.com";
-
-                // Guard against executing real network calls when placeholders are present.
-                if (mailboxUri.Contains("example.com") ||
-                    username.Contains("example.com") ||
-                    password == "password")
-                {
-                    Console.Error.WriteLine("Placeholder credentials detected – skipping actual Exchange connection.");
-                    return;
-                }
-
-                // Create the EWS client using the factory method.
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-                {
-                    // Impersonate the shared mailbox using its primary SMTP address.
-                    client.ImpersonateUser(ItemChoice.PrimarySmtpAddress, sharedMailbox);
-
-                    // Example operation under impersonation – list messages in the Inbox.
-                    string inboxUri = client.MailboxInfo.InboxUri;
-                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
-
-                    Console.WriteLine($"Impersonated mailbox '{sharedMailbox}' contains {messages.Count} messages in the Inbox.");
-                }
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+
+            // Create EWS client
+            IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, username, password);
+
+            // Impersonate the shared mailbox
+            ewsClient.ImpersonateUser(ItemChoice.PrimarySmtpAddress, sharedMailbox);
+
+            // Example operation: retrieve mailbox information under impersonation
+            var mailboxInfo = ewsClient.GetMailboxInfo();
+            Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+            Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Error: " + ex.Message);
+            return;
         }
     }
 }

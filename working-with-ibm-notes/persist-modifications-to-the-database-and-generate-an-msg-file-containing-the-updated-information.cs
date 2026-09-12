@@ -1,8 +1,7 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Calendar;
-using Aspose.Email.Calendar.Recurrences;
+using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
 class Program
@@ -11,92 +10,60 @@ class Program
     {
         try
         {
-            // Define file paths
-            string dbPath = "appointments.txt";
-            string msgPath = "appointment.msg";
+            // Input PST file path
+            const string pstPath = "storage.pst";
 
-            // Ensure the database file exists (create minimal placeholder if missing)
-            if (!File.Exists(dbPath))
+            // Output directory for the generated MSG file
+            const string outputDir = "Output";
+
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDir))
             {
-                try
-                {
-                    File.WriteAllText(dbPath, string.Empty);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create database file: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Ensure the directory for the MSG file exists
-            string msgDirectory = Path.GetDirectoryName(msgPath);
-            if (!string.IsNullOrEmpty(msgDirectory) && !Directory.Exists(msgDirectory))
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                try
+                // Access the root folder
+                FolderInfo rootFolder = pst.RootFolder;
+
+                // Enumerate messages in the root folder
+                foreach (MessageInfo messageInfo in rootFolder.EnumerateMessages())
                 {
-                    Directory.CreateDirectory(msgDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create directory for MSG file: {ex.Message}");
-                    return;
-                }
-            }
+                    // Extract the full MAPI message
+                    MapiMessage message = pst.ExtractMessage(messageInfo);
 
-            // Create attendees collection
-            MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("person1@domain.com"));
-            attendees.Add(new MailAddress("person2@domain.com"));
-            attendees.Add(new MailAddress("person3@domain.com"));
+                    // Modify the message (example: prepend "Updated" to the subject)
+                    string originalSubject = message.Subject ?? "NoSubject";
+                    message.Subject = "Updated " + originalSubject;
 
-            // Create an appointment
-            Appointment appointment = new Appointment(
-                "Conference Room 1",
-                new DateTime(2024, 5, 20, 10, 0, 0),
-                new DateTime(2024, 5, 20, 11, 0, 0),
-                new MailAddress("organizer@domain.com"),
-                attendees);
+                    // Persist the updated message back into the PST
+                    rootFolder.UpdateMessage(messageInfo.EntryIdString, message);
 
-            appointment.Summary = "Project Kickoff";
-            appointment.Description = "Discuss project goals and timelines.";
+                    // Save the updated message as an MSG file
+                    string safeFileName = GetSafeFileName(message.Subject) + ".msg";
+                    string msgPath = Path.Combine(outputDir, safeFileName);
+                    message.Save(msgPath);
 
-            // Optionally set a daily recurrence pattern
-            DailyRecurrencePattern recurrence = new DailyRecurrencePattern(5, 1);
-            recurrence.Interval = 1;
-            appointment.Recurrence = recurrence;
-
-            // Persist appointment details to the "database" (text file)
-            string dbEntry = $"{appointment.StartDate:u}|{appointment.EndDate:u}|{appointment.Summary}|{appointment.Description}";
-            try
-            {
-                File.AppendAllText(dbPath, dbEntry + Environment.NewLine);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to write to database file: {ex.Message}");
-                return;
-            }
-
-            // Convert the appointment to a MAPI message and save as MSG
-            try
-            {
-                using (MapiMessage mapiMessage = appointment.ToMapiMessage())
-                {
-                    mapiMessage.Save(msgPath);
+                    // Process only the first message for this example
+                    break;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create MSG file: {ex.Message}");
-                return;
-            }
-
-            Console.WriteLine("Appointment saved to database and MSG file successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
+    }
+
+    // Helper to create a file-system‑safe filename from a subject
+    private static string GetSafeFileName(string name)
+    {
+        foreach (char c in Path.GetInvalidFileNameChars())
+        {
+            name = name.Replace(c, '_');
+        }
+        return string.IsNullOrWhiteSpace(name) ? "Message" : name;
     }
 }

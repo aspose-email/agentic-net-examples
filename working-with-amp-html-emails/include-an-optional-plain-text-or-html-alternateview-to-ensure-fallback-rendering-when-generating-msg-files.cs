@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Mime;
 using Aspose.Email;
 
 class Program
@@ -8,10 +9,15 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string outputPath = "sample.msg";
+            // Prepare resources
+            string imagePath = "1.jpg";
+            if (!File.Exists(imagePath))
+            {
+                // Create an empty placeholder image file if missing
+                File.WriteAllBytes(imagePath, new byte[0]);
+            }
 
-            // Ensure the output directory exists
+            string outputPath = "EmbeddedImage_out.msg";
             string outputDir = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
@@ -19,43 +25,43 @@ class Program
             }
 
             // Create the email message
-            using (MailMessage message = new MailMessage(
-                "sender@example.com",
-                "recipient@example.com",
-                "Sample Subject",
-                "This is the plain‑text body."))
+            MailMessage message = new MailMessage
             {
-                // Set HTML body
-                message.HtmlBody = "<html><body><h1>Hello</h1><p>This is the HTML body.</p></body></html>";
+                From = "AndrewIrwin@from.com",
+                To = "SusanMarc@to.com",
+                Subject = "This is an email"
+            };
 
-                // Add plain‑text alternate view
-                using (AlternateView plainView = new AlternateView(message.Body, "text/plain"))
-                {
-                    message.AlternateViews.Add(plainView);
-                }
+            // Plain‑text view (fallback for clients without HTML support)
+            AlternateView plainView = AlternateView.CreateAlternateViewFromString(
+                "This is my plain text content",
+                null,
+                "text/plain");
 
-                // Add HTML alternate view
-                using (AlternateView htmlView = new AlternateView(message.HtmlBody, "text/html"))
-                {
-                    message.AlternateViews.Add(htmlView);
-                }
+            // HTML view with an embedded image reference (cid:barcode)
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                "Here is an embedded image. <img src=cid:barcode>",
+                null,
+                "text/html");
 
-                // Save as MSG with fallback alternate views
-                try
-                {
-                    message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                    Console.WriteLine($"Message saved to {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving message: {ex.Message}");
-                    return;
-                }
-            }
+            // Linked resource for the embedded image
+            LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg)
+            {
+                ContentId = "barcode"
+            };
+
+            // Assemble the message
+            message.LinkedResources.Add(barcode);
+            message.AlternateViews.Add(plainView);
+            message.AlternateViews.Add(htmlView);
+
+            // Save as MSG with Unicode support
+            message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            return;
         }
     }
 }

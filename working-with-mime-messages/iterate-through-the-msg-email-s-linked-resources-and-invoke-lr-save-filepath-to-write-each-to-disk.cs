@@ -8,11 +8,11 @@ class Program
     {
         try
         {
-            string inputMsgPath = "input.msg";
-            string outputDirectory = "LinkedResources";
+            // Input MSG file path
+            string msgPath = "sample.msg";
 
-            // Ensure input file exists; create minimal placeholder if missing
-            if (!File.Exists(inputMsgPath))
+            // Verify the input file exists
+            if (!File.Exists(msgPath))
             {
                 try
                 {
@@ -22,7 +22,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
@@ -31,69 +31,47 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage())
-                    {
-                        placeholder.Subject = "Placeholder Message";
-                        placeholder.Save(inputMsgPath, SaveOptions.DefaultMsg);
-                        Console.WriteLine($"Created placeholder MSG at '{inputMsgPath}'.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure output directory exists
-            try
-            {
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create output directory '{outputDirectory}': {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file
-            try
+            // Load the message (MailMessage implements IDisposable)
+            using (MailMessage message = MailMessage.Load(msgPath))
             {
-                using (MailMessage mailMessage = MailMessage.Load(inputMsgPath))
+                // Prepare output directory for linked resources
+                string outputDir = "LinkedResources";
+                Directory.CreateDirectory(outputDir);
+
+                int resourceIndex = 0;
+                foreach (LinkedResource linkedResource in message.LinkedResources)
                 {
-                    int index = 0;
-                    foreach (LinkedResource linkedResource in mailMessage.LinkedResources)
+                    // Build a simple file name for each resource
+                    string extension = ".bin";
+                    if (linkedResource.ContentType != null && !string.IsNullOrEmpty(linkedResource.ContentType.MediaType))
                     {
-                        string fileName = linkedResource.ContentId;
-                        if (string.IsNullOrEmpty(fileName))
+                        // Attempt to derive a file extension from the media type (e.g., "image/png" -> ".png")
+                        string[] parts = linkedResource.ContentType.MediaType.Split('/');
+                        if (parts.Length == 2)
                         {
-                            fileName = $"resource_{index}.bin";
+                            extension = "." + parts[1];
                         }
+                    }
 
-                        string outputPath = Path.Combine(outputDirectory, fileName);
-                        try
-                        {
-                            linkedResource.Save(outputPath);
-                            Console.WriteLine($"Saved linked resource to '{outputPath}'.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save linked resource '{fileName}': {ex.Message}");
-                        }
+                    string fileName = $"resource_{resourceIndex}{extension}";
+                    string outputPath = Path.Combine(outputDir, fileName);
+                    resourceIndex++;
 
-                        index++;
+                    try
+                    {
+                        // Save the linked resource to disk
+                        linkedResource.Save(outputPath);
+                        Console.WriteLine($"Saved linked resource to {outputPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save linked resource '{fileName}': {ex.Message}");
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file '{inputMsgPath}': {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)

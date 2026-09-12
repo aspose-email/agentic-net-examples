@@ -8,6 +8,7 @@ class Program
     {
         try
         {
+            // Author note: Example to load a MSG file and save it as MHT (MHTML) preserving all content.
             string inputPath = "input.msg";
             string outputPath = "output.mht";
 
@@ -36,29 +37,23 @@ class Program
             }
 
             // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the MSG message
-            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+            // Load the MSG file into a MailMessage object
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Configure MHT save options to preserve all content
-                MhtSaveOptions saveOptions = new MhtSaveOptions
-                {
-                    SaveAllHeaders = true,
-                    SaveAttachments = true,
-                    PreserveOriginalDate = true,
-                    PreserveOriginalBoundaries = true
-                };
+                // Prepare MHT save options
+                MhtSaveOptions mhtOptions = new MhtSaveOptions();
 
-                // Save as MHTML
-                mailMessage.Save(outputPath, saveOptions);
+                // Save the message as MHT (MHTML) format
+                message.Save(outputPath, mhtOptions);
             }
 
-            Console.WriteLine("Message successfully saved as MHTML.");
+            Console.WriteLine($"Message successfully saved as MHT: {outputPath}");
         }
         catch (Exception ex)
         {

@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Aspose.Email;
 
 class Program
@@ -8,84 +7,48 @@ class Program
     {
         try
         {
-            // Define input and output paths
-            string emlPath = "input.eml";
-            string msgPath = "output.msg";
+            // Author note: This sample loads an EML file and saves it as MSG preserving MIME structure and metadata.
+            string inputPath = "input.eml";
+            string outputPath = "output.msg";
 
-            // Guard input file existence
-            if (!File.Exists(emlPath))
+            // Verify input file exists
+            if (!System.IO.File.Exists(inputPath))
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine($"Input file not found: {emlPath}");
-                // Create a minimal placeholder EML file
-                try
-                {
-                    string placeholder = "From: placeholder@example.com\r\nTo: recipient@example.com\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(emlPath, placeholder);
-                    Console.WriteLine($"Created placeholder EML at {emlPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder EML: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
             }
 
             // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(msgPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            string outputDir = System.IO.Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !System.IO.Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                System.IO.Directory.CreateDirectory(outputDir);
             }
 
-            // Load the EML file into a MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(emlPath))
+            // Load the EML message with options to preserve TNEF attachments and embedded message format
+            EmlLoadOptions emlLoadOptions = new EmlLoadOptions()
             {
-                // Configure MSG save options with original dates preserved
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
+            };
+
+            using (MailMessage message = MailMessage.Load(inputPath, emlLoadOptions))
+            {
+                // Prepare MSG save options to preserve original dates
                 MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
                 {
                     PreserveOriginalDates = true
                 };
 
-                // Save as MSG
-                try
-                {
-                    mailMessage.Save(msgPath, msgSaveOptions);
-                    Console.WriteLine($"Message saved to MSG file: {msgPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                }
+                // Save the message as MSG
+                message.Save(outputPath, msgSaveOptions);
             }
+
+            Console.WriteLine($"Message successfully saved to: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

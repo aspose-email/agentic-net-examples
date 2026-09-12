@@ -1,6 +1,7 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -8,74 +9,72 @@ class Program
     {
         try
         {
-            // Define input MSG file path and output directory
-            string inputMsgPath = "input.msg";
-            string outputDirectory = "ExtractedAttachments";
+            // Input MSG file path
+            const string msgPath = "input.msg";
+            // Directory where extracted files will be saved
+            const string outputDir = "output";
 
             // Verify input file exists
-            if (!File.Exists(inputMsgPath))
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
-                // Optionally create a minimal placeholder MSG to avoid failure
-                using (MailMessage placeholder = new MailMessage())
+                try
                 {
-                    placeholder.Save(inputMsgPath, SaveOptions.DefaultMsg);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
-                Console.Error.WriteLine("Created placeholder MSG file.");
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
             // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
+            if (!Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load MSG with TNEF attachment extraction enabled
-            MsgLoadOptions loadOptions = new MsgLoadOptions
-            {
-                PreserveTnefAttachments = true,
-                PreserveEmbeddedMessageFormat = true
-            };
+            // Load the Outlook MSG file
+            MapiMessage msg = MapiMessage.Load(msgPath);
 
-            using (MailMessage message = MailMessage.Load(inputMsgPath, loadOptions))
+            // Process each attachment in the MSG
+            foreach (MapiAttachment attachment in msg.Attachments)
             {
-                int attachmentIndex = 0;
-                foreach (Attachment attachment in message.Attachments)
+                // Save the attachment to the output folder
+                string attachmentPath = Path.Combine(outputDir, attachment.FileName);
+                attachment.Save(attachmentPath);
+                Console.WriteLine($"Saved attachment: {attachmentPath}");
+
+                // If the attachment is a TNEF file (commonly with .dat extension), extract its contents
+                if (Path.GetExtension(attachmentPath).Equals(".dat", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Determine a safe file name for the attachment
-                    string attachmentName = attachment.Name;
-                    if (string.IsNullOrEmpty(attachmentName))
-                    {
-                        attachmentName = $"attachment_{attachmentIndex}";
-                    }
-
-                    // Sanitize file name (remove invalid path characters)
-                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
-                    {
-                        attachmentName = attachmentName.Replace(invalidChar, '_');
-                    }
-
-                    string outputPath = Path.Combine(outputDirectory, attachmentName);
-
-                    // Save attachment content to file
                     try
                     {
-                        using (FileStream fileStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                        // Load the TNEF content as a MapiMessage
+                        MapiMessage tnefMessage = MapiMessage.LoadFromTnef(attachmentPath);
+
+                        // Extract inner attachments from the TNEF message
+                        foreach (MapiAttachment innerAttachment in tnefMessage.Attachments)
                         {
-                            if (attachment.ContentStream != null)
-                            {
-                                attachment.ContentStream.CopyTo(fileStream);
-                            }
+                            string innerPath = Path.Combine(outputDir, innerAttachment.FileName);
+                            innerAttachment.Save(innerPath);
+                            Console.WriteLine($"Saved inner attachment: {innerPath}");
                         }
-                        Console.WriteLine($"Saved attachment: {outputPath}");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to save attachment '{attachmentName}': {ex.Message}");
+                        Console.Error.WriteLine($"Failed to process TNEF attachment '{attachment.FileName}': {ex.Message}");
                     }
-
-                    attachmentIndex++;
                 }
             }
         }

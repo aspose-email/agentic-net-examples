@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
@@ -9,20 +9,24 @@ class Program
     {
         try
         {
-            string msgPath = "sample.msg";
-            string outputDir = "ExtractedImages";
+            // Input MSG file path
+            string inputMsgPath = "sample.msg";
 
-            if (!File.Exists(msgPath))
+            // Directory where extracted images will be saved
+            string outputDirectory = "ExtractedImages";
+
+            // Verify input file exists; if not, create a placeholder MSG (optional)
+            if (!File.Exists(inputMsgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
+                    using (var placeholder = new MapiMessage(
                         "from@example.com",
                         "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath);
+                        placeholder.Save(inputMsgPath);
                     }
                 }
                 catch (Exception ex)
@@ -31,67 +35,56 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
                 return;
             }
 
-            if (!Directory.Exists(outputDir))
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDirectory))
+                Directory.CreateDirectory(outputDirectory);
+
+            // Load the MSG file
+            MapiMessage mapMsg = MapiMessage.Load(inputMsgPath);
+
+            // Iterate over all attachments in the MSG
+            foreach (MapiAttachment attachment in mapMsg.Attachments)
             {
+                // Determine if the attachment is an image based on file extension
+                string fileName = attachment.FileName ?? string.Empty;
+                bool isImage = fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                               fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                               fileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                               fileName.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
+                               fileName.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
+                               fileName.EndsWith(".tif", StringComparison.OrdinalIgnoreCase) ||
+                               fileName.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase);
+
+                if (!isImage)
+                    continue;
+
+                // Create a safe file name
+                string safeFileName = string.IsNullOrWhiteSpace(fileName) ? "image" : fileName;
+                foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                    safeFileName = safeFileName.Replace(invalidChar, '_');
+
+                string outputPath = Path.Combine(outputDirectory, safeFileName);
+
+                // Save the image preserving its original format and quality using BinaryData
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating directory {outputDir}: {ex.Message}");
-                    return;
-                }
-            }
-
-            using (MapiMessage message = MapiMessage.Load(msgPath))
-            {
-                int imageIndex = 0;
-                foreach (MapiAttachment attachment in message.Attachments)
-                {
-                    string mimeTag = attachment.MimeTag ?? string.Empty;
-                    string fileName = attachment.FileName ?? $"image_{imageIndex}";
-                    bool isImage = mimeTag.StartsWith("image/", StringComparison.OrdinalIgnoreCase) ||
-                                   fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-                                   fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                                   fileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-                                   fileName.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
-                                   fileName.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
-                                   fileName.EndsWith(".tif", StringComparison.OrdinalIgnoreCase) ||
-                                   fileName.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase);
-
-                    if (isImage)
+                    byte[] data = attachment.BinaryData;
+                    if (data == null || data.Length == 0)
                     {
-                        // Access binary data via BinaryData property
-                        byte[] imageData = attachment.BinaryData;
-                        if (imageData != null && imageData.Length > 0)
-                        {
-                            string extension = Path.GetExtension(fileName);
-                            if (string.IsNullOrEmpty(extension))
-                            {
-                                // Fallback to mime type if extension missing
-                                string mimeSubtype = mimeTag.Substring("image/".Length);
-                                extension = "." + mimeSubtype;
-                            }
-
-                            string outputPath = Path.Combine(outputDir, $"image_{imageIndex}{extension}");
-                            try
-                            {
-                                File.WriteAllBytes(outputPath, imageData);
-                                Console.WriteLine($"Extracted: {outputPath}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Error writing file {outputPath}: {ex.Message}");
-                            }
-
-                            imageIndex++;
-                        }
+                        Console.Error.WriteLine($"No binary data found for attachment '{attachment.FileName}'.");
+                        continue;
                     }
+
+                    File.WriteAllBytes(outputPath, data);
+                    Console.WriteLine($"Extracted image: {outputPath}");
+                }
+                catch (Exception saveEx)
+                {
+                    Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {saveEx.Message}");
                 }
             }
         }

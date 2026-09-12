@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using Aspose.Email;
 
 class Program
@@ -8,64 +9,62 @@ class Program
     {
         try
         {
-            string htmlPath = "input.html";
-            string msgPath = "output.msg";
+            // Input HTML file path
+            string inputPath = "sample.html";
+            // Output MSG file path
+            string outputPath = "sample.msg";
 
             // Ensure the input HTML file exists; create a minimal placeholder if missing
-            if (!File.Exists(htmlPath))
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder</p></body></html>");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
+
+                const string placeholderHtml = "<html><body><p>Placeholder content</p></body></html>";
+                File.WriteAllText(inputPath, placeholderHtml, Encoding.UTF8);
             }
 
-            // Read HTML content
-            string htmlContent;
-            try
+            // Load the HTML document with options to preserve encoding and add a plain‑text view
+            HtmlLoadOptions htmlLoadOptions = new HtmlLoadOptions
             {
-                htmlContent = File.ReadAllText(htmlPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
-                return;
-            }
+                PreferredTextEncoding = Encoding.UTF8,
+                ShouldAddPlainTextView = true,
+                // PathToResources can be set if the HTML references external images; null is acceptable here
+                PathToResources = null
+            };
 
-            // Create a MailMessage and populate it
-            using (MailMessage mail = new MailMessage())
+            // Load the message from the HTML file
+            using (MailMessage message = MailMessage.Load(inputPath, htmlLoadOptions))
             {
-                mail.Subject = "Converted from HTML";
-                mail.HtmlBody = htmlContent;
-                mail.From = new MailAddress("sender@example.com");
-                mail.To.Add(new MailAddress("recipient@example.com"));
-
-                // Configure MSG save options to preserve original dates
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                // Prepare MSG save options to preserve original dates and use Unicode format
+                MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
                 {
                     PreserveOriginalDates = true
                 };
 
-                // Save as Outlook MSG
-                try
-                {
-                    mail.Save(msgPath, saveOptions);
-                    Console.WriteLine($"MSG file saved to {msgPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                }
+                // Save the message as an Outlook MSG file
+                message.Save(outputPath, msgSaveOptions);
             }
+
+            Console.WriteLine("HTML successfully converted to MSG: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

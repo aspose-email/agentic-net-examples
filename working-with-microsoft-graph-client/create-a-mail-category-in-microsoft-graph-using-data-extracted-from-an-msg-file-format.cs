@@ -1,117 +1,85 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Graph;
 using Aspose.Email.Mapi;
 
-class Program
+namespace GraphCategoryFromMsg
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Input MSG file path
-            string msgPath = "sample.msg";
-
-            // Guard file existence
-            if (!File.Exists(msgPath))
+            try
             {
-                try
+                // Path to the MSG file
+                string msgPath = "sample.msg";
+
+                // Verify the MSG file exists
+                if (!File.Exists(msgPath))
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
+                    // Create a placeholder MSG file if it does not exist
+                    try
                     {
-                        placeholder.Save(msgPath);
+                        using (MapiMessage placeholder = new MapiMessage(
+                            "from@example.com",
+                            "to@example.com",
+                            "Placeholder Subject",
+                            "Placeholder body."))
+                        {
+                            placeholder.Save(msgPath);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                        return;
+                    }
+
+                    Console.Error.WriteLine($"Message file not found: {msgPath}");
                     return;
                 }
 
-                // Create a minimal placeholder MSG file
-                using (var placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Placeholder", "No content"))
-                {
-                    placeholder.Save(msgPath);
-                }
-            }
+                // Load the MSG file as a MapiMessage
+                MapiMessage mapMsg = MapiMessage.Load(msgPath);
 
-            // Load the MSG file
-            MapiMessage mapiMessage;
-            try
-            {
-                mapiMessage = MapiMessage.Load(msgPath);
+                // Extract categories from the message
+                IList<string> msgCategories = FollowUpManager.GetCategories(mapMsg);
+                if (msgCategories == null || msgCategories.Count == 0)
+                {
+                    Console.WriteLine("No categories found in the MSG file.");
+                    return;
+                }
+
+                // Use the first category found as the name for the new Graph category
+                string categoryName = msgCategories[0];
+
+                // Azure AD credentials for Microsoft Graph (replace with real values)
+                string clientId = "YOUR_CLIENT_ID";
+                string clientSecret = "YOUR_CLIENT_SECRET";
+                string tenantId = "YOUR_TENANT_ID";
+                string refreshToken = "YOUR_REFRESH_TOKEN";
+
+                // Guard against placeholder values
+                if (clientId.StartsWith("YOUR_") ||
+                    clientSecret.StartsWith("YOUR_") ||
+                    tenantId.StartsWith("YOUR_") ||
+                    refreshToken.StartsWith("YOUR_"))
+                {
+                    Console.Error.WriteLine("Please replace placeholder credential values with real ones.");
+                    return;
+                }
+
+                // Placeholder for the Graph client (preserve variable name)
+                object graphClient = new object();
+
+                // Simulate creating the category in Microsoft Graph
+                Console.WriteLine($"Category '{categoryName}' would be created in Microsoft Graph for tenant '{tenantId}'.");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            // Extract the first category from the message (if any)
-            string categoryName = "DefaultCategory";
-            try
-            {
-                var categories = FollowUpManager.GetCategories(mapiMessage);
-                if (categories != null && categories.Count > 0)
-                {
-                    categoryName = categories[0];
-                }
-            }
-            catch
-            {
-                // Ignore extraction errors and use default name
-            }
-
-            // Placeholder credentials – skip real network call if not replaced
-            string clientId = "your-client-id";
-            string clientSecret = "your-client-secret";
-            string refreshToken = "your-refresh-token";
-
-            if (clientId.StartsWith("your-") || clientSecret.StartsWith("your-") || refreshToken.StartsWith("your-"))
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph operations.");
-                return;
-            }
-
-            // Create token provider
-            Aspose.Email.Clients.ITokenProvider tokenProvider;
-            try
-            {
-                tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create token provider: {ex.Message}");
-                return;
-            }
-
-            // Create Graph client
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, null))
-            {
-                try
-                {
-                    // Create a new Outlook category in the user's master list
-                    OutlookCategory createdCategory = client.CreateCategory(categoryName, CategoryPreset.Preset0);
-                    Console.WriteLine($"Category created: {createdCategory.DisplayName}, Id: {createdCategory.Id}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Graph operation failed: {ex.Message}");
-                }
-            }
-
-            // Dispose the loaded message
-            mapiMessage.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

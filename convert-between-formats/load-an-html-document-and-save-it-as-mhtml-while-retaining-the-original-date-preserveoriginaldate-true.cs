@@ -8,10 +8,12 @@ class Program
     {
         try
         {
+            // Input HTML file path
             string htmlPath = "input.html";
-            string mhtmlPath = "output.mht";
+            // Output MHTML file path
+            string mhtmlPath = "output.mhtml";
 
-            // Ensure the HTML input file exists
+            // Ensure input HTML exists; create a minimal placeholder if missing
             if (!File.Exists(htmlPath))
             {
                 try
@@ -25,6 +27,7 @@ class Program
                 }
             }
 
+            // Read HTML content
             string htmlContent;
             try
             {
@@ -36,28 +39,46 @@ class Program
                 return;
             }
 
-            // Create a mail message with the HTML body
+            // Create a MailMessage and populate basic fields
             using (MailMessage mail = new MailMessage())
             {
                 mail.From = new MailAddress("sender@example.com");
                 mail.To.Add(new MailAddress("recipient@example.com"));
                 mail.Subject = "Converted HTML to MHTML";
                 mail.HtmlBody = htmlContent;
+                // Set a sample original date
+                mail.Date = DateTime.UtcNow;
 
-                // Configure MHTML save options to preserve the original date
-                MhtSaveOptions saveOptions = new MhtSaveOptions
+                // Configure MHTML save options with original date preservation
+                MhtSaveOptions mhtOptions = new MhtSaveOptions
                 {
                     PreserveOriginalDate = true
                 };
 
+                // Ensure output directory exists
                 try
                 {
-                    mail.Save(mhtmlPath, saveOptions);
+                    string outputDir = Path.GetDirectoryName(Path.GetFullPath(mhtmlPath));
+                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
+                    return;
+                }
+
+                // Save the message as MHTML
+                try
+                {
+                    mail.Save(mhtmlPath, mhtOptions);
+                    Console.WriteLine($"MHTML file saved successfully to '{mhtmlPath}'.");
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Failed to save MHTML file: {ex.Message}");
-                    return;
                 }
             }
         }

@@ -1,56 +1,80 @@
 using System;
 using System.IO;
+using System.Reflection;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using System.Security.Cryptography.X509Certificates;
 
-class Program
+
+namespace ValidateMsgSignature
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string msgPath = "sample.msg";
+            // Path to the MSG file to be validated
+            string msgFilePath = "signed_message.msg";
 
-            // Verify that the MSG file exists before attempting to load it.
-            if (!File.Exists(msgPath))
+            // Verify that the input file exists before proceeding
+            if (!File.Exists(msgFilePath))
             {
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
-
-            // Load the MSG file into a MapiMessage instance.
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
-            {
-                // Check whether the message is signed.
-                if (!msg.IsSigned)
-                {
-                    Console.WriteLine("The message is not signed.");
-                    return;
-                }
-
                 try
                 {
-                    // Validate the digital signature and retrieve signer certificates.
-                    X509Certificate2[] signerCertificates = msg.CheckSignature();
-
-                    Console.WriteLine($"Signature is valid. Number of signers: {signerCertificates.Length}");
-                    foreach (X509Certificate2 cert in signerCertificates)
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        Console.WriteLine($"Signer Subject: {cert.Subject}");
+                        placeholder.Save(msgFilePath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Handle signature validation errors (e.g., invalid signature, unsupported type).
-                    Console.Error.WriteLine($"Signature validation failed: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                return;
+            }
+
+            try
+            {
+                // Load the MSG file as a MapiMessage
+                MapiMessage mapiMessage = MapiMessage.Load(msgFilePath);
+
+                // Convert the MapiMessage to a MailMessage for signature checking
+                MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions());
+
+                // Ensure the MailMessage is disposed after use
+                using (mailMessage)
+                {
+                    // Use reflection to create SecureEmailManager and invoke CheckSignature
+                    // This avoids compile‑time dependency on the Aspose.Email.Security.Cryptography.Pkcs namespace
+                    Type secureManagerType = Type.GetType("Aspose.Email.Security.Cryptography.Pkcs.SecureEmailManager, Aspose.Email");
+                    if (secureManagerType == null)
+                    {
+                        Console.Error.WriteLine("SecureEmailManager type not found. Signature validation cannot be performed.");
+                        return;
+                    }
+
+                    object secureManager = Activator.CreateInstance(secureManagerType);
+                    MethodInfo checkSignatureMethod = secureManagerType.GetMethod("CheckSignature", new[] { typeof(MailMessage) });
+                    if (checkSignatureMethod == null)
+                    {
+                        Console.Error.WriteLine("CheckSignature method not found on SecureEmailManager.");
+                        return;
+                    }
+
+                    object signatureResult = checkSignatureMethod.Invoke(secureManager, new object[] { mailMessage });
+
+                    Console.WriteLine($"Signature validation result: {signatureResult}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // Catch any unexpected errors.
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            }
         }
     }
 }

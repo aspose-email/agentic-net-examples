@@ -1,87 +1,111 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailTnefExtractor
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define input MSG file and output directory
-            string inputMsgPath = "sample.msg";
-            string outputDirectory = "TnefAttachments";
-
-            // Ensure the input MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputMsgPath))
+            try
             {
+                // Author note: Adjust the input file path as needed.
+                string inputMsgPath = "sample.msg";
+
+                // Verify input file exists.
+                if (!File.Exists(inputMsgPath))
+                {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "receiver@example.com",
-                        "Placeholder",
-                        "This is a placeholder MSG file."))
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
                         placeholder.Save(inputMsgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Ensure the output directory exists
-            try
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                return;
-            }
+                    Console.Error.WriteLine($"Input MSG file not found: {inputMsgPath}");
+                    return;
+                }
 
-            // Load the MSG file with TNEF attachment preservation
-            MsgLoadOptions loadOptions = new MsgLoadOptions
-            {
-                PreserveTnefAttachments = true
-            };
-
-            using (MailMessage message = MailMessage.Load(inputMsgPath, loadOptions))
-            {
-                foreach (Attachment attachment in message.Attachments)
+                // Prepare output directory for extracted attachments.
+                string outputDirectory = "ExtractedAttachments";
+                if (!Directory.Exists(outputDirectory))
                 {
-                    // Identify TNEF‑encoded attachments
-                    if (attachment.IsTnef)
-                    {
-                        string attachmentName = attachment.Name;
-                        if (string.IsNullOrEmpty(attachmentName))
-                        {
-                            attachmentName = "tnef_attachment.dat";
-                        }
+                    Directory.CreateDirectory(outputDirectory);
+                }
 
-                        string outputPath = Path.Combine(outputDirectory, attachmentName);
+                // Load the MSG file.
+                MapiMessage msg = MapiMessage.Load(inputMsgPath);
+
+                // Iterate over attachments to find TNEF (winmail.dat) files.
+                foreach (MapiAttachment attachment in msg.Attachments)
+                {
+                    if (attachment.FileName != null &&
+                        attachment.FileName.Equals("winmail.dat", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Save the TNEF attachment to a temporary file.
+                        string tempTnefPath = Path.Combine(Path.GetTempPath(),
+                            Guid.NewGuid().ToString() + ".dat");
 
                         try
                         {
-                            attachment.Save(outputPath);
-                            Console.WriteLine($"Saved TNEF attachment: {outputPath}");
+                            attachment.Save(tempTnefPath);
+
+                            // Load the TNEF content as a MapiMessage.
+                            MapiMessage tnefMessage = MapiMessage.LoadFromTnef(tempTnefPath);
+
+                            // Extract inner attachments from the TNEF message.
+                            foreach (MapiAttachment innerAttachment in tnefMessage.Attachments)
+                            {
+                                string outputPath = Path.Combine(outputDirectory, innerAttachment.FileName);
+                                innerAttachment.Save(outputPath);
+                                Console.WriteLine($"Saved inner attachment: {outputPath}");
+                            }
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine($"Failed to save attachment '{attachmentName}': {ex.Message}");
+                            Console.Error.WriteLine($"Error processing TNEF attachment: {ex.Message}");
+                        }
+                        finally
+                        {
+                            // Clean up the temporary TNEF file.
+                            if (File.Exists(tempTnefPath))
+                            {
+                                try { File.Delete(tempTnefPath); } catch { /* ignore */ }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Non‑TNEF attachment: save directly if desired.
+                        string directPath = Path.Combine(outputDirectory, attachment.FileName);
+                        try
+                        {
+                            attachment.Save(directPath);
+                            Console.WriteLine($"Saved attachment: {directPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Error saving attachment '{attachment.FileName}': {ex.Message}");
                         }
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

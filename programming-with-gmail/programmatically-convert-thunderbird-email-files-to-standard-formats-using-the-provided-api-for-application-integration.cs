@@ -1,50 +1,69 @@
+using Aspose.Email.Storage.Pst;
 using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage;
+using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Paths for the source Thunderbird mbox file and the target PST file
-            string mboxFilePath = "thunderbird.mbox";
-            string pstFilePath = "converted.pst";
+            // Path to the Thunderbird MBOX file
+            const string mboxPath = "thunderbird.mbox";
+            // Directory where converted files will be saved
+            const string outputDir = "Converted";
 
-            // Verify that the input mbox file exists
-            if (!File.Exists(mboxFilePath))
+            // Verify that the source MBOX file exists
+            if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"Error: Input file not found – {mboxFilePath}");
+                Console.Error.WriteLine($"Input file not found: {mboxPath}");
                 return;
             }
 
             // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(pstFilePath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
+
+            // Create a reader for the MBOX storage
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                try
+                foreach (MboxMessageInfo mboxMessageInfo in mboxReader.EnumerateMessageInfo())
                 {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {dirEx.Message}");
-                    return;
+                    // Extract the full MIME message from the MBOX file
+                    using (MailMessage message = mboxReader.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions()))
+                    {
+                        // Build a safe file name from the message subject
+                        string subject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            subject = subject.Replace(c, '_');
+
+                        // Save as .eml
+                        string emlPath = Path.Combine(outputDir, $"{subject}.eml");
+                        message.Save(emlPath);
+
+                        // Also save as .msg using default MSG save options
+                        string msgPath = Path.Combine(outputDir, $"{subject}.msg");
+                        message.Save(msgPath, SaveOptions.DefaultMsg);
+                    }
                 }
             }
 
-            // Convert the mbox file to PST format
+            // Optional: Convert the entire MBOX file to a PST file
+            string pstPath = Path.Combine(outputDir, "Archive.pst");
             try
             {
-                MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath);
-                Console.WriteLine($"Conversion successful. PST saved to: {pstFilePath}");
+                // This method returns a PersonalStorage instance representing the created PST
+                PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxPath, pstPath);
+                // Dispose the PST storage when done
+                pstStorage.Dispose();
+                Console.WriteLine($"MBOX successfully converted to PST: {pstPath}");
             }
-            catch (Exception convEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error during conversion: {convEx.Message}");
-                return;
+                Console.Error.WriteLine($"PST conversion failed: {ex.Message}");
             }
         }
         catch (Exception ex)

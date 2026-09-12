@@ -1,56 +1,54 @@
+using Aspose.Email.Clients.Exchange.Dav;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Tools.Search;
 
 class Program
 {
     static void Main()
     {
+        // Connection parameters (replace with real values).
+        string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+
+        // Skip external calls when placeholder credentials are used.
+        if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+        {
+            Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(mailboxUri))
+        {
+            Console.Error.WriteLine("Mailbox URI is not provided.");
+            return;
+        }
+
+        // Define a filter: unread messages from a specific sender.
+        MailQuery query = new MailQuery("(('From' Contains 'sender@example.com') & 'Seen' = 'False')");
+
         try
         {
-            // Placeholder connection details – replace with real values when running against a live server
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip external call if placeholders are detected
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping server interaction.");
-                return;
-            }
-
-            // Initialize the Exchange WebDAV client
+            // Instantiate ExchangeClient.
             using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
             {
-                // Build a query:
-                //   - Sent date on or after 1 Jan 2023
-                //   - Subject contains the word "Report"
-                DateTime startDate = new DateTime(2023, 1, 1);
-                ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                builder.SentDate.Since(startDate);
-                builder.Subject.Contains("Report");
+                // Retrieve messages from the Inbox that satisfy the filter.
+                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", query.ToString());
 
-                MailQuery query = builder.GetQuery();
-
-                // Retrieve messages from the Inbox that match the query (non‑recursive)
-                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", query, false);
-
-                // Output basic information for each matching message
                 foreach (ExchangeMessageInfo info in messages)
                 {
                     Console.WriteLine($"Subject: {info.Subject}");
-                    Console.WriteLine($"Sent: {info.Date}");
-                    Console.WriteLine($"URI: {info.UniqueUri}");
+                    Console.WriteLine($"From: {info.From}");
+                    Console.WriteLine($"Received: {info.InternalDate}");
                     Console.WriteLine(new string('-', 40));
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred while accessing Exchange: {ex.Message}");
         }
     }
 }

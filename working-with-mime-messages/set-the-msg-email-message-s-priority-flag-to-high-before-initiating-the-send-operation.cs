@@ -1,37 +1,87 @@
 using System;
+using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 
-class Program
+namespace AsposeEmailSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Create a mail message and set its priority to High
-            using (MailMessage message = new MailMessage("sender@example.com", "recipient@example.com", "Test Subject", "Test Body"))
-            {
-                message.Priority = MailPriority.High;
+            // Path to the MSG file
+            string msgPath = "input.msg";
 
-                // Initialize the SMTP client (preserve the variable name 'client')
-                using (SmtpClient client = new SmtpClient("smtp.example.com", 587, "username", "password"))
+            // Guard: ensure the file exists before attempting to load
+            if (!File.Exists(msgPath))
+            {
+                try
                 {
-                    try
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        client.Send(message);
-                        Console.WriteLine("Message sent successfully.");
+                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
-                    catch (Exception ex)
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                Console.WriteLine($"Message file '{msgPath}' not found.");
+                return;
+            }
+
+            try
+            {
+                // Load the MSG file into a MailMessage instance
+                using (MailMessage message = MailMessage.Load(msgPath))
+                {
+                    // Set the priority flag to High
+                    message.Priority = MailPriority.High;
+
+                    // SMTP server configuration (placeholders)
+                    string smtpHost = "smtp.example.com";
+                    int smtpPort = 587;
+                    string smtpUser = "user@example.com";
+                    string smtpPassword = "password";
+
+                    // Guard: skip network operation if placeholder credentials are detected
+                    if (smtpHost.Contains("example.com") || smtpUser.Contains("example.com"))
                     {
-                        Console.Error.WriteLine($"Error sending message: {ex.Message}");
+                        Console.WriteLine("Placeholder SMTP credentials detected. Skipping send operation.");
                         return;
+                    }
+
+                    // Initialize and configure the SMTP client
+                    using (SmtpClient smtpClient = new SmtpClient(smtpHost, smtpPort))
+                    {
+                        smtpClient.Username = smtpUser;
+                        smtpClient.Password = smtpPassword;
+                        smtpClient.SecurityOptions = SecurityOptions.Auto;
+
+                        try
+                        {
+                            // Send the message
+                            smtpClient.Send(message);
+                            Console.WriteLine("Message sent successfully.");
+                        }
+                        catch (Exception sendEx)
+                        {
+                            Console.WriteLine($"Error sending message: {sendEx.Message}");
+                        }
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception loadEx)
+            {
+                Console.WriteLine($"Error loading message: {loadEx.Message}");
+            }
         }
     }
 }

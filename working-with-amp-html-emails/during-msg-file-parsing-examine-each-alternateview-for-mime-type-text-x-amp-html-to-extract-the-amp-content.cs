@@ -1,74 +1,76 @@
 using System;
 using System.IO;
-using System.Text;
-using System.Net.Mime;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main()
         {
-            string msgPath = "sample.msg";
-
-            if (!File.Exists(msgPath))
+            try
             {
+                const string inputPath = "TestEml.eml";
+                const string outputPath = "output.msg";
+
+                // Ensure the input EML file exists; create a minimal placeholder if missing.
+                if (!File.Exists(inputPath))
+                {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath);
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
 
-                Console.Error.WriteLine($"File not found: {msgPath}");
-                return;
-            }
-
-            using (MapiMessage mapiMessage = MapiMessage.Load(msgPath))
-            {
-                MailConversionOptions conversionOptions = new MailConversionOptions();
-
-                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
-                {
-                    bool ampFound = false;
-
-                    foreach (AlternateView view in mailMessage.AlternateViews)
+                    try
                     {
-                        if (view.ContentType != null &&
-                            string.Equals(view.ContentType.MediaType, "text/x-amp-html", StringComparison.OrdinalIgnoreCase))
-                        {
-                            using (StreamReader reader = new StreamReader(view.ContentStream, Encoding.UTF8, true))
-                            {
-                                string ampContent = reader.ReadToEnd();
-                                Console.WriteLine("AMP Content:");
-                                Console.WriteLine(ampContent);
-                                ampFound = true;
-                            }
-                        }
+                        File.WriteAllText(inputPath, "Subject: Test\r\n\r\nThis is a test email.");
+                        Console.WriteLine($"Created placeholder EML file: {inputPath}");
                     }
-
-                    if (!ampFound)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine("No AMP content found in the message.");
+                        Console.Error.WriteLine($"Failed to create placeholder EML: {ex.Message}");
+                        return;
+                    }
+                }
+
+                // Initialize load options to preserve attachments and embedded messages.
+                EmlLoadOptions emlLoadOptions = new EmlLoadOptions()
+                {
+                    PreserveTnefAttachments = true,
+                    PreserveEmbeddedMessageFormat = true
+                };
+
+                // Load the EML message with the specified options.
+                using (MailMessage message = MailMessage.Load(inputPath, emlLoadOptions))
+                {
+                    try
+                    {
+                        // Save the message as MSG using the default MSG save options.
+                        message.Save(outputPath, SaveOptions.DefaultMsg);
+                        Console.WriteLine($"Converted '{inputPath}' to '{outputPath}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save MSG: {ex.Message}");
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

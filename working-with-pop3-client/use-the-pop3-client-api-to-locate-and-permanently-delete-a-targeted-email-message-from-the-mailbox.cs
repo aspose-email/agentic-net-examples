@@ -1,8 +1,8 @@
-using Aspose.Email.Tools.Search;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
+
+// Author: Example code demonstrating POP3 message deletion using Aspose.Email
 
 class Program
 {
@@ -10,55 +10,56 @@ class Program
     {
         try
         {
-            // Placeholder POP3 server credentials
+            // POP3 server connection parameters
             string host = "pop3.example.com";
-            string username = "username";
+            int port = 110;
+            string username = "user@example.com";
             string password = "password";
 
-            // Guard against executing with placeholder credentials
-            if (host.Contains("example") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+            // Create and use the POP3 client (client will be disposed automatically)
+            using (Pop3Client pop3Client = new Pop3Client(host, port, username, password))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
-                return;
-            }
+                // Retrieve the list of messages in the mailbox
+                Pop3MessageInfoCollection messageInfos = pop3Client.ListMessages();
 
-            // Initialize POP3 client
-            using (Pop3Client client = new Pop3Client(host, username, password))
-            {
-                try
+                // Define the criteria for the message to delete (e.g., subject)
+                string targetSubject = "Target Email Subject";
+
+
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    // Build a query to locate the target message (e.g., by subject)
-                    MailQueryBuilder builder = new MailQueryBuilder();
-                    builder.Subject.Contains("Target Subject");
-                    MailQuery query = builder.GetQuery();
-
-                    // Retrieve messages matching the query
-                    Pop3MessageInfoCollection messages = client.ListMessages(query);
-
-                    // Find the first message that matches the criteria
-                    foreach (Pop3MessageInfo info in messages)
-                    {
-                        if (info.Subject != null && info.Subject.Contains("Target Subject"))
-                        {
-                            // Mark the message for deletion using its sequence number
-                            client.DeleteMessage(info.SequenceNumber);
-
-                            // Permanently delete all messages marked for deletion
-                            Console.WriteLine($"Message with UID '{info.UniqueId}' has been permanently deleted.");
-                            break;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
+
+                // Locate the unique identifier of the target message
+                string targetUniqueId = null;
+                foreach (Pop3MessageInfo info in messageInfos)
+                {
+                    if (info.Subject != null && info.Subject.Equals(targetSubject, StringComparison.OrdinalIgnoreCase))
+                    {
+                        targetUniqueId = info.UniqueId;
+                        break;
+                    }
+                }
+
+                if (targetUniqueId != null)
+                {
+                    // Mark the message for deletion; actual removal occurs when the session ends (QUIT)
+                    pop3Client.DeleteMessage(targetUniqueId);
+                    Console.WriteLine("Message marked for deletion.");
+                }
+                else
+                {
+                    Console.WriteLine("Target message not found.");
+                }
+                // Exiting the using block sends QUIT, permanently deleting marked messages
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

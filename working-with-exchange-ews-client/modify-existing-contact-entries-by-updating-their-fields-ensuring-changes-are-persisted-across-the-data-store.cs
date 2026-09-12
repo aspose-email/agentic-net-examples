@@ -3,76 +3,65 @@ using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.PersonalInfo;
 
-namespace UpdateContactSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        // Connection parameters for the Exchange Web Services endpoint
+        string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+
+        // Guard: skip external calls when placeholder credentials are used
+        bool placeholdersInUse = serviceUrl.Contains("example.com") &&
+                                 username.Contains("example.com") &&
+                                 password.Equals("password", StringComparison.OrdinalIgnoreCase);
+
+        if (placeholdersInUse)
         {
-            try
-            {
-                // Placeholder credentials and service URL
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "username";
-                string password = "password";
+            Console.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
+            return;
+        }
 
-                // Guard against executing live network calls with placeholder data
-                if (serviceUrl.Contains("example") || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        try
+        {
+            // Create the EWS client (IEWSClient) and ensure it is disposed properly
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            {
+                // Identifier (URI) of the contact to be updated
+                string contactId = "https://exchange.example.com/EWS/Contacts/12345";
+
+                // Retrieve the existing contact
+                Contact contact = client.GetContact(contactId);
+                if (contact == null)
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                    Console.Error.WriteLine("Contact not found.");
                     return;
                 }
 
-                // Create and connect the EWS client
-                IEWSClient client = null;
-                try
+                // Modify desired fields
+                contact.GivenName = "John";
+                contact.Surname = "Doe";
+
+                // Update the primary email address (replace if present, otherwise add)
+                EmailAddress newEmail = new EmailAddress("john.doe@example.com");
+                if (contact.EmailAddresses.Count > 0)
                 {
-                    client = EWSClient.GetEWSClient(serviceUrl, username, password);
+                    contact.EmailAddresses[0] = newEmail;
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.Error.WriteLine($"Failed to create or connect EWS client: {ex.Message}");
-                    return;
+                    contact.EmailAddresses.Add(newEmail);
                 }
 
-                using (client)
-                {
-                    // Retrieve all contacts from the default contacts folder
-                    Contact[] contacts;
-                    try
-                    {
-                        contacts = client.GetContacts(client.MailboxInfo.ContactsUri);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to retrieve contacts: {ex.Message}");
-                        return;
-                    }
-
-                    // Update each contact's fields
-                    foreach (Contact contact in contacts)
-                    {
-                        // Example modifications
-                        contact.GivenName = "UpdatedGivenName";
-                        contact.Surname = "UpdatedSurname";
-
-                        // Update the contact in the store
-                        try
-                        {
-                            client.UpdateContact(contact);
-                            Console.WriteLine($"Contact '{contact.GivenName} {contact.Surname}' updated successfully.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to update contact '{contact.GivenName} {contact.Surname}': {ex.Message}");
-                        }
-                    }
-                }
+                // Persist the changes back to the Exchange store
+                client.UpdateContact(contact);
+                Console.WriteLine("Contact updated successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

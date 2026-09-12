@@ -1,62 +1,73 @@
-using System;
-using Aspose.Email;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using Aspose.Email;
+using Aspose.Email.Clients.Smtp;
+using System;
 
 class Program
 {
     static void Main()
     {
+        // Declare the SMTP client variable name as required
+        SmtpClient smtpClient = null;
+
         try
         {
-            // Placeholder credentials – in real scenarios replace with actual values.
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string defaultEmail = "user@example.com";
+            // Initialize the client with placeholder credentials
+            string host = "smtp.example.com";
+            int port = 587;
+            string username = "user@example.com";
+            string password = "password";
 
-            // Guard against executing live network calls with placeholder credentials.
-            if (clientId == "clientId" || clientSecret == "clientSecret" ||
-                refreshToken == "refreshToken")
+            // Guard: skip real initialization when placeholders are detected
+            bool isPlaceholder = host.Contains("example.com") || username.Contains("example.com");
+            if (isPlaceholder)
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client operations.");
+                Console.WriteLine("Placeholder credentials detected. Skipping actual SMTP client initialization.");
+                // Display placeholder configuration
+                Console.WriteLine("Current SMTP client configuration:");
+                Console.WriteLine($"Host: {host}");
+                Console.WriteLine($"Port: {port}");
+                Console.WriteLine($"Username: {username}");
+                Console.WriteLine($"SecurityOptions: {SecurityOptions.None}");
                 return;
             }
 
-            // Create Gmail client instance.
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
-            {
-                // Retrieve current configuration settings.
-                string currentAccessToken = gmailClient.AccessToken;
-                string currentDefaultEmail = gmailClient.DefaultEmail;
-                int currentTimeout = gmailClient.Timeout;
-                Console.WriteLine($"Current Access Token: {currentAccessToken}");
-                Console.WriteLine($"Current Default Email: {currentDefaultEmail}");
-                Console.WriteLine($"Current Timeout (ms): {currentTimeout}");
+            smtpClient = new SmtpClient(host, port, username, password);
 
-                // Modify configuration settings.
-                gmailClient.Timeout = 200000; // Increase timeout to 200 seconds.
-                // Example: assign a proxy if needed (null here means no proxy).
-                gmailClient.Proxy = null;
+            // Retrieve and display current configuration settings
+            Console.WriteLine("Current SMTP client configuration:");
+            Console.WriteLine($"Host: {smtpClient.Host}");
+            Console.WriteLine($"Port: {smtpClient.Port}");
+            Console.WriteLine($"Username: {smtpClient.Username}");
+            Console.WriteLine($"SecurityOptions: {smtpClient.SecurityOptions}");
 
-                // Refresh the access token programmatically.
-                try
-                {
-                    gmailClient.RefreshToken();
-                    Console.WriteLine("Access token refreshed successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to refresh token: {ex.Message}");
-                }
+            // Modify configuration settings programmatically
+            smtpClient.Host = "smtp.mailserver.com";
+            smtpClient.Port = 465;
+            smtpClient.Username = "newuser@mailserver.com";
+            smtpClient.Password = "newpassword";
+            smtpClient.SecurityOptions = SecurityOptions.SSLImplicit;
 
-                // Verify modified settings.
-                Console.WriteLine($"Updated Timeout (ms): {gmailClient.Timeout}");
-            }
+            // Display the updated configuration
+            Console.WriteLine("Updated SMTP client configuration:");
+            Console.WriteLine($"Host: {smtpClient.Host}");
+            Console.WriteLine($"Port: {smtpClient.Port}");
+            Console.WriteLine($"Username: {smtpClient.Username}");
+            Console.WriteLine($"SecurityOptions: {smtpClient.SecurityOptions}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            // Gracefully handle any errors during client configuration
+            Console.Error.WriteLine($"Error configuring SMTP client: {ex.Message}");
+            return;
+        }
+        finally
+        {
+            // Dispose the client if it implements IDisposable
+            if (smtpClient is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
     }
 }

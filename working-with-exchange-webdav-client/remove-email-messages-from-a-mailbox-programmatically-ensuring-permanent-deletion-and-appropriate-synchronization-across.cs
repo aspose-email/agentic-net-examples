@@ -1,43 +1,44 @@
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email;
 using System;
-using Aspose.Email.Clients.Exchange.Dav;
+using System.Threading;
+using System.Threading.Tasks;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Pop3;
 
 class Program
 {
-    static void Main(string[] args)
+    // Author: Aspose.Email example - permanently delete all messages from a POP3 mailbox.
+    static async Task Main()
     {
         try
         {
-            // Placeholder credentials – replace with real values when available.
-            string exchangeUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            // POP3 server connection settings.
+            string host = "pop3.example.com";
+            int port = 995;
             string username = "user@example.com";
             string password = "password";
 
-            // Initialize the Exchange client.
-            using (ExchangeClient client = new ExchangeClient(exchangeUrl, username, password))
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                // Get the URI of the Inbox folder.
-                string inboxUri = client.MailboxInfo.InboxUri;
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
 
-                // Retrieve all messages from the Inbox.
-                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+            // Create and configure the POP3 client.
+            using (Pop3Client pop3Client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+            {
+                // Attempt to delete all messages in the mailbox.
+                // The POP3 server marks messages as deleted; they are removed when the session ends.
+                await pop3Client.DeleteMessagesAsync();
 
-                // Destination folder for deleted items.
-                string deletedItemsUri = client.MailboxInfo.DeletedItemsUri;
-
-                // Iterate through each message and move it to Deleted Items.
-                foreach (ExchangeMessageInfo messageInfo in messages)
-                {
-                    // Move the message to the Deleted Items folder.
-                    client.MoveMessage(messageInfo, deletedItemsUri);
-                }
+                Console.WriteLine("All messages have been marked for permanent deletion.");
             }
         }
         catch (Exception ex)
         {
-            // Log any unexpected errors.
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

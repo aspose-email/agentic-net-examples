@@ -1,72 +1,121 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string pstPath = "sample.pst";
+            const string pstFilePath = "storage.pst";
+            const string outputDirectory = "ExtractedMessages";
 
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                Directory.CreateDirectory(pstDirectory);
-            }
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDirectory))
+                Directory.CreateDirectory(outputDirectory);
 
-            if (!File.Exists(pstPath))
+            // Create a minimal PST file if it does not exist
+            if (!File.Exists(pstFilePath))
             {
-                // Create a new PST file if it does not exist
                 try
                 {
-                    using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Subscribe to PST events
-                        pst.ItemMoved += (sender, e) => Console.WriteLine("Item moved event triggered.");
-                        pst.StorageProcessing += (sender, e) => Console.WriteLine("Storage processing event triggered.");
-                        pst.StorageProcessed += (sender, e) => Console.WriteLine("Storage processed event triggered.");
-
-                        Console.WriteLine("Created new PST file and subscribed to events.");
-                        Console.WriteLine("Press any key to exit.");
-                        Console.ReadKey();
-                    }
+                    PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Created new PST file at '{pstFilePath}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
                     return;
                 }
             }
-            else
-            {
-                // Open existing PST file
-                try
-                {
-                    using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-                    {
-                        // Subscribe to PST events
-                        pst.ItemMoved += (sender, e) => Console.WriteLine("Item moved event triggered.");
-                        pst.StorageProcessing += (sender, e) => Console.WriteLine("Storage processing event triggered.");
-                        pst.StorageProcessed += (sender, e) => Console.WriteLine("Storage processed event triggered.");
 
-                        Console.WriteLine("Opened existing PST file and subscribed to events.");
-                        Console.WriteLine("Press any key to exit.");
-                        Console.ReadKey();
-                    }
-                }
-                catch (Exception ex)
+            // Initial processing of the PST file
+            ProcessPst(pstFilePath, outputDirectory);
+
+            // Set up a watcher to subscribe to PST file changes
+            var watcher = new FileSystemWatcher
+            {
+                Path = Path.GetDirectoryName(Path.GetFullPath(pstFilePath)) ?? ".",
+                Filter = Path.GetFileName(pstFilePath),
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size
+            };
+
+            watcher.Changed += (s, e) =>
+            {
+                Console.WriteLine($"PST file changed: {e.ChangeType}");
+                ProcessPst(pstFilePath, outputDirectory);
+            };
+            watcher.Created += (s, e) =>
+            {
+                Console.WriteLine($"PST file created: {e.ChangeType}");
+                ProcessPst(pstFilePath, outputDirectory);
+            };
+            watcher.Deleted += (s, e) =>
+            {
+                Console.WriteLine($"PST file deleted: {e.ChangeType}");
+            };
+            watcher.Renamed += (s, e) =>
+            {
+                Console.WriteLine($"PST file renamed: {e.OldFullPath} -> {e.FullPath}");
+                ProcessPst(pstFilePath, outputDirectory);
+            };
+
+            watcher.EnableRaisingEvents = true;
+
+            Console.WriteLine("Press Enter to exit...");
+            Console.ReadLine();
+
+            watcher.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    private static void ProcessPst(string pstPath, string outputDir)
+    {
+        try
+        {
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                int totalItemsCount = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Total items count: {totalItemsCount}");
+
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    Console.Error.WriteLine($"Error opening PST file: {ex.Message}");
-                    return;
+                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                    {
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                        // Extract the message as a MapiMessage and convert to MailMessage
+                        MapiMessage mapiMsg = pst.ExtractMessage(messageInfo);
+                        MailMessage mailMsg = mapiMsg.ToMailMessage(new MailConversionOptions());
+
+                        // Build a safe filename
+                        string safeSubject = string.IsNullOrWhiteSpace(mailMsg.Subject) ? "NoSubject" : mailMsg.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            safeSubject = safeSubject.Replace(c, '_');
+
+                        string messageFilePath = Path.Combine(outputDir, $"{safeSubject}.msg");
+
+                        // Save as .msg
+                        mailMsg.Save(messageFilePath, SaveOptions.DefaultMsgUnicode);
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error processing PST file '{pstPath}': {ex.Message}");
         }
     }
 }

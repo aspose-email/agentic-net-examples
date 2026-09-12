@@ -1,82 +1,84 @@
+using Aspose.Email.Clients.Exchange.WebService;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsyncEmailRetrieval
 {
-    static async Task Main(string[] args)
+    class Program
     {
-        try
+        static async Task Main(string[] args)
         {
-            await RunAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    private static async Task RunAsync()
-    {
-        // Placeholder connection settings
-        string imapHost = "imap.example.com";
-        int imapPort = 993;
-        string imapUsername = "user@example.com";
-        string imapPassword = "password";
-
-        // Guard against executing real network calls with placeholder data
-        if (imapHost.Contains("example.com"))
-        {
-            Console.WriteLine("Placeholder IMAP credentials detected. Skipping actual server call.");
-            return;
-        }
-
-        // Create and connect the IMAP client
-        ImapClient client = null;
-        try
-        {
-            client = new ImapClient(imapHost, imapPort, imapUsername, imapPassword);
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Failed to create IMAP client: {ex.Message}");
-            return;
-        }
-
-        using (client)
-        {
-            // Cancellation token for async operations
-            CancellationToken cancellationToken = CancellationToken.None;
-
-            // List messages in the INBOX folder asynchronously
-            ImapMessageInfoCollection messageInfos;
             try
             {
-                messageInfos = await client.ListMessagesAsync("INBOX", cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
-                return;
-            }
+                using var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromMinutes(2));
+                CancellationToken token = cts.Token;
 
-            // Process each message without blocking the calling thread
-            foreach (ImapMessageInfo messageInfo in messageInfos)
-            {
+                // Exchange EWS service URL and credentials (placeholders)
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
+                string domain = ""; // optional, leave empty if not needed
+
+                // Detect placeholder credentials and skip external calls
+                if (serviceUrl.Contains("example.com") ||
+                    username.Contains("example.com") ||
+                    password == "password")
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Create the Exchange client (implements IEWSClient)
+                IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password, domain);
+
                 try
                 {
-                    // Fetch the full message asynchronously
-                    MailMessage message = await client.FetchMessageAsync(messageInfo.UniqueId, cancellationToken);
-                    Console.WriteLine($"Subject: {message.Subject}");
+                    // List messages in the Inbox folder asynchronously
+                    var messageInfos = await Task.Run(() => client.ListMessages("Inbox"), token);
+
+                    if (messageInfos == null || messageInfos.Count == 0)
+                    {
+                        Console.WriteLine("No messages found in Inbox.");
+                        return;
+                    }
+
+                    var messages = new List<MailMessage>();
+
+                    // Fetch each message asynchronously, supporting cancellation
+                    foreach (var info in messageInfos)
+                    {
+                        token.ThrowIfCancellationRequested();
+
+                        // FetchMessage may be a synchronous call; wrap it in Task.Run
+                        var message = await Task.Run(() => client.FetchMessage(info.UniqueUri), token);
+                        messages.Add(message);
+                    }
+
+                    // Process retrieved messages
+                    foreach (var message in messages)
+                    {
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        // Additional processing (e.g., saving attachments) can be added here
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.Error.WriteLine("Operation was canceled.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to fetch message UID {messageInfo.UniqueId}: {ex.Message}");
+                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }

@@ -2,43 +2,37 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-namespace Example
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Output file path for the EML message
+            string outputPath = "output.eml";
+
+            // Ensure the target directory exists
+            string outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                // Target file path for the EML file
-                string outputPath = "output.eml";
-
-                // Ensure the output directory exists
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-
-                // Create a simple mail message
-                using (MailMessage mailMessage = new MailMessage())
-                {
-                    mailMessage.From = new MailAddress("sender@example.com");
-                    mailMessage.To.Add(new MailAddress("recipient@example.com"));
-                    mailMessage.Subject = "Test Email";
-                    mailMessage.Body = "This is a test email saved as EML.";
-
-                    // Save the message using default EML options
-                    mailMessage.Save(outputPath, SaveOptions.DefaultEml);
-                }
-
-                Console.WriteLine($"MailMessage saved to '{outputPath}'.");
+                Directory.CreateDirectory(outputDirectory);
             }
-            catch (Exception ex)
+
+            // Create a simple email message
+            using (MailMessage mailMessage = new MailMessage())
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-                return;
+                mailMessage.From = new MailAddress("sender@example.com");
+                mailMessage.To.Add(new MailAddress("recipient@example.com"));
+                mailMessage.Subject = "Test Email";
+                mailMessage.Body = "This is a test email.";
+
+                // Persist the message to an EML file using default save options
+                mailMessage.Save(outputPath, SaveOptions.DefaultEml);
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

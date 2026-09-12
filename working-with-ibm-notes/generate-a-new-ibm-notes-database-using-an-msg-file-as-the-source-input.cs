@@ -4,69 +4,64 @@ using Aspose.Email;
 using Aspose.Email.Mapi;
 using Aspose.Email.Storage.Nsf;
 
+// Author: Example that creates an IBM Notes (NSF) database file.
+// The source MSG file is validated, but the NSF format does not expose a direct import method in this API version.
 class Program
 {
     static void Main()
     {
         try
         {
-            string msgPath = "input.msg";
+            string msgPath = "source.msg";
             string nsfPath = "output.nsf";
 
-            // Ensure the source MSG file exists; create a minimal placeholder if it does not.
+            // Verify the source MSG file exists.
             if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage("sender@example.com", "recipient@example.com", "Sample Subject", "Sample Body"))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
                         placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file into a MapiMessage instance.
-            MapiMessage msg;
-            try
-            {
-                msg = MapiMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Source MSG file not found: {msgPath}");
                 return;
             }
 
-            // Create a simple MapiNote using the subject and body from the loaded message.
-            MapiNote note = new MapiNote(msg.Subject, msg.Body);
+            // Load the MSG file into a MapiMessage.
+            MapiMessage mapiMessage = MapiMessage.Load(msgPath);
 
-            // Create a new IBM Notes (NSF) database.
-            try
+            // Ensure the output directory exists.
+            string nsfDirectory = Path.GetDirectoryName(nsfPath);
+            if (!string.IsNullOrEmpty(nsfDirectory) && !Directory.Exists(nsfDirectory))
             {
-                using (NotesStorageFacility notes = new NotesStorageFacility(nsfPath))
-                {
-                    // NOTE: In a full implementation, you would add the note to the NSF database here.
-                    // The Aspose.Email API provides methods for inserting notes into the database,
-                    // but they are omitted for brevity.
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error creating Notes database: {ex.Message}");
-                return;
+                Directory.CreateDirectory(nsfDirectory);
             }
 
-            // Clean up.
-            msg.Dispose();
+            // Create (or open) the NSF database. No explicit import API is available in this version,
+            // so the database is created empty. Further processing can be added when the appropriate method is provided.
+            using (NotesStorageFacility notes = new NotesStorageFacility(nsfPath))
+            {
+                // Placeholder for future message import logic.
+                // Example: notes.ImportMessage(mapiMessage);
+            }
+
+            Console.WriteLine("NSF database created successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

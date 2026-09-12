@@ -8,76 +8,58 @@ class Program
     {
         try
         {
-            // Define paths
-            string outputMsgPath = "output.msg";
-            string attachmentPath1 = "attachment1.txt";
-            string attachmentPath2 = "attachment2.jpg";
+            // Define output MSG file path
+            string outputMsgPath = "AddAttachments.msg";
 
-            // Ensure output directory exists
+            // Ensure the output directory exists
             string outputDir = Path.GetDirectoryName(outputMsgPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Prepare placeholder attachments if they are missing
-            try
+            // Prepare attachment files (create minimal placeholders if missing)
+            string[] attachmentFiles = { "1.txt", "1.jpg", "1.doc", "1.rar", "1.pdf" };
+            foreach (string file in attachmentFiles)
             {
-                if (!File.Exists(attachmentPath1))
+                if (!File.Exists(file))
                 {
-                    File.WriteAllText(attachmentPath1, "Placeholder text file.");
-                }
-
-                if (!File.Exists(attachmentPath2))
-                {
-                    // Create a tiny JPEG placeholder (empty file is acceptable for demo)
-                    File.WriteAllBytes(attachmentPath2, new byte[0]);
+                    try
+                    {
+                        // Create a tiny placeholder file appropriate to its extension
+                        File.WriteAllText(file, $"Placeholder content for {file}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create placeholder for '{file}': {ex.Message}");
+                        return;
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare attachment files: {ex.Message}");
-                return;
-            }
 
-            // Create the mail message
-            using (MailMessage mail = new MailMessage())
+            // Create the email message
+            using (MailMessage message = new MailMessage())
             {
-                mail.From = "sender@example.com";
-                mail.To = "recipient@example.com";
-                mail.Subject = "Sample MSG with Attachments";
-                mail.Body = "This is a sample message body.";
+                message.From = "sender@from.com";
+                message.To = "receiver@to.com";
+                message.Subject = "This is message";
+                message.Body = "This is body";
 
-                // Add custom MIME header
-                mail.Headers["X-Custom-Header"] = "CustomValue";
+                // Add a custom MIME header
+                message.Headers.Add("X-Custom-Header", "CustomValue");
 
                 // Add attachments
-                try
+                foreach (string file in attachmentFiles)
                 {
-                    mail.Attachments.Add(new Attachment(attachmentPath1));
-                    mail.Attachments.Add(new Attachment(attachmentPath2));
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to add attachments: {ex.Message}");
-                    return;
+                    Attachment attachment = new Attachment(file);
+                    message.AddAttachment(attachment);
                 }
 
-                // Iterate and display headers using Keys as required
-                foreach (string key in mail.Headers.Keys)
-                {
-                    Console.WriteLine($"{key}: {mail.Headers[key]}");
-                }
-
-                // Save as MSG with preserved original dates
+                // Save the message as MSG
                 try
                 {
-                    var msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
-                    {
-                        PreserveOriginalDates = true
-                    };
-                    mail.Save(outputMsgPath, msgSaveOptions);
-                    Console.WriteLine($"Message saved to {outputMsgPath}");
+                    message.Save(outputMsgPath);
+                    Console.WriteLine($"Message saved successfully to '{outputMsgPath}'.");
                 }
                 catch (Exception ex)
                 {

@@ -2,17 +2,21 @@ using System;
 using System.IO;
 using Aspose.Email;
 
-class Program
+namespace AsposeEmailExample
 {
-    static void Main()
+    // Author: Generated example for retrieving HTML body from an MSG file using Aspose.Email.
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "sample.msg";
-
-            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(msgPath))
+            try
             {
+                // Define the path to the MSG file.
+                string msgPath = "message.msg";
+
+                // Verify that the input file exists.
+                if (!File.Exists(msgPath))
+                {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -30,32 +34,33 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage("sender@example.com", "recipient@example.com", "Placeholder Subject", "Placeholder plain text body"))
-                    {
-                        placeholder.HtmlBody = "<html><body><p>Placeholder HTML body.</p></body></html>";
-                        placeholder.Save(msgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Input file not found: {msgPath}");
                     return;
                 }
-            }
 
-            // Load the MSG file and retrieve its HTML body.
-            using (MailMessage mailMessage = MailMessage.Load(msgPath))
-            {
-                string htmlContent = mailMessage.HtmlBody;
-                Console.WriteLine("HTML Body:");
-                Console.WriteLine(htmlContent);
+                // Load the MSG file into a MailMessage instance.
+                using (MailMessage mailMessage = MailMessage.Load(msgPath))
+                {
+                    // Retrieve the HTML body of the message.
+                    string htmlBody = mailMessage.HtmlBody;
+
+                    // Output the HTML content (or indicate if empty).
+                    if (!string.IsNullOrEmpty(htmlBody))
+                    {
+                        Console.WriteLine("HTML Body:");
+                        Console.WriteLine(htmlBody);
+                    }
+                    else
+                    {
+                        Console.WriteLine("The message does not contain an HTML body.");
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Log any unexpected errors without crashing the application.
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

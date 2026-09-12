@@ -1,9 +1,7 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
+using Aspose.Email;
 
 class Program
 {
@@ -11,76 +9,54 @@ class Program
     {
         try
         {
-            string pstPath = "sample.pst";
+            const string pstPath = "storage.pst";
 
-            // Ensure PST file exists; create a minimal one if missing
+            // Ensure the PST file exists; create a minimal one if missing
             if (!File.Exists(pstPath))
             {
-                try
-                {
-                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Empty PST created
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
-                    return;
-                }
+                // Create a new Unicode PST file
+                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                Console.WriteLine($"Created placeholder PST file at '{pstPath}'.");
             }
 
-            // Open PST with write access
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
+            // Open the PST file for read/write operations
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Delete a specific folder named "OldFolder" if it exists
-                try
+                // Delete a folder named "ObsoleteFolder" if it exists
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    FolderInfo oldFolder = pst.RootFolder.GetSubFolder("OldFolder");
-                    if (oldFolder != null)
+                    if (string.Equals(folderInfo.DisplayName, "ObsoleteFolder", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Delete the folder using its entry ID string
-                        pst.DeleteItem(oldFolder.EntryIdString);
-                        Console.WriteLine("Folder 'OldFolder' deleted.");
+                        // Convert the entry ID (byte[]) to a Base64 string as required by DeleteItem
+                        string entryIdString = Convert.ToBase64String(folderInfo.EntryId);
+                        pst.DeleteItem(entryIdString);
+                        Console.WriteLine($"Deleted folder: {folderInfo.DisplayName}");
+                        break;
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error deleting folder: {ex.Message}");
-                }
 
-                // Delete a specific message with subject "DeleteMe" from Inbox
-                try
+                // Delete a message with a specific subject if it exists
+                bool messageDeleted = false;
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    FolderInfo inbox = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                    if (inbox != null)
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
                     {
-                        List<string> messagesToDelete = new List<string>();
-                        foreach (MessageInfo msgInfo in inbox.EnumerateMessages())
+                        if (string.Equals(messageInfo.Subject, "Old Newsletter", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (msgInfo.Subject != null && msgInfo.Subject.Equals("DeleteMe", StringComparison.OrdinalIgnoreCase))
-                            {
-                                messagesToDelete.Add(msgInfo.EntryIdString);
-                            }
-                        }
-
-                        if (messagesToDelete.Count > 0)
-                        {
-                            // Delete messages using their entry ID strings
-                            inbox.DeleteChildItems(messagesToDelete);
-                            Console.WriteLine($"{messagesToDelete.Count} message(s) with subject 'DeleteMe' deleted.");
+                            string entryIdString = Convert.ToBase64String(messageInfo.EntryId);
+                            pst.DeleteItem(entryIdString);
+                            Console.WriteLine($"Deleted message: {messageInfo.Subject}");
+                            messageDeleted = true;
+                            break;
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error deleting messages: {ex.Message}");
+                    if (messageDeleted) break;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

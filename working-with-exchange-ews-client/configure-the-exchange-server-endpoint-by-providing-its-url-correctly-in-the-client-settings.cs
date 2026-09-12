@@ -1,48 +1,41 @@
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-namespace ExchangeEndpointConfiguration
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Placeholder endpoint and credentials
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
+            // Author note: configure the Exchange Web Services (EWS) endpoint URL and credentials.
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
 
-                // Guard against executing with placeholder values
-                if (mailboxUri.Contains("example.com"))
-                {
-                    Console.WriteLine("Placeholder endpoint detected. Skipping connection.");
-                    return;
-                }
 
-                // Create and configure the EWS client
-                try
-                {
-                    using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-                    {
-                        // Example usage: display the Inbox URI
-                        Console.WriteLine("Connected to Exchange server.");
-                        Console.WriteLine("Inbox URI: " + client.MailboxInfo.InboxUri);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("EWS client error: " + ex.Message);
-                    return;
-                }
-            }
-            catch (Exception ex)
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com"))
             {
-                Console.Error.WriteLine("Unexpected error: " + ex.Message);
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
             }
+
+            // Provide network credentials (username, password, domain).
+            NetworkCredential credentials = new NetworkCredential("username", "password", "DOMAIN");
+
+            // Initialize the EWS client with the specified endpoint and credentials.
+            IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials);
+
+            // Optional: adjust client settings, e.g., timeout.
+            client.Timeout = 120000; // 2 minutes
+
+            // Example operation: retrieve basic mailbox information.
+            var mailboxInfo = client.GetMailboxInfo();
+            Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

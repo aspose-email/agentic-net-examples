@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Clients;
 
 class Program
 {
@@ -9,21 +11,21 @@ class Program
     {
         try
         {
-            // Path to the MSG file that holds SMTP configuration and the email to send
+            // Path to the MSG file containing the email and SMTP configuration
             string msgFilePath = "email.msg";
 
-            // Ensure the MSG file exists; if not, create a minimal placeholder
+            // Verify the MSG file exists before attempting to load it
             if (!File.Exists(msgFilePath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgFilePath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(msgFilePath);
                     }
                 }
                 catch (Exception ex)
@@ -32,36 +34,15 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    // Create a simple email message
-                    MailMessage placeholderMessage = new MailMessage(
-                        "sender@example.com",
-                        "receiver@example.com",
-                        "Sample Subject",
-                        "Sample body.");
-
-                    // Add custom headers that will act as SMTP configuration
-                    placeholderMessage.Headers.Add("X-SMTP-Host", "smtp.example.com");
-                    placeholderMessage.Headers.Add("X-SMTP-Username", "user@example.com");
-                    placeholderMessage.Headers.Add("X-SMTP-Password", "password123");
-
-                    // Save the message as MSG
-                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                    placeholderMessage.Save(msgFilePath, saveOptions);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                return;
             }
 
-            // Load the MSG file
-            MailMessage messageToSend;
+            // Load the MSG file as a MapiMessage
+            MapiMessage mapMsg;
             try
             {
-                messageToSend = MailMessage.Load(msgFilePath);
+                mapMsg = MapiMessage.Load(msgFilePath);
             }
             catch (Exception ex)
             {
@@ -69,32 +50,68 @@ class Program
                 return;
             }
 
-            // Extract SMTP configuration from custom headers
-            string smtpHost = messageToSend.Headers["X-SMTP-Host"];
-            string smtpUsername = messageToSend.Headers["X-SMTP-Username"];
-            string smtpPassword = messageToSend.Headers["X-SMTP-Password"];
-
-            if (string.IsNullOrEmpty(smtpHost) ||
-                string.IsNullOrEmpty(smtpUsername) ||
-                string.IsNullOrEmpty(smtpPassword))
-            {
-                Console.Error.WriteLine("SMTP configuration headers are missing in the MSG file.");
-                return;
-            }
-
-            // Create and use the SMTP client
+            // Convert the MapiMessage to a MailMessage for sending
+            MailMessage mailMessage;
             try
             {
-                using (SmtpClient client = new SmtpClient(smtpHost, smtpUsername, smtpPassword))
-                {
-                    client.Send(messageToSend);
-                    Console.WriteLine("Email sent successfully.");
-                }
+                mailMessage = mapMsg.ToMailMessage(new MailConversionOptions());
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"SMTP operation failed: {ex.Message}");
+                Console.Error.WriteLine($"Failed to convert MSG to MailMessage: {ex.Message}");
                 return;
+            }
+
+            // Extract SMTP configuration from custom headers (if present)
+            string smtpHost = mailMessage.Headers["X-Smtp-Host"];
+            string smtpPortString = mailMessage.Headers["X-Smtp-Port"];
+            string smtpUser = mailMessage.Headers["X-Smtp-User"];
+            string smtpPassword = mailMessage.Headers["X-Smtp-Password"];
+
+            // Basic validation of required SMTP settings
+            if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpPortString))
+            {
+                Console.Error.WriteLine("SMTP host or port not specified in the message headers.");
+                return;
+            }
+
+            int smtpPort;
+            if (!int.TryParse(smtpPortString, out smtpPort))
+            {
+                Console.Error.WriteLine($"Invalid SMTP port value: {smtpPortString}");
+                return;
+            }
+
+            // Create and configure the SmtpClient
+            using (SmtpClient smtpClient = new SmtpClient())
+            {
+                try
+                {
+                    smtpClient.Host = smtpHost;
+                    smtpClient.Port = smtpPort;
+
+                    // If credentials are provided, set them
+                    if (!string.IsNullOrEmpty(smtpUser) && !string.IsNullOrEmpty(smtpPassword))
+                    {
+                        smtpClient.Username = smtpUser;
+                        smtpClient.Password = smtpPassword;
+                    }
+
+                    // Use automatic security option; adjust if needed
+                    smtpClient.SecurityOptions = SecurityOptions.Auto;
+
+                    // Send the email
+                    smtpClient.Send(mailMessage);
+                    Console.WriteLine("Email sent successfully.");
+                }
+                catch (SmtpException smtpEx)
+                {
+                    Console.Error.WriteLine($"SMTP error: {smtpEx.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to send email: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)

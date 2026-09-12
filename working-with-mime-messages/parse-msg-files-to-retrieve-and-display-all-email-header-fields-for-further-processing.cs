@@ -1,3 +1,4 @@
+using Aspose.Email.Mime;
 using System;
 using System.IO;
 using Aspose.Email;
@@ -5,12 +6,14 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
+            // Path to the MSG file
             string msgPath = "sample.msg";
 
+            // Verify the file exists before attempting to load
             if (!File.Exists(msgPath))
             {
                 try
@@ -30,22 +33,38 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {msgPath}");
+                Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            using (MapiMessage message = MapiMessage.Load(msgPath))
+            // Load the Outlook Message file
+            MapiMessage msg = MapiMessage.Load(msgPath);
+
+            // Display basic properties
+            Console.WriteLine($"Subject: {msg.Subject}");
+            Console.WriteLine($"From: {msg.SenderName} <{msg.SenderEmailAddress}>");
+            Console.WriteLine($"Body: {msg.Body}");
+
+            // Retrieve and display all header fields, if the Headers collection is available
+            HeaderCollection headers = msg.Headers;
+            if (headers != null)
             {
-                // Iterate through all header fields and display them
-                foreach (string headerKey in message.Headers.Keys)
+                Console.WriteLine("Headers:");
+                foreach (string headerName in headers.AllKeys)
                 {
-                    string headerValue = message.Headers[headerKey];
-                    Console.WriteLine($"{headerKey}: {headerValue}");
+                    Console.WriteLine($"{headerName}: {headers[headerName]}");
                 }
+            }
+
+            // List attachment file names
+            foreach (MapiAttachment attachment in msg.Attachments)
+            {
+                Console.WriteLine($"Attachment: {attachment.FileName}");
             }
         }
         catch (Exception ex)
         {
+            // Output any unexpected errors without crashing the application
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }

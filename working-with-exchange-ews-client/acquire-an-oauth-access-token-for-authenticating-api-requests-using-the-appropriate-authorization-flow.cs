@@ -1,41 +1,32 @@
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
 
+// Author: Generated example for acquiring an OAuth access token using Aspose.Email TokenProvider.
 class Program
 {
     static void Main()
     {
         try
         {
-            // Placeholder credentials – replace with real values before running
-            string clientId = "YOUR_CLIENT_ID";
-            string clientSecret = "YOUR_CLIENT_SECRET";
-            string refreshToken = "YOUR_REFRESH_TOKEN";
-            string defaultEmail = "user@example.com";
+            // OAuth parameters – replace with your actual values.
+            string requestUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string refreshToken = "your-refresh-token";
 
-            // Skip execution when placeholders are present to avoid unwanted network calls
-            if (clientId.StartsWith("YOUR_") || clientSecret.StartsWith("YOUR_") || refreshToken.StartsWith("YOUR_"))
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client initialization.");
-                return;
-            }
+            // Create an Outlook token provider instance.
+            TokenProvider tokenProvider = TokenProvider.GetInstance(requestUrl, clientId, clientSecret, refreshToken);
 
-            // Create a token provider for Google and obtain an OAuth token
-            TokenProvider tokenProvider = TokenProvider.Google.GetInstance(clientId, clientSecret, refreshToken);
-            OAuthToken token = tokenProvider.GetAccessToken();
+            // Retrieve the access token.
+            Aspose.Email.Clients.OAuthToken accessToken = tokenProvider.GetAccessToken();
 
-            // Initialize the Gmail client using the access token
-            using (IGmailClient gmailClient = GmailClient.GetInstance(token.Token, defaultEmail))
-            {
-                // Example placeholder operation – in a real scenario you could list messages, send mail, etc.
-                Console.WriteLine("Gmail client initialized successfully.");
-            }
+            // Display the token string.
+            Console.WriteLine("Access Token: " + accessToken.Token);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error acquiring token: " + ex.Message);
         }
     }
 }

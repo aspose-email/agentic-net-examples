@@ -1,66 +1,51 @@
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Clients.Exchange;
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.Dav;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
-            {
-                // Placeholder credentials – in real scenarios replace with actual values.
-                string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
-                string username = "username";
-                string password = "password";
+            // Exchange server connection details
+            string host = "exchange.example.com";
+            string username = "user@example.com";
+            string password = "password";
 
-                // Guard against executing with placeholder credentials.
-                if (mailboxUri.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
+
+            // Create the Exchange client inside a using block as required
+            using (ExchangeClient client = new ExchangeClient(host, username, password))
+            {
+                // Define source and destination folder URIs (using standard folders as example)
+                string sourceFolderUri = client.MailboxInfo.InboxUri;
+                string destinationFolderUri = client.MailboxInfo.DraftsUri;
+
+                // Retrieve messages from the source folder
+                ExchangeMessageInfoCollection messages = client.ListMessages(sourceFolderUri);
+                if (messages == null || messages.Count == 0)
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping operation.");
+                    Console.WriteLine("No messages found in the source folder.");
                     return;
                 }
 
-                // Initialize the Exchange WebDAV client.
-                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
-                {
-                    // Define source and destination folder names.
-                    string sourceFolderName = "Inbox";
-                    string destinationFolderName = "Processed";
+                // Move the first message to the destination folder, preserving all properties
+                ExchangeMessageInfo messageInfo = messages[0];
+                client.MoveMessage(messageInfo, destinationFolderUri);
 
-                    // Retrieve folder information to obtain their URIs.
-                    ExchangeFolderInfo sourceFolderInfo = client.GetFolderInfo(sourceFolderName);
-                    ExchangeFolderInfo destinationFolderInfo = client.GetFolderInfo(destinationFolderName);
-
-                    if (sourceFolderInfo == null || destinationFolderInfo == null)
-                    {
-                        Console.Error.WriteLine("Unable to locate one or both folders.");
-                        return;
-                    }
-
-                    string sourceFolderUri = sourceFolderInfo.Uri;
-                    string destinationFolderUri = destinationFolderInfo.Uri;
-
-                    // List messages in the source folder.
-                    var messages = client.ListMessages(sourceFolderUri);
-
-                    foreach (ExchangeMessageInfo messageInfo in messages)
-                    {
-                        // Move each message to the destination folder.
-                        client.MoveMessage(messageInfo, destinationFolderUri);
-                        Console.WriteLine($"Moved message: Subject = \"{messageInfo.Subject}\"");
-                    }
-
-                    Console.WriteLine("Message move operation completed.");
-                }
+                Console.WriteLine("Message moved successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

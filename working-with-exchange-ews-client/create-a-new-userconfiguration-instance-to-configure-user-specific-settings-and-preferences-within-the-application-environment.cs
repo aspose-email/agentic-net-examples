@@ -1,46 +1,55 @@
-using System;
 using Aspose.Email;
+using System;
+using System.Net;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailUserConfigurationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder connection details.
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard against executing with placeholder credentials.
-            if (mailboxUri.Contains("example.com"))
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
-                return;
-            }
+                // Initialize EWS client (replace with actual mailbox URI and credentials)
+                string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create the EWS client.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+
+                // Skip external calls when placeholder credentials are used
+                if (username.Contains("example.com") || password == "password")
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Create the IEWSClient instance
+                using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    // Define a user configuration name (use default enum value if specific name is unknown)
+                    UserConfigurationName configName = default(UserConfigurationName);
+
+                    // Create a new UserConfiguration instance
+                    UserConfiguration userConfig = new UserConfiguration(configName);
+
+                    // Create the user configuration on the server
+                    ewsClient.CreateUserConfiguration(userConfig);
+                    Console.WriteLine("User configuration created.");
+
+                    // Retrieve the created configuration
+                    UserConfiguration fetchedConfig = ewsClient.GetUserConfiguration(configName);
+                    Console.WriteLine("User configuration retrieved.");
+
+                    // Update the configuration as needed (modify properties here if required)
+                    ewsClient.UpdateUserConfiguration(fetchedConfig);
+                    Console.WriteLine("User configuration updated.");
+                }
+            }
+            catch (Exception ex)
             {
-                // Define the user configuration name (folder and config name).
-                UserConfigurationName configName = new UserConfigurationName("Inbox", "MyUserConfig");
-
-                // Create a new UserConfiguration instance.
-                UserConfiguration userConfig = new UserConfiguration(configName);
-
-                // Example: set a custom property (optional).
-                // userConfig.Values["CustomKey"] = "CustomValue";
-
-                // Create the configuration on the server.
-                client.CreateUserConfiguration(userConfig);
-
-                Console.WriteLine("User configuration created successfully.");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

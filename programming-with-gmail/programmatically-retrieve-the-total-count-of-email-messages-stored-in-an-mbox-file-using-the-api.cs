@@ -1,7 +1,7 @@
-using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
+using System;
+using System.IO;
 
 class Program
 {
@@ -9,7 +9,7 @@ class Program
     {
         try
         {
-            string mboxPath = "sample.mbox";
+            const string mboxPath = "storage.mbox";
 
             if (!File.Exists(mboxPath))
             {
@@ -17,19 +17,18 @@ class Program
                 return;
             }
 
+            int totalMessages = 0;
+
             using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                int messageCount = 0;
                 MailMessage message;
-
                 while ((message = reader.ReadNextMessage()) != null)
                 {
-                    messageCount++;
-                    message.Dispose();
+                    totalMessages++;
                 }
-
-                Console.WriteLine($"Total messages in '{mboxPath}': {messageCount}");
             }
+
+            Console.WriteLine($"Total messages in MBOX: {totalMessages}");
         }
         catch (Exception ex)
         {

@@ -1,37 +1,48 @@
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Tools.Verifications;
 
-class Program
+namespace EmailValidationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            Console.Write("Enter email address to validate: ");
-            string emailAddress = Console.ReadLine();
-
-            if (string.IsNullOrWhiteSpace(emailAddress))
+            // Sample email addresses to validate
+            string[] emailAddresses = new string[]
             {
-                Console.Error.WriteLine("No email address provided.");
-                return;
-            }
+                "valid.user@example.com",
+                "invalid-email",
+                "user@nonexistentdomain.xyz"
+            };
 
+            // Create an EmailValidator instance
             EmailValidator validator = new EmailValidator();
 
-            ValidationResult validationResult;
-            validator.Validate(emailAddress, out validationResult);
-
-            Console.WriteLine("Validation Return Code: " + validationResult.ReturnCode);
-            Console.WriteLine("Message: " + validationResult.Message);
-            if (validationResult.LastException != null)
+            foreach (string address in emailAddresses)
             {
-                Console.WriteLine("Exception: " + validationResult.LastException.Message);
+                try
+                {
+                    // Perform validation using the default MailServer policy
+                    ValidationResult result;
+                    validator.Validate(address, out result);
+
+                    // Check the validation response code
+                    if (result.ReturnCode == ValidationResponseCode.ValidationSuccess)
+                    {
+                        Console.WriteLine($"[Valid]   {address}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[Invalid] {address} - Reason: {result.Message}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Catch any unexpected errors during validation
+                    Console.Error.WriteLine($"Error validating '{address}': {ex.Message}");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

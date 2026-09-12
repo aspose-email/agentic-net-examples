@@ -1,34 +1,70 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Tools.Verifications;
+using System.Text.RegularExpressions;
 
-class Program
+namespace EmailVerificationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            Console.WriteLine("Enter email address to validate:");
-            string emailAddress = Console.ReadLine();
+            // Sample email addresses to validate
+            string[] emailAddresses = new string[]
+            {
+                "john.doe@example.com",
+                "invalid-email@@example.com",
+                "jane_doe@sub.domain.org",
+                "user@localhost",
+                "bademail@.com"
+            };
 
-            // Create an EmailValidator instance
+            // Create the validator instance
             EmailValidator validator = new EmailValidator();
 
-            // Validate the email address using the default MailServer policy
-            ValidationResult result;
-            validator.Validate(emailAddress, out result);
-
-            // Report the validation outcome
-            Console.WriteLine("Validation Return Code: " + result.ReturnCode);
-            Console.WriteLine("Message: " + result.Message);
-            if (result.LastException != null)
+            foreach (string address in emailAddresses)
             {
-                Console.WriteLine("Exception: " + result.LastException.Message);
+                ValidationResult result = validator.Validate(address);
+                Console.WriteLine($"{address} => {(result.IsValid ? "Valid" : "Invalid")} - {result.Reason}");
             }
         }
-        catch (Exception ex)
+    }
+
+    public class ValidationResult
+    {
+        public bool IsValid { get; set; }
+        public string Reason { get; set; }
+    }
+
+    public class EmailValidator
+    {
+        // Simple regex for basic email syntax validation
+        private static readonly Regex EmailRegex = new Regex(
+            @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public ValidationResult Validate(string email)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            if (string.IsNullOrWhiteSpace(email))
+                return new ValidationResult { IsValid = false, Reason = "Empty or whitespace" };
+
+            if (!EmailRegex.IsMatch(email))
+                return new ValidationResult { IsValid = false, Reason = "Invalid format" };
+
+            // Split local part and domain
+            var parts = email.Split('@');
+            if (parts.Length != 2)
+                return new ValidationResult { IsValid = false, Reason = "Incorrect '@' placement" };
+
+            var domain = parts[1];
+
+            // Additional simple domain checks
+            if (domain.StartsWith("-") || domain.EndsWith("-"))
+                return new ValidationResult { IsValid = false, Reason = "Domain starts or ends with hyphen" };
+
+            if (domain.Contains(".."))
+                return new ValidationResult { IsValid = false, Reason = "Domain contains consecutive dots" };
+
+            // All checks passed
+            return new ValidationResult { IsValid = true, Reason = "Syntax OK" };
         }
     }
 }

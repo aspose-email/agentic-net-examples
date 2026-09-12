@@ -1,26 +1,37 @@
+using Aspose.Email;
 using System;
 using Aspose.Email.Tools.Verifications;
 
-class Program
+namespace EmailDomainValidationExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            Console.Write("Enter email address to validate: ");
-            string email = Console.ReadLine();
+            // Email address to validate
+            string emailAddress = "user@example.com";
 
+            // Create the validator instance
             EmailValidator validator = new EmailValidator();
 
-            ValidationResult result;
-            validator.Validate(email, ValidationPolicy.SyntaxAndDomain, out result);
+            try
+            {
+                // Perform validation (syntax + domain) and obtain the result
+                ValidationResult validationResult;
+                validator.Validate(emailAddress, out validationResult);
 
-            Console.WriteLine("Validation Return Code: " + result.ReturnCode);
-            Console.WriteLine("Message: " + result.Message);
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+                // Determine if the validation succeeded
+                bool isValid = validationResult.ReturnCode == ValidationResponseCode.ValidationSuccess;
+
+                Console.WriteLine($"Email address: {emailAddress}");
+                Console.WriteLine($"Is valid: {isValid}");
+                Console.WriteLine($"Message: {validationResult.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Handle unexpected errors gracefully
+                Console.Error.WriteLine($"An error occurred during validation: {ex.Message}");
+            }
         }
     }
 }

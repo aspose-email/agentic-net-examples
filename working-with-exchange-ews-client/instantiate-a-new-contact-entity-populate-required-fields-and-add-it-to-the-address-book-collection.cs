@@ -1,53 +1,50 @@
 using System;
 using Aspose.Email;
-using Aspose.Email.PersonalInfo;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.PersonalInfo;
 
-class Program
+namespace ContactSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials detection – skip real network call in CI environments
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping contact creation.");
-                return;
-            }
+                // Placeholder credentials – replace with real values for actual execution.
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create and configure the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                try
+                // Guard: skip network call when placeholders are detected.
+                if (serviceUrl.Contains("example.com") ||
+                    username.Contains("example.com") ||
+                    password.Equals("password", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Instantiate a new contact and populate required fields
-                    Contact contact = new Contact();
-                    contact.DisplayName = "John Doe";
-                    contact.GivenName = "John";
-                    contact.Surname = "Doe";
-                    contact.CompanyName = "Acme Corp";
-
-                    // Add an email address – EmailAddress object required
-                    contact.EmailAddresses.Add(new EmailAddress("john.doe@acme.com"));
-
-                    // Add the contact to the Exchange address book
-                    string contactUri = client.CreateContact(contact);
-                    Console.WriteLine($"Contact created with URI: {contactUri}");
+                    Console.WriteLine("Placeholder credentials detected. Skipping contact creation.");
+                    return;
                 }
-                catch (Exception ex)
+
+                // Create and connect the EWS client.
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
-                    Console.Error.WriteLine($"Error creating contact: {ex.Message}");
+                    // Instantiate a new contact and populate required fields.
+                    Contact contact = new Contact
+                    {
+                        GivenName = "John",
+                        Surname = "Doe"
+                    };
+                    contact.EmailAddresses.Add(new EmailAddress("john.doe@example.com"));
+
+                    // Add the contact to the address book (default contacts folder).
+                    string contactId = client.CreateContact(contact);
+                    Console.WriteLine("Contact created with ID: " + contactId);
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Error: " + ex.Message);
+            }
         }
     }
 }

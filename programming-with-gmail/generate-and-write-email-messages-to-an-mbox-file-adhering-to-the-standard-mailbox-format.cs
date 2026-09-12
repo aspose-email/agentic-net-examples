@@ -1,63 +1,82 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace MboxExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Define output MBOX file path
-            string mboxFilePath = "output.mbox";
+            // Author note: This example demonstrates creating MailMessage objects,
+            // writing them to an MBOX file using MboxrdStorageWriter, and then
+            // reading them back with MboxStorageReader.
 
-            // Ensure the directory for the MBOX file exists
-            string directoryPath = Path.GetDirectoryName(Path.GetFullPath(mboxFilePath));
-            if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
-            {
-                try
-                {
-                    Directory.CreateDirectory(directoryPath);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create directory '{directoryPath}': {dirEx.Message}");
-                    return;
-                }
-            }
+            string mboxPath = "output.mbox";
 
-            // Prepare a sample email message
-            MailMessage message = new MailMessage();
-            message.From = new MailAddress("sender@example.com", "Sender Name");
-            message.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
-            message.Subject = "Sample MBOX Message";
-            message.Body = "This is a test message written to an MBOX file using Aspose.Email.";
-
-            // Configure MBOX save options (optional)
-            MboxSaveOptions saveOptions = new MboxSaveOptions();
-            saveOptions.FromShouldBeEscaped = true; // Escape "From " lines in the body if present
-            saveOptions.LeaveOpen = false; // Close the underlying stream after disposing the writer
-
-            // Write the message to the MBOX file
+            // Ensure the directory for the MBOX file exists.
             try
             {
-                using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxFilePath, saveOptions))
+                string? directory = Path.GetDirectoryName(mboxPath);
+                if (!string.IsNullOrEmpty(directory))
                 {
-                    writer.WriteMessage(message);
+                    Directory.CreateDirectory(directory);
                 }
-
-                Console.WriteLine($"Message successfully written to '{mboxFilePath}'.");
             }
-            catch (Exception ioEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to write message to MBOX file: {ioEx.Message}");
+                Console.Error.WriteLine($"Failed to prepare directory: {ex.Message}");
                 return;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+
+            // Write messages to the MBOX file.
+            try
+            {
+                using (MboxrdStorageWriter writer = new MboxrdStorageWriter(mboxPath, new MboxSaveOptions()))
+                {
+                    // First message
+                    MailMessage message1 = new MailMessage();
+                    message1.From = new MailAddress("alice@example.com");
+                    message1.To.Add(new MailAddress("bob@example.com"));
+                    message1.Subject = "Hello Bob";
+                    message1.Body = "This is a test email.";
+
+                    writer.WriteMessage(message1);
+
+                    // Second message
+                    MailMessage message2 = new MailMessage();
+                    message2.From = new MailAddress("carol@example.com");
+                    message2.To.Add(new MailAddress("dave@example.com"));
+                    message2.Subject = "Meeting Reminder";
+                    message2.Body = "Don't forget our meeting tomorrow at 10 AM.";
+
+                    writer.WriteMessage(message2);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error writing MBOX file: {ex.Message}");
+                return;
+            }
+
+            // Read messages back from the MBOX file.
+            try
+            {
+                using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                {
+                    MailMessage? msg;
+                    while ((msg = reader.ReadNextMessage()) != null)
+                    {
+                        Console.WriteLine($"Read message: Subject=\"{msg.Subject}\", From=\"{msg.From}\", To=\"{msg.To}\"");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error reading MBOX file: {ex.Message}");
+            }
         }
     }
 }

@@ -1,68 +1,72 @@
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Clients;
-using Aspose.Email.Tools.Search;
 
-namespace DeleteEmailExample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
-        {
-            try
-            {
-                // Placeholder connection settings
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "user@example.com";
-                string password = "password";
+        // Placeholder credentials – replace with real values for actual execution
+        string host = "imap.example.com";
+        int port = 993;
+        string username = "user@example.com";
+        string password = "password";
 
-                // Guard against executing with placeholder credentials
-                if (host.Contains("example.com") || username.Contains("example.com"))
+        // Guard: skip network calls when placeholders are detected
+        bool placeholders = host.Contains("example.com") ||
+                            username.Contains("example.com") ||
+                            password == "password";
+
+        if (placeholders)
+        {
+            Console.WriteLine("Skipping network operation due to placeholder credentials.");
+            return;
+        }
+
+        try
+        {
+            using (ImapClient client = new ImapClient())
+            {
+                client.Host = host;
+                client.Port = port;
+                client.Username = username;
+                client.Password = password;
+                client.SecurityOptions = SecurityOptions.SSLImplicit;
+
+                // Placeholder UID of the message to delete
+                string targetMessageUid = "12345";
+
+                // Locate the message info with the specified UID
+                ImapMessageInfoCollection messages = client.ListMessages();
+                ImapMessageInfo targetInfo = null;
+                foreach (var info in messages)
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping email deletion.");
+                    if (info.UniqueId == targetMessageUid)
+                    {
+                        targetInfo = info;
+                        break;
+                    }
+                }
+
+                if (targetInfo == null)
+                {
+                    Console.WriteLine($"Message with UID {targetMessageUid} not found.");
                     return;
                 }
 
-                // Initialize the IMAP client
-                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-                {
-                    try
-                    {
-                        // Select the INBOX folder
-                        client.SelectFolder("INBOX");
+                // Delete the message using its sequence number (or UID if supported)
+                client.DeleteMessage(targetInfo.SequenceNumber);
 
-                        // Retrieve the list of messages in the folder
-                        ImapMessageInfoCollection messages = client.ListMessages();
+                // If the ImapClient version supports Expunge, uncomment the following line:
+                // client.Expunge();
 
-                        // Ensure there is at least one message to delete
-                        if (messages == null || messages.Count == 0)
-                        {
-                            Console.WriteLine("No messages found in the INBOX.");
-                            return;
-                        }
-
-                        // Choose the first message as the target for deletion
-                        ImapMessageInfo targetMessageInfo = messages[0];
-                        string targetUniqueId = targetMessageInfo.UniqueId;
-
-                        // Delete the specific message using its unique identifier
-                        client.DeleteMessage(targetUniqueId);
-
-                        // Optionally, commit the deletion if the server supports UIDPLUS
-                        Console.WriteLine($"Message with UID '{targetUniqueId}' has been deleted.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error during IMAP operations: {ex.Message}");
-                    }
-                }
+                Console.WriteLine("Message deleted successfully.");
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

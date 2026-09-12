@@ -9,58 +9,57 @@ class Program
     {
         try
         {
-            // Define paths
-            string attachmentPath = "sample.txt";
-            string outputMsgPath = "output.msg";
+            const string inputPath = "input.msg";
+            const string outputPath = "output.msg";
 
-            // Ensure the attachment file exists; create a minimal placeholder if missing
-            if (!File.Exists(attachmentPath))
+            // Ensure input MSG exists; create a minimal placeholder if missing
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    File.WriteAllText(attachmentPath, "Placeholder attachment content.");
+                    // Create a simple MailMessage and save it as MSG to serve as placeholder
+                    using (MailMessage placeholder = new MailMessage())
+                    {
+                        placeholder.From = "sender@example.com";
+                        placeholder.To = "receiver@example.com";
+                        placeholder.Subject = "Placeholder Message";
+                        placeholder.Body = "This is a placeholder MSG file.";
+                        placeholder.Save(inputPath, SaveOptions.DefaultMsg);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
                     return;
                 }
             }
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(Path.GetFullPath(outputMsgPath));
-            if (!Directory.Exists(outputDir))
+            // Load the MSG file
+            MapiMessage msg;
+            try
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                msg = MapiMessage.Load(inputPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file '{inputPath}': {ex.Message}");
+                return;
             }
 
-            // Create a MailMessage and add the attachment
-            using (MailMessage mail = new MailMessage("sender@example.com", "recipient@example.com", "Sample Subject", "This is the body of the email."))
+            // Save the MSG file; attachments (if any) are automatically persisted
+            try
             {
-                // Add attachment
-                mail.Attachments.Add(new Attachment(attachmentPath));
-
-                // Convert MailMessage to MapiMessage (attachments are automatically included)
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail))
-                {
-                    // Save the MapiMessage as an Outlook MSG file
-                    mapiMessage.Save(outputMsgPath);
-                }
+                msg.Save(outputPath);
+                Console.WriteLine($"Message saved successfully to '{outputPath}'.");
             }
-
-            Console.WriteLine($"MSG file saved to '{outputMsgPath}' with attachments persisted.");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save MSG file '{outputPath}': {ex.Message}");
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -5,62 +5,57 @@ using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage.Mbox;
 
-namespace ThunderbirdConversionSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        // Paths for input MBOX (Thunderbird) and output PST files
+        string mboxFilePath = "input.mbox";
+        string pstFilePath = "output.pst";
+
+        // Ensure the input MBOX file exists; create an empty placeholder if missing
+        if (!File.Exists(mboxFilePath))
         {
             try
             {
-                // Define input Thunderbird mbox file and output PST file paths
-                string mboxFilePath = "thunderbird.mbox";
-                string pstFilePath = "converted.pst";
-
-                // Verify input mbox file exists
-                if (!File.Exists(mboxFilePath))
-                {
-                    Console.Error.WriteLine($"Error: Input mbox file not found – {mboxFilePath}");
-                    return;
-                }
-
-                // Ensure output directory exists
-                try
-                {
-                    string outputDirectory = Path.GetDirectoryName(pstFilePath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                    {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Error creating output directory: {dirEx.Message}");
-                    return;
-                }
-
-                // Perform conversion from mbox to PST
-                try
-                {
-                    // The conversion method returns a PersonalStorage instance representing the PST
-                    using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath))
-                    {
-                        // Optionally, you can work with the PST storage here (e.g., list folders)
-                        // For this sample we simply confirm the conversion succeeded.
-                        Console.WriteLine($"Conversion succeeded. PST saved to: {pstFilePath}");
-                    }
-                }
-                catch (Exception convEx)
-                {
-                    Console.Error.WriteLine($"Conversion failed: {convEx.Message}");
-                    return;
-                }
+                File.WriteAllText(mboxFilePath, string.Empty);
+                Console.WriteLine($"Created placeholder MBOX file at '{mboxFilePath}'.");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
                 return;
             }
+        }
+
+        // Ensure the directory for the PST file exists
+        string pstDirectory = Path.GetDirectoryName(pstFilePath);
+        if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+        {
+            try
+            {
+                Directory.CreateDirectory(pstDirectory);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                return;
+            }
+        }
+
+        try
+        {
+            // Convert the MBOX storage to PST. The method returns a PersonalStorage instance.
+            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath))
+            {
+                // Optional: display basic information about the created PST
+                int totalItems = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Conversion successful. PST contains {totalItems} total items.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Conversion failed: {ex.Message}");
         }
     }
 }

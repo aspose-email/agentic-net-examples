@@ -1,7 +1,8 @@
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 using System;
 using System.Net;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
@@ -9,50 +10,71 @@ class Program
     {
         try
         {
-            // Placeholder connection details – replace with real values when running in production.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // ----- Configuration -----
+            string ewsUrl = "https://your.exchange.server/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
+            string domain = ""; // optional, leave empty if not needed
 
-            // Simple guard to avoid making real network calls with placeholder credentials.
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+            // Guard against placeholder endpoint
+            if (string.IsNullOrWhiteSpace(ewsUrl) || ewsUrl.Contains("your.exchange.server"))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping mailbox cleanup.");
+                Console.Error.WriteLine("EWS endpoint is not configured. Please provide a valid URL.");
                 return;
             }
 
-            // Create the Exchange client (Dav) and ensure it is disposed properly.
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
+            // Guard against placeholder credentials
+            bool placeholderCreds = string.IsNullOrWhiteSpace(username) ||
+                                    username.Contains("example.com") ||
+                                    string.IsNullOrWhiteSpace(password) ||
+                                    password.Equals("password", StringComparison.OrdinalIgnoreCase);
+
+            if (placeholderCreds)
             {
-                // Retrieve mailbox information (folders URIs).
-                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
+                return;
+            }
 
-                // List messages in the Inbox folder.
-                ExchangeMessageInfoCollection inboxMessages = client.ListMessages(mailboxInfo.InboxUri);
-
-                foreach (ExchangeMessageInfo messageInfo in inboxMessages)
+            // ----- Connect to Exchange -----
+            try
+            {
+                using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, new NetworkCredential(username, password, domain)))
                 {
-                    // Define your own criteria for unwanted messages.
-                    // Example: messages whose subject contains the word "Unwanted".
-                    if (messageInfo.Subject != null && messageInfo.Subject.IndexOf("Unwanted", StringComparison.OrdinalIgnoreCase) >= 0)
+                    // Retrieve mailbox information
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+
+                    // List messages in the Inbox
+                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
+
+                    foreach (ExchangeMessageInfo messageInfo in messages)
                     {
-                        try
+                        // Identify unwanted messages (example: subject contains "Unwanted")
+                        if (!string.IsNullOrEmpty(messageInfo.Subject) &&
+                            messageInfo.Subject.IndexOf("Unwanted", StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            // Move the unwanted message to the Deleted Items folder.
-                            client.MoveMessage(messageInfo, mailboxInfo.DeletedItemsUri);
-                            Console.WriteLine($"Moved message '{messageInfo.Subject}' to Deleted Items.");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to move message '{messageInfo.Subject}': {ex.Message}");
+                            try
+                            {
+                                // Delete the message permanently
+                                client.DeleteItem(messageInfo.UniqueUri, DeletionOptions.DeletePermanently);
+                                Console.WriteLine($"Deleted message: {messageInfo.Subject}");
+                            }
+                            catch (Exception exDelete)
+                            {
+                                Console.Error.WriteLine($"Failed to delete message '{messageInfo.Subject}': {exDelete.Message}");
+                            }
                         }
                     }
                 }
             }
+            catch (Exception exConn)
+            {
+                Console.Error.WriteLine($"Failed to connect to Exchange server: {exConn.Message}");
+                return;
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

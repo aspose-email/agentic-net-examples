@@ -1,7 +1,6 @@
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -10,54 +9,42 @@ class Program
     {
         try
         {
-            // Placeholder connection details – replace with real values.
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
+            // Connection parameters – replace with your actual server details
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
-            // Skip execution when placeholder values are detected to avoid unwanted network calls.
-            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client inside a using block to ensure proper disposal.
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+            // Create network credentials
+            NetworkCredential credentials = new NetworkCredential(username, password);
+
+            // Initialize the EWS client (IEWSClient implements IDisposable)
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
             {
-                try
-                {
-                    // Retrieve mailbox information.
-                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                // Optional: adjust timeout (milliseconds)
+                client.Timeout = 120000; // 2 minutes
 
-                    // Display some mailbox URIs.
-                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
-                    Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
-                    Console.WriteLine("Drafts URI: " + mailboxInfo.DraftsUri);
+                // Retrieve basic mailbox information
+                var mailboxInfo = client.GetMailboxInfo();
 
-                    // List messages in the Inbox folder.
-                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
-                    Console.WriteLine("Number of messages in Inbox: " + messages.Count);
-
-                    foreach (ExchangeMessageInfo messageInfo in messages)
-                    {
-                        // Fetch the full message to access its subject.
-                        MailMessage message = client.FetchMessage(messageInfo.UniqueUri);
-                        Console.WriteLine("Subject: " + message.Subject);
-                        // Dispose the fetched message.
-                        message.Dispose();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error during Exchange operations: " + ex.Message);
-                    return;
-                }
+                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                Console.WriteLine("Sent Items URI: " + mailboxInfo.SentItemsUri);
+                Console.WriteLine("Calendar URI: " + mailboxInfo.CalendarUri);
+                Console.WriteLine("Contacts URI: " + mailboxInfo.ContactsUri);
+                Console.WriteLine("Tasks URI: " + mailboxInfo.TasksUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            // Graceful error handling
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

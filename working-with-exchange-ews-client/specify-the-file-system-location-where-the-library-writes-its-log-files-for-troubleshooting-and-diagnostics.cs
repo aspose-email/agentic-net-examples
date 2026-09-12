@@ -1,75 +1,57 @@
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailLogExample
 {
-    static void Main()
+    // Author: Aspose.Email example author
+    class Program
     {
-        try
+        static void Main()
         {
-            // Define the directory and file where Aspose.Email will write its logs
-            string logDirectory = Path.Combine(Environment.CurrentDirectory, "Logs");
-            string logFilePath = Path.Combine(logDirectory, "AsposeEmail.log");
-
-            // Ensure the log directory exists
-            if (!Directory.Exists(logDirectory))
+            try
             {
-                try
+                // Define log file location
+                string logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AsposeEmailLogs", "email.log");
+
+                // Ensure the directory for the log file exists
+                string logDirectory = Path.GetDirectoryName(logFilePath);
+                if (!Directory.Exists(logDirectory))
                 {
                     Directory.CreateDirectory(logDirectory);
                 }
-                catch (Exception dirEx)
+
+                // Connection parameters (replace with real values)
+                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
+
+
+                // Skip external calls when placeholder credentials are used
+                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    Console.Error.WriteLine($"Error: Unable to create log directory – {logDirectory}. {dirEx.Message}");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
-            }
 
-            // Placeholder connection details (replace with real values for actual use)
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard against placeholder credentials to avoid real network calls during sample execution
-            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping server connection.");
-                Console.WriteLine($"Log files will be written to: {logFilePath}");
-                return;
-            }
-
-            // Create the EWS client and configure logging
-            try
-            {
+                // Initialize EWS client
                 using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
                 {
+                    // Set the log file name for diagnostics
                     client.LogFileName = logFilePath;
-                    client.UseDateInLogFileName = false; // optional: keep a single log file
 
-                    // Perform a simple operation to generate log entries
-                    try
-                    {
-                        ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
-                        Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
-                    }
-                    catch (Exception opEx)
-                    {
-                        Console.Error.WriteLine($"Operation error: {opEx.Message}");
-                    }
+                    // Example operation: retrieve mailbox info (optional)
+                    // var mailboxInfo = client.GetMailboxInfo();
+                    // Console.WriteLine("Mailbox info retrieved successfully.");
                 }
+
+                Console.WriteLine("Log file location set to: " + logFilePath);
             }
-            catch (Exception clientEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Client error: {clientEx.Message}");
-                return;
+                Console.Error.WriteLine("Error: " + ex.Message);
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

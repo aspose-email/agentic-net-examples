@@ -1,5 +1,5 @@
-using Aspose.Email.Tools.Search;
 using System;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients.Pop3;
 
@@ -9,55 +9,83 @@ class Program
     {
         try
         {
-            // Placeholder POP3 connection settings
+            // POP3 server connection settings
             string host = "pop.example.com";
-            int port = 110;
-            string username = "username";
+            int port = 110; // change to 995 for SSL
+            string username = "user@example.com";
             string password = "password";
 
-            // Skip real network call when placeholders are used
-            if (host.Contains("example.com") || username == "username")
+            // Output directory for retrieved messages
+            string outputDir = "RetrievedMessages";
+
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder POP3 credentials detected. Skipping network call.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Build a query to filter messages (e.g., subject contains "Invoice")
-            MailQueryBuilder queryBuilder = new MailQueryBuilder();
-            queryBuilder.Subject.Contains("Invoice");
-            MailQuery query = queryBuilder.GetQuery();
+            // Ensure the output directory exists
+            try
+            {
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+            }
+            catch (Exception dirEx)
+            {
+                Console.Error.WriteLine($"Failed to prepare output directory: {dirEx.Message}");
+                return;
+            }
 
-            // Use POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Connect to POP3 server and process messages
+            using (Pop3Client pop3Client = new Pop3Client(host, port, username, password))
             {
                 try
                 {
-                    // Validate credentials
-                    client.ValidateCredentials();
+                    int messageCount = pop3Client.GetMessageCount();
 
-                    // List messages that satisfy the query
-                    Pop3MessageInfoCollection infos = client.ListMessages(query);
-                    foreach (Pop3MessageInfo info in infos)
+                    for (int i = 1; i <= messageCount; i++)
                     {
                         // Fetch the full message
-                        using (MailMessage message = client.FetchMessage(info.SequenceNumber))
+                        MailMessage message = pop3Client.FetchMessage(i);
+
+                        // Example filter: only process messages whose subject contains "Invoice"
+                        if (message.Subject != null && message.Subject.IndexOf("Invoice", StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            // Process the message (display subject and size)
-                            Console.WriteLine($"Subject: {message.Subject}");
-                            Console.WriteLine($"Size: {info.Size} bytes");
+                            string filePath = Path.Combine(outputDir, $"Message_{i}.eml");
+
+                            try
+                            {
+                                // Save the message to the file system
+                                message.Save(filePath);
+                                Console.WriteLine($"Saved filtered message #{i} to '{filePath}'.");
+                            }
+                            catch (Exception saveEx)
+                            {
+                                Console.Error.WriteLine($"Failed to save message #{i}: {saveEx.Message}");
+                            }
                         }
+
+                        // Dispose the message after use
+                        message.Dispose();
                     }
+                }
+                catch (Pop3Exception popEx)
+                {
+                    Console.Error.WriteLine($"POP3 operation failed: {popEx.Message}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Unexpected error during POP3 processing: {ex.Message}");
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Unhandled exception: {e.Message}");
         }
     }
 }

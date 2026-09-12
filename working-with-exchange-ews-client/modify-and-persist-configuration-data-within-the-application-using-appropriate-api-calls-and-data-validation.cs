@@ -1,96 +1,118 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
-using System.Text.Json;
 using Aspose.Email;
+using Aspose.Email.Storage.Pst;
 
-namespace ConfigSample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
-            {
-                string configPath = "config.json";
+            const string pstPath = "config.pst";
 
-                // Ensure the configuration file exists; create a minimal placeholder if missing
-                if (!File.Exists(configPath))
+            // Ensure the PST file exists; create a minimal one if missing
+            if (!File.Exists(pstPath))
+            {
+                try
+                {
+                    // Create a new PST file with Unicode format
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Created new PST file at '{pstPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                // Validate that the root folder is accessible
+                if (pst.RootFolder == null)
+                {
+                    Console.Error.WriteLine("Root folder is not accessible.");
+                    return;
+                }
+
+                // Define the configuration folder name
+                const string configFolderName = "ConfigFolder";
+
+                // Check if the configuration folder already exists; create if not
+                bool folderExists = false;
+                foreach (FolderInfo existingFolder in pst.RootFolder.GetSubFolders())
+                {
+                    if (string.Equals(existingFolder.DisplayName, configFolderName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        folderExists = true;
+                        break;
+                    }
+                }
+
+                if (!folderExists)
                 {
                     try
                     {
-                        var defaultConfig = new AppConfig
-                        {
-                            ApplicationName = "MyApp",
-                            MaxItems = 100,
-                            EnableFeatureX = true
-                        };
-                        string json = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
-                        File.WriteAllText(configPath, json);
-                        Console.WriteLine("Created default configuration file.");
+                        pst.RootFolder.AddSubFolder(configFolderName);
+                        Console.WriteLine($"Added folder '{configFolderName}'.");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Failed to create default config: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to add folder: {ex.Message}");
                         return;
                     }
                 }
 
-                // Load existing configuration
-                AppConfig config;
-                try
+                // Retrieve the configuration folder
+                FolderInfo configFolderInfo = pst.RootFolder.GetSubFolder(configFolderName);
+                if (configFolderInfo == null)
                 {
-                    string json = File.ReadAllText(configPath);
-                    config = JsonSerializer.Deserialize<AppConfig>(json);
-                    if (config == null)
-                    {
-                        Console.Error.WriteLine("Configuration file is empty or malformed.");
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to read configuration: {ex.Message}");
+                    Console.Error.WriteLine($"Unable to retrieve folder '{configFolderName}'.");
                     return;
                 }
 
-                // Modify configuration with validation
-                Console.WriteLine($"Current MaxItems: {config.MaxItems}");
-                Console.Write("Enter new MaxItems (positive integer): ");
-                string input = Console.ReadLine();
-                if (int.TryParse(input, out int newMax) && newMax > 0)
+                // Prepare configuration data
+                const string configSubject = "Application Configuration";
+                const string configBody = "Setting1=ValueA;Setting2=ValueB;";
+
+                // Simple validation of configuration data
+                if (string.IsNullOrWhiteSpace(configSubject))
                 {
-                    config.MaxItems = newMax;
-                }
-                else
-                {
-                    Console.Error.WriteLine("Invalid input. MaxItems must be a positive integer.");
+                    Console.Error.WriteLine("Configuration subject cannot be empty.");
                     return;
                 }
 
-                // Persist updated configuration
+                if (string.IsNullOrWhiteSpace(configBody))
+                {
+                    Console.Error.WriteLine("Configuration body cannot be empty.");
+                    return;
+                }
+
+                // Create a MailMessage representing the configuration
+                MailMessage configMessage = new MailMessage(
+                    "config@myapp.local",
+                    "config@myapp.local",
+                    configSubject,
+                    configBody);
+
+                // Add the configuration message to the PST folder
                 try
                 {
-                    string updatedJson = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
-                    File.WriteAllText(configPath, updatedJson);
-                    Console.WriteLine("Configuration updated successfully.");
+                    configFolderInfo.AddMessage(MapiMessage.FromMailMessage(configMessage));
+                    Console.WriteLine("Configuration message saved to PST.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to write configuration: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to add message: {ex.Message}");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
-
-        // Simple configuration data contract
-        private class AppConfig
+        catch (Exception ex)
         {
-            public string ApplicationName { get; set; }
-            public int MaxItems { get; set; }
-            public bool EnableFeatureX { get; set; }
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

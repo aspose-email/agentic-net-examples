@@ -1,7 +1,8 @@
 using System;
 using System.IO;
+using System.Net.Mime;
 using Aspose.Email;
-using Aspose.Email.Mime;
+using Aspose.Email.Tools; // for SaveOptions if needed
 
 class Program
 {
@@ -9,69 +10,55 @@ class Program
     {
         try
         {
-            string inputMsgPath = "input.msg";
-            string outputMsgPath = "output.msg";
-            string imagePath = "image.jpg";
+            // Define paths
+            string imagePath = "barcode.jpg";
+            string outputPath = "EmbeddedImage_out.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing.
-            if (!File.Exists(inputMsgPath))
-            {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                using (MailMessage placeholder = new MailMessage())
-                {
-                    placeholder.From = "placeholder@example.com";
-                    placeholder.To = "recipient@example.com";
-                    placeholder.Subject = "Placeholder";
-                    placeholder.Body = "This is a placeholder message.";
-                    placeholder.Save(inputMsgPath, SaveOptions.DefaultMsgUnicode);
-                }
-            }
-
-            // Ensure the image file exists; create an empty placeholder if missing.
+            // Verify the image file exists
             if (!File.Exists(imagePath))
             {
-                using (FileStream fs = File.Create(imagePath))
-                {
-                    // Write a minimal JPEG header to avoid zero‑byte file issues.
-                    byte[] jpegHeader = new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 };
-                    fs.Write(jpegHeader, 0, jpegHeader.Length);
-                }
+                Console.Error.WriteLine($"Image file not found: {imagePath}");
+                return;
             }
 
-            // Load the MSG message.
-            using (MailMessage message = MailMessage.Load(inputMsgPath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Ensure there is at least one alternate view.
-                if (message.AlternateViews.Count == 0)
-                {
-                    AlternateView plainView = AlternateView.CreateAlternateViewFromString(
-                        "Placeholder plain text", null, "text/plain");
-                    message.AlternateViews.Add(plainView);
-                }
-
-                // Add the linked resource to the first alternate view.
-                AlternateView firstView = message.AlternateViews[0];
-                firstView.LinkedResources.Add(new LinkedResource(imagePath));
-
-                // Save the modified message.
-                message.Save(outputMsgPath, SaveOptions.DefaultMsgUnicode);
+                Directory.CreateDirectory(outputDir);
             }
+
+            // Create the email message
+            using (MailMessage eml = new MailMessage())
+            {
+                eml.From = "AndrewIrwin@from.com";
+                eml.To = "SusanMarc@to.com";
+                eml.Subject = "This is an email";
+
+                // Plain text view
+                AlternateView plainView = AlternateView.CreateAlternateViewFromString(
+                    "This is my plain text content", null, "text/plain");
+
+                // HTML view with a placeholder for the embedded image
+                AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                    "Here is an embedded image. <img src=cid:barcode>", null, "text/html");
+
+                // Add alternate views to the message
+                eml.AlternateViews.Add(plainView);
+                eml.AlternateViews.Add(htmlView);
+
+                // Add a linked resource to the first alternate view (index 0)
+                LinkedResource linkedRes = new LinkedResource(imagePath)
+                {
+                    ContentId = "barcode"
+                };
+                eml.AlternateViews[0].LinkedResources.Add(linkedRes);
+
+                // Save the message as MSG
+                eml.Save(outputPath, SaveOptions.DefaultMsgUnicode);
+            }
+
+            Console.WriteLine("Message saved successfully.");
         }
         catch (Exception ex)
         {

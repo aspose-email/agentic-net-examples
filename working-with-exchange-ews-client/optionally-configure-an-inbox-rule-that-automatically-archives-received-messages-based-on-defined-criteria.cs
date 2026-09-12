@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
@@ -10,35 +9,36 @@ class Program
     {
         try
         {
-            // Placeholder connection details – replace with real values for actual execution
-            string serviceUrl = "https://example.com/EWS/Exchange.asmx";
-            string username = "username";
+            // Author note: Adjust the following credentials and service URL to match your Exchange environment.
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
-            // Guard against executing with placeholder credentials
-            if (serviceUrl.Contains("example.com") || username == "username")
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping rule creation.");
-                return;
-            }
-
-            // Create EWS client
+            // Create and connect the EWS client.
             using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // Define the sender whose messages should be archived
-                MailAddress fromAddress = new MailAddress("sender@example.com");
+                // Define criteria for messages to be archived (e.g., subject contains "Invoice").
+                string[] containingStrings = new[] { "Invoice" };
 
-                // Destination folder identifier (e.g., Archive folder). Replace with actual folder ID if needed.
+                // Destination folder identifier where messages will be moved.
+                // Replace with the actual folder ID of the Archive folder in your mailbox.
                 string archiveFolderId = "Archive";
 
-                // Build the inbox rule
-                InboxRule rule = InboxRule.CreateRuleMoveFrom(fromAddress, archiveFolderId);
-                rule.DisplayName = "Archive messages from specific sender";
-                rule.IsEnabled = true;
-                rule.Priority = 1;
 
-                // Create the rule on the server
-                client.CreateInboxRule(rule);
+                // Skip external calls when placeholder credentials are used
+                if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Create an inbox rule that moves matching messages to the archive folder.
+                InboxRule archiveRule = InboxRule.CreateRuleMoveContaining(containingStrings, archiveFolderId);
+                archiveRule.DisplayName = "Archive Invoices";
+                archiveRule.IsEnabled = true;
+
+                // Create the rule in the default mailbox.
+                client.CreateInboxRule(archiveRule);
                 Console.WriteLine("Inbox rule created successfully.");
             }
         }

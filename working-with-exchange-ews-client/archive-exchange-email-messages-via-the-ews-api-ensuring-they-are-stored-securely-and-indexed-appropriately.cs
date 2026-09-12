@@ -1,60 +1,143 @@
+using Aspose.Email.Storage.Pst;
 using System;
+using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
+using Aspose.Email.Tools.Search;
+using Aspose.Email.PersonalInfo;
 
-class Program
+namespace AsposeEmailEwsSample
 {
-    static void Main()
+    // Sample author: Aspose.Email .NET documentation
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder connection details – replace with real values when running in production
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip execution if placeholder credentials are detected (prevents CI failures)
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
-                return;
-            }
+                // -----------------------------------------------------------------
+                // Configuration – replace with real values or keep placeholders.
+                // -----------------------------------------------------------------
+                string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+                string username = "your_username@example.com";
+                string password = "your_password";
+                string domain = ""; // optional, leave empty if not needed
 
-            // Create the EWS client using the factory method (no direct constructor)
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                try
+                // Guard against placeholder credentials.
+                if (string.IsNullOrWhiteSpace(mailboxUri) ||
+                    string.IsNullOrWhiteSpace(username) ||
+                    string.IsNullOrWhiteSpace(password) ||
+                    mailboxUri.Contains("your_") ||
+                    username.Contains("your_") ||
+                    password.Contains("your_"))
                 {
-                    // Get the URI of the Inbox folder
-                    string inboxUri = client.MailboxInfo.InboxUri;
+                    Console.Error.WriteLine("Please provide valid mailbox URI, username and password. Skipping EWS operations.");
+                    return;
+                }
 
-                    // List all messages in the Inbox
+                // -----------------------------------------------------------------
+                // Create EWS client inside a using block to ensure proper disposal.
+                // -----------------------------------------------------------------
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password, domain))
+                {
+                    // -----------------------------------------------------------------
+                    // Get mailbox information and the Inbox folder URI.
+                    // -----------------------------------------------------------------
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    string inboxUri = mailboxInfo.InboxUri;
+
+                    // -----------------------------------------------------------------
+                    // List messages in the Inbox.
+                    // -----------------------------------------------------------------
                     ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+                    Console.WriteLine($"Inbox contains {messages.Count} message(s).");
 
-                    foreach (ExchangeMessageInfo info in messages)
+                    if (messages.Count == 0)
                     {
-                        try
+                        Console.WriteLine("No messages to process.");
+                        return;
+                    }
+
+                    // -----------------------------------------------------------------
+                    // Process the first message: fetch, display subject, and save to file.
+                    // -----------------------------------------------------------------
+                    ExchangeMessageInfo firstInfo = messages[0];
+                    Console.WriteLine($"Fetching message: Subject = \"{firstInfo.Subject}\"");
+
+                    MailMessage fetchedMessage = client.FetchMessage(firstInfo.UniqueUri);
+                    string outputDir = "FetchedMessages";
+                    if (!Directory.Exists(outputDir))
+                    {
+                        Directory.CreateDirectory(outputDir);
+                    }
+
+                    string emlPath = Path.Combine(outputDir, "Message1.eml");
+                    try
+                    {
+                        fetchedMessage.Save(emlPath);
+                        Console.WriteLine($"Message saved to: {emlPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    }
+
+                    // -----------------------------------------------------------------
+                    // Ensure a subfolder named "Processed" exists under the Inbox.
+                    // -----------------------------------------------------------------
+                    string processedFolderName = "Processed";
+                    ExchangeFolderInfo processedFolderInfo;
+                    bool folderExists = client.FolderExists(inboxUri, processedFolderName, out processedFolderInfo);
+                    if (!folderExists)
+                    {
+                        processedFolderInfo = client.CreateFolder(inboxUri, processedFolderName);
+                        Console.WriteLine($"Created folder \"{processedFolderName}\" with URI: {processedFolderInfo.Uri}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Folder \"{processedFolderName}\" already exists with URI: {processedFolderInfo.Uri}");
+                    }
+
+                    // -----------------------------------------------------------------
+                    // Move the fetched message to the "Processed" folder.
+                    // -----------------------------------------------------------------
+                    try
+                    {
+                        client.MoveItem(firstInfo.UniqueUri, processedFolderInfo.Uri);
+                        Console.WriteLine("Message moved to the \"Processed\" folder.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to move message: {ex.Message}");
+                    }
+
+                    // -----------------------------------------------------------------
+                    // Delete the moved message permanently.
+                    // -----------------------------------------------------------------
+                    try
+                    {
+                        // Retrieve the moved message's URI.
+                        ExchangeMessageInfoCollection movedMessages = client.ListMessages(processedFolderInfo.Uri);
+                        if (movedMessages.Count > 0)
                         {
-                            // Archive the message into the default Archive folder
-                            client.ArchiveItem(info.UniqueUri, "Archive");
-                            Console.WriteLine($"Archived message: {info.Subject}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to archive message '{info.Subject}': {ex.Message}");
+                            string movedMessageUri = movedMessages[0].UniqueUri;
+                            client.DeleteItem(movedMessageUri, DeletionOptions.DeletePermanently);
+                            Console.WriteLine("Moved message deleted permanently.");
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error while processing messages: {ex.Message}");
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to delete moved message: {ex.Message}");
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

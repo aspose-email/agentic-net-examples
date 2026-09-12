@@ -1,5 +1,5 @@
 using System;
-using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Clients;
@@ -7,47 +7,42 @@ using Aspose.Email.Clients.Pop3;
 
 class Program
 {
-    static async Task Main(string[] args)
+    static async Task Main()
     {
         try
         {
-            // Placeholder POP3 server details
-            string host = "pop3.example.com";
+            string host = "pop.example.com";
             int port = 110;
             string username = "user@example.com";
             string password = "password";
 
-            // Skip real network calls when placeholder values are used
-            if (host.Contains("example.com"))
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder host detected. Skipping POP3 operations.");
+                Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
                 return;
             }
 
-            // Initialize POP3 client with placeholder credentials
-            using (Pop3Client client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
+            IAsyncPop3Client pop3Client = await Pop3Client.CreateAsync(
+                host,
+                username,
+                null,
+                port,
+                SecurityOptions.Auto,
+                CancellationToken.None);
+
+            try
             {
-                // Subscribe to connection event
-                client.OnConnect += (sender, e) => Console.WriteLine("Connected to POP3 server.");
+                Pop3MessageInfoCollection messageInfos = await pop3Client.ListMessagesAsync();
 
-                // Asynchronously list messages
-                Pop3MessageInfoCollection messages = await client.ListMessagesAsync();
-
-                Console.WriteLine($"Total messages: {messages.Count}");
-
-                // Iterate through messages and display basic info
-                foreach (var info in messages)
+                foreach (Pop3MessageInfo info in messageInfos)
                 {
-                    Console.WriteLine($"Subject: {info.Subject}, Size: {info.Size} bytes");
+                    MailMessage message = await pop3Client.FetchMessageAsync(info.SequenceNumber);
+                    Console.WriteLine($"Subject: {message.Subject}");
                 }
-
-                // Fetch the first message asynchronously as a demonstration
-                if (messages.Count > 0)
-                {
-                    var firstInfo = messages[0];
-                    var message = await client.FetchMessageAsync(firstInfo.SequenceNumber);
-                    Console.WriteLine($"Fetched message subject: {message.Subject}");
-                }
+            }
+            finally
+            {
+                pop3Client.Dispose();
             }
         }
         catch (Exception ex)

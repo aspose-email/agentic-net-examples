@@ -1,79 +1,68 @@
-using Aspose.Email.Tools.Search;
 using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace Pop3Example
+// Author: Sample code demonstrating POP3 client usage with Aspose.Email
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Placeholder POP3 server credentials
-                string host = "pop3.example.com";
-                int port = 110;
-                string username = "username";
-                string password = "password";
+            // POP3 server connection details
+            string host = "pop.example.com";
+            string username = "user@example.com";
+            string password = "password";
 
-                // Guard against executing with placeholder credentials
-                if (host.Contains("example.com") || username == "username" || password == "password")
+            // Initialize POP3 client
+            using (Pop3Client client = new Pop3Client(host, username, password))
+            {
+                // Optional: set custom port or security options if required
+                // client.Port = 110;
+                // client.SecurityOptions = SecurityOptions.Auto;
+
+                // Retrieve total number of messages on the server
+                int messageCount = client.GetMessageCount();
+                Console.WriteLine($"Total messages: {messageCount}");
+
+                // Ensure output directory exists
+                string outputDir = "RetrievedEmails";
+
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    Console.Error.WriteLine("Placeholder POP3 server credentials detected. Skipping connection.");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
 
-                // Initialize POP3 client
-                using (Pop3Client client = new Pop3Client(host, port, username, password))
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Fetch each message and save as .eml file
+                for (int i = 1; i <= messageCount; i++)
                 {
                     try
                     {
-                        // Validate credentials
-                        client.ValidateCredentials();
-
-                        // Build a query to retrieve all messages
-                        MailQueryBuilder builder = new MailQueryBuilder();
-                        MailQuery query = builder.GetQuery();
-
-                        // List messages based on the query
-                        Pop3MessageInfoCollection messages = client.ListMessages(query);
-                        Console.WriteLine($"Total messages retrieved: {messages.Count}");
-
-                        // Ensure output directory exists
-                        string outputDir = "RetrievedMessages";
-                        if (!Directory.Exists(outputDir))
-                        {
-                            Directory.CreateDirectory(outputDir);
-                        }
-
-                        // Iterate through messages and save each to a file
-                        foreach (Pop3MessageInfo messageInfo in messages)
-                        {
-                            string filePath = Path.Combine(outputDir, $"Message_{messageInfo.SequenceNumber}.eml");
-                            try
-                            {
-                                client.SaveMessage(messageInfo.SequenceNumber, filePath);
-                                Console.WriteLine($"Saved message {messageInfo.SequenceNumber} to {filePath}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to save message {messageInfo.SequenceNumber}: {ex.Message}");
-                            }
-                        }
+                        MailMessage message = client.FetchMessage(i);
+                        string filePath = Path.Combine(outputDir, $"Message_{i}.eml");
+                        message.Save(filePath);
+                        Console.WriteLine($"Saved message {i} to {filePath}");
+                        message.Dispose();
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"POP3 client operation error: {ex.Message}");
+                        Console.Error.WriteLine($"Failed to fetch/save message {i}: {ex.Message}");
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,48 +1,52 @@
+using Aspose.Email.Clients.Exchange.WebService;
 using System;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.PersonalInfo;
-using Aspose.Email.Clients.Google;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
+        // Author note: Replace the service URL and credentials with valid values for your Exchange server.
         try
         {
-            // Placeholder credentials – replace with real values for actual use
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string defaultEmail = "user@example.com";
+            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "username";
+            string password = "password";
 
-            // Guard against executing network calls with placeholder credentials
-            if (clientId == "clientId")
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping Gmail operation.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Initialize Gmail client
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Retrieve all contacts
-                Contact[] contactsArray = gmailClient.GetAllContacts();
-
-                // Populate a strongly‑typed collection for further processing
-                List<Contact> contacts = new List<Contact>(contactsArray);
-
-                // Example processing: output basic contact info
-                foreach (Contact contact in contacts)
+                try
                 {
-                    string email = contact.EmailAddresses.Count > 0 ? contact.EmailAddresses[0].Address : "N/A";
-                    Console.WriteLine($"Name: {contact.GivenName} {contact.Surname}, Email: {email}");
+                    // Retrieve contacts from the default contacts folder.
+                    Contact[] contacts = client.GetContacts("contacts");
+                    
+                    // Process each contact.
+                    foreach (Contact contact in contacts)
+                    {
+                        string email = contact.EmailAddresses.Count > 0 ? contact.EmailAddresses[0].Address : "(no email)";
+                        Console.WriteLine($"{contact.DisplayName}: {email}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error retrieving contacts: " + ex.Message);
+                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine("Failed to create or use Exchange client: " + ex.Message);
+            return;
         }
     }
 }

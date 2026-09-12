@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using Aspose.Email.Mime;
 
 class Program
 {
@@ -9,10 +10,11 @@ class Program
     {
         try
         {
-            string msgFilePath = "sample.msg";
+            // Path to the MSG file
+            const string msgPath = "sample.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(msgFilePath))
+            // Verify the input file exists
+            if (!File.Exists(msgPath))
             {
                 try
                 {
@@ -22,7 +24,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgFilePath);
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -31,41 +33,26 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage())
-                    {
-                        placeholder.Subject = "Placeholder";
-                        placeholder.Body = "This is a placeholder message.";
-                        placeholder.Save(msgFilePath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
             }
 
-            // Load the MSG file and obtain its plain‑text body.
-            try
+            // Load the MSG file and convert it to MailMessage
+            using (MapiMessage mapiMsg = MapiMessage.Load(msgPath))
             {
-                using (MapiMessage message = MapiMessage.Load(msgFilePath))
+                MailConversionOptions conversionOpts = new MailConversionOptions();
+                using (MailMessage mail = mapiMsg.ToMailMessage(conversionOpts))
                 {
-                    string plainTextBody = message.Body;
+                    // Obtain the plain‑text body via the Body property
+                    string plainBody = mail.Body;
                     Console.WriteLine("Plain‑text body:");
-                    Console.WriteLine(plainTextBody);
+                    Console.WriteLine(plainBody);
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file or read body: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

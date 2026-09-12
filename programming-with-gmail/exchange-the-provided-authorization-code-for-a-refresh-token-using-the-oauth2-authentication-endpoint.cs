@@ -1,5 +1,7 @@
+using Aspose.Email;
 using System;
 using Aspose.Email.Clients;
+using Aspose.Email.Clients.Google;
 
 class Program
 {
@@ -7,34 +9,32 @@ class Program
     {
         try
         {
-            // Placeholder OAuth parameters – replace with real values when available.
-            string requestUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string authorizationCode = "authCode";
+            // Input parameters – replace with real values
+            string requestUrl = "https://oauth2.googleapis.com/token";
+            string clientId = "your-client-id";
+            string clientSecret = "your-client-secret";
+            string authorizationCode = "your-authorization-code";
+            string redirectUri = "your-redirect-uri";
 
-            // Guard against executing network calls with placeholder credentials.
-            if (clientId == "clientId" || clientSecret == "clientSecret" || authorizationCode == "authCode")
-            {
-                Console.Error.WriteLine("Placeholder OAuth parameters detected. Skipping token exchange.");
-                return;
-            }
+            // -----------------------------------------------------------------
+            // NOTE: Aspose.Email does not expose a direct method to exchange an
+            // authorization code for a refresh token. Typically this requires an
+            // HTTP POST to the token endpoint and parsing the JSON response.
+            // The following line is a placeholder for that operation.
+            // -----------------------------------------------------------------
+            string refreshToken = "<refresh-token-placeholder>";
 
-            // Create a TokenProvider instance for Outlook using the OAuth2 token endpoint.
-            using (TokenProvider tokenProvider = TokenProvider.GetInstance(requestUrl, clientId, clientSecret, authorizationCode))
-            {
-                // Request an access token; the provider will handle the exchange.
-                var oauthToken = tokenProvider.GetAccessToken();
+            // Create Gmail client using the obtained refresh token
+            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, "user@example.com");
 
-                // The returned token may contain a refresh token; output it if available.
-                Console.WriteLine("Access Token: " + oauthToken.Token);
-                // Assuming the token object exposes a RefreshToken property.
-                // Console.WriteLine("Refresh Token: " + oauthToken.RefreshToken);
-            }
+            // Refresh the access token if needed
+            gmailClient.RefreshToken();
+
+            // Further Gmail operations can be performed with 'gmailClient' here.
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

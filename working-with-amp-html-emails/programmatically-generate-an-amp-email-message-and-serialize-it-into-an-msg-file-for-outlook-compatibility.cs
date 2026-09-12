@@ -3,56 +3,73 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Amp;
 
-class Program
+namespace AmpEmailSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Define output MSG file path
-            string outputPath = "amp_message.msg";
-
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            try
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
+                // Output file path for the MSG file
+                string outputPath = "ampEmail.msg";
 
-            // Create and configure the AMP message
-            using (AmpMessage ampMessage = new AmpMessage())
-            {
-                ampMessage.From = new MailAddress("sender@example.com", "Sender Name");
-                ampMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
-                ampMessage.Subject = "AMP Email Example";
+                // Ensure the target directory exists
+                string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
 
-                // Set the AMP HTML body (AMP component)
-                ampMessage.AmpHtmlBody = @"
+                // Create an AMP message
+                using (AmpMessage ampMessage = new AmpMessage())
+                {
+                    // Basic email fields
+                    ampMessage.From = new MailAddress("sender@example.com");
+                    ampMessage.To.Add(new MailAddress("recipient@example.com"));
+                    ampMessage.Subject = "AMP Email Example";
+
+                    // Fallback HTML body
+                    ampMessage.HtmlBody = "<html><body><h1>Hello AMP</h1><p>This is the fallback HTML content.</p></body></html>";
+
+                    // AMP HTML body (simple example)
+                    ampMessage.AmpHtmlBody = @"
 <!doctype html>
 <html amp4email>
 <head>
   <meta charset=""utf-8"">
   <script async src=""https://cdn.ampproject.org/v0.js""></script>
   <style amp4email-boilerplate>body{visibility:hidden}</style>
+  <style amp-custom>
+    h1 {color: #1e88e5;}
+  </style>
 </head>
 <body>
-  <h1>Hello from AMP Email!</h1>
-  <p>This is an AMP-enabled email.</p>
+  <h1>Hello AMP</h1>
+  <p>This is an AMP component example.</p>
+  <amp-fit-text width=""auto"" height=""50"">
+    This is an AMP fit‑text component.
+  </amp-fit-text>
 </body>
 </html>";
 
-                // Optionally set a fallback HTML body
-                ampMessage.HtmlBody = "<p>This is a fallback HTML body for non‑AMP clients.</p>";
-
-                // Save the message as an Outlook MSG file
-                ampMessage.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    // Save the message to MSG format with error handling
+                    try
+                    {
+                        ampMessage.Save(outputPath);
+                        Console.WriteLine($"AMP message saved to {outputPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save AMP message: {ex.Message}");
+                        return;
+                    }
+                }
             }
-
-            Console.WriteLine("AMP message saved successfully to: " + outputPath);
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

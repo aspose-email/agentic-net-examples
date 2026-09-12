@@ -1,53 +1,39 @@
+using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Mime;
 
-class Program
+namespace GmailExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials – replace with real values when available.
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string defaultEmail = "user@example.com";
+            // Replace with your Gmail credentials
+            string username = "your.email@gmail.com";
+            string password = "your_app_password";
 
-            // Guard against placeholder credentials to avoid live network calls.
-            if (clientId == "clientId" || clientSecret == "clientSecret" ||
-                refreshToken == "refreshToken" || defaultEmail == "user@example.com")
+            // Create the SMTP client
+            SmtpClient client = new SmtpClient("smtp.gmail.com", 587, username, password);
+            client.SecurityOptions = SecurityOptions.Auto;
+
+            // Create a simple email message
+            MailMessage message = new MailMessage();
+            message.From = username;
+            message.To = "recipient@example.com";
+            message.Subject = "Test email from Aspose.Email";
+            message.Body = "Hello, this is a test email sent using Aspose.Email library.";
+
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail client operations.");
-                return;
+                client.Send(message);
+                Console.WriteLine("Email sent successfully.");
             }
-
-            // Create Gmail client.
-            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-
-            // Use the client within a using block to ensure proper disposal.
-            using (gmailClient)
+            catch (Exception ex)
             {
-                try
-                {
-                    // Example operation: list calendars.
-                    Aspose.Email.Clients.Google.Calendar[] calendars = gmailClient.ListCalendars();
-                    Console.WriteLine("Calendars retrieved:");
-                    foreach (var calendar in calendars)
-                    {
-                        Console.WriteLine($"- {calendar.Id}: {calendar.Summary}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Gmail operation failed: {ex.Message}");
-                }
+                Console.WriteLine("Error sending email: " + ex.Message);
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,110 +1,71 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
-class Program
+namespace AsposeEmailPstImport
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Paths (adjust as needed)
-            string inputFolderPath = "InputEmails";
-            string outputPstPath = "OutputMessages.pst";
+            // Define source directory containing .msg files and target PST file path
+            string sourceDirectory = "Emails";
+            string pstFilePath = "output.pst";
 
-            // Verify input folder exists
-            if (!Directory.Exists(inputFolderPath))
+            // Verify source directory exists
+            if (!Directory.Exists(sourceDirectory))
             {
-                Console.Error.WriteLine($"Error: Input folder not found – {inputFolderPath}");
+                Console.Error.WriteLine($"Source directory \"{sourceDirectory}\" does not exist.");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPstPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // If a PST file already exists, delete it to start fresh
+            try
             {
-                try
+                if (File.Exists(pstFilePath))
                 {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error: Unable to create output directory – {ex.Message}");
-                    return;
+                    File.Delete(pstFilePath);
                 }
             }
-
-            // Create a new PST file (Unicode version)
-            using (PersonalStorage pst = PersonalStorage.Create(outputPstPath, FileFormatVersion.Unicode))
+            catch (Exception ex)
             {
-                // Get the predefined Inbox folder
-                FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
+                Console.Error.WriteLine($"Failed to delete existing PST file: {ex.Message}");
+                return;
+            }
 
-                // Process each .eml file in the input folder
-                string[] emlFiles;
-                try
+            // Create the PST file and import messages
+            try
+            {
+                // Create a new PST with Unicode format
+                using (PersonalStorage pst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
                 {
-                    emlFiles = Directory.GetFiles(inputFolderPath, "*.eml");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error: Unable to enumerate .eml files – {ex.Message}");
-                    return;
-                }
+                    // Create a predefined folder named "Imported" under the Inbox IPM folder
+                    FolderInfo importFolder = pst.CreatePredefinedFolder("Imported", StandardIpmFolder.Inbox);
 
-                foreach (string emlFilePath in emlFiles)
-                {
-                    if (!File.Exists(emlFilePath))
+                    // Get all .msg files from the source directory
+                    string[] msgFiles = Directory.GetFiles(sourceDirectory, "*.msg");
+                    foreach (string msgFilePath in msgFiles)
                     {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(emlFilePath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                        Console.Error.WriteLine($"Warning: File not found – {emlFilePath}");
-                        continue;
-                    }
-
-                    try
-                    {
-                        // Load the email message from the .eml file
-                        using (MailMessage mailMessage = MailMessage.Load(emlFilePath))
+                        // Load the .msg file as a MapiMessage
+                        using (MapiMessage mapMsg = MapiMessage.Load(msgFilePath))
                         {
-                            // Convert to MAPI message
-                            MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
-
-                            // Add the message to the PST Inbox folder
-                            inboxFolder.AddMessage(mapiMessage);
-
-                            Console.WriteLine($"Added: {mailMessage.Subject}");
+                            // Add the message to the PST folder
+                            importFolder.AddMessage(mapMsg);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error processing file '{emlFilePath}': {ex.Message}");
-                    }
-                }
-            }
 
-            Console.WriteLine("PST creation completed successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                    // Optionally, display folder statistics
+                    Console.WriteLine($"Folder \"{importFolder.DisplayName}\" contains {importFolder.ContentCount} messages.");
+                }
+
+                Console.WriteLine($"PST file created successfully at \"{pstFilePath}\".");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred while creating the PST: {ex.Message}");
+            }
         }
     }
 }

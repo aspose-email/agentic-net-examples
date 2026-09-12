@@ -2,21 +2,19 @@ using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Define input and output paths
-            string emlPath = "input.eml";
-            string ostPath = "output.ost";
+            string sourcePath = "TestEml.eml";
+            string targetPath = "output.ost";
 
-            // Ensure input EML exists; create a minimal placeholder if missing
-            if (!File.Exists(emlPath))
+            // Ensure source EML exists; create a placeholder if it does not.
+            if (!File.Exists(sourcePath))
             {
                 try
                 {
@@ -26,7 +24,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
+                        placeholder.Save(sourcePath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -37,54 +35,53 @@ class Program
 
                 try
                 {
-                    string placeholder = "Subject: Placeholder\r\n\r\nThis is a placeholder email.";
-                    File.WriteAllText(emlPath, placeholder);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder EML: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Source file not found. Placeholder created at '{sourcePath}'.");
+                return;
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(ostPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Ensure target directory exists.
+            string targetDir = Path.GetDirectoryName(Path.GetFullPath(targetPath));
+            if (!Directory.Exists(targetDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
+                    Directory.CreateDirectory(targetDir);
                 }
-                catch (Exception ex)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create target directory: {dirEx.Message}");
                     return;
                 }
             }
 
-            // Load the EML message
-            using (MailMessage mailMessage = MailMessage.Load(emlPath))
+            // Load the EML message with appropriate options.
+            var emlLoadOptions = new EmlLoadOptions
             {
-                // Convert to MapiMessage
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
+                PreserveTnefAttachments = true,
+                PreserveEmbeddedMessageFormat = true
+            };
+
+            using (MailMessage mailMessage = MailMessage.Load(sourcePath, emlLoadOptions))
+            {
+                // Convert MailMessage to MapiMessage.
+                MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
+
+                // Create OST file with Unicode format.
+                using (PersonalStorage pst = PersonalStorage.Create(targetPath, FileFormatVersion.Unicode))
                 {
-                    // Create OST storage
-                    using (PersonalStorage personalStorage = PersonalStorage.Create(ostPath, FileFormatVersion.Unicode))
-                    {
-                        // Get or create the Inbox folder
-                        FolderInfo inboxFolder = personalStorage.RootFolder.GetSubFolder("Inbox");
-                        if (inboxFolder == null)
-                        {
-                            inboxFolder = personalStorage.RootFolder.AddSubFolder("Inbox");
-                        }
-
-                        // Add the message to the Inbox
-                        inboxFolder.AddMessage(mapiMessage);
-                    }
+                    // Add the message to the root folder.
+                    pst.RootFolder.AddMessage(mapiMessage);
                 }
-            }
 
-            Console.WriteLine("EML successfully converted to OST.");
+                Console.WriteLine($"Conversion succeeded: '{sourcePath}' -> '{targetPath}'");
+            }
         }
         catch (Exception ex)
         {

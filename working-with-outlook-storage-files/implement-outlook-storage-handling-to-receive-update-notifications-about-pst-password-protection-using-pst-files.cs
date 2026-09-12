@@ -1,65 +1,73 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
     static void Main()
     {
+        const string pstPath = "sample.pst";
+
+        // Ensure the PST file exists; create a minimal placeholder if missing.
+        if (!File.Exists(pstPath))
+        {
+            try
+            {
+                // Create an empty Unicode PST file.
+                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
+                return;
+            }
+        }
+
+        // Open the PST file with write access.
         try
         {
-            string pstPath = "sample.pst";
-
-            // Ensure the PST file exists; create a minimal placeholder if missing
-            if (!File.Exists(pstPath))
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
             {
-                try
-                {
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    Console.WriteLine("Placeholder PST file created.");
-                }
-                catch (Exception createEx)
-                {
-                    Console.Error.WriteLine($"Error creating PST file: {createEx.Message}");
-                    return;
-                }
-            }
+                // Check if the PST is password protected.
+                bool isProtected = pst.Store.IsPasswordProtected;
+                Console.WriteLine($"PST password protected: {isProtected}");
 
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Subscribe to the ItemMoved event
-                pst.ItemMoved += OnItemMoved;
-
-                // Check if the PST is password protected
-                if (pst.Store.IsPasswordProtected)
+                if (isProtected)
                 {
-                    Console.WriteLine("The PST file is password protected.");
+                    // Attempt to validate a sample password.
+                    const string testPassword = "test";
+                    bool isValid = pst.Store.IsPasswordValid(testPassword);
+                    Console.WriteLine($"Is test password valid? {isValid}");
                 }
                 else
                 {
-                    Console.WriteLine("The PST file is not password protected.");
+                    // Set a new password for the PST.
+                    const string newPassword = "MySecret123";
+                    pst.Store.ChangePassword(newPassword);
+                    Console.WriteLine("Password set on PST.");
+
+                    // Verify the new password.
+                    bool isNowProtected = pst.Store.IsPasswordProtected;
+                    bool isValidNow = pst.Store.IsPasswordValid(newPassword);
+                    Console.WriteLine($"PST now password protected: {isNowProtected}");
+                    Console.WriteLine($"New password validation result: {isValidNow}");
                 }
 
-                // Keep the application alive briefly to demonstrate event handling (optional)
-                Console.WriteLine("Press Enter to exit...");
-                Console.ReadLine();
+                // Example of accessing a property (display name) and updating it.
+                string originalName = pst.Store.DisplayName;
+                Console.WriteLine($"Original PST display name: {originalName}");
 
-                // Unsubscribe from the event before disposing
-                pst.ItemMoved -= OnItemMoved;
+                const string newDisplayName = "Updated PST Store";
+                pst.Store.ChangeDisplayName(newDisplayName);
+                Console.WriteLine($"PST display name changed to: {pst.Store.DisplayName}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
         }
-    }
-
-    // Event handler for ItemMoved
-    private static void OnItemMoved(object sender, ItemMovedEventArgs e)
-    {
-        // Use the verified EntryId property
-        Console.WriteLine($"Item moved. EntryId: {e.EntryId}");
     }
 }

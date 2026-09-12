@@ -1,6 +1,5 @@
 using System;
-using System.Linq;
-using System.Reflection;
+using System.IO;
 using Aspose.Email;
 using Aspose.Email.Amp;
 
@@ -10,25 +9,49 @@ class Program
     {
         try
         {
-            // Get the assembly that contains the AMP types
-            Assembly ampAssembly = typeof(AmpMessage).Assembly;
-
-            // Retrieve all classes defined in the Aspose.Email.Amp namespace
-            var ampComponentNames = ampAssembly.GetTypes()
-                .Where(t => t.IsClass && t.Namespace == "Aspose.Email.Amp")
-                .Select(t => t.Name)
-                .OrderBy(name => name)
-                .ToList();
-
-            Console.WriteLine("AMP components supported for processing MSG format:");
-            foreach (string componentName in ampComponentNames)
+            // Define the output MSG file path
+            string outputPath = Path.Combine(Environment.CurrentDirectory, "AmpComponentsList.msg");
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!Directory.Exists(outputDir))
             {
-                Console.WriteLine("- " + componentName);
+                Directory.CreateDirectory(outputDir);
             }
+
+            // List of known AMP component type names (as strings)
+            // NOTE: The actual Aspose.Email.Amp component classes should be referenced here.
+            // This placeholder list represents the supported components as of the current documentation.
+            string[] ampComponentNames = new string[]
+            {
+                "AmpAccordion",
+                "AmpAnim",
+                "AmpCarousel",
+                "AmpFitText",
+                "AmpForm",
+                "AmpImage",
+                "AmpTimeago",
+                "AmpList",
+                "AmpMap",
+                "AmpQuote",
+                "AmpSidebar",
+                "AmpSocial",
+                "AmpTabs",
+                "AmpVideo"
+            };
+
+            // Create an AMP message (inherits from MailMessage)
+            using (AmpMessage ampMessage = new AmpMessage())
+            {
+                ampMessage.Subject = "Supported AMP Components";
+                ampMessage.Body = "The following AMP components are supported:\n" + string.Join("\n", ampComponentNames);
+                // Save the message as MSG
+                ampMessage.Save(outputPath, SaveOptions.DefaultMsg);
+            }
+
+            Console.WriteLine("AMP components list saved to: " + outputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

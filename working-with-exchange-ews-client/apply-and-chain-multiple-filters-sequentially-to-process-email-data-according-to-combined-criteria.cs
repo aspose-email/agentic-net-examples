@@ -1,70 +1,97 @@
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
+using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Tools.Search;
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.WebService;
+using System.IO;
 
-namespace AsposeEmailExample
+namespace EmailFilterExample
 {
     class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
             try
             {
-                // Placeholder connection details – replace with real values when available.
-                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                // Configuration for the Exchange EWS server
+                string host = "exchange.example.com";
                 string username = "user@example.com";
                 string password = "password";
+                string domain = "example";
 
-                // Skip actual network call when placeholders are detected.
-                if (serviceUrl.Contains("example.com") || username.Contains("example.com"))
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") ||
+                    username.Contains("example.com") ||
+                    password == "password")
                 {
-                    Console.WriteLine("Placeholder credentials detected – skipping EWS operations.");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
 
-                // Create the EWS client using the factory method.
-                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                // Output directory for filtered messages
+                string outputDir = Path.Combine(Environment.CurrentDirectory, "FilteredEmails");
+
+                // Ensure the output directory exists
+                try
                 {
-                    // Build a composite query:
-                    // 1. Messages received on or after a specific date (InternalDate).
-                    // 2. Subject contains a keyword.
-                    // 3. From address contains a domain.
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-
-                    // Filter by internal date (received date) – using Since for >=.
-                    DateTime startDate = DateTime.Today.AddDays(-30); // last 30 days
-                    builder.InternalDate.Since(startDate);
-
-                    // Subject contains "Report".
-                    builder.Subject.Contains("Report");
-
-                    // From contains "contoso.com".
-                    builder.From.Contains("contoso.com");
-
-                    // Generate the query.
-                    MailQuery query = builder.GetQuery();
-
-                    // List messages from the Inbox that match the query.
-                    // The Inbox URI is obtained from the mailbox info.
-                    string inboxUri = client.MailboxInfo.InboxUri;
-                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri, query);
-
-                    // Iterate and display basic information.
-                    foreach (ExchangeMessageInfo info in messages)
+                    if (!Directory.Exists(outputDir))
                     {
-                        Console.WriteLine($"Subject: {info.Subject}");
-                        Console.WriteLine($"From: {info.From}");
-                        Console.WriteLine($"Received (InternalDate): {info.InternalDate}");
-                        Console.WriteLine(new string('-', 40));
+                        Directory.CreateDirectory(outputDir);
                     }
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    return;
+                }
+
+                // Build the mail query with combined criteria
+                // From contains 'test@test.com' OR Seen = True, AND SentDate >= 12-May-2010
+                MailQuery mailQuery = new MailQuery("(('From' Contains 'test@test.com' | 'Seen' = 'True') & 'SentDate' >= '12-May-2010')");
+
+                // Connect to the Exchange server and process messages
+                try
+                {
+                    using (IEWSClient exchangeClient = EWSClient.GetEWSClient(host, username, password, domain))
+                    {
+                        // Retrieve messages that match the query from the Inbox folder
+                        ExchangeMessageInfoCollection messages = exchangeClient.ListMessages("Inbox", mailQuery);
+
+                        foreach (ExchangeMessageInfo messageInfo in messages)
+                        {
+                            try
+                            {
+                                // Fetch the full message
+                                MailMessage message = exchangeClient.FetchMessage(messageInfo.UniqueUri);
+
+                                // Save the message to the output directory
+                                string filePath = Path.Combine(outputDir, $"{messageInfo.UniqueUri.GetHashCode()}.eml");
+                                try
+                                {
+                                    message.Save(filePath);
+                                    Console.WriteLine($"Saved filtered message to: {filePath}");
+                                }
+                                catch (Exception saveEx)
+                                {
+                                    Console.Error.WriteLine($"Failed to save message {messageInfo.UniqueUri}: {saveEx.Message}");
+                                }
+                            }
+                            catch (Exception fetchEx)
+                            {
+                                Console.Error.WriteLine($"Failed to fetch message {messageInfo.UniqueUri}: {fetchEx.Message}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception clientEx)
+                {
+                    Console.Error.WriteLine($"Exchange client error: {clientEx.Message}");
+                    return;
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
-                // Graceful exit – do not rethrow.
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
         }
     }

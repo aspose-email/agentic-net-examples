@@ -1,9 +1,7 @@
 using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
-using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -11,63 +9,47 @@ class Program
     {
         try
         {
-            // Placeholder credentials – skip real network call in CI environments
+            // Author note: Demonstrates POP3 connection validation before further email processing.
             string host = "pop3.example.com";
-            string username = "username";
+            int port = 110;
+            string username = "user@example.com";
             string password = "password";
 
-            if (host.Contains("example.com") || username == "username" || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Skipping POP3 connection due to placeholder credentials.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Connect to POP3 server safely
-            using (Pop3Client client = new Pop3Client(host, username, password, SecurityOptions.Auto))
+            // Create and configure the POP3 client.
+            using (Pop3Client pop3Client = new Pop3Client())
             {
+                pop3Client.Host = host;
+                pop3Client.Port = port;
+                pop3Client.Username = username;
+                pop3Client.Password = password;
+                pop3Client.SecurityOptions = SecurityOptions.Auto; // Adjust as needed.
+
                 try
                 {
-                    // Validate connection and retrieve mailbox status
-                    Pop3MailboxInfo mailboxInfo = client.GetMailboxInfo();
-                    Console.WriteLine($"Mailbox contains {mailboxInfo.MessageCount} messages, occupying {mailboxInfo.OccupiedSize} bytes.");
+                    // Implicitly connects when retrieving message count.
+                    int messageCount = pop3Client.GetMessageCount();
+                    Console.WriteLine($"Connected successfully. Message count: {messageCount}");
 
-                    if (mailboxInfo.MessageCount == 0)
+                    // Example: fetch the first message if any exist.
+                    if (messageCount > 0)
                     {
-                        Console.WriteLine("No messages to process.");
-                        return;
-                    }
-
-                    // List messages
-                    Pop3MessageInfoCollection messages = client.ListMessages();
-                    Pop3MessageInfo firstMessageInfo = messages[0];
-                    Console.WriteLine($"First message subject: {firstMessageInfo.Subject}");
-
-                    // Fetch the first message
-                    using (MailMessage message = client.FetchMessage(firstMessageInfo.SequenceNumber))
-                    {
-                        // Prepare output path
-                        string outputPath = "message.eml";
-                        string outputDir = Path.GetDirectoryName(outputPath);
-                        if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                        {
-                            Directory.CreateDirectory(outputDir);
-                        }
-
-                        // Save the message to file safely
-                        try
-                        {
-                            message.Save(outputPath, SaveOptions.DefaultEml);
-                            Console.WriteLine($"Message saved to {outputPath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save message: {ex.Message}");
-                        }
+                        MailMessage message = pop3Client.FetchMessage(1);
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        message.Dispose();
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
+                    return;
                 }
             }
         }

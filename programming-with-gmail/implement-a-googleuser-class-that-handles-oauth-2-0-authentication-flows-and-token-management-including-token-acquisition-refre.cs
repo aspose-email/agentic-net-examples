@@ -2,154 +2,121 @@ using System;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
-
-namespace AsposeEmailGmailSample
+public class GoogleUser : IDisposable
 {
-    // Handles OAuth 2.0 flows and token management for a Google user.
-    public class GoogleUser : IDisposable
+    private readonly string _clientId;
+    private readonly string _clientSecret;
+    private readonly string _refreshToken;
+    private readonly string _defaultEmail;
+    private readonly Aspose.Email.Clients.ITokenProvider _tokenProvider;
+    private readonly IGmailClient _gmailClient;
+    private bool _disposed;
+
+    public GoogleUser(string clientId, string clientSecret, string refreshToken, string defaultEmail)
     {
-        private readonly string _clientId;
-        private readonly string _clientSecret;
-        private readonly string _refreshToken;
-        private readonly string _defaultEmail;
-        private readonly TokenProvider _tokenProvider;
-        private readonly IGmailClient _gmailClient;
+        // Guard against placeholder literals
+        if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_"))
+            throw new ArgumentException("Invalid clientId.", nameof(clientId));
+        if (string.IsNullOrWhiteSpace(clientSecret) || clientSecret.StartsWith("YOUR_"))
+            throw new ArgumentException("Invalid clientSecret.", nameof(clientSecret));
+        if (string.IsNullOrWhiteSpace(refreshToken) || refreshToken.StartsWith("YOUR_"))
+            throw new ArgumentException("Invalid refreshToken.", nameof(refreshToken));
+        if (string.IsNullOrWhiteSpace(defaultEmail) || defaultEmail.StartsWith("YOUR_"))
+            throw new ArgumentException("Invalid defaultEmail.", nameof(defaultEmail));
 
-        public GoogleUser(string clientId, string clientSecret, string refreshToken, string defaultEmail)
+        _clientId = clientId;
+        _clientSecret = clientSecret;
+        _refreshToken = refreshToken;
+        _defaultEmail = defaultEmail;
+
+        // Obtain a token provider for Google
+        _tokenProvider = TokenProvider.Google.GetInstance(_clientId, _clientSecret, _refreshToken);
+
+        // Create Gmail client using the same credentials; the client will manage token refresh automatically
+        _gmailClient = GmailClient.GetInstance(_clientId, _clientSecret, _refreshToken, _defaultEmail);
+    }
+
+    // Acquire a fresh access token and assign it to the Gmail client
+    public void AcquireAccessToken()
+    {
+        try
         {
-            _clientId = clientId;
-            _clientSecret = clientSecret;
-            _refreshToken = refreshToken;
-            _defaultEmail = defaultEmail;
-
-            // Guard against placeholder credentials to avoid live network calls.
-            if (string.IsNullOrEmpty(_clientId) || _clientId == "clientId" ||
-                string.IsNullOrEmpty(_clientSecret) || _clientSecret == "clientSecret" ||
-                string.IsNullOrEmpty(_refreshToken) || _refreshToken == "refreshToken")
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Gmail client will not be initialized.");
-                return;
-            }
-
-            try
-            {
-                _tokenProvider = TokenProvider.Google.GetInstance(_clientId, _clientSecret, _refreshToken);
-                OAuthToken token = _tokenProvider.GetAccessToken();
-                _gmailClient = GmailClient.GetInstance(token.Token, _defaultEmail);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to initialize Gmail client: {ex.Message}");
-            }
+            var oauthToken = _tokenProvider.GetAccessToken();
+            // OAuthToken contains the raw token string in the Token property
+            _gmailClient.AccessToken = oauthToken.Token;
         }
-
-        // Acquires a fresh access token.
-        public string AcquireToken()
+        catch (Exception ex)
         {
-            if (_tokenProvider == null)
-            {
-                Console.Error.WriteLine("Token provider not initialized.");
-                return null;
-            }
-
-            try
-            {
-                OAuthToken token = _tokenProvider.GetAccessToken();
-                return token.Token;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error acquiring token: {ex.Message}");
-                return null;
-            }
-        }
-
-        // Refreshes the access token using the Gmail client.
-        public void RefreshAccessToken()
-        {
-            if (_gmailClient == null)
-            {
-                Console.Error.WriteLine("Gmail client not initialized.");
-                return;
-            }
-
-            try
-            {
-                _gmailClient.RefreshToken();
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error refreshing token: {ex.Message}");
-            }
-        }
-
-        // Retrieves basic user profile information (placeholder implementation).
-        public string GetUserProfile()
-        {
-            if (_gmailClient == null)
-            {
-                Console.Error.WriteLine("Gmail client not initialized.");
-                return null;
-            }
-
-            try
-            {
-                // Using GetSetting as a placeholder for profile retrieval.
-                string profile = _gmailClient.GetSetting("profile");
-                return profile;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error retrieving user profile: {ex.Message}");
-                return null;
-            }
-        }
-
-        // Dispose pattern for IDisposable resources.
-        public void Dispose()
-        {
-            if (_gmailClient != null)
-            {
-                _gmailClient.Dispose();
-            }
-
-            if (_tokenProvider != null)
-            {
-                _tokenProvider.Dispose();
-            }
+            Console.Error.WriteLine($"Failed to acquire access token: {ex.Message}");
+            throw;
         }
     }
 
-    class Program
+    // Refresh the access token using the Gmail client (automatically updates AccessToken property)
+    public void RefreshAccessToken()
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                // Initialize GoogleUser with placeholder credentials.
-                using (GoogleUser user = new GoogleUser("clientId", "clientSecret", "refreshToken", "user@example.com"))
-                {
-                    string accessToken = user.AcquireToken();
-                    if (!string.IsNullOrEmpty(accessToken))
-                    {
-                        Console.WriteLine("Access Token: " + accessToken);
-                    }
+            _gmailClient.RefreshToken();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to refresh access token: {ex.Message}");
+            throw;
+        }
+    }
 
-                    // Refresh the token if needed.
-                    user.RefreshAccessToken();
+    // Retrieve basic user profile information.
+    // Note: Aspose.Email GmailClient does not expose a direct GetUserProfile method.
+    // If such an API becomes available, replace the placeholder with the actual call.
+    public void GetUserProfile()
+    {
+        Console.WriteLine("User profile retrieval is not directly supported by Aspose.Email GmailClient.");
+        Console.WriteLine($"Default email: {_gmailClient.DefaultEmail}");
+        // Placeholder for future implementation:
+        // var profile = _gmailClient.GetUserProfile();
+        // Console.WriteLine($"Name: {profile.Name}, Email: {profile.Email}");
+    }
 
-                    // Retrieve and display user profile information.
-                    string profile = user.GetUserProfile();
-                    if (!string.IsNullOrEmpty(profile))
-                    {
-                        Console.WriteLine("User Profile: " + profile);
-                    }
-                }
-            }
-            catch (Exception ex)
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _gmailClient?.Dispose();
+            _tokenProvider?.Dispose();
+            _disposed = true;
+        }
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        // Replace the placeholders with real values before running.
+        const string clientId = "YOUR_CLIENT_ID";
+        const string clientSecret = "YOUR_CLIENT_SECRET";
+        const string refreshToken = "YOUR_REFRESH_TOKEN";
+        const string defaultEmail = "YOUR_EMAIL@example.com";
+
+        try
+        {
+            using (var user = new GoogleUser(clientId, clientSecret, refreshToken, defaultEmail))
             {
-                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+                user.AcquireAccessToken();
+                Console.WriteLine("Access token acquired.");
+
+                // Optionally refresh token
+                user.RefreshAccessToken();
+                Console.WriteLine("Access token refreshed.");
+
+                // Retrieve user profile (placeholder implementation)
+                user.GetUserProfile();
             }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

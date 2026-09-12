@@ -1,49 +1,66 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Mapi;
 
-class Program
+namespace MailboxArchivalSample
 {
-    static void Main(string[] args)
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder connection settings – replace with real values.
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Guard against running with placeholder credentials.
-            if (string.IsNullOrWhiteSpace(serviceUrl) || serviceUrl.Contains("example"))
+            try
             {
-                Console.WriteLine("Please provide valid Exchange service URL and credentials.");
-                return;
-            }
+                // EWS service connection parameters
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create the EWS client using the factory method.
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
-            {
-                // Source folder – here we use the Inbox. Adjust as needed.
-                string sourceFolderUri = client.MailboxInfo.InboxUri;
-
-                // List all messages in the source folder.
-                ExchangeMessageInfoCollection messages = client.ListMessages(sourceFolderUri);
-
-                // Archive each message while preserving its metadata.
-                foreach (ExchangeMessageInfo msgInfo in messages)
+                // Skip external calls when placeholder credentials are used
+                if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    // ArchiveItem moves the item to the user's archive mailbox.
-                    client.ArchiveItem(sourceFolderUri, msgInfo.UniqueUri);
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
                 }
 
-                Console.WriteLine($"Archived {messages.Count} messages from the Inbox.");
+                // Create the EWS client
+                using (IEWSClient ewsClient = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    // Get mailbox information to obtain the Inbox URI
+                    ExchangeMailboxInfo mailboxInfo = ewsClient.GetMailboxInfo();
+                    string inboxUri = mailboxInfo.InboxUri;
+
+                    // List all messages in the Inbox (non‑recursive) without a query
+                    ExchangeMessageInfoCollection messages = ewsClient.ListMessages(inboxUri, null);
+
+                    foreach (ExchangeMessageInfo msgInfo in messages)
+                    {
+                        try
+                        {
+                            // Fetch the full MailMessage (preserves all metadata)
+                            MailMessage mailMsg = ewsClient.FetchMessage(msgInfo.UniqueUri);
+
+                            // Convert MailMessage to MapiMessage for archival
+                            MapiMessage mapMsg = MapiMessage.FromMailMessage(mailMsg);
+
+                            // Archive the message – this moves it to the user's archive mailbox
+                            ewsClient.ArchiveItem(inboxUri, mapMsg);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to archive message {msgInfo.UniqueUri}: {ex.Message}");
+                            // Continue with next message
+                        }
+                    }
+
+                    Console.WriteLine("Archival process completed.");
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

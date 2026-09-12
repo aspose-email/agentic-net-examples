@@ -3,64 +3,63 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailNoteExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
-
-            // Ensure input MSG exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            try
             {
+                // Input MSG file containing the note
+                string inputPath = "input.msg";
+                // Output MSG file for the new note document
+                string outputPath = "output_note.msg";
+
+                // Verify input file exists
+                if (!File.Exists(inputPath))
+                {
                 try
                 {
-                    MailMessage placeholder = new MailMessage
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        Subject = "Placeholder Subject",
-                        Body = "This is a placeholder message."
-                    };
-                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                    placeholder.Save(inputPath, saveOptions);
+                        placeholder.Save(inputPath);
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file into a MapiMessage
-            MapiMessage mapMessage;
-            try
-            {
-                mapMessage = MapiMessage.Load(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
-                return;
-            }
-
-            // Preserve content and metadata by saving to a new file
-            try
-            {
-                using (mapMessage)
-                {
-                    mapMessage.Save(outputPath);
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
+                    return;
                 }
-                Console.WriteLine($"Notes document created successfully at '{outputPath}'.");
+
+                // Ensure output directory exists
+                string outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                // Load the existing MSG file as a MapiMessage
+                MapiMessage originalMessage = MapiMessage.Load(inputPath);
+
+                // Preserve the message content and metadata by saving it as a new MSG file
+                originalMessage.Save(outputPath);
+
+                Console.WriteLine($"Note document saved successfully to: {outputPath}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error saving Notes document: {ex.Message}");
+                // Log any unexpected errors without crashing the application
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

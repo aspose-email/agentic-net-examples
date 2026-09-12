@@ -8,9 +8,10 @@ class Program
     {
         try
         {
+            // Path to the MSG file
             string msgPath = "sample.msg";
 
-            // Ensure the MSG file exists; create a minimal placeholder if it does not.
+            // Verify the file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
                 try
@@ -30,26 +31,21 @@ class Program
                     return;
                 }
 
-                using (MailMessage placeholder = new MailMessage())
-                {
-                    placeholder.Subject = "Placeholder Subject";
-                    placeholder.Save(msgPath, SaveOptions.DefaultMsgUnicode);
-                }
-
-                Console.WriteLine("Placeholder MSG file created at: " + msgPath);
+                Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file and retrieve its subject.
-            using (MailMessage message = MailMessage.Load(msgPath))
+            // Load the MSG file as a MailMessage and retrieve its subject
+            using (MailMessage mailMessage = MailMessage.Load(msgPath))
             {
-                string subject = message.Subject;
-                Console.WriteLine("Subject: " + subject);
+                string subject = mailMessage.Subject;
+                Console.WriteLine($"Subject: {subject}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            // Output any unexpected errors without crashing the application
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

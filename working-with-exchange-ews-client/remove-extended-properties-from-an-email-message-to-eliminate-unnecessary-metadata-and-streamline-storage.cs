@@ -4,16 +4,15 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        try
-        {
-            string inputPath = "input.eml";
-            string outputPath = "output.eml";
+        // Input and output file paths
+        string inputPath = "input.eml";
+        string outputPath = "output.eml";
 
-            // Ensure the input file exists; if not, create a minimal placeholder email.
-            if (!File.Exists(inputPath))
-            {
+        // Guard file existence
+        if (!File.Exists(inputPath))
+        {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -31,42 +30,27 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    MailMessage placeholderMessage = new MailMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "This is a placeholder email generated because the input file was missing."
-                    );
-                    placeholderMessage.Save(inputPath);
-                }
-                catch (Exception placeholderEx)
-                {
-                    Console.Error.WriteLine("Failed to create placeholder email: " + placeholderEx.Message);
-                    return;
-                }
+            Console.Error.WriteLine($"Input file not found: {inputPath}");
+            return;
+        }
+
+        try
+        {
+            // Load the email message
+            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+            {
+                // Remove all custom headers (extended properties) to streamline storage
+                mailMessage.Headers.Clear();
+
+                // Save the cleaned message
+                mailMessage.Save(outputPath, SaveOptions.DefaultEml);
             }
 
-            // Load the email, then save it again. The MailMessage class does not retain
-            // extended MAPI properties, effectively removing unnecessary metadata.
-            try
-            {
-                using (MailMessage emailMessage = MailMessage.Load(inputPath))
-                {
-                    emailMessage.Save(outputPath);
-                    Console.WriteLine("Email saved without extended properties to: " + outputPath);
-                }
-            }
-            catch (Exception loadSaveEx)
-            {
-                Console.Error.WriteLine("Error processing the email file: " + loadSaveEx.Message);
-                return;
-            }
+            Console.WriteLine($"Message saved without extended properties to: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unexpected error: " + ex.Message);
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }

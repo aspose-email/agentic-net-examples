@@ -8,65 +8,31 @@ class Program
     {
         try
         {
-            string inputPath = "sample.eml";
-            string outputPath = "sample.msg";
+            // Author note: Simple example to save a MailMessage as MSG using default options.
+            string outputPath = "output.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(inputPath))
+            // Ensure the output directory exists.
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    using (MailMessage placeholderMessage = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "This is a placeholder email body."))
-                    {
-                        placeholderMessage.Save(inputPath);
-                    }
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ioEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the email message and save it as MSG.
-            try
+            // Create and configure the email message.
+            using (MailMessage message = new MailMessage())
             {
-                using (MailMessage email = MailMessage.Load(inputPath))
-                {
-                    // Saving with a .msg extension uses the default MSG format.
-                    email.Save(outputPath);
-                }
-            }
-            catch (Exception msgEx)
-            {
-                Console.Error.WriteLine($"Error processing email message: {msgEx.Message}");
-                return;
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Sample Message";
+                message.Body = "This is a sample email saved as MSG.";
+
+                // Save the message as MSG using the default MSG save options.
+                message.Save(outputPath, SaveOptions.DefaultMsg);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,70 +1,58 @@
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Clients.Exchange;
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace ArchivingDemo
 {
-    static void Main(string[] args)
+    public class Program
     {
-        try
+        public static void Main(string[] args)
         {
-            // Placeholder connection parameters
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Skip real network calls when placeholders are used
-            if (mailboxUri.Contains("example.com"))
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping actual Exchange connection.");
-                return;
-            }
+                const string mboxPath = "storage.mbox";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                // Retrieve basic mailbox information
-                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
-                Console.WriteLine($"Mailbox URI: {mailboxInfo.MailboxUri}");
-
-                // Get total mailbox size
-                long mailboxSize = client.GetMailboxSize();
-                Console.WriteLine($"Mailbox size: {mailboxSize} bytes");
-
-                // Attempt to retrieve the Archive folder information
-                try
+                if (!File.Exists(mboxPath))
                 {
-                    // The Archive folder is typically a top‑level folder named "Archive"
-                    ExchangeFolderInfo archiveFolder = client.GetFolderInfo("Archive");
-                    Console.WriteLine($"Archive folder found: {archiveFolder.DisplayName}");
-                    Console.WriteLine($"Archive folder URI: {archiveFolder.Uri}");
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("Archive folder not found or cannot be accessed.");
+                    Console.Error.WriteLine($"Input file not found: {mboxPath}");
+                    return;
                 }
 
-                // List sub‑folders under the Archive folder (if it exists)
-                try
+                // Ensure the output directory exists
+                const string outputDir = "output";
+                Directory.CreateDirectory(outputDir);
+
+                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
                 {
-                    ExchangeFolderInfoCollection subFolders = client.ListSubFolders("Archive");
-                    Console.WriteLine("Sub‑folders within Archive:");
-                    foreach (ExchangeFolderInfo subFolder in subFolders)
+                    foreach (MboxMessageInfo messageInfo in mboxReader.EnumerateMessageInfo())
                     {
-                        Console.WriteLine($"- {subFolder.DisplayName}");
+                        try
+                        {
+                            MailMessage emlMessage = mboxReader.ExtractMessage(messageInfo.EntryId, new EmlLoadOptions());
+
+                            string safeSubject = string.IsNullOrWhiteSpace(emlMessage.Subject) ? "Untitled" : emlMessage.Subject;
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                            {
+                                safeSubject = safeSubject.Replace(c, '_');
+                            }
+
+                            string outputPath = Path.Combine(outputDir, $"{safeSubject}.eml");
+
+                            emlMessage.Save(outputPath);
+                            Console.WriteLine($"Saved: {outputPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to process message ID {messageInfo.EntryId}: {ex.Message}");
+                        }
                     }
                 }
-                catch (Exception)
-                {
-                    // If the Archive folder does not exist, this block will be reached
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

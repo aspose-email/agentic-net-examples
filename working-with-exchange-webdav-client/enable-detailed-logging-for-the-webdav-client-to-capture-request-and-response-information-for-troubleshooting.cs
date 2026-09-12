@@ -1,51 +1,53 @@
-using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
+using System;
+using System.IO;
+using System.Net;
 using Aspose.Email.Clients.Exchange.Dav;
 
-namespace AsposeEmailExamples
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        try
         {
-            try
+            // Path for the detailed log file
+            string logFilePath = "exchange_log.txt";
+
+            // Ensure the directory for the log file exists
+            string logDirectory = Path.GetDirectoryName(Path.GetFullPath(logFilePath));
+            if (!Directory.Exists(logDirectory))
             {
-                // Placeholder connection details
-                string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
-                string username = "username";
-                string password = "password";
-
-                // Skip real network call when placeholders are used
-                if (mailboxUri.Contains("example.com") || username == "username")
-                {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping live connection.");
-                    return;
-                }
-
-                // Initialize the WebDAV client
-                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
-                {
-                    // Enable detailed logging by specifying a log file
-                    client.LogFileName = "exchange_client.log";
-                    client.UseDateInLogFileName = true; // optional, adds date to log file name
-
-                    // Example operation to generate log entries
-                    try
-                    {
-                        ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                        Console.WriteLine($"Retrieved {messages.Count} messages from Inbox.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Operation failed: {ex.Message}");
-                    }
-                }
+                Directory.CreateDirectory(logDirectory);
             }
-            catch (Exception ex)
+
+            // Mailbox connection details (replace with real values)
+            string mailboxUri = "https://exchange.example.com/ews/exchange.asmx";
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com"))
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
             }
+
+            NetworkCredential credentials = new NetworkCredential("username", "password");
+
+            // Create the WebDAV (Exchange) client and enable logging
+            using (ExchangeClient client = new ExchangeClient(mailboxUri, credentials))
+            {
+                client.LogFileName = logFilePath;
+                client.UseDateInLogFileName = false; // optional: keep a single log file
+
+                // Perform a harmless operation to generate log entries (optional)
+                // Example: accessing the MailboxUri property forces a request
+                string uri = client.MailboxUri;
+
+                // Additional operations can be placed here
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

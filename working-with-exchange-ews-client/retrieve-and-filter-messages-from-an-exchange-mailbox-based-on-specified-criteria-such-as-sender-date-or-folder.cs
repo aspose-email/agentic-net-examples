@@ -1,64 +1,58 @@
-using Aspose.Email.Tools.Search;
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
 
-class Program
+namespace ExchangeMessageRetriever
 {
-    static void Main()
+    // Author: Aspose.Email example - retrieve and filter Exchange messages via EWS
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection data – replace with real values or keep as is for a safe early exit.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username   = "user@example.com";
-            string password   = "password";
+            // Exchange server connection details
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Guard against executing with placeholder credentials.
-            if (mailboxUri.Contains("example") || username.Contains("example") || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping live Exchange connection.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client inside a using block to ensure proper disposal.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            try
             {
-                try
+                // Create and dispose the EWS client safely
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
-                    // Build a query to filter messages by sender and sent date (last 7 days).
-                    ExchangeQueryBuilder builder = new ExchangeQueryBuilder();
-                    builder.From.Contains("sender@example.com");
-                    builder.InternalDate.Since(DateTime.Today.AddDays(-7));
+                    // Obtain mailbox folder URIs
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    string inboxFolder = mailboxInfo.InboxUri;
 
-                    MailQuery query = builder.GetQuery();
+                    // Build a query to filter messages by sender and date (InternalDate)
+                    // Adjust the sender email and date as needed
+                    MailQuery query = new MailQuery("(('From' Contains 'sender@example.com') & 'InternalDate' >= '2023-01-01')");
 
-                    // Retrieve messages from the Inbox that match the query.
-                    ExchangeMessageInfoCollection infos = client.ListMessages(
-                        client.MailboxInfo.InboxUri,
-                        query); // non‑recursive
+                    // Retrieve matching messages from the Inbox folder
+                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxFolder, query);
 
-                    // Process the resulting messages.
-                    foreach (ExchangeMessageInfo info in infos)
+                    // Output basic information for each message
+                    foreach (ExchangeMessageInfo info in messages)
                     {
-                        // Fetch the full message to access its properties (e.g., Subject).
-                        MailMessage message = client.FetchMessage(info.UniqueUri);
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        // Dispose the fetched message.
-                        message.Dispose();
+                        Console.WriteLine($"Subject: {info.Subject}");
+                        Console.WriteLine($"Received: {info.InternalDate}");
+                        Console.WriteLine(new string('-', 40));
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during Exchange operations: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

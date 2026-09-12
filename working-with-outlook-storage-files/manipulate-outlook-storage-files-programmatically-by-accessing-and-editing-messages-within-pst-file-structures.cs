@@ -1,9 +1,8 @@
 using System;
 using System.IO;
-using System.Linq;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -11,78 +10,67 @@ class Program
     {
         try
         {
-            string pstPath = "sample.pst";
+            const string pstPath = "storage.pst";
 
-            // Ensure the PST file exists; create a minimal one if missing
+            // Verify PST file exists
             if (!File.Exists(pstPath))
             {
-                try
-                {
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                return;
             }
+
+            // Directory to save extracted messages
+            const string outputDir = "output";
+            Directory.CreateDirectory(outputDir);
 
             // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Get the root folder (or create Inbox if it doesn't exist)
-                FolderInfo inboxFolder = pst.RootFolder.GetSubFolder("Inbox");
-                if (inboxFolder == null)
+                // Retrieve total items count
+                int totalItemsCount = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Total items count: {totalItemsCount}");
+
+                // Iterate through each subfolder of the root folder
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    inboxFolder = pst.RootFolder.AddSubFolder("Inbox");
+                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                    // Enumerate messages in the current folder
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                    {
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                        // Extract the full message object as MapiMessage
+                        MapiMessage msg = pst.ExtractMessage(messageInfo);
+
+                        // Sanitize subject for filename
+                        string safeSubject = string.IsNullOrWhiteSpace(msg.Subject) ? "Untitled" : msg.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        string outputPath = Path.Combine(outputDir, $"{safeSubject}.msg");
+
+                        try
+                        {
+                            // Save the message as a .msg file
+                            msg.Save(outputPath);
+                            Console.WriteLine($"Saved message to: {outputPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message '{msg.Subject}': {ex.Message}");
+                        }
+                    }
                 }
-
-                // Add a new message to the folder
-                MapiMessage newMessage = new MapiMessage(
-                    "alice@example.com",
-                    "bob@example.com",
-                    "Hello from Aspose.Email",
-                    "This is a test message added to the PST."
-                );
-
-                string newEntryId = inboxFolder.AddMessage(newMessage);
-                Console.WriteLine($"Added new message with EntryId: {newEntryId}");
-
-                // Enumerate messages in the folder
-                MessageInfo[] messages = inboxFolder.EnumerateMessages().ToArray();
-                if (messages.Length == 0)
-                {
-                    Console.WriteLine("No messages found in the folder.");
-                    return;
-                }
-
-                // Extract the first message
-                MessageInfo firstInfo = messages[0];
-                MapiMessage extractedMessage;
-                try
-                {
-                    extractedMessage = pst.ExtractMessage(firstInfo);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error extracting message: {ex.Message}");
-                    return;
-                }
-
-                // Display original subject
-                Console.WriteLine($"Original Subject: {extractedMessage.Subject}");
-
-                // Modify the subject of the extracted message
-                extractedMessage.Subject = "Updated Subject - " + DateTime.Now.ToString("yyyyMMddHHmmss");
-
-                // Add the modified message as a new item
-                string updatedEntryId = inboxFolder.AddMessage(extractedMessage);
-                Console.WriteLine($"Added updated message with EntryId: {updatedEntryId}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

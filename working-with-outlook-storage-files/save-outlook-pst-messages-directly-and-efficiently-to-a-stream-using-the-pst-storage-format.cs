@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Storage.Pst;
 
 class Program
@@ -10,42 +9,54 @@ class Program
     {
         try
         {
-            // Create a simple MailMessage in memory
-            MailMessage mailMessage = new MailMessage();
-            mailMessage.From = new MailAddress("sender@example.com");
-            mailMessage.To.Add(new MailAddress("recipient@example.com"));
-            mailMessage.Subject = "Sample Subject";
-            mailMessage.Body = "This is a sample email body.";
+            // Define PST file path
+            string pstPath = "storage.pst";
 
-            // Convert MailMessage to MapiMessage
-            MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage);
-
-            // Create a PST in a memory stream (Unicode format)
-            using (MemoryStream pstStream = new MemoryStream())
+            // Ensure the PST file exists; create a minimal one if missing
+            if (!File.Exists(pstPath))
             {
-                using (PersonalStorage pst = PersonalStorage.Create(pstStream, FileFormatVersion.Unicode))
+                // Create an empty PST with Unicode format
+                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                Console.WriteLine($"Created placeholder PST file at '{pstPath}'.");
+            }
+
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                // Retrieve total items count via the Store property
+                int totalItemsCount = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Total items count: {totalItemsCount}");
+
+                // Iterate through each subfolder of the root folder
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    // Add the message to the root folder of the PST
-                    string entryId = pst.RootFolder.AddMessage(mapiMessage);
+                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
 
-                    // Save the added message directly to another stream
-                    using (MemoryStream messageStream = new MemoryStream())
+                    // Enumerate messages in the current folder
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
                     {
-                        pst.SaveMessageToStream(entryId, messageStream);
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
 
-                        // For demonstration, output the size of the saved message
-                        Console.WriteLine($"Message saved to stream. Size: {messageStream.Length} bytes");
+                        // Convert the byte[] EntryId to a Base64 string as required by SaveMessageToStream
+                        string entryIdString = Convert.ToBase64String(messageInfo.EntryId);
+
+                        // Save the message directly to a memory stream
+                        using (MemoryStream messageStream = new MemoryStream())
+                        {
+                            pst.SaveMessageToStream(entryIdString, messageStream);
+                            // Reset stream position for any further processing
+                            messageStream.Position = 0;
+                            Console.WriteLine($"Saved message to stream (size: {messageStream.Length} bytes).");
+                        }
                     }
                 }
-
-                // Optionally, the PST stream now contains the PST data
-                Console.WriteLine($"PST created in memory. Size: {pstStream.Length} bytes");
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
-            return;
         }
     }
 }

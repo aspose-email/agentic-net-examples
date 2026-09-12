@@ -6,51 +6,75 @@ using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             // Path to the MBOX file
-            string mboxPath = "sample.mbox";
+            string mboxPath = "storage.mbox";
 
-            // Verify that the file exists before attempting to read it
+            // Verify that the MBOX file exists before proceeding
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"Error: File not found – {mboxPath}");
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // Configure load options with the desired text encoding
-            MboxLoadOptions loadOptions = new MboxLoadOptions
+            // Configure load options with the desired text encoding (UTF-8 in this example)
+            var loadOptions = new MboxLoadOptions
             {
                 PreferredTextEncoding = Encoding.UTF8
             };
 
-            // Create the MBOX reader using the factory method
-            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
-            {
-                while (true)
-                {
-                    // Read the next message; returns null when no more messages are available
-                    MailMessage message = mboxReader.ReadNextMessage();
-                    if (message == null)
-                        break;
+            // Ensure output directory exists
+            string outputDir = "output";
+            Directory.CreateDirectory(outputDir);
 
-                    // Ensure the message is disposed after use
+            // Create a reader for the MBOX storage using the specified options
+            using (var mboxReader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
+            {
+                int messageIndex = 0;
+                MailMessage message;
+                while ((message = mboxReader.ReadNextMessage()) != null)
+                {
                     using (message)
                     {
                         Console.WriteLine($"Subject: {message.Subject}");
                         Console.WriteLine($"From: {message.From}");
                         Console.WriteLine($"To: {message.To}");
-                        Console.WriteLine();
+
+                        // Create a safe filename based on the message subject
+                        string safeSubject = string.IsNullOrEmpty(message.Subject)
+                            ? $"NoSubject_{messageIndex}"
+                            : message.Subject;
+
+                        foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(invalidChar, '_');
+                        }
+
+                        string outputPath = Path.Combine(outputDir, $"{safeSubject}.eml");
+
+                        // Save the extracted message as an .eml file, handling any I/O errors
+                        try
+                        {
+                            message.Save(outputPath);
+                            Console.WriteLine($"Saved: {outputPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                        }
+
+                        messageIndex++;
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            // Gracefully handle any unexpected errors
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Top‑level exception guard
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,101 +1,78 @@
 using System;
-using System.Collections.Generic;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Mime;
+using Aspose.Email.Storage.Mbox;
 
-namespace Sample
+namespace ThunderbirdIntegrationDemo
 {
     class Program
     {
         static void Main()
         {
+            // Define the path to a Thunderbird mbox file (Inbox example).
+            string mboxPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "Thunderbird",
+                "Profiles",
+                "default-release",
+                "Mail",
+                "Local Folders",
+                "Inbox",
+                "Inbox.mbox");
+
+            // Verify that the mbox file exists before proceeding.
+            if (!File.Exists(mboxPath))
+            {
+                Console.Error.WriteLine($"Mbox file not found: {mboxPath}");
+                return;
+            }
+
             try
             {
-                // Placeholder credentials – replace with real values for actual execution.
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string defaultEmail = "user@example.com";
-
-                // Guard against placeholder credentials to avoid external calls during CI.
-                if (clientId == "clientId" || clientSecret == "clientSecret" ||
-                    refreshToken == "refreshToken" || defaultEmail == "user@example.com")
+                // Open the Thunderbird mbox (mboxrd format) for reading.
+                using (MboxrdStorageReader reader = new MboxrdStorageReader(mboxPath, new MboxLoadOptions()))
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail operations.");
-                    return;
+                    Console.WriteLine("Messages in the Thunderbird mbox:");
+                    foreach (MailMessage message in reader.EnumerateMessages())
+                    {
+                        Console.WriteLine($"- Subject: {message.Subject}");
+                        Console.WriteLine($"  From   : {message.From}");
+                        Console.WriteLine($"  To     : {string.Join(", ", message.To)}");
+                    }
                 }
 
-                // Create Gmail client instance.
-                IGmailClient gmailClient = null;
-                try
+                // Compose a new email message.
+                MailMessage newMessage = new MailMessage
                 {
-                    gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-                }
-                catch (Exception ex)
+                    From = new MailAddress("sender@example.com"),
+                    Subject = "Demo message from Aspose.Email",
+                    Body = "This message was created and saved to a Thunderbird mbox file using Aspose.Email."
+                };
+                newMessage.To.Add(new MailAddress("recipient@example.com"));
+
+                // Define the output mbox file path.
+                string outputMboxPath = Path.Combine(Environment.CurrentDirectory, "output.mbox");
+
+                // Ensure the directory for the output file exists.
+                string outputDir = Path.GetDirectoryName(outputMboxPath);
+                if (!Directory.Exists(outputDir))
                 {
-                    Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
-                    return;
+                    Directory.CreateDirectory(outputDir);
                 }
 
-                // Ensure the client is disposed properly.
-                using (gmailClient)
+                // Write the new message to the output mbox (mboxrd format).
+                using (MboxrdStorageWriter writer = new MboxrdStorageWriter(outputMboxPath, new MboxSaveOptions()))
                 {
-                    // List messages in the mailbox.
-                    List<GmailMessageInfo> messages = null;
-                    try
-                    {
-                        messages = gmailClient.ListMessages();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
-                        return;
-                    }
-
-                    Console.WriteLine($"Total messages: {messages.Count}");
-
-                    // Process the first message if available.
-                    if (messages.Count > 0)
-                    {
-                        GmailMessageInfo firstInfo = messages[0];
-                        MailMessage fetchedMessage = null;
-                        try
-                        {
-                            fetchedMessage = gmailClient.FetchMessage(firstInfo.Id);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to fetch message ID {firstInfo.Id}: {ex.Message}");
-                        }
-
-                        if (fetchedMessage != null)
-                        {
-                            Console.WriteLine($"Subject of first message: {fetchedMessage.Subject}");
-                        }
-                    }
-
-                    // Compose and send a new email.
-                    MailMessage newMessage = new MailMessage();
-                    newMessage.From = new MailAddress(defaultEmail);
-                    newMessage.To.Add(new MailAddress(defaultEmail));
-                    newMessage.Subject = "Test Email from Aspose.Email Gmail Client";
-                    newMessage.Body = "This is a test email sent using Aspose.Email Gmail integration.";
-
-                    try
-                    {
-                        string sentMessageId = gmailClient.SendMessage(newMessage);
-                        Console.WriteLine($"Message sent successfully. ID: {sentMessageId}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to send message: {ex.Message}");
-                    }
+                    writer.WriteMessage(newMessage);
                 }
+
+                Console.WriteLine($"New message saved to: {outputMboxPath}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+                // Catch any unexpected errors and report them without crashing.
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }

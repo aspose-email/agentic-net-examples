@@ -1,59 +1,65 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Aspose.Email.Storage.Pst;
 
-class Program
+namespace AsposeEmailPstBulkDelete
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string pstPath = "sample.pst";
-
-            // Verify that the PST file exists before attempting to open it.
-            if (!File.Exists(pstPath))
+            try
             {
-                Console.Error.WriteLine($"Error: File not found – {pstPath}");
-                return;
+                const string pstPath = "storage.pst";
+
+                // Ensure the PST file exists; create a minimal one if missing.
+                if (!File.Exists(pstPath))
+                {
+                    // Create an empty PST file with Unicode format.
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Created placeholder PST file at '{pstPath}'.");
+                }
+
+                // Open the PST file.
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    // Recursively delete all messages in the PST.
+                    DeleteMessagesInFolder(pst.RootFolder);
+                }
+
+                Console.WriteLine("Bulk deletion completed successfully.");
             }
-
-            // Open the PST file with write access.
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, true))
+            catch (Exception ex)
             {
-                // Retrieve the Inbox folder (standard IPM folder).
-                FolderInfo inbox = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                if (inbox == null)
-                {
-                    Console.Error.WriteLine("Error: Inbox folder not found in the PST.");
-                    return;
-                }
-
-                // Collect entry IDs of all messages in the folder.
-                List<string> entryIds = new List<string>();
-                foreach (MessageInfo msgInfo in inbox.EnumerateMessages())
-                {
-                    // EntryIdString provides the string representation of the entry ID.
-                    entryIds.Add(msgInfo.EntryIdString);
-                }
-
-                // Perform bulk deletion of the collected messages.
-                if (entryIds.Count > 0)
-                {
-                    inbox.DeleteChildItems(entryIds);
-                    Console.WriteLine($"Deleted {entryIds.Count} messages from the Inbox.");
-                }
-                else
-                {
-                    Console.WriteLine("No messages found to delete.");
-                }
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
             }
         }
-        catch (Exception ex)
+
+        // Recursively deletes all messages within the specified folder and its subfolders.
+        private static void DeleteMessagesInFolder(FolderInfo folder)
         {
-            // Output any unexpected errors.
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            // Collect entry IDs of all messages in the current folder.
+            List<string> entryIds = new List<string>();
+            foreach (MessageInfo messageInfo in folder.EnumerateMessages())
+            {
+                // Convert the byte[] EntryId to a Base64 string for deletion.
+                entryIds.Add(Convert.ToBase64String(messageInfo.EntryId));
+            }
+
+            // Delete the collected messages in bulk, if any.
+            if (entryIds.Count > 0)
+            {
+                folder.DeleteChildItems(entryIds.ToArray());
+                Console.WriteLine($"Deleted {entryIds.Count} message(s) from folder '{folder.DisplayName}'.");
+            }
+
+            // Process subfolders recursively.
+            foreach (FolderInfo subFolder in folder.GetSubFolders())
+            {
+                DeleteMessagesInFolder(subFolder);
+            }
         }
     }
 }

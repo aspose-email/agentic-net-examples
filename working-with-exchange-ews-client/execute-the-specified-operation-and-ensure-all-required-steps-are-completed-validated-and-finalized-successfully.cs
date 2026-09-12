@@ -2,71 +2,72 @@ using Aspose.Email.Clients.Exchange;
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailEwsExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials – skip actual network call in CI environments
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            if (mailboxUri.Contains("example.com"))
+            try
             {
-                Console.WriteLine("Placeholder credentials detected – skipping EWS operations.");
-                return;
-            }
+                // Input MSG file path
+                string msgFilePath = "sample.msg";
 
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
+                // Verify the input file exists
+                if (!File.Exists(msgFilePath))
+                {
                 try
                 {
-                    // List messages in the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                    if (messages == null || messages.Count == 0)
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        Console.WriteLine("No messages found in the Inbox.");
-                        return;
-                    }
-
-                    // Fetch the first message
-                    string messageUri = messages[0].UniqueUri;
-                    using (MailMessage message = client.FetchMessage(messageUri))
-                    {
-                        // Prepare output path
-                        string outputPath = Path.Combine(Environment.CurrentDirectory, "output.eml");
-                        string outputDir = Path.GetDirectoryName(outputPath);
-                        if (!Directory.Exists(outputDir))
-                        {
-                            Directory.CreateDirectory(outputDir);
-                        }
-
-                        // Save the message to a file
-                        try
-                        {
-                            message.Save(outputPath, SaveOptions.DefaultEml);
-                            Console.WriteLine($"Message saved to: {outputPath}");
-                        }
-                        catch (Exception ioEx)
-                        {
-                            Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
-                        }
+                        placeholder.Save(msgFilePath);
                     }
                 }
-                catch (Exception clientEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"EWS operation failed: {clientEx.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
+                    Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                    return;
+                }
+
+                // Load the MSG file as a MapiMessage
+                MapiMessage mapiMessage = MapiMessage.Load(msgFilePath);
+
+                // Convert MapiMessage to MailMessage for EWS operations
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions);
+
+                // EWS service connection parameters (replace with real values if needed)
+                string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
+
+                // Create and use the EWS client
+                using (IEWSClient ewsClient = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    // Retrieve mailbox information
+                    ExchangeMailboxInfo mailboxInfo = ewsClient.GetMailboxInfo();
+
+                    // Append the message to the Drafts folder
+                    ewsClient.AppendMessage(mailboxInfo.DraftsUri, mailMessage);
+
+                    Console.WriteLine("Message appended to Drafts successfully.");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

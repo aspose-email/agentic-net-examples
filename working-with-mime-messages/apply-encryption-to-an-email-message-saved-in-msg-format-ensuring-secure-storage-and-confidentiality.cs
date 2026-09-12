@@ -3,81 +3,49 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Aspose.Email;
 
-namespace AsposeEmailEncryptionExample
+// Author: Aspose.Email example - encrypt and save a message as MSG
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Path to the public certificate used for S/MIME encryption
+            string certPath = "publicCert.cer";
+            if (!File.Exists(certPath))
             {
-                // Define file paths
-                string inputMsgPath = "input.msg";
-                string outputMsgPath = "encrypted.msg";
-                string certificatePath = "public.cer";
-
-                // Ensure input MSG exists; create a minimal placeholder if missing
-                if (!File.Exists(inputMsgPath))
-                {
-                    // Ensure the directory for the input file exists
-                    string inputDirectory = Path.GetDirectoryName(inputMsgPath);
-                    if (!string.IsNullOrEmpty(inputDirectory) && !Directory.Exists(inputDirectory))
-                    {
-                        Directory.CreateDirectory(inputDirectory);
-                    }
-
-                    // Create a simple placeholder mail message
-                    using (MailMessage placeholderMessage = new MailMessage())
-                    {
-                        placeholderMessage.From = "placeholder@example.com";
-                        placeholderMessage.To.Add("placeholder@example.com");
-                        placeholderMessage.Subject = "Placeholder";
-                        placeholderMessage.Body = "This is a placeholder message.";
-
-                        // Save the placeholder as MSG (Unicode format)
-                        MsgSaveOptions placeholderSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                        placeholderMessage.Save(inputMsgPath, placeholderSaveOptions);
-                    }
-                }
-
-                // Verify that the certificate file exists
-                if (!File.Exists(certificatePath))
-                {
-                    Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
-                    return;
-                }
-
-                // Load the mail message from the MSG file
-                using (MailMessage mailMessage = MailMessage.Load(inputMsgPath, new MsgLoadOptions()))
-                {
-                    // Load the X509 certificate
-                    using (X509Certificate2 certificate = new X509Certificate2(certificatePath))
-                    {
-                        // Encrypt the message using the certificate
-                        MailMessage encryptedMessage = mailMessage.Encrypt(certificate);
-
-                        // Ensure the output directory exists
-                        string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-                        if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                        {
-                            Directory.CreateDirectory(outputDirectory);
-                        }
-
-                        // Save the encrypted message as MSG (Unicode format)
-                        MsgSaveOptions encryptedSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                        encryptedMessage.Save(outputMsgPath, encryptedSaveOptions);
-
-                        // Dispose the encrypted message
-                        encryptedMessage.Dispose();
-
-                        Console.WriteLine($"Encrypted message saved to: {outputMsgPath}");
-                    }
-                }
+                Console.Error.WriteLine($"Certificate file not found: {certPath}");
+                return;
             }
-            catch (Exception ex)
+
+            X509Certificate2 publicCert = new X509Certificate2(certPath);
+
+            // Create a simple email message
+            MailMessage mail = new MailMessage();
+            mail.From = "sender@example.com";
+            mail.To.Add("recipient@example.com");
+            mail.Subject = "Encrypted Message";
+            mail.Body = "This is a confidential email.";
+
+            // Encrypt the message using the certificate
+            MailMessage encryptedMail = mail.Encrypt(publicCert);
+            Console.WriteLine(encryptedMail.IsEncrypted ? "Message encrypted successfully." : "Encryption failed.");
+
+            // Ensure the output directory exists before saving
+            string outputDir = "output";
+            if (!Directory.Exists(outputDir))
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Directory.CreateDirectory(outputDir);
             }
+
+            // Save the encrypted message as MSG
+            string outputPath = Path.Combine(outputDir, "encrypted.msg");
+            encryptedMail.Save(outputPath);
+            Console.WriteLine($"Encrypted MSG saved to: {outputPath}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,20 +1,18 @@
-using Aspose.Email.Mapi;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Graph;
+using System.Security.Cryptography;
+using Aspose.Email.Mapi;
 
 class Program
 {
     static void Main()
     {
+        const string msgFilePath = "sample.msg";
+
+        // Ensure the MSG file exists; create a minimal placeholder if missing.
         try
         {
-            // Input MSG file path
-            string msgFilePath = "message.msg";
-
-            // Guard file existence
             if (!File.Exists(msgFilePath))
             {
                 try
@@ -34,47 +32,39 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {msgFilePath}");
-                return;
-            }
-
-            // Load MSG into MapiMessage
-            using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
-            {
-                // Placeholder credentials – replace with real values
-                string clientId = "YOUR_CLIENT_ID";
-                string clientSecret = "YOUR_CLIENT_SECRET";
-                string refreshToken = "YOUR_REFRESH_TOKEN";
-
-                // Skip execution if placeholders are still present
-                if (clientId.StartsWith("YOUR_") || clientSecret.StartsWith("YOUR_") || refreshToken.StartsWith("YOUR_"))
-                {
-                    Console.Error.WriteLine("Please provide valid Outlook OAuth credentials before running this sample.");
-                    return;
-                }
-
-                // Create token provider
-                Aspose.Email.Clients.TokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-                // Create Graph client (default endpoint)
-                using (IGraphClient client = GraphClient.GetClient(tokenProvider, null))
-                {
-                    // Target folder – using Drafts as an example
-                    string targetFolderId = "Drafts";
-
-                    // Upload the message to the folder
-                    MapiMessage createdMessage = client.CreateMessage(targetFolderId, mapiMessage);
-
-                    // The ItemId serves as the application key
-                    string applicationKey = createdMessage.ItemId;
-
-                    Console.WriteLine($"Application key (ItemId) generated: {applicationKey}");
-                }
+                // Create an empty MSG file placeholder.
+                File.WriteAllBytes(msgFilePath, new byte[0]);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Failed to prepare the MSG file: {ex.Message}");
+            return;
+        }
+
+        // Load the MSG file and generate a SHA‑256 key.
+        try
+        {
+            // Load the Outlook message.
+            MapiMessage msg = MapiMessage.Load(msgFilePath);
+
+            // Obtain the raw bytes of the message file.
+            byte[] rawBytes = File.ReadAllBytes(msgFilePath);
+
+            // Compute SHA‑256 hash.
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] hash = sha256.ComputeHash(rawBytes);
+                string key = BitConverter.ToString(hash).Replace("-", string.Empty);
+                Console.WriteLine($"Application key (SHA‑256) for '{msgFilePath}': {key}");
+            }
+
+            // Optionally, you can use properties of the loaded message, e.g.:
+            // Console.WriteLine($"Subject: {msg.Subject}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error processing the MSG file: {ex.Message}");
         }
     }
 }

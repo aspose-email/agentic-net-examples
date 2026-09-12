@@ -1,124 +1,101 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Mapi;
-using Aspose.Email.Storage.Pst;
+using Aspose.Email.Tools.Search;
 
-namespace EmailToMsgConverter
+namespace EmailConversionSample
 {
     class Program
     {
         static void Main(string[] args)
         {
+            // Expect two arguments: source file path and destination MSG file path
+            if (args.Length != 2)
+            {
+                Console.Error.WriteLine("Usage: EmailConversionSample <sourceFile> <outputMsgFile>");
+                return;
+            }
+
+            string sourcePath = args[0];
+            string outputPath = args[1];
+
+            // Guard input file existence
+            if (!File.Exists(sourcePath))
+            {
+                Console.Error.WriteLine($"Input file not found: {sourcePath}");
+                return;
+            }
+
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                try
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                    return;
+                }
+            }
+
             try
             {
-                // Define input files (can be extended as needed)
-                List<string> inputFiles = new List<string>
-                {
-                    "sample.eml",
-                    "sample.msg"
-                };
-
-                // Define output directory
-                string outputDir = "ConvertedMsg";
-
-                // Ensure output directory exists
-                if (!Directory.Exists(outputDir))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Console.Error.WriteLine($"Error: Unable to create output directory – {outputDir}. {dirEx.Message}");
-                        return;
-                    }
-                }
-
-                foreach (string inputPath in inputFiles)
-                {
-                    if (!File.Exists(inputPath))
-                    {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                        Console.Error.WriteLine($"Error: Input file not found – {inputPath}");
-                        continue;
-                    }
-
-                    string extension = Path.GetExtension(inputPath).ToLowerInvariant();
-                    string outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(inputPath) + ".msg");
-
-                    try
-                    {
-                        if (extension == ".eml")
-                        {
-                            // Load EML as MailMessage
-                            using (MailMessage mailMessage = MailMessage.Load(inputPath))
-                            {
-                                // Save as MSG with Unicode format preserving original dates
-                                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
-                                {
-                                    PreserveOriginalDates = true
-                                };
-                                mailMessage.Save(outputPath, saveOptions);
-                            }
-                        }
-                        else if (extension == ".msg")
-                        {
-                            // Load MSG as MapiMessage and re‑save (preserves content)
-                            using (MapiMessage mapiMessage = MapiMessage.Load(inputPath))
-                            {
-                                mapiMessage.Save(outputPath);
-                            }
-                        }
-                        else
-                        {
-                            Console.Error.WriteLine($"Warning: Unsupported file format – {inputPath}");
-                        }
-                    }
-                    catch (Exception fileEx)
-                    {
-                        Console.Error.WriteLine($"Error processing file {inputPath}: {fileEx.Message}");
-                    }
-                }
+                ConvertToMsg(sourcePath, outputPath);
+                Console.WriteLine($"Conversion succeeded: {outputPath}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
+            }
+        }
+
+        private static void ConvertToMsg(string inputFile, string outputFile)
+        {
+            // Determine load options based on file extension
+            string ext = Path.GetExtension(inputFile).ToLowerInvariant();
+            LoadOptions loadOptions = GetLoadOptions(ext);
+
+            // Load the message with the appropriate options
+            using (MailMessage message = MailMessage.Load(inputFile, loadOptions))
+            {
+                // Prepare MSG save options (Unicode format, preserve original dates)
+                MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                {
+                    PreserveOriginalDates = true
+                };
+
+                // Save as MSG
+                message.Save(outputFile, msgSaveOptions);
+            }
+        }
+
+        private static LoadOptions GetLoadOptions(string extension)
+        {
+            switch (extension)
+            {
+                case ".eml":
+                    return new EmlLoadOptions
+                    {
+                        PreserveTnefAttachments = true,
+                        PreserveEmbeddedMessageFormat = true
+                    };
+                case ".msg":
+                    return new MsgLoadOptions();
+                case ".mhtml":
+                case ".mht":
+                    return new MhtmlLoadOptions();
+                case ".html":
+                case ".htm":
+                    return new HtmlLoadOptions
+                    {
+                        ShouldAddPlainTextView = true
+                    };
+                default:
+                    // Default load options (no special handling)
+                    return null;
             }
         }
     }

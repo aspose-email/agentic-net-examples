@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email.Storage.Pst;
 
 class Program
@@ -9,70 +9,59 @@ class Program
     {
         try
         {
-            // Define PST file path
-            string pstFilePath = "output.pst";
+            // Paths for PST file and the file to be added
+            const string pstPath = "MyArchive.pst";
+            const string fileToAddPath = "SampleDocument.txt";
 
-            // Ensure the directory for the PST file exists
-            string pstDirectory = Path.GetDirectoryName(pstFilePath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            // Ensure the source file exists; create a minimal placeholder if missing
+            if (!File.Exists(fileToAddPath))
             {
-                Directory.CreateDirectory(pstDirectory);
-            }
-
-            // Create or open the PST file
-            PersonalStorage pst;
-            if (File.Exists(pstFilePath))
-            {
-                // Open existing PST for writing
-                pst = PersonalStorage.FromFile(pstFilePath, true);
-            }
-            else
-            {
-                // Create a new Unicode PST file
-                pst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
-            }
-
-            using (pst)
-            {
-                // List of files to add to the PST
-                List<string> filesToAdd = new List<string>
+                try
                 {
-                    "sample1.txt",
-                    "sample2.pdf"
-                };
-
-                // Ensure each input file exists; create a tiny placeholder if missing
-                foreach (string filePath in filesToAdd)
-                {
-                    if (!File.Exists(filePath))
-                    {
-                        try
-                        {
-                            // Create a minimal placeholder file
-                            using (FileStream placeholder = File.Create(filePath))
-                            {
-                                byte[] content = System.Text.Encoding.UTF8.GetBytes("Placeholder content");
-                                placeholder.Write(content, 0, content.Length);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Error creating placeholder for '{filePath}': {ex.Message}");
-                            continue;
-                        }
-                    }
-
-                    try
-                    {
-                        // Add the file to the root folder of the PST as a standard mail item
-                        string entryId = pst.RootFolder.AddFile(filePath, "IPM.Note");
-                        Console.WriteLine($"Added '{filePath}' to PST. EntryId: {entryId}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error adding file '{filePath}' to PST: {ex.Message}");
-                    }
+                    File.WriteAllText(fileToAddPath, "Placeholder content for PST import.");
                 }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Ensure the PST file exists; create a new PST if it does not
+            if (!File.Exists(pstPath))
+            {
+                try
+                {
+                    // Create a new PST file with Unicode format
+                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                // Use the root folder as the target folder
+                FolderInfo rootFolder = pst.RootFolder;
+
+                // Add the file to the PST folder with the appropriate message class
+                // "IPM.Note" is the standard message class for email items
+                string entryId;
+                try
+                {
+                    entryId = rootFolder.AddFile(fileToAddPath, "IPM.Note");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to add file to PST: {ex.Message}");
+                    return;
+                }
+
+                Console.WriteLine($"File added to PST. Entry ID: {entryId}");
             }
         }
         catch (Exception ex)

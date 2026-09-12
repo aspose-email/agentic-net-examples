@@ -1,72 +1,54 @@
-using System;
-using System.Net;
-using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email;
+using System;
+using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailExamples
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        // Mailbox connection parameters (replace with real credentials)
+        string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+
+        // Guard: skip network operations when placeholder credentials are detected
+        bool isPlaceholder = username.Contains("example.com", StringComparison.OrdinalIgnoreCase) ||
+                             password.Equals("password", StringComparison.OrdinalIgnoreCase);
+
+        if (isPlaceholder)
         {
-            try
+            Console.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+            return;
+        }
+
+        try
+        {
+            // Create EWS client and ensure proper disposal
+            using (IEWSClient ewsClient = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                // Placeholder mailbox URI and credentials.
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-                string username = "user@example.com";
-                string password = "password";
+                // Define the IDs of the inbox rules to delete.
+                // Replace these placeholder IDs with the actual rule identifiers obtained from the mailbox.
+                string[] ruleIds = new string[] { "rule-id-1", "rule-id-2" };
 
-                // Guard against executing real network calls with placeholder data.
-                if (mailboxUri.Contains("example.com") || username.Contains("example.com") || string.IsNullOrWhiteSpace(password))
+                foreach (string ruleId in ruleIds)
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                    return;
-                }
-
-                // Create and use the EWS client.
-                try
-                {
-                    using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                    try
                     {
-                        // Retrieve all inbox rules.
-                        InboxRule[] inboxRules = client.GetInboxRules();
-
-                        if (inboxRules == null || inboxRules.Length == 0)
-                        {
-                            Console.WriteLine("No inbox rules found.");
-                        }
-                        else
-                        {
-                            foreach (InboxRule rule in inboxRules)
-                            {
-                                if (rule != null && !string.IsNullOrEmpty(rule.RuleId))
-                                {
-                                    try
-                                    {
-                                        client.DeleteInboxRule(rule.RuleId);
-                                        Console.WriteLine($"Deleted rule: {rule.DisplayName ?? "(no name)"}");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.Error.WriteLine($"Failed to delete rule '{rule.DisplayName}': {ex.Message}");
-                                    }
-                                }
-                            }
-                        }
+                        // Delete the rule by its identifier
+                        ewsClient.DeleteInboxRule(ruleId);
+                        Console.WriteLine($"Deleted inbox rule with ID: {ruleId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to delete rule '{ruleId}': {ex.Message}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to connect to Exchange server: {ex.Message}");
-                    return;
-                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                return;
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

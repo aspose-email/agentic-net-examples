@@ -1,76 +1,57 @@
 using System;
 using System.IO;
+using System.Text;
 using Aspose.Email;
-using Aspose.Email.Clients.Smtp;
+using Aspose.Email.Clients.Exchange.Dav;
 
 class Program
 {
     static void Main()
     {
-        try
+        // Placeholder credentials – replace with real values or the send operation will be skipped.
+        string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+        string username   = "YOUR_USERNAME";
+        string password   = "YOUR_PASSWORD";
+        string domain     = "YOUR_DOMAIN";
+
+        // Guard against placeholder credentials.
+        if (username.Contains("YOUR_") || password.Contains("YOUR_") || domain.Contains("YOUR_"))
         {
-            // Placeholder credentials detection
-            string smtpHost = "smtp.example.com";
-            string smtpPort = "587";
-            string username = "user@example.com";
-            string password = "password";
-
-            if (smtpHost.Contains("example.com"))
-            {
-                Console.Error.WriteLine("Placeholder SMTP host detected. Skipping send operation.");
-                return;
-            }
-
-            // Compose the email message
-            using (MailMessage message = new MailMessage())
-            {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient1@example.com"));
-                message.CC.Add(new MailAddress("recipient2@example.com"));
-                message.Bcc.Add(new MailAddress("recipient3@example.com"));
-                message.Subject = "Test Email";
-                message.Body = "This is a test email sent using Aspose.Email.";
-
-                // Prepare attachment
-                string attachmentPath = "test.txt";
-                try
-                {
-                    if (!File.Exists(attachmentPath))
-                    {
-                        // Create a minimal placeholder file if missing
-                        File.WriteAllText(attachmentPath, "Placeholder attachment content.");
-                    }
-
-                    using (FileStream fs = File.OpenRead(attachmentPath))
-                    {
-                        Attachment attachment = new Attachment(fs, Path.GetFileName(attachmentPath));
-                        message.Attachments.Add(attachment);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Attachment handling error: {ex.Message}");
-                    // Continue without attachment if it fails
-                }
-
-                // Send the email via SMTP
-                try
-                {
-                    using (SmtpClient client = new SmtpClient(smtpHost, int.Parse(smtpPort), username, password))
-                    {
-                        client.Send(message);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to send email: {ex.Message}");
-                    return;
-                }
-            }
+            Console.Error.WriteLine("Placeholder credentials detected – email send operation skipped.");
+            return;
         }
-        catch (Exception ex)
+
+        // Create the email message.
+        MailMessage message = new MailMessage
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            From    = "sender@example.com",
+            To      = "recipient@example.com",
+            Subject = "Sample Subject",
+            Body    = "This is a sample email body."
+        };
+
+        // Create an in‑memory attachment to avoid file‑system dependencies.
+        byte[] attachmentData = Encoding.UTF8.GetBytes("Sample attachment content.");
+        using (MemoryStream ms = new MemoryStream(attachmentData))
+        {
+            // Ensure the stream is positioned at the beginning.
+            ms.Position = 0;
+            Attachment attachment = new Attachment(ms, "sample.txt");
+            message.Attachments.Add(attachment);
+
+            // Send the message via Exchange WebDav client.
+            try
+            {
+                using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password, domain))
+                {
+                    client.Send(message);
+                    Console.WriteLine("Message sent successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to send message: {ex.Message}");
+            }
         }
     }
 }

@@ -1,7 +1,8 @@
+using Aspose.Email;
 using System;
 using System.Net;
-using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -9,43 +10,35 @@ class Program
     {
         try
         {
-            // Connection parameters
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
+            // Connection parameters – replace with real values.
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
-            // Guard against placeholder values
-            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder connection parameters detected. Skipping Exchange client initialization.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            NetworkCredential credentials = new NetworkCredential(username, password);
-
-            // Initialize the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+            // Create the EWS client.
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                try
-                {
-                    // Session settings
-                    client.Timeout = 120000; // 2 minutes
-                    client.UseDateInLogFileName = true;
-                    client.LogFileName = "exchange_log.txt";
+                // Session settings.
+                client.Timeout = 120000; // 2 minutes.
+                client.UseDateInLogFileName = true;
+                client.LogFileName = "ews_log.txt";
 
-                    // Example operation: retrieve mailbox info
-                    var mailboxInfo = client.MailboxInfo;
-                    Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during client operation: {ex.Message}");
-                }
+                // Example operation: retrieve mailbox information.
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

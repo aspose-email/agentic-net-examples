@@ -1,81 +1,75 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Smtp;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
+        // Author note: simple console app to load an MSG file and send it via SMTP.
         try
         {
             string msgPath = "sample.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if missing.
+            // Guard file existence
             if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder", "This is a placeholder message."))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.Save(msgPath, SaveOptions.DefaultMsgUnicode);
+                        placeholder.Save(msgPath);
                     }
-                    Console.Error.WriteLine($"Input file not found. Created placeholder at {msgPath}.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
                 }
+
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file into a MailMessage instance.
-            MailMessage message;
-            try
-            {
-                message = MailMessage.Load(msgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
-            }
+            // Load MSG as MapiMessage
+            MapiMessage mapiMessage = MapiMessage.Load(msgPath);
 
-            // SMTP client configuration (placeholders).
-            string host = "smtp.example.com";
-            int port = 587;
-            string username = "user@example.com";
-            string password = "password";
+            // Convert to MailMessage
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions);
 
-            // Guard against placeholder credentials/host.
-            if (host.Contains("example.com") || username.Contains("example.com"))
+            // Send using SmtpClient
+            using (mailMessage)
+            using (SmtpClient smtpClient = new SmtpClient())
             {
-                Console.Error.WriteLine("Placeholder SMTP configuration detected. Skipping send operation.");
-                message.Dispose();
-                return;
-            }
+                // Configure SMTP client (replace with real server details)
+                smtpClient.Host = "smtp.example.com";
+                smtpClient.Port = 587;
+                smtpClient.SecurityOptions = SecurityOptions.Auto;
+                smtpClient.Username = "user@example.com";
+                smtpClient.Password = "password";
 
-            // Send the message using SmtpClient.
-            try
-            {
-                using (SmtpClient client = new SmtpClient(host, port, username, password))
+                try
                 {
-                    client.Send(message);
+                    smtpClient.Send(mailMessage);
+                    Console.WriteLine("Message sent successfully.");
                 }
-                Console.WriteLine("Message sent successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to send email: {ex.Message}");
-            }
-            finally
-            {
-                message.Dispose();
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to send email: {ex.Message}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,73 +1,69 @@
 using Aspose.Email.Clients;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Aspose.Email;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
+using Aspose.Email;
 
-class Program
+namespace DeleteBatchExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials – skip real network call in CI environments
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "username";
-            string password = "password";
-
-            if (host.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+            // Initialize IMAP client with connection settings
+            ImapClient imapClient = new ImapClient
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping deletion operation.");
+                Host = "imap.example.com",
+                Port = 993,
+                SecurityOptions = SecurityOptions.SSLImplicit,
+                Username = "user@example.com",
+                Password = "password"
+            };
+
+            // Guard: skip real network calls when placeholder credentials are present
+            if (imapClient.Host.Contains("example.com") ||
+                imapClient.Username.Contains("example.com") ||
+                imapClient.Password == "password")
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
                 return;
             }
 
-            // Create and connect the IMAP client
-            try
+            // Use the client within a using block to ensure proper disposal
+            using (imapClient)
             {
-                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+                try
                 {
-                    // Select the folder containing the messages (e.g., INBOX)
-                    client.SelectFolder("INBOX");
+                    // Select the INBOX folder
+                    imapClient.SelectFolder("INBOX");
 
                     // Retrieve all messages in the folder
-                    ImapMessageInfoCollection allMessages = client.ListMessages();
+                    ImapMessageInfoCollection allMessages = imapClient.ListMessages();
 
-                    // Prepare a batch of messages to delete (first 10 messages, if available)
-                    List<ImapMessageInfo> batch = new List<ImapMessageInfo>();
-                    int count = 0;
-                    foreach (ImapMessageInfo info in allMessages)
+                    // Prepare a batch of messages to delete (e.g., first 5 messages)
+                    ImapMessageInfoCollection messagesToDelete = new ImapMessageInfoCollection();
+                    int batchSize = 5;
+                    for (int i = 0; i < batchSize && i < allMessages.Count; i++)
                     {
-                        batch.Add(info);
-                        count++;
-                        if (count >= 10)
-                            break;
+                        messagesToDelete.Add(allMessages[i]);
                     }
 
-                    if (batch.Count == 0)
+                    if (messagesToDelete.Count > 0)
+                    {
+                        // Delete the selected batch of messages
+                        imapClient.DeleteMessages(messagesToDelete);
+                        Console.WriteLine($"{messagesToDelete.Count} messages marked as deleted.");
+                    }
+                    else
                     {
                         Console.WriteLine("No messages found to delete.");
-                        return;
                     }
-
-                    // Delete the batch of messages
-                    client.DeleteMessages(batch);
-
-                    // Commit the deletions on the server
-                    Console.WriteLine($"{batch.Count} messages have been deleted successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                return;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

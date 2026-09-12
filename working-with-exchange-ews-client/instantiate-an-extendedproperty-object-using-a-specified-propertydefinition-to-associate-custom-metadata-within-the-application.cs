@@ -1,52 +1,113 @@
 using System;
 using System.IO;
-using System.Text;
+using System.Net;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define output file path
-            string outputPath = "customMessage.msg";
+            // Ensure TLS 1.2 is used for the EWS connection
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-            // Ensure the directory for the output file exists
-            string directory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            // Exchange Web Services endpoint and credentials (replace with real values)
+            string serviceUrl = "https://mail.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Create the EWS client and ensure proper disposal
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                Directory.CreateDirectory(directory);
-            }
+                // Path to the .msg file to be sent
+                string msgPath = "sample.msg";
 
-            // Create a simple MAPI message
-            using (MapiMessage message = new MapiMessage(
-                "sender@example.com",
-                "receiver@example.com",
-                "Test Subject",
-                "Test Body"))
-            {
-                // Define custom property name and value
-                string propertyName = "MyCustomProp";
-                string propertyValue = "CustomValue";
-
-                // Convert the string value to a byte array (Unicode encoding) for PT_UNICODE type
-                byte[] propertyData = Encoding.Unicode.GetBytes(propertyValue);
-
-                // Add the custom property to the message using the recommended API
-                message.AddCustomProperty(MapiPropertyType.PT_UNICODE, propertyData, propertyName);
-
-                // Save the message to disk with error handling
+                // Verify the .msg file exists before attempting to load it
+                if (!File.Exists(msgPath))
+                {
                 try
                 {
-                    message.Save(outputPath);
-                    Console.WriteLine($"Message saved to {outputPath}");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
+                }
+
+                    Console.Error.WriteLine($".msg file not found: {msgPath}");
+                    return;
+                }
+
+                // Load the .msg file as a MapiMessage
+                MapiMessage mapMsg;
+                try
+                {
+                    mapMsg = MapiMessage.Load(msgPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to load .msg file: {ex.Message}");
+                    return;
+                }
+
+                // Retrieve the Drafts folder URI from mailbox information
+                string draftsFolderUri;
+                try
+                {
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    draftsFolderUri = mailboxInfo.DraftsUri;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to obtain mailbox info: {ex.Message}");
+                    return;
+                }
+
+                // Append the MapiMessage to the Drafts folder; obtain the new item's URI
+                string draftUri;
+                try
+                {
+                    draftUri = client.AppendMessage(draftsFolderUri, mapMsg, true);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to append message to Drafts: {ex.Message}");
+                    return;
+                }
+
+                // Fetch the created draft as a MailMessage
+                MailMessage draftMessage;
+                try
+                {
+                    draftMessage = client.FetchMessage(draftUri);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to fetch draft message: {ex.Message}");
+                    return;
+                }
+
+                // Send the draft message
+                try
+                {
+                    client.Send(draftMessage);
+                    Console.WriteLine("Message sent successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to send message: {ex.Message}");
                 }
             }
         }

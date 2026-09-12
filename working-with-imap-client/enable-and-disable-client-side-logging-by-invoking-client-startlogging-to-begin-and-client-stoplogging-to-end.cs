@@ -1,52 +1,83 @@
-using Aspose.Email.Clients;
 using System;
-using System.Net;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Smtp;
 
-class Program
+namespace AsposeEmailLoggingDemo
 {
-    static void Main()
+    // Extension methods to provide StartLogging/StopLogging functionality
+    public static class SmtpClientLoggingExtensions
     {
-        try
+        public static void StartLogging(this SmtpClient client, string logFileName)
         {
-            // Placeholder connection settings
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
+            client.EnableLogger = true;
+            client.LogFileName = logFileName;
+        }
 
-            // Skip real network calls when placeholder credentials/hosts are used
-            if (host.Contains("example.com") || username.Contains("example.com"))
+        public static void StopLogging(this SmtpClient client)
+        {
+            client.EnableLogger = false;
+            client.LogFileName = null;
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping network operations.");
-                return;
-            }
+                // Ensure the directory for the log file exists
+                string logPath = "smtp_log.txt";
+                string logDirectory = Path.GetDirectoryName(logPath);
+                if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
+                {
+                    Directory.CreateDirectory(logDirectory);
+                }
 
-            // Create and use the IMAP client within a using block to ensure disposal
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-            {
-                // Enable client-side logging
-                client.EnableLogger = true; // equivalent to StartLogging()
+                // Create the SMTP client (replace with valid host/port/credentials)
+                SmtpClient client = new SmtpClient("smtp.example.com", 587, "username", "password");
 
-                // Example operation: validate credentials
+                // Guard: skip real network calls when placeholders are detected
+                bool placeholders = client.Host.Contains("example.com") ||
+                                    client.Username == "username" ||
+                                    client.Password == "password";
+
                 try
                 {
-                    client.ValidateCredentials();
-                    Console.WriteLine("Credentials are valid.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Credential validation failed: {ex.Message}");
-                }
+                    // Enable client-side logging using the required API
+                    client.StartLogging(logPath);
 
-                // Disable client-side logging
-                client.EnableLogger = false; // equivalent to StopLogging()
+                    if (placeholders)
+                    {
+                        Console.WriteLine("Placeholder credentials detected – skipping actual email send.");
+                    }
+                    else
+                    {
+                        // Example operation: send a simple email
+                        MailMessage message = new MailMessage
+                        {
+                            From = new MailAddress("sender@example.com"),
+                            Subject = "Test Email",
+                            Body = "This is a test email with logging enabled."
+                        };
+                        message.To.Add(new MailAddress("recipient@example.com"));
+
+                        client.Send(message);
+                    }
+
+                    // Disable logging after the operation
+                    client.StopLogging();
+                }
+                finally
+                {
+                    client.Dispose();
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

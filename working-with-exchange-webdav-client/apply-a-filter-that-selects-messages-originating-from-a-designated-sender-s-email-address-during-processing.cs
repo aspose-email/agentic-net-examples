@@ -1,8 +1,8 @@
-using Aspose.Email.Clients.Exchange;
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Tools.Search;
-using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Mime;
 
 class Program
 {
@@ -10,34 +10,52 @@ class Program
     {
         try
         {
-            // Initialize Exchange WebDAV client (placeholder credentials)
-            string exchangeUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Sample code for filtering MBOX messages by sender.
+            const string mboxPath = "storage.mbox";
+            const string senderEmail = "sender@example.com";
+            const string outputDir = "output";
 
-            // Guard against placeholder credentials
-            if (exchangeUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+            // Ensure the output directory exists.
+            Directory.CreateDirectory(outputDir);
+
+            // Verify that the MBOX file exists before attempting to read it.
+            if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping network call.");
+                Console.Error.WriteLine($"Input file not found: {mboxPath}");
                 return;
             }
 
-            using (ExchangeClient client = new ExchangeClient(exchangeUrl, username, password))
+            // Create the MBOX reader.
+            using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                // Build a query to filter messages from a specific sender
-                string senderEmail = "sender@example.com";
-                MailQuery query = new MailQuery($"('From' = '{senderEmail}')");
-
-                // List messages in the Inbox that match the query (recursive set to false)
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query, false);
-
-                // Process the filtered messages
-                foreach (ExchangeMessageInfo info in messages)
+                // Iterate through each message info object.
+                foreach (MboxMessageInfo mboxMessageInfo in mbox.EnumerateMessageInfo())
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
-                    Console.WriteLine($"From: {info.From}");
-                    Console.WriteLine($"Date: {info.InternalDate}");
-                    Console.WriteLine(new string('-', 40));
+                    // Filter: process only messages from the designated sender.
+                    if (mboxMessageInfo.From != null &&
+                        !string.IsNullOrEmpty(mboxMessageInfo.From.Address) &&
+                        mboxMessageInfo.From.Address.IndexOf(senderEmail, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        Console.WriteLine($"Subject: {mboxMessageInfo.Subject}");
+                        Console.WriteLine($"From: {mboxMessageInfo.From}");
+                        Console.WriteLine($"To: {mboxMessageInfo.To}");
+
+                        // Extract the full MIME message.
+                        MailMessage eml = mbox.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions());
+
+                        // Create a safe file name for the saved .eml file.
+                        string safeSubject = string.IsNullOrWhiteSpace(eml.Subject) ? "NoSubject" : eml.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        string emlPath = Path.Combine(outputDir, $"{safeSubject}.eml");
+
+                        // Save the extracted message.
+                        eml.Save(emlPath);
+                        Console.WriteLine($"Saved to: {emlPath}");
+                    }
                 }
             }
         }

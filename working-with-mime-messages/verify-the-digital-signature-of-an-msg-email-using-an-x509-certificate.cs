@@ -10,13 +10,13 @@ class Program
     {
         try
         {
-            // Paths to the MSG file and the certificate file.
-            string msgFilePath = "sample.msg";
-            string certFilePath = "certificate.pfx";
-            string certPassword = "password";
+            // Paths to the MSG file and the certificate (PFX) file.
+            const string msgPath = "sample.msg";
+            const string certPath = "certificate.pfx";
+            const string certPassword = "password";
 
-            // Verify that the MSG file exists; if not, create a minimal placeholder.
-            if (!File.Exists(msgFilePath))
+            // Verify that the required files exist.
+            if (!File.Exists(msgPath))
             {
                 try
                 {
@@ -26,7 +26,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgFilePath);
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -35,64 +35,37 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage("placeholder@example.com", "recipient@example.com", "Placeholder", "This is a placeholder MSG."))
-                    {
-                        placeholder.Save(msgFilePath);
-                    }
-                    Console.WriteLine($"Placeholder MSG created at '{msgFilePath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Message file not found: {msgPath}");
+                return;
             }
 
-            // Verify that the certificate file exists.
-            if (!File.Exists(certFilePath))
+            if (!File.Exists(certPath))
             {
-                Console.Error.WriteLine($"Certificate file not found: {certFilePath}");
+                Console.Error.WriteLine($"Certificate file not found: {certPath}");
                 return;
             }
 
             // Load the certificate.
-            X509Certificate2 certificate;
-            try
+            using (X509Certificate2 certificate = new X509Certificate2(certPath, certPassword))
             {
-                certificate = new X509Certificate2(certFilePath, certPassword);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load certificate: {ex.Message}");
-                return;
-            }
+                // Load the MSG file as a MapiMessage.
+                MapiMessage mapiMsg = MapiMessage.Load(msgPath);
 
-            // Load the MSG file into a MapiMessage.
-            using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
-            {
-                // Convert the MapiMessage to a MailMessage with default conversion options.
-                using (MailMessage mailMessage = mapiMessage.ToMailMessage(new MailConversionOptions()))
-                {
-                    // Create SecureEmailManager to check the signature.
-                    SecureEmailManager secureManager = new SecureEmailManager();
+                // Convert the MapiMessage to a MailMessage using MailConversionOptions.
+                MailMessage mailMsg = mapiMsg.ToMailMessage(new MailConversionOptions());
 
-                    // Perform the signature check using the provided certificate.
-                    SmimeResult smimeResult = secureManager.CheckSignature(mailMessage, certificate);
+                // Verify the signature of the MailMessage using the provided certificate.
+                SecureEmailManager secMgr = new SecureEmailManager();
+                SmimeResult verificationResult = secMgr.CheckSignature(mailMsg, certificate);
 
-                    // Use the correct property to determine success.
-                    bool isValid = smimeResult.IsSuccess;
-
-                    Console.WriteLine(isValid
-                        ? "The message signature is valid."
-                        : "The message signature is NOT valid.");
-                }
+                // Output basic verification information.
+                Console.WriteLine("Signature verification completed.");
+                Console.WriteLine($"Result: {verificationResult}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

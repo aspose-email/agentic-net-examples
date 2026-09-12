@@ -1,8 +1,8 @@
 using Aspose.Email.Storage.Pst;
 using System;
-using System.Collections.Generic;
-using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
@@ -10,60 +10,70 @@ class Program
     {
         try
         {
-            // Placeholder mailbox URI and credentials
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
+            // EWS connection parameters (replace with real values)
+            string ewsUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "shared_mailbox_user@example.com";
             string password = "password";
 
-            // Guard against executing with placeholder credentials
-            if (mailboxUri.Contains("example.com"))
+            // Skip external calls when placeholder credentials are used
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
             // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, username, password))
             {
-                // Get the root folder URI of the shared mailbox
-                string rootFolderUri = client.MailboxInfo.RootUri;
-
-                // Collect all folder URIs recursively
-                List<string> allFolderUris = new List<string>();
-                CollectFolderUris(client, rootFolderUri, allFolderUris);
-
-                // Iterate through each folder and extract messages
-                foreach (string folderUri in allFolderUris)
-                {
-                    ExchangeMessageInfoCollection messages = client.ListMessages(folderUri);
-                    foreach (ExchangeMessageInfo messageInfo in messages)
-                    {
-                        Console.WriteLine($"Folder: {folderUri}, Subject: {messageInfo.Subject}");
-                    }
-                }
+                // Process common default folders
+                ProcessFolder(client, client.GetMailboxInfo().InboxUri);
+                ProcessFolder(client, client.GetMailboxInfo().DraftsUri);
+                ProcessFolder(client, client.GetMailboxInfo().SentItemsUri);
+                ProcessFolder(client, client.GetMailboxInfo().DeletedItemsUri);
+                ProcessFolder(client, client.GetMailboxInfo().CalendarUri);
+                ProcessFolder(client, client.GetMailboxInfo().ContactsUri);
+                ProcessFolder(client, client.GetMailboxInfo().TasksUri);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 
-    // Recursively collects folder URIs starting from a given folder
-    static void CollectFolderUris(IEWSClient client, string folderUri, List<string> folderUris)
+    // Recursively processes a folder: lists messages, extracts them, then processes subfolders
+    private static void ProcessFolder(IEWSClient client, string folderUri)
     {
-        folderUris.Add(folderUri);
         try
         {
-            ExchangeFolderInfoCollection subFolders = client.ListSubFolders(folderUri);
-            foreach (ExchangeFolderInfo subFolder in subFolders)
+            // List all messages in the current folder (null query = all)
+            ExchangeMessageInfoCollection messages = client.ListMessages(client.GetMailboxInfo().MailboxUri, folderUri, null);
+            foreach (ExchangeMessageInfo msgInfo in messages)
             {
-                CollectFolderUris(client, subFolder.Uri, folderUris);
+                try
+                {
+                    // Fetch the full MailMessage
+                    MailMessage message = client.FetchMessage(msgInfo.UniqueUri);
+                    // Example extraction: write subject to console
+                    Console.WriteLine($"Folder: {folderUri} | Subject: {message.Subject}");
+                }
+                catch (Exception exMsg)
+                {
+                    Console.Error.WriteLine($"Failed to fetch message {msgInfo.UniqueUri}: {exMsg.Message}");
+                }
+            }
+
+            // Get subfolders of the current folder
+            ExchangeFolderInfoCollection subFolders = client.ListSubFolders(folderUri);
+            foreach (var subFolder in subFolders)
+            {
+                // Recursively process each subfolder using its FolderId
+                ProcessFolder(client, subFolder.Uri);
             }
         }
-        catch
+        catch (Exception exFolder)
         {
-            // Ignore errors while retrieving subfolders
+            Console.Error.WriteLine($"Failed to process folder {folderUri}: {exFolder.Message}");
         }
     }
 }

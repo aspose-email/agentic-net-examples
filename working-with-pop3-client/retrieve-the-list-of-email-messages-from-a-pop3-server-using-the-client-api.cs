@@ -1,55 +1,51 @@
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
-namespace Pop3MessageListSample
+namespace Pop3RetrieveExample
 {
     class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
             try
             {
-                // Placeholder POP3 server credentials
+                // POP3 server connection details
                 string host = "pop.example.com";
                 int port = 110;
-                string username = "username";
+                string username = "user@example.com";
                 string password = "password";
 
-                // Skip real network call when placeholders are detected
-                if (host.Contains("example.com") || username == "username" || password == "password")
+
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    Console.Error.WriteLine("Placeholder POP3 credentials detected. Skipping server connection.");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
 
-                // Initialize POP3 client
-                using (Pop3Client client = new Pop3Client(host, port, username, password))
+                // Create and use the POP3 client
+                using (Pop3Client pop3Client = new Pop3Client(host, port, username, password, SecurityOptions.Auto))
                 {
-                    try
-                    {
-                        // Retrieve list of messages
-                        Pop3MessageInfoCollection messages = client.ListMessages();
+                    // Get total number of messages in the mailbox
+                    int messageCount = pop3Client.GetMessageCount();
+                    Console.WriteLine($"Total messages: {messageCount}");
 
-                        // Iterate through messages and display basic info
-                        foreach (Pop3MessageInfo messageInfo in messages)
-                        {
-                            Console.WriteLine($"Subject: {messageInfo.Subject}");
-                            Console.WriteLine($"From: {messageInfo.From}");
-                            Console.WriteLine($"Date: {messageInfo.Date}");
-                            Console.WriteLine();
-                        }
-                    }
-                    catch (Exception ex)
+                    // Iterate through each message and display its subject
+                    for (int i = 1; i <= messageCount; i++)
                     {
-                        Console.Error.WriteLine($"Error retrieving messages: {ex.Message}");
-                        return;
+                        using (MailMessage message = pop3Client.FetchMessage(i))
+                        {
+                            Console.WriteLine($"Message {i}: {message.Subject}");
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                // Output any errors to the error stream
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }

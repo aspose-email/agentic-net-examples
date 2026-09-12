@@ -1,83 +1,61 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailOftExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string htmlPath = "input.html";
-            string oftPath = "output.oft";
-
-            // Ensure input HTML exists; create a minimal placeholder if missing.
-            if (!File.Exists(htmlPath))
+            try
             {
+                // Author note: This example loads an HTML email and saves it as an Outlook template (OFT) preserving formatting.
+                string inputPath = "input.html";
+                string outputPath = "output.oft";
+
+                // Verify input file exists
+                if (!File.Exists(inputPath))
+                {
                 try
                 {
-                    File.WriteAllText(htmlPath, "<html><body><p>Placeholder</p></body></html>");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
-            }
 
-            // Ensure output directory exists.
-            string outputDir = Path.GetDirectoryName(oftPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
+                    return;
+                }
+
+                // Ensure output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
                     Directory.CreateDirectory(outputDir);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
 
-            // Load HTML content.
-            string htmlContent;
-            try
-            {
-                htmlContent = File.ReadAllText(htmlPath);
+                // Load the HTML document with default load options
+                using (MailMessage mailMessage = MailMessage.Load(inputPath, new HtmlLoadOptions()))
+                {
+                    // Save directly to OFT format using default options
+                    mailMessage.Save(outputPath, SaveOptions.DefaultOft);
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to read HTML file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            // Create a MailMessage with the HTML body.
-            using (MailMessage mail = new MailMessage())
-            {
-                mail.HtmlBody = htmlContent;
-                mail.Subject = "Converted from HTML";
-
-                // Convert MailMessage to MapiMessage.
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mail))
-                {
-                    // Save as Outlook Template (OFT).
-                    try
-                    {
-                        mapiMessage.SaveAsTemplate(oftPath);
-                        Console.WriteLine($"OFT file saved to: {oftPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save OFT file: {ex.Message}");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

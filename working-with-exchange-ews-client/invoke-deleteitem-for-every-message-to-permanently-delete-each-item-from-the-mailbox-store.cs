@@ -1,42 +1,48 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
+using System.Collections.Generic;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
     static void Main()
     {
+        // Placeholder values – replace with real server URL and credentials.
+        string serviceUrl = "https://your-ews-server/EWS/Exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+
+        // Guard: skip network calls when placeholders are still present.
+        if (serviceUrl.Contains("your-ews-server") ||
+            username.Contains("example.com") ||
+            password == "password")
+        {
+            Console.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+            return;
+        }
+
         try
         {
-            // Placeholder credentials – in real scenarios replace with actual values.
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard against executing with placeholder data.
-            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
-
-            // Create the EWS client.
+            // Create and connect the EWS client.
             using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                // List all messages in the default inbox folder.
-                ExchangeMessageInfoCollection messages = client.ListMessages();
+                // Retrieve mailbox information to get the Inbox folder URI.
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                string inboxUri = mailboxInfo.InboxUri;
+
+                // List all messages in the Inbox.
+                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
 
                 // Delete each message permanently.
-                foreach (ExchangeMessageInfo info in messages)
+                int deletedCount = 0;
+                foreach (ExchangeMessageInfo msgInfo in messages)
                 {
-                    // DeletionOptions can be customized if needed; default performs permanent delete.
-                    DeletionOptions options = new DeletionOptions();
-                    client.DeleteItem(info.UniqueUri, options);
+                    client.DeleteItem(msgInfo.UniqueUri, DeletionOptions.DeletePermanently);
+                    deletedCount++;
                 }
 
-                Console.WriteLine("All messages have been permanently deleted.");
+                Console.WriteLine($"{deletedCount} message(s) deleted permanently.");
             }
         }
         catch (Exception ex)

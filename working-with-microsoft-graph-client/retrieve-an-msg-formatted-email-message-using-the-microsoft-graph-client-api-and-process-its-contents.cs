@@ -2,83 +2,58 @@ using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Graph;
 using Aspose.Email.Clients;
+using Aspose.Email.Clients.Graph;
 
-class Program
+namespace AsposeEmailGraphSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials – replace with real values.
+            // Configuration – replace with your actual Azure AD app details and message ID.
             string clientId = "your-client-id";
+            string tenantId = "your-tenant-id";
             string clientSecret = "your-client-secret";
             string refreshToken = "your-refresh-token";
-            string userId = "user@example.com"; // UPN or user ID
-            string messageId = "AAMkAG..."; // Message ID (ItemId) to fetch
+            string messageId = "target-message-id";
 
-            // Guard against placeholder credentials to avoid external calls during CI.
-            if (clientId.StartsWith("your-") ||
-                clientSecret.StartsWith("your-") ||
-                refreshToken.StartsWith("your-"))
+            // Output file for the fetched MSG message.
+            string outputPath = "FetchedMessage.msg";
+
+            // Ensure the output directory exists.
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Graph call.");
-                return;
+                Directory.CreateDirectory(outputDir);
             }
-
-            // Prepare output path.
-            string outputDirectory = Path.Combine(Environment.CurrentDirectory, "Output");
-            string outputPath = Path.Combine(outputDirectory, "message.msg");
 
             try
             {
-                if (!Directory.Exists(outputDirectory))
+                // Acquire an OAuth token provider for Microsoft Graph.
+                Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
+
+                // Create the Graph client.
+                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    // Fetch the message as a MapiMessage.
+                    using (MapiMessage message = graphClient.FetchMessage(messageId))
+                    {
+                        // Display basic information.
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.SenderEmailAddress}");
+                        Console.WriteLine($"Received: {message.ClientSubmitTime}");
+
+                        // Save the message in MSG format.
+                        message.Save(outputPath);
+                        Console.WriteLine($"Message saved to: {outputPath}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            // Create token provider.
-            Aspose.Email.Clients.ITokenProvider tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(
-                clientId, clientSecret, refreshToken);
-
-            // Create Graph client.
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, "https://graph.microsoft.com"))
-            {
-                try
-                {
-                    // Set the user context.
-                    client.ResourceId = userId;
-
-                    // Fetch the MSG-formatted message as a MapiMessage.
-                    MapiMessage message = client.FetchMessage(messageId);
-
-                    // Save the message to MSG file.
-                    try
-                    {
-                        message.Save(outputPath);
-                        Console.WriteLine($"Message saved to: {outputPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save message: {ex.Message}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Graph operation failed: {ex.Message}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

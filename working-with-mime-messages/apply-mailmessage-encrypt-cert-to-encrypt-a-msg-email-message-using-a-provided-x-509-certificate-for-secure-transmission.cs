@@ -1,7 +1,8 @@
 using System;
 using System.IO;
-using Aspose.Email;
 using System.Security.Cryptography.X509Certificates;
+using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,38 +10,30 @@ class Program
     {
         try
         {
-            // Path to the X.509 certificate
+            // Paths for the certificate and the MSG file
             string certificatePath = "publicCert.cer";
+            string messagePath = "input.msg";
+            string encryptedMessagePath = "encrypted.msg";
+
+            // Verify certificate file exists
             if (!File.Exists(certificatePath))
             {
                 Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
                 return;
             }
 
-            X509Certificate2 publicCertificate;
-            try
-            {
-                publicCertificate = new X509Certificate2(certificatePath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load certificate: {ex.Message}");
-                return;
-            }
-
-            // Path to the input MSG file
-            string inputMsgPath = "input.msg";
-            if (!File.Exists(inputMsgPath))
+            // Verify MSG file exists
+            if (!File.Exists(messagePath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(messagePath);
                     }
                 }
                 catch (Exception ex)
@@ -49,63 +42,43 @@ class Program
                     return;
                 }
 
-                // Create a minimal placeholder MSG if it does not exist
-                using (MailMessage placeholder = new MailMessage("sender@example.com", "receiver@example.com", "Placeholder", "This is a placeholder message."))
-                {
-                    try
-                    {
-                        placeholder.Save(inputMsgPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                        return;
-                    }
-                }
-            }
-
-            MailMessage message;
-            try
-            {
-                message = MailMessage.Load(inputMsgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Message file not found: {messagePath}");
                 return;
             }
 
-            using (message)
-            {
-                MailMessage encryptedMessage;
-                try
-                {
-                    encryptedMessage = message.Encrypt(publicCertificate);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Encryption failed: {ex.Message}");
-                    return;
-                }
+            // Load the X.509 certificate
+            X509Certificate2 publicCertificate = new X509Certificate2(certificatePath);
 
-                using (encryptedMessage)
-                {
-                    string outputMsgPath = "encrypted.msg";
-                    try
-                    {
-                        encryptedMessage.Save(outputMsgPath);
-                        Console.WriteLine($"Encrypted message saved to {outputMsgPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save encrypted MSG: {ex.Message}");
-                    }
-                }
+            // Load the MSG file as a MapiMessage
+            MapiMessage mapMessage = MapiMessage.Load(messagePath);
+
+            // Convert MapiMessage to MailMessage
+            MailMessage mailMessage = mapMessage.ToMailMessage(new MailConversionOptions());
+
+            // Encrypt the MailMessage using the certificate
+            MailMessage encryptedMessage = mailMessage.Encrypt(publicCertificate);
+
+            // Output encryption status
+            Console.WriteLine(encryptedMessage.IsEncrypted ? "Its encrypted" : "Its NOT encrypted");
+
+            // Save the encrypted message
+            try
+            {
+                encryptedMessage.Save(encryptedMessagePath);
+                Console.WriteLine($"Encrypted message saved to: {encryptedMessagePath}");
             }
+            catch (Exception saveEx)
+            {
+                Console.Error.WriteLine($"Failed to save encrypted message: {saveEx.Message}");
+            }
+
+            // Dispose MailMessage objects
+            mailMessage.Dispose();
+            encryptedMessage.Dispose();
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

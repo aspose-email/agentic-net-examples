@@ -10,16 +10,13 @@ class Program
     {
         try
         {
-            // Input MSG file path
-            string inputMsgPath = "encrypted.msg";
-            // Output MSG file path
-            string outputMsgPath = "decrypted.msg";
-            // Private key certificate path (PFX) and password
-            string certificatePath = "privateCert.pfx";
-            string certificatePassword = "password";
+            // Author note: This sample demonstrates decrypting an encrypted MSG file using a private key certificate.
+            string encryptedMsgPath = "encrypted.msg";
+            string privateCertPath = "privateKey.pfx";
+            string certPassword = "yourPassword";
 
             // Verify input files exist
-            if (!File.Exists(inputMsgPath))
+            if (!File.Exists(encryptedMsgPath))
             {
                 try
                 {
@@ -29,7 +26,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputMsgPath);
+                        placeholder.Save(encryptedMsgPath);
                     }
                 }
                 catch (Exception ex)
@@ -38,42 +35,37 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input MSG file not found: {inputMsgPath}");
-                return;
-            }
-            if (!File.Exists(certificatePath))
-            {
-                Console.Error.WriteLine($"Certificate file not found: {certificatePath}");
+                Console.Error.WriteLine($"Encrypted MSG file not found: {encryptedMsgPath}");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            if (!File.Exists(privateCertPath))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Console.Error.WriteLine($"Certificate file not found: {privateCertPath}");
+                return;
             }
 
             // Load the private key certificate
-            using (X509Certificate2 privateCertificate = new X509Certificate2(certificatePath, certificatePassword))
+            X509Certificate2 privateCertificate = new X509Certificate2(privateCertPath, certPassword);
+
+            // Load the encrypted MSG message
+            MapiMessage encryptedMapiMessage = MapiMessage.Load(encryptedMsgPath);
+
+            // Decrypt the message using the private certificate
+            MapiMessage decryptedMapiMessage = encryptedMapiMessage.Decrypt(privateCertificate);
+
+            // Convert to MailMessage for easier handling and saving
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            MailMessage decryptedMailMessage = decryptedMapiMessage.ToMailMessage(conversionOptions);
+
+            // Save the decrypted message as an EML file
+            string outputEmlPath = "decrypted.eml";
+            using (decryptedMailMessage)
             {
-                // Load the encrypted MSG message
-                using (MapiMessage encryptedMessage = MapiMessage.Load(inputMsgPath))
-                {
-                    if (!encryptedMessage.IsEncrypted)
-                    {
-                        Console.WriteLine("The message is not encrypted. No decryption needed.");
-                        return;
-                    }
-
-                    // Decrypt the message using the private certificate
-                    MapiMessage decryptedMessage = encryptedMessage.Decrypt(privateCertificate);
-
-                    // Save the decrypted message
-                    decryptedMessage.Save(outputMsgPath);
-                    Console.WriteLine($"Decrypted message saved to: {outputMsgPath}");
-                }
+                decryptedMailMessage.Save(outputEmlPath);
             }
+
+            Console.WriteLine($"Decryption successful. Decrypted message saved to: {outputEmlPath}");
         }
         catch (Exception ex)
         {

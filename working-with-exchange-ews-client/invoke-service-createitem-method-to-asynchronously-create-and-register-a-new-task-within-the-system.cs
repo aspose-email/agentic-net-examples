@@ -1,64 +1,50 @@
 using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
+    // Author: Aspose.Email example for creating a task asynchronously via IAsyncEwsClient
     static async Task Main(string[] args)
     {
         try
         {
-            // Placeholder mailbox URI and credentials
-            string mailboxUri = "https://example.com/EWS/Exchange.asmx";
-            NetworkCredential credentials = new NetworkCredential("username", "password");
+            // Prepare connection parameters
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+            ICredentials credentials = new NetworkCredential("user@example.com", "password");
 
-            // Skip actual network call when placeholders are used
-            if (mailboxUri.Contains("example.com"))
+            // Create the asynchronous EWS client
+            IAsyncEwsClient asyncClient = await EWSClient.GetEwsClientAsync(mailboxUri, credentials);
+            if (asyncClient == null)
             {
-                Console.WriteLine("Placeholder mailbox URI detected. Skipping EWS operation.");
+                Console.Error.WriteLine("Failed to create EWS client.");
                 return;
             }
 
-            // Create asynchronous EWS client
-            IAsyncEwsClient client;
-            try
+            // Ensure the client is disposed after use
+            using (asyncClient as IDisposable)
             {
-                client = await EWSClient.GetEwsClientAsync(mailboxUri, credentials);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create EWS client: {ex.Message}");
-                return;
-            }
+                // Build a new Exchange task
+                ExchangeTask task = new ExchangeTask
+                {
+                    Subject = "Prepare project report",
+                    StartDate = DateTime.Now,
+                    DueDate = DateTime.Now.AddDays(3),
+                    Body = "Complete the quarterly project report and send it to the manager."
+                };
 
-            // Build a new Exchange task
-            ExchangeTask task = new ExchangeTask();
-            task.Subject = "Sample Task";
-            task.Body = "This is a sample task created via Aspose.Email.";
-            task.DueDate = DateTime.Now.AddDays(3);
-            task.Priority = MailPriority.High; // Use enum, not integer
+                // Asynchronously create the task in the default Tasks folder
+                string taskId = await asyncClient.CreateTaskAsync(task, cancellationToken: CancellationToken.None);
 
-            // Asynchronously create the task in the default task folder
-            try
-            {
-                string taskUri = await client.CreateTaskAsync(task);
-                Console.WriteLine($"Task created successfully. URI: {taskUri}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create task: {ex.Message}");
-            }
-            finally
-            {
-                if (client is IDisposable disposableClient)
-                    disposableClient.Dispose();
+                Console.WriteLine($"Task created successfully. Task ID: {taskId}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

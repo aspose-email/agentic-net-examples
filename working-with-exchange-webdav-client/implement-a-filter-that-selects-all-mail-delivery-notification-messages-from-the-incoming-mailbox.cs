@@ -1,61 +1,65 @@
+using Aspose.Email.Clients.Exchange.Dav;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
 using Aspose.Email.Clients.Exchange;
 
 class Program
 {
     static void Main()
     {
+        const string serverUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+        const string userName = "username";
+        const string password = "password";
+
+        if (IsPlaceholder(serverUrl) || IsPlaceholder(userName) || IsPlaceholder(password))
+        {
+            Console.WriteLine("Placeholder credentials detected. Skipping external Exchange operations.");
+            return;
+        }
+
         try
         {
-            // Placeholder connection settings – real credentials should be supplied in production.
-            string serverUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip external calls when placeholder values are detected.
-            if (serverUrl.Contains("example.com") || username.Contains("example.com"))
+            using (ExchangeClient client = new ExchangeClient(serverUrl, userName, password))
             {
-                Console.WriteLine("Placeholder credentials detected – skipping Exchange server call.");
-                return;
-            }
+                // Retrieve all messages from the Inbox folder (include subfolders = true)
+                ExchangeMessageInfoCollection messages = client.ListMessages(userName, "Inbox");
 
-            // Create and use the Exchange WebDAV client.
-            using (ExchangeClient client = new ExchangeClient(serverUrl, username, password))
-            {
-                try
+                foreach (ExchangeMessageInfo msgInfo in messages)
                 {
-                    // Retrieve all messages from the Inbox folder.
-                    ExchangeMessageInfoCollection messageInfos = client.ListMessages(client.MailboxInfo.InboxUri);
-
-                    // Iterate through the messages and select delivery notifications.
-                    foreach (ExchangeMessageInfo info in messageInfos)
+                    // Filter: delivery notifications usually contain "Delivery" in the subject
+                    if (!string.IsNullOrEmpty(msgInfo.Subject) &&
+                        msgInfo.Subject.IndexOf("Delivery", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
-                        // Delivery notifications typically have a MessageClass that starts with "REPORT.IPM".
-                        if (info.MessageClass != null &&
-                            info.MessageClass.StartsWith("REPORT.IPM", StringComparison.OrdinalIgnoreCase))
+                        Console.WriteLine($"Subject: {msgInfo.Subject}");
+                        Console.WriteLine($"Date: {msgInfo.InternalDate}");
+
+                        // Fetch the full message if further processing is required
+                        using (MailMessage fullMessage = client.FetchMessage(msgInfo.UniqueUri))
                         {
-                            // Fetch the full message to inspect or process it further.
-                            using (MailMessage message = client.FetchMessage(info.UniqueUri))
-                            {
-                                Console.WriteLine($"Delivery Notification - Subject: {message.Subject}");
-                            }
+                            string body = fullMessage.Body ?? string.Empty;
+                            int previewLength = Math.Min(100, body.Length);
+                            Console.WriteLine($"Body preview: {body.Substring(0, previewLength)}");
                         }
+
+                        Console.WriteLine(new string('-', 40));
                     }
-                }
-                catch (Exception ex)
-                {
-                    // Handle client‑related errors (connection, authentication, etc.).
-                    Console.Error.WriteLine($"Exchange client error: {ex.Message}");
-                    return;
                 }
             }
         }
         catch (Exception ex)
         {
-            // Top‑level guard to prevent unhandled exceptions.
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.WriteLine($"An error occurred while accessing Exchange: {ex.Message}");
         }
+    }
+
+    private static bool IsPlaceholder(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return true;
+
+        string lowered = value.Trim().ToLowerInvariant();
+        return lowered.Contains("example") ||
+               lowered.Contains("username") ||
+               lowered.Contains("password");
     }
 }

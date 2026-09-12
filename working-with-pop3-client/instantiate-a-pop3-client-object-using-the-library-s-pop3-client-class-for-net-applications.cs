@@ -1,45 +1,42 @@
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Pop3;
 
-namespace AsposeEmailPop3Example
+namespace AsposeEmailPop3Sample
 {
     class Program
     {
         static void Main()
         {
+            // Placeholder credentials – replace with real values for actual use.
+            string host = "pop3.example.com";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Guard: skip network operations when placeholders are detected.
+            bool isPlaceholder = host.Contains("example.com") ||
+                                 username.Contains("example.com") ||
+                                 password.Equals("password", StringComparison.OrdinalIgnoreCase);
+
+            if (isPlaceholder)
+            {
+                Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
+                return;
+            }
+
             try
             {
-                // Placeholder POP3 server credentials
-                string host = "pop3.example.com";
-                string username = "username";
-                string password = "password";
-
-                // Guard: skip real network call when placeholders are used
-                if (host.Contains("example.com") || username == "username" || password == "password")
+                // Instantiate the POP3 client.
+                using (Pop3Client pop3Client = new Pop3Client(host, username, password))
                 {
-                    Console.WriteLine("Placeholder POP3 credentials detected. Skipping connection.");
-                    return;
-                }
-
-                // Instantiate the POP3 client
-                using (Pop3Client client = new Pop3Client(host, username, password))
-                {
-                    try
-                    {
-                        // Retrieve mailbox information
-                        int messageCount = client.GetMessageCount();
-                        Console.WriteLine($"Total messages in mailbox: {messageCount}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
-                    }
+                    // Example operation: retrieve the number of messages in the mailbox.
+                    int messageCount = pop3Client.GetMessageCount();
+                    Console.WriteLine($"Number of messages on server: {messageCount}");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
     }

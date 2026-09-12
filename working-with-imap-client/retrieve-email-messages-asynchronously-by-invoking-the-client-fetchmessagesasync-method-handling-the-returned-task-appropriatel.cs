@@ -2,59 +2,54 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
 using Aspose.Email.Clients;
+using Aspose.Email.Clients.Imap;
 
 class Program
 {
-    static void Main()
+    static async Task Main()
     {
         try
         {
-            // Placeholder connection settings
+            // Connection settings
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
 
-            // Skip real network calls when placeholders are used
-            if (host.Contains("example.com"))
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping network operation.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
             // Create and use the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            using (ImapClient imapClient = new ImapClient(host, port, username, password, SecurityOptions.Auto))
             {
-                try
+                // List messages in the INBOX folder asynchronously
+                ImapMessageInfoCollection messageInfos = await imapClient.ListMessagesAsync("INBOX");
+
+                // Gather sequence numbers of the messages
+                List<int> sequenceNumbers = new List<int>();
+                foreach (ImapMessageInfo info in messageInfos)
                 {
-                    // Example sequence numbers to fetch; adjust as needed
-                    List<int> sequenceNumbers = new List<int> { 1, 2 };
-
-                    // Asynchronously fetch messages
-                    Task<IList<MailMessage>> fetchTask = client.FetchMessagesAsync(sequenceNumbers);
-                    IList<MailMessage> messages = fetchTask.GetAwaiter().GetResult();
-
-                    // Process fetched messages
-                    foreach (MailMessage message in messages)
-                    {
-                        using (message)
-                        {
-                            Console.WriteLine($"Subject: {message.Subject}");
-                        }
-                    }
+                    sequenceNumbers.Add(info.SequenceNumber);
                 }
-                catch (Exception ex)
+
+                // Fetch the messages asynchronously using the client
+                IList<MailMessage> messages = await imapClient.FetchMessagesAsync(sequenceNumbers);
+
+                // Example processing: output each message subject
+                foreach (MailMessage message in messages)
                 {
-                    Console.Error.WriteLine($"Error during fetch: {ex.Message}");
-                    return;
+                    Console.WriteLine($"Subject: {message.Subject}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -9,41 +9,34 @@ class Program
     {
         try
         {
-            string inputPath = "message.msg";
+            // Input MSG file path
+            string inputPath = @"c:\outlookmessage.msg";
+            // Output MSG file path (attachment‑free copy)
+            string outputPath = @"c:\outlookmessage_stripped.msg";
 
-            // Ensure the input file exists; create a minimal placeholder if it does not.
+            // Verify the input file exists
             if (!File.Exists(inputPath))
             {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "Placeholder Subject",
-                        "Placeholder Body",
-                        "sender@example.com",
-                        "recipient@example.com"))
-                    {
-                        placeholder.Save(inputPath);
-                        Console.WriteLine($"Placeholder MSG created at '{inputPath}'.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Remove all attachments from the MSG file.
-            try
-            {
-                MapiAttachmentCollection removedAttachments = MapiMessage.RemoveAttachments(inputPath);
-                Console.WriteLine($"Removed {removedAttachments.Count} attachment(s) from '{inputPath}'.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to remove attachments: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
+
+            // Create a copy of the original message to preserve the original file
+            try
+            {
+                File.Copy(inputPath, outputPath, true);
+            }
+            catch (Exception copyEx)
+            {
+                Console.Error.WriteLine($"Failed to copy file: {copyEx.Message}");
+                return;
+            }
+
+            // Remove all attachments from the copied MSG file
+            // This static method modifies the file in place
+            MapiMessage.DestroyAttachments(outputPath);
+
+            Console.WriteLine("All attachments have been stripped from the message.");
         }
         catch (Exception ex)
         {

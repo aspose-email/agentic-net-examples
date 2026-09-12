@@ -1,88 +1,60 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
-class Program
+namespace EmailMsgPersistence
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define paths
-            string attachmentPath = "sample.txt";
-            string outputMsgPath = "output.msg";
-
-            // Ensure attachment file exists; create a minimal placeholder if missing
-            if (!File.Exists(attachmentPath))
+            try
             {
-                try
-                {
-                    File.WriteAllText(attachmentPath, "Placeholder attachment content.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder attachment: {ex.Message}");
-                    return;
-                }
-            }
+                // Define output MSG file path
+                string outputPath = "output.msg";
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                try
+                // Ensure the output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    Directory.CreateDirectory(outputDir);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
 
-            // Create the email message
-            using (MailMessage mailMessage = new MailMessage())
-            {
-                // Set basic properties
-                mailMessage.From = new MailAddress("sender@example.com", "Sender Name");
-                mailMessage.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
-                mailMessage.Subject = "Sample Email with Attachment";
-                mailMessage.Body = "This is the plain text body of the email.";
+                // Create a new email message
+                MailMessage message = new MailMessage();
+                message.From = new MailAddress("sender@example.com", "Sender Name");
+                message.To.Add(new MailAddress("recipient@example.com", "Recipient Name"));
+                message.Subject = "Sample Email with Attachments";
+                message.HtmlBody = "<h1>Hello World</h1><p>This is a sample email.</p>";
 
                 // Add a custom header
-                mailMessage.Headers["X-Custom-Header"] = "CustomHeaderValue";
+                message.Headers.Add("X-Custom-Header", "CustomValue");
 
-                // Add attachment
-                using (Attachment attachment = new Attachment(attachmentPath))
+                // Add an attachment (creates a simple text file in memory)
+                byte[] attachmentData = System.Text.Encoding.UTF8.GetBytes("This is the attachment content.");
+                using (MemoryStream attachmentStream = new MemoryStream(attachmentData))
                 {
-                    // The Name property is used for the attachment filename
-                    attachment.Name = Path.GetFileName(attachmentPath);
-                    mailMessage.Attachments.Add(attachment);
+                    Attachment attachment = new Attachment(attachmentStream, "sample.txt", "text/plain");
+                    message.Attachments.Add(attachment);
+
+                    // Prepare MSG save options to preserve original dates
+                    MsgSaveOptions msgSaveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode)
+                    {
+                        PreserveOriginalDates = true
+                    };
+
+                    // Save the message as MSG
+                    message.Save(outputPath, msgSaveOptions);
                 }
 
-                // Display all headers using the required iteration pattern
-                foreach (string key in mailMessage.Headers.Keys)
-                {
-                    Console.WriteLine($"{key}: {mailMessage.Headers[key]}");
-                }
-
-                // Save as MSG using MsgSaveOptions
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                try
-                {
-                    mailMessage.Save(outputMsgPath, saveOptions);
-                    Console.WriteLine($"Message saved successfully to '{outputMsgPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                }
+                Console.WriteLine($"Message successfully saved to '{outputPath}'.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Graceful exit without rethrowing
+            }
         }
     }
 }

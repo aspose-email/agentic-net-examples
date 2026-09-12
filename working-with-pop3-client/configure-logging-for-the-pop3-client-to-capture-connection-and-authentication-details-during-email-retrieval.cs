@@ -3,74 +3,100 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients.Pop3;
 
+class SimpleLogger
+{
+    private static string _logFilePath = "log.txt";
+    private static LogLevel _logLevel = LogLevel.Info;
+
+    public static void SetLogLevel(LogLevel level)
+    {
+        _logLevel = level;
+    }
+
+    public static void SetLogFilePath(string path)
+    {
+        _logFilePath = path;
+    }
+
+    public static void Log(string message, LogLevel level = LogLevel.Info)
+    {
+        if (level < _logLevel)
+            return;
+
+        try
+        {
+            File.AppendAllText(_logFilePath, $"{DateTime.Now:u} [{level}] {message}{Environment.NewLine}");
+        }
+        catch
+        {
+            // Swallow any logging errors to avoid breaking the main flow
+        }
+    }
+
+    public enum LogLevel
+    {
+        Debug = 0,
+        Info = 1,
+        Warn = 2,
+        Error = 3,
+        Fatal = 4
+    }
+}
+
 class Program
 {
     static void Main()
     {
+        // Configure simple logging for the POP3 client
+        SimpleLogger.SetLogLevel(SimpleLogger.LogLevel.Debug);
+        SimpleLogger.SetLogFilePath("pop3.log");
+        SimpleLogger.Log("Logging initialized.", SimpleLogger.LogLevel.Info);
+
+        // POP3 connection settings (replace placeholders with real values)
+        string host = "pop3.example.com";
+        int port = 110;
+        string username = "username";
+        string password = "password";
+
+        // Guard: skip network call when placeholders are detected
+        bool placeholdersDetected = host.Contains("example.com", StringComparison.OrdinalIgnoreCase) ||
+                                    username.Equals("username", StringComparison.OrdinalIgnoreCase) ||
+                                    password.Equals("password", StringComparison.OrdinalIgnoreCase);
+
+        if (placeholdersDetected)
+        {
+            Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
+            SimpleLogger.Log("Placeholder credentials detected. Operation aborted.", SimpleLogger.LogLevel.Warn);
+            return;
+        }
+
         try
         {
-            // Placeholder POP3 server credentials
-            string host = "pop3.example.com";
-            int port = 110;
-            string username = "user@example.com";
-            string password = "password";
+            SimpleLogger.Log($"Attempting to connect to POP3 server {host}:{port} as {username}.", SimpleLogger.LogLevel.Debug);
 
-            // Guard against executing real network calls with placeholder data
-            if (host.Contains("example.com") || username.Contains("example.com"))
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping POP3 connection.");
-                return;
-            }
-
-            // Prepare log file path and ensure its directory exists
-            string logDirectory = Path.Combine(Environment.CurrentDirectory, "Logs");
-            string logPath = Path.Combine(logDirectory, "pop3log.txt");
-            try
-            {
-                if (!Directory.Exists(logDirectory))
-                {
-                    Directory.CreateDirectory(logDirectory);
-                }
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Failed to create log directory: {dirEx.Message}");
-                return;
-            }
-
-            // Initialize POP3 client with logging enabled
             using (Pop3Client client = new Pop3Client(host, port, username, password))
             {
-                client.EnableLogger = true;
-                client.LogFileName = logPath;
-                client.UseDateInLogFileName = true;
+                // Simple logging of connection success
+                SimpleLogger.Log("Connected to POP3 server successfully.", SimpleLogger.LogLevel.Info);
 
-                // Attempt to validate credentials (wrapped in try/catch for safety)
-                try
-                {
-                    client.ValidateCredentials();
-                }
-                catch (Exception credEx)
-                {
-                    Console.Error.WriteLine($"Authentication failed: {credEx.Message}");
-                    return;
-                }
+                int messageCount = client.GetMessageCount();
+                Console.WriteLine($"Total messages: {messageCount}");
+                SimpleLogger.Log($"Message count retrieved: {messageCount}", SimpleLogger.LogLevel.Info);
 
-                // Retrieve and display message count
-                try
+                for (int i = 1; i <= messageCount; i++)
                 {
-                    int messageCount = client.GetMessageCount();
-                    Console.WriteLine($"Total messages in mailbox: {messageCount}");
-                }
-                catch (Exception fetchEx)
-                {
-                    Console.Error.WriteLine($"Failed to retrieve messages: {fetchEx.Message}");
+                    using (MailMessage message = client.FetchMessage(i))
+                    {
+                        Console.WriteLine($"Message {i}: {message.Subject}");
+                        SimpleLogger.Log($"Fetched message {i}: Subject=\"{message.Subject}\"", SimpleLogger.LogLevel.Debug);
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            SimpleLogger.Log($"Exception occurred: {ex}", SimpleLogger.LogLevel.Error);
         }
     }
 }

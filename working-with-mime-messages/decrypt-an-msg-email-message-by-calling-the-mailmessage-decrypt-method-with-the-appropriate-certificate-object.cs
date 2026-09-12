@@ -2,30 +2,33 @@ using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Paths to the encrypted MSG file, certificate file and output file
-            string msgPath = "encrypted.msg";
-            string certPath = "mycert.pfx";
-            string outputPath = "decrypted.msg";
+            // Author note: This sample demonstrates loading an encrypted MSG file,
+            // decrypting it with a certificate, and saving the result as an EML file.
 
-            // Verify that the input files exist
+            string msgPath = "encrypted.msg";
+            string certPath = "privateKey.pfx";
+            string outputPath = "decrypted.eml";
+
+            // Verify input files exist
             if (!File.Exists(msgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -34,30 +37,31 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Message file not found: {msgPath}");
+                Console.Error.WriteLine($"Input MSG file not found: {msgPath}");
                 return;
             }
-
             if (!File.Exists(certPath))
             {
                 Console.Error.WriteLine($"Certificate file not found: {certPath}");
                 return;
             }
 
-            // Load the certificate (replace the password with the actual one if needed)
-            string certPassword = "password";
-            using (X509Certificate2 certificate = new X509Certificate2(certPath, certPassword))
+            // Load the certificate (assumes no password; adjust if needed)
+            X509Certificate2 certificate = new X509Certificate2(certPath);
+
+            // Load the encrypted MSG as a MapiMessage
+            MapiMessage mapMsg = MapiMessage.Load(msgPath);
+
+            // Convert MapiMessage to MailMessage
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            using (MailMessage mailMsg = mapMsg.ToMailMessage(conversionOptions))
             {
-                // Load the encrypted MSG message
-                using (MailMessage encryptedMessage = MailMessage.Load(msgPath))
+                // Decrypt the MailMessage using the provided certificate
+                using (MailMessage decryptedMsg = mailMsg.Decrypt(certificate))
                 {
-                    // Decrypt the message using the certificate
-                    using (MailMessage decryptedMessage = encryptedMessage.Decrypt(certificate))
-                    {
-                        // Save the decrypted message
-                        decryptedMessage.Save(outputPath);
-                        Console.WriteLine($"Message decrypted and saved to {outputPath}");
-                    }
+                    // Save the decrypted message to an EML file
+                    decryptedMsg.Save(outputPath);
+                    Console.WriteLine($"Decrypted message saved to {outputPath}");
                 }
             }
         }

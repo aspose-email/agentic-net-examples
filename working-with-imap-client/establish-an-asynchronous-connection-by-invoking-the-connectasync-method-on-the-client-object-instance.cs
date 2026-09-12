@@ -2,7 +2,7 @@ using Aspose.Email.Clients;
 using System;
 using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients.Smtp;
 
 class Program
 {
@@ -10,28 +10,41 @@ class Program
     {
         try
         {
-            // Placeholder credentials – skip actual connection in sample runs
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "username";
-            string password = "password";
-
-            if (host == "imap.example.com")
+            using (SmtpClient smtpClient = new SmtpClient())
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping connection.");
-                return;
-            }
+                // Placeholder server settings
+                smtpClient.Host = "smtp.example.com";
+                smtpClient.Port = 587;
+                smtpClient.SecurityOptions = SecurityOptions.Auto;
+                smtpClient.Username = "user@example.com";
+                smtpClient.Password = "password";
 
-            // Establish an asynchronous connection and validate credentials
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-            {
-                bool isValid = await client.ValidateCredentialsAsync();
-                Console.WriteLine($"Connection validated: {isValid}");
+                // Guard: skip actual network call when placeholders are detected
+                if (smtpClient.Host.Contains("example.com") ||
+                    smtpClient.Username.Contains("example.com") ||
+                    smtpClient.Password == "password")
+                {
+                    Console.WriteLine("Skipping email send due to placeholder credentials.");
+                    return;
+                }
+
+                // Create a simple email message
+                MailMessage message = new MailMessage
+                {
+                    From = new MailAddress("user@example.com"),
+                    Subject = "Test Email",
+                    Body = "Hello, this is a test email sent asynchronously."
+                };
+                message.To.Add(new MailAddress("recipient@example.com"));
+
+                // Send the message asynchronously
+                await smtpClient.SendAsync(message);
+                Console.WriteLine("Email sent successfully.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

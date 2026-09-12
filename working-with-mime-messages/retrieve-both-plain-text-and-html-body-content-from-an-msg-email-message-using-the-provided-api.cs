@@ -1,17 +1,18 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
+// Author: Aspose.Email example - retrieve plain‑text and HTML bodies from an MSG file
 class Program
 {
     static void Main()
     {
         try
         {
-            string msgPath = "sample.msg";
+            const string msgPath = "sample.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing.
+            // Guard against missing input file
             if (!File.Exists(msgPath))
             {
                 try
@@ -31,47 +32,29 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    MapiMessage placeholder = new MapiMessage(
-                        "Placeholder Subject",
-                        "sender@example.com",
-                        "receiver@example.com",
-                        "This is a placeholder plain‑text body.");
-                    placeholder.Save(msgPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the MSG file and retrieve both plain‑text and HTML bodies.
-            try
-            {
-                using (MapiMessage msg = MapiMessage.Load(msgPath))
-                {
-                    string plainBody = msg.Body;
-                    string htmlBody = msg.BodyHtml;
-
-                    Console.WriteLine("Plain‑Text Body:");
-                    Console.WriteLine(plainBody);
-                    Console.WriteLine();
-
-                    Console.WriteLine("HTML Body:");
-                    Console.WriteLine(htmlBody);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
+
+            // Load the Outlook MSG message
+            MapiMessage msg = MapiMessage.Load(msgPath);
+
+            // Plain‑text body (Body property)
+            string plainBody = msg.Body;
+
+            // HTML body (BodyHtml property)
+            string htmlBody = msg.BodyHtml;
+
+            Console.WriteLine("Plain‑Text Body:");
+            Console.WriteLine(plainBody);
+            Console.WriteLine();
+
+            Console.WriteLine("HTML Body:");
+            Console.WriteLine(htmlBody);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }

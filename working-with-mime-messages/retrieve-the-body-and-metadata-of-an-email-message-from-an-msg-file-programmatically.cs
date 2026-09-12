@@ -1,7 +1,7 @@
-using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using System;
+using System.IO;
 
 class Program
 {
@@ -9,10 +9,17 @@ class Program
     {
         try
         {
-            string msgFilePath = "sample.msg";
+            string msgPath = "sample.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing.
-            if (!File.Exists(msgFilePath))
+            // Ensure the directory for the MSG file exists
+            string msgDir = Path.GetDirectoryName(Path.GetFullPath(msgPath));
+            if (!string.IsNullOrEmpty(msgDir) && !Directory.Exists(msgDir))
+            {
+                Directory.CreateDirectory(msgDir);
+            }
+
+            // Guard against missing file
+            if (!File.Exists(msgPath))
             {
                 try
                 {
@@ -22,7 +29,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(msgFilePath);
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -31,52 +38,40 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    // Create a simple placeholder MSG.
-                    MapiMessage placeholderMessage = new MapiMessage(
-                        "Placeholder Subject",
-                        "This is a placeholder body.",
-                        "sender@example.com",
-                        "recipient@example.com");
-                    placeholderMessage.Save(msgFilePath);
-                }
-                catch (Exception createEx)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG: {createEx.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"File not found: {msgPath}");
+                return;
             }
 
-            // Load the MSG file.
-            using (MapiMessage msg = MapiMessage.Load(msgFilePath))
+            // Load the Outlook MSG file
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                // Output basic metadata.
-                Console.WriteLine($"Subject: {msg.Subject}");
-                Console.WriteLine($"Sender Email: {msg.SenderEmailAddress}");
-                Console.WriteLine($"Sent Representing Email: {msg.SentRepresentingEmailAddress}");
-                Console.WriteLine($"Sent Date: {msg.DeliveryTime}");
-                Console.WriteLine($"Body (plain text): {msg.Body}");
-                Console.WriteLine($"Body (HTML): {msg.BodyHtml}");
+                // Print basic metadata
+                Console.WriteLine("Subject: " + msg.Subject);
+                Console.WriteLine("From: " + msg.SenderName);
+                // If needed, SenderEmailAddress can be accessed similarly:
+                // Console.WriteLine("From Email: " + msg.SenderEmailAddress);
 
-                // List attachments, if any.
-                if (msg.Attachments != null && msg.Attachments.Count > 0)
+                // Print the message body
+                Console.WriteLine("Body:");
+                Console.WriteLine(msg.Body);
+
+                // List and save attachments, if any
+                foreach (MapiAttachment attachment in msg.Attachments)
                 {
-                    Console.WriteLine("Attachments:");
-                    foreach (MapiAttachment attachment in msg.Attachments)
+                    Console.WriteLine("Attachment: " + attachment.FileName);
+                    string attachmentPath = Path.Combine(Directory.GetCurrentDirectory(), attachment.FileName);
+                    string attachmentDir = Path.GetDirectoryName(attachmentPath);
+                    if (!Directory.Exists(attachmentDir))
                     {
-                        Console.WriteLine($"- {attachment.FileName}");
+                        Directory.CreateDirectory(attachmentDir);
                     }
-                }
-                else
-                {
-                    Console.WriteLine("No attachments found.");
+                    attachment.Save(attachmentPath);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

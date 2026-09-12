@@ -1,6 +1,6 @@
-using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
@@ -10,41 +10,42 @@ class Program
     {
         try
         {
-            // Placeholder connection details
+            // Connection settings for the IMAP server
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
 
-            // Guard against executing real network calls with placeholder data
-            if (host.Contains("example.com"))
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Initialize and connect the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            // Initialize and configure the IMAP client
+            using (ImapClient client = new ImapClient())
             {
-                try
-                {
-                    client.SelectFolder("INBOX");
-                }
-                catch (Exception folderEx)
-                {
-                    Console.Error.WriteLine($"Failed to select folder: {folderEx.Message}");
-                    return;
-                }
+                client.Host = host;
+                client.Port = port;
+                client.SecurityOptions = SecurityOptions.SSLImplicit;
+                client.Username = username;
+                client.Password = password;
 
-                // Build a search query (e.g., messages with "Report" in the subject)
-                ImapQueryBuilder queryBuilder = new ImapQueryBuilder();
-                queryBuilder.Subject.Contains("Report");
+                // Select the INBOX folder
+                client.SelectFolder("INBOX");
+
+                // Build a search query (e.g., messages with "Invoice" in the subject)
+                MailQueryBuilder queryBuilder = new MailQueryBuilder();
+                queryBuilder.Subject.Contains("Invoice");
                 MailQuery query = queryBuilder.GetQuery();
 
-                // Retrieve messages that satisfy the query
+                // Execute the search
                 ImapMessageInfoCollection matchingMessages = client.ListMessages(query);
 
-                // Output basic information about each matching message
+                Console.WriteLine($"Found {matchingMessages.Count} message(s) matching the criteria.");
+
                 foreach (ImapMessageInfo messageInfo in matchingMessages)
                 {
                     Console.WriteLine($"UID: {messageInfo.UniqueId}, Subject: {messageInfo.Subject}");
@@ -53,7 +54,7 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

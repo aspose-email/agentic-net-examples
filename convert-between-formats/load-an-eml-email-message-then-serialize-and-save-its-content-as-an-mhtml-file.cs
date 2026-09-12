@@ -4,14 +4,15 @@ using Aspose.Email;
 
 class Program
 {
+    // Author: Aspose.Email example – load EML and save as MHTML
     static void Main()
     {
         try
         {
-            string inputPath = "input.eml";
-            string outputPath = "output.mhtml";
+            string inputPath = "source.eml";
+            string outputPath = "target.mhtml";
 
-            // Ensure the input EML file exists; create a minimal placeholder if missing.
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
@@ -31,26 +32,29 @@ class Program
                     return;
                 }
 
-                string placeholderContent = "Subject: Placeholder\r\n\r\nThis is a placeholder email body.";
-                File.WriteAllText(inputPath, placeholderContent);
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                return;
             }
 
-            // Ensure the output directory exists.
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                Directory.CreateDirectory(outputDirectory);
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the EML message and save it as MHTML.
+            // Load the EML message
             using (MailMessage mailMessage = MailMessage.Load(inputPath))
             {
+                // Save as MHTML using the default options
                 mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
             }
+
+            Console.WriteLine($"Message saved as MHTML to: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

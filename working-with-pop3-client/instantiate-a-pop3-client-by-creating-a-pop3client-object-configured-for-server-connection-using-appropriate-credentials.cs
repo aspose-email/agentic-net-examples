@@ -1,5 +1,6 @@
-using System;
 using Aspose.Email.Clients;
+using System;
+using Aspose.Email;
 using Aspose.Email.Clients.Pop3;
 
 class Program
@@ -8,31 +9,34 @@ class Program
     {
         try
         {
-            // Placeholder credentials for demonstration
-            string host = "pop3.example.com";
-            string username = "username";
+            // POP3 server configuration (replace placeholders with real values when needed)
+            string host = "pop.example.com";
+            int port = 995;
+            string username = "user@example.com";
             string password = "password";
+            SecurityOptions security = SecurityOptions.SSLImplicit;
 
-            // Guard to avoid real network calls when placeholders are used
-            if (host.Contains("example.com") || username == "username")
+            // Guard: skip network operations when placeholder credentials are detected
+            bool isPlaceholder = host.Contains("example.com") ||
+                                 username.Contains("example.com") ||
+                                 password == "password";
+
+            if (isPlaceholder)
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping POP3 connection.");
-                return;
+                Console.WriteLine("Placeholder POP3 configuration detected. Skipping network operations.");
             }
-
-            // Instantiate and configure the POP3 client
-            using (Pop3Client client = new Pop3Client(host, username, password))
+            else
             {
-                // Example configuration (optional)
-                client.SecurityOptions = SecurityOptions.Auto;
-
-                // No actual network operation is performed in this sample
-                Console.WriteLine($"POP3 client configured for host: {client.Host}");
+                using (var pop3Client = new Pop3Client(host, port, username, password, security))
+                {
+                    int messageCount = pop3Client.GetMessageCount();
+                    Console.WriteLine($"Message count: {messageCount}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

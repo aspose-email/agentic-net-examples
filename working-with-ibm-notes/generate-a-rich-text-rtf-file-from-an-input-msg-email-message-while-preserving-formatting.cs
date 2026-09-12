@@ -1,29 +1,31 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
-class Program
+namespace GenerateRtfFromMsg
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.rtf";
-
-            // Ensure input MSG exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            try
             {
+                // Author note: This sample loads an MSG file preserving its RTF body and saves it as an RTF file.
+                string inputPath = "input.msg";
+                string outputPath = "output.rtf";
+
+                // Verify input file exists
+                if (!File.Exists(inputPath))
+                {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "Placeholder Subject",
-                        "Placeholder body text.",
+                    using (MailMessage placeholder = new MailMessage(
                         "sender@example.com",
-                        "receiver@example.com"))
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.Save(inputPath);
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
@@ -31,37 +33,37 @@ class Program
                     Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG and extract RTF body
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(inputPath))
-                {
-                    string rtfContent = message.BodyRtf ?? string.Empty;
-
-                    // Ensure output directory exists
-                    string outputDir = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-
-                    // Write RTF content to file
-                    File.WriteAllText(outputPath, rtfContent);
+                    Console.Error.WriteLine($"Input file '{inputPath}' not found.");
+                    return;
                 }
+
+                // Ensure output directory exists
+                string outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                // Configure load options to preserve RTF content
+                MsgLoadOptions loadOptions = new MsgLoadOptions
+                {
+                    PreserveRtfContent = true
+                };
+
+                // Load the MSG message with the specified options
+                using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
+                {
+                    // Save the message as RTF; format is inferred from the .rtf extension
+                    message.Save(outputPath);
+                }
+
+                Console.WriteLine($"RTF file saved to '{outputPath}'.");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            Console.WriteLine($"RTF file saved to: {outputPath}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

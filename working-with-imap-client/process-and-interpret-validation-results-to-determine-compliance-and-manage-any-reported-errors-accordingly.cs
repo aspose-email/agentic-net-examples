@@ -1,84 +1,50 @@
 using System;
-using System.IO;
 using Aspose.Email;
+using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients;
 
-class Program
+namespace ImapSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string emailPath = "sample.eml";
+            // Placeholder credentials – replace with real values when needed.
+            string host = "imap.example.com";
+            int port = 993;
+            string username = "your_username";
+            string password = "your_password";
 
-            // Ensure the input file exists; create a minimal placeholder if missing
-            if (!File.Exists(emailPath))
+            // Guard: skip network calls when placeholder credentials are used.
+            if (username.StartsWith("your_") || password.StartsWith("your_"))
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(emailPath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    MailMessage placeholder = new MailMessage();
-                    placeholder.From = new MailAddress("placeholder@example.com");
-                    placeholder.To = new MailAddressCollection { "recipient@example.com" };
-                    placeholder.Subject = "Placeholder Subject";
-                    placeholder.Body = "This is a placeholder email.";
-                    placeholder.Save(emailPath, SaveOptions.DefaultEml);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder email: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the email and perform simple validation
-            try
-            {
-                using (MailMessage message = MailMessage.Load(emailPath))
-                {
-                    if (string.IsNullOrWhiteSpace(message.Subject))
-                    {
-                        Console.WriteLine("Validation Warning: Email subject is empty.");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                    }
-
-                    if (message.To == null || message.To.Count == 0)
-                    {
-                        Console.WriteLine("Validation Warning: No recipients specified.");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Recipient count: {message.To.Count}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading or processing email: {ex.Message}");
+                Console.WriteLine("Placeholder credentials detected – skipping network operations.");
                 return;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+
+            // Create the IMAP client. No network activity occurs until a method is called.
+            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.SSLImplicit))
+            {
+                try
+                {
+                    // Select the INBOX folder.
+                    client.SelectFolder("INBOX");
+
+                    // Retrieve message summaries.
+                    ImapMessageInfoCollection messageInfos = client.ListMessages();
+
+                    foreach (var info in messageInfos)
+                    {
+                        // Fetch the full message using its unique identifier.
+                        MailMessage message = client.FetchMessage(info.UniqueId);
+                        Console.WriteLine($"Subject: {message.Subject}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error: {ex.Message}");
+                }
+            }
         }
     }
 }

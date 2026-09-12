@@ -1,6 +1,6 @@
-using System;
-using System.IO;
 using Aspose.Email;
+using System;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -8,32 +8,23 @@ class Program
     {
         try
         {
-            // Define output MSG file path
-            string outputPath = "output.msg";
-            string outputDirectory = Path.GetDirectoryName(outputPath);
+            const string msgFilePath = "sample.msg";
 
-            // Ensure the output directory exists
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
+            // Create a new MAPI message and set its properties
+            var message = new MapiMessage(
+                "sender@example.com",   // From
+                "recipient@example.com", // To
+                "Test Subject",          // Subject
+                "This is the body of the email." // Body
+            );
 
-            // Create and populate the email message
-            using (MailMessage message = new MailMessage())
-            {
-                message.From = new MailAddress("sender@example.com");
-                message.To.Add(new MailAddress("recipient@example.com"));
-                message.Subject = "Test Subject";
-                message.Body = "This is the body of the email.";
-
-                // Save the message as MSG
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat);
-                message.Save(outputPath, saveOptions);
-            }
+            // Save the message as an MSG file
+            message.Save(msgFilePath);
+            Console.WriteLine($"Message saved to {msgFilePath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

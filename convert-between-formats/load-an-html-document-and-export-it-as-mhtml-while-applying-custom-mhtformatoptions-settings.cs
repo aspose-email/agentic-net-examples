@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using Aspose.Email;
 
 class Program
@@ -8,40 +9,74 @@ class Program
     {
         try
         {
-            // Paths for input HTML and output MHTML
-            string inputPath = "input.html";
-            string outputPath = "output.mht";
+            const string inputPath = "input.html";
+            const string outputPath = "output.mhtml";
 
-            // Verify input file exists; create a minimal placeholder if missing
+            // Ensure the input HTML file exists; create a minimal placeholder if missing.
             if (!File.Exists(inputPath))
             {
-                File.WriteAllText(inputPath, "<html><body><p>Placeholder content</p></body></html>");
-                Console.Error.WriteLine($"Input file not found. Created placeholder at '{inputPath}'.");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                try
+                {
+                    const string placeholderHtml = "<html><body><p>Placeholder content</p></body></html>";
+                    File.WriteAllText(inputPath, placeholderHtml, Encoding.UTF8);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {ex.Message}");
+                    return;
+                }
             }
 
-            // Ensure the output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Load the HTML document as a MailMessage with custom load options.
+            HtmlLoadOptions loadOptions = new HtmlLoadOptions
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
+                PreferredTextEncoding = Encoding.UTF8,
+                ShouldAddPlainTextView = true,
+                // PathToResources can be set if the HTML references external images; omitted here.
+            };
 
-            // Load the HTML document into a MailMessage
-            HtmlLoadOptions loadOptions = new HtmlLoadOptions();
-            using (MailMessage mailMessage = MailMessage.Load(inputPath, loadOptions))
+            try
             {
-                // Configure custom MHT save options
-                MhtSaveOptions saveOptions = new MhtSaveOptions();
-                saveOptions.MhtFormatOptions = MhtFormatOptions.WriteHeader | MhtFormatOptions.WriteOutlineAttachments;
+                using (MailMessage mail = MailMessage.Load(inputPath, loadOptions))
+                {
+                    // Configure MHTML save options with custom format flags.
+                    MhtSaveOptions saveOptions = new MhtSaveOptions
+                    {
+                        MhtFormatOptions = MhtFormatOptions.WriteHeader | MhtFormatOptions.WriteOutlineAttachments
+                    };
 
-                // Save the MailMessage as MHTML
-                mailMessage.Save(outputPath, saveOptions);
-                Console.WriteLine($"MHTML file saved to '{outputPath}'.");
+                    // Save the message as MHTML.
+                    mail.Save(outputPath, saveOptions);
+                }
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing email conversion: {ex.Message}");
+                return;
+            }
+
+            Console.WriteLine($"HTML successfully converted to MHTML: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

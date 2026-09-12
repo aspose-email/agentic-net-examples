@@ -1,6 +1,7 @@
+using Aspose.Email.PersonalInfo;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
 class Program
@@ -9,64 +10,57 @@ class Program
     {
         try
         {
+            // Path to the PST file.
             string pstPath = "sample.pst";
 
-            // Ensure the PST file exists; create a minimal one if missing.
+            // Ensure the directory for the PST file exists.
+            string pstDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            {
+                Directory.CreateDirectory(pstDirectory);
+            }
+
+            // If the PST file does not exist, create a new Unicode PST.
             if (!File.Exists(pstPath))
             {
+                // Create a new PST with Unicode format (supports large PSTs).
+                PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                Console.WriteLine($"Created new PST file at '{pstPath}'.");
+            }
+
+            // Open the PST file for read/write operations.
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath, false))
+            {
+                // Get the root folder of the PST.
+                FolderInfo rootFolder = pst.RootFolder;
+
+                // Add a new subfolder (or retrieve it if it already exists).
+                FolderInfo targetFolder;
                 try
                 {
-                    using (PersonalStorage pstCreate = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Create a default folder to work with.
-                        pstCreate.RootFolder.AddSubFolder("TargetFolder");
-                    }
+                    targetFolder = rootFolder.AddSubFolder("MyFolder");
+                    Console.WriteLine("Created subfolder 'MyFolder'.");
                 }
-                catch (Exception ex)
+                catch (InvalidOperationException)
                 {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
-                    return;
+                    // Folder already exists; retrieve it.
+                    targetFolder = rootFolder.GetSubFolder("MyFolder");
+                    Console.WriteLine("Subfolder 'MyFolder' already exists; using existing folder.");
                 }
+
+                // Modify the container class of the folder.
+                // Common container class values: "IPF.Note" (email), "IPF.Contact" (contacts), etc.
+                targetFolder.ChangeContainerClass("IPF.Note");
+                Console.WriteLine("Changed container class of 'MyFolder' to 'IPF.Note'.");
+
+                // No explicit save call is required; changes are persisted when the PST is disposed.
             }
 
-            // Open the existing PST file.
-            try
-            {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-                {
-                    // Locate the folder named "TargetFolder".
-                    FolderInfo targetFolder = null;
-                    foreach (FolderInfo subFolder in pst.RootFolder.GetSubFolders())
-                    {
-                        if (string.Equals(subFolder.DisplayName, "TargetFolder", StringComparison.OrdinalIgnoreCase))
-                        {
-                            targetFolder = subFolder;
-                            break;
-                        }
-                    }
-
-                    // If the folder does not exist, create it.
-                    if (targetFolder == null)
-                    {
-                        targetFolder = pst.RootFolder.AddSubFolder("TargetFolder");
-                    }
-
-                    // Change the container class of the folder.
-                    // Example container class: "IPF.Note" (standard mail item).
-                    targetFolder.ChangeContainerClass("IPF.Note");
-
-                    Console.WriteLine($"Container class of folder '{targetFolder.DisplayName}' has been changed.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
-                return;
-            }
+            Console.WriteLine("PST modification completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,61 +1,63 @@
-using Aspose.Email.Tools.Search;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
+using Aspose.Email.Mime;
 
-class Program
+namespace Pop3Sample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials – skip actual network call if they are not replaced.
-            string host = "pop3.example.com";
-            int port = 110;
-            string username = "username";
-            string password = "password";
+            // Placeholder credentials – replace with real values or skip execution.
+            const string host = "your_host";
+            const string username = "your_username";
+            const string password = "your_password";
 
-            if (host.Contains("example.com") || username == "username")
+            // Guard against executing network calls with placeholder data.
+            if (host.StartsWith("your_") || username.StartsWith("your_") || password.StartsWith("your_"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
+                Console.Error.WriteLine("Placeholder credentials detected. POP3 operations are skipped.");
                 return;
             }
 
-            // Create POP3 client and ensure it is disposed properly.
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Subject filter – only messages containing this text will be processed.
+            const string subjectFilter = "Invoice";
+
+            try
             {
-                try
+                using (Pop3Client pop3Client = new Pop3Client(host, username, password))
                 {
-                    // Build a query to find messages whose subject contains the keyword "Invoice".
-                    MailQueryBuilder queryBuilder = new MailQueryBuilder();
-                    queryBuilder.Subject.Contains("Invoice");
-                    MailQuery query = queryBuilder.GetQuery();
+                    // Get total number of messages in the mailbox.
+                    int messageCount = pop3Client.GetMessageCount();
 
-                    // Retrieve information about matching messages.
-                    Pop3MessageInfoCollection messageInfos = client.ListMessages(query);
-
-                    foreach (Pop3MessageInfo info in messageInfos)
+                    for (int i = 1; i <= messageCount; i++)
                     {
-                        // Fetch the full message for each matching entry.
-                        using (MailMessage message = client.FetchMessage(info.SequenceNumber))
+                        // Retrieve basic info for each message.
+                        Pop3MessageInfo messageInfo = pop3Client.GetMessageInfo(i);
+
+                        // Ensure the Subject property is available before checking.
+                        if (!string.IsNullOrEmpty(messageInfo.Subject) &&
+                            messageInfo.Subject.IndexOf(subjectFilter, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
-                            Console.WriteLine($"Subject: {message.Subject}");
-                            Console.WriteLine($"From: {message.From}");
-                            // Additional processing of the message can be performed here.
+                            // Fetch the full message.
+                            MailMessage mailMessage = pop3Client.FetchMessage(i);
+
+                            // Process the matching email – here we simply output key details.
+                            Console.WriteLine("----- Matching Message -----");
+                            Console.WriteLine($"Subject : {mailMessage.Subject}");
+                            Console.WriteLine($"From    : {mailMessage.From}");
+                            Console.WriteLine($"Date    : {mailMessage.Date}");
+                            Console.WriteLine($"Body    : {mailMessage.Body}");
+                            Console.WriteLine("----------------------------");
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during POP3 operations: {ex.Message}");
-                    return;
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred while accessing POP3 server: {ex.Message}");
+            }
         }
     }
 }

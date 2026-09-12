@@ -1,46 +1,23 @@
 using System;
-using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
 
-namespace AsposeEmailOtpSample
+namespace ProgrammingWithGmail
 {
     class Program
     {
         static void Main(string[] args)
         {
-            try
+            Console.Write("Please enter the OTP received via SMS: ");
+            string otp = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(otp))
             {
-                // Placeholder credentials – in real scenario replace with actual values.
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string defaultEmail = "user@example.com";
-
-                // Skip external call when using placeholder credentials.
-                if (clientId == "clientId" && clientSecret == "clientSecret" && refreshToken == "refreshToken")
-                {
-                    Console.Error.WriteLine("Placeholder credentials detected – skipping Gmail client operations.");
-                    return;
-                }
-
-                // Create Gmail client.
-                IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-                using (gmailClient as IDisposable)
-                {
-                    // Prompt user for OTP received via SMS.
-                    Console.Write("Enter OTP received via SMS: ");
-                    string otp = Console.ReadLine();
-
-                    // In a real scenario the OTP would be used for further verification.
-                    Console.WriteLine($"OTP entered: {otp}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine("No OTP entered. Exiting.");
                 return;
             }
+
+            // Here you would normally verify the OTP with your authentication service.
+            // For demonstration, we just acknowledge the input.
+            Console.WriteLine($"OTP entered: {otp}");
         }
     }
 }

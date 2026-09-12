@@ -1,8 +1,8 @@
-using Aspose.Email.Tools.Search;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,66 +10,60 @@ class Program
     {
         try
         {
-            string pstPath = "sample.pst";
+            const string pstPath = "storage.pst";
 
-            // Ensure the PST file exists; create a minimal one if it does not.
             if (!File.Exists(pstPath))
             {
-                try
-                {
-                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Empty PST created.
-                    }
-                    Console.WriteLine($"Created placeholder PST at '{pstPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                return;
             }
 
-            // Open the PST file.
+            // Ensure output directory exists
+            const string outputDir = "output";
+            Directory.CreateDirectory(outputDir);
+
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Display total items count.
-                int totalItems = pst.Store.GetTotalItemsCount();
-                Console.WriteLine($"Total items in PST: {totalItems}");
+                int totalItemsCount = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Total items count: {totalItemsCount}");
 
-                // Iterate through all subfolders of the root folder.
-                foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    Console.WriteLine($"Folder: {folder.DisplayName}");
-                    Console.WriteLine($"  Items: {folder.ContentCount}");
-                    Console.WriteLine($"  Unread: {folder.ContentUnreadCount}");
+                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
 
-                    // Example: search for messages with subject containing "Invoice".
-                    PersonalStorageQueryBuilder queryBuilder = new PersonalStorageQueryBuilder();
-                    queryBuilder.Subject.Contains("Invoice");
-                    MailQuery query = queryBuilder.GetQuery();
-
-                    foreach (MessageInfo msgInfo in folder.EnumerateMessages(query))
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
                     {
-                        Console.WriteLine($"    Message Subject: {msgInfo.Subject}");
-                        Console.WriteLine($"    From: {msgInfo.SenderRepresentativeName}");
-                        Console.WriteLine($"    To: {msgInfo.DisplayTo}");
-                    }
-                }
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
 
-                // Example: search for folders whose display name contains "Archive".
-                foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
-                {
-                    if (folder.DisplayName != null && folder.DisplayName.IndexOf("Archive", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        Console.WriteLine($"Found archive folder: {folder.DisplayName}");
+                        MapiMessage mapiMsg = pst.ExtractMessage(messageInfo);
+
+                        string safeSubject = string.IsNullOrWhiteSpace(mapiMsg.Subject) ? "Untitled" : mapiMsg.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            safeSubject = safeSubject.Replace(c, '_');
+
+                        if (safeSubject.Length > 100)
+                            safeSubject = safeSubject.Substring(0, 100);
+
+                        string outputPath = Path.Combine(outputDir, $"{safeSubject}.msg");
+
+                        try
+                        {
+                            mapiMsg.Save(outputPath);
+                            Console.WriteLine($"Saved message to: {outputPath}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message '{mapiMsg.Subject}': {ex.Message}");
+                        }
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }

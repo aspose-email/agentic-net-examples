@@ -1,42 +1,49 @@
 using System;
 using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    // Author: Aspose.Email example for deleting a task via EWS
+    static void Main(string[] args)
     {
         try
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Guard against placeholder credentials to avoid real network calls
-            if (mailboxUri.Contains("example.com"))
+            // Validate input task URI
+            if (args.Length == 0 || string.IsNullOrWhiteSpace(args[0]))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping network operation.");
+                Console.Error.WriteLine("Please provide the task URI as the first argument.");
                 return;
             }
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                // The URI of the task to be removed (placeholder)
-                string taskUri = "https://exchange.example.com/EWS/Tasks/12345";
+            string taskUri = args[0];
 
+            // EWS service endpoint and credentials
+            string ewsUrl = "https://example.com/EWS/Exchange.asmx";
+
+            // Skip external calls when placeholder credentials are used
+            if (ewsUrl.Contains("example.com"))
+            {
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                return;
+            }
+
+            ICredentials credentials = new NetworkCredential("username", "password");
+
+            // Create EWS client (implements IEWSClient and IDisposable)
+            using (IEWSClient client = EWSClient.GetEWSClient(ewsUrl, credentials))
+            {
                 try
                 {
-                    // Delete the task using DeleteItem (tasks are items in Exchange)
-                    DeletionOptions options = new DeletionOptions();
-                    client.DeleteItem(taskUri, options);
+                    // Delete the task permanently using synchronous method
+                    client.DeleteItem(taskUri, DeletionOptions.DeletePermanently);
                     Console.WriteLine("Task deleted successfully.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to delete task: {ex.Message}");
+                    Console.Error.WriteLine($"Error deleting task: {ex.Message}");
                 }
             }
         }

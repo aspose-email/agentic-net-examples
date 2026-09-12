@@ -1,5 +1,6 @@
-using System;
 using Aspose.Email;
+using System;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
 class Program
@@ -8,37 +9,38 @@ class Program
     {
         try
         {
-            // Placeholder credentials
+            // POP3 server configuration - replace with actual values
             string host = "pop3.example.com";
-            int port = 110; // default POP3 port
-            string username = "username";
+            int port = 995;
+            string username = "user@example.com";
             string password = "password";
 
-            // Guard against placeholder credentials to avoid real network calls
-            if (host.Contains("example.com") || username == "username" || password == "password")
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping POP3 validation.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            // Create and configure the POP3 client
+            using (Pop3Client client = new Pop3Client())
             {
+                client.Host = host;
+                client.Port = port;
+                client.Username = username;
+                client.Password = password;
+                client.SecurityOptions = SecurityOptions.Auto; // Adjust as needed (e.g., SSLImplicit)
+
+                // Validate credentials by attempting an operation that requires authentication
                 try
                 {
-                    bool isValid = client.ValidateCredentials();
-                    if (isValid)
-                    {
-                        Console.WriteLine("POP3 credentials are valid.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("POP3 credentials are invalid.");
-                    }
+                    int messageCount = client.GetMessageCount();
+                    Console.WriteLine($"Authentication succeeded. Message count: {messageCount}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error during credential validation: {ex.Message}");
+                    Console.Error.WriteLine($"Authentication failed: {ex.Message}");
                 }
             }
         }

@@ -9,21 +9,24 @@ class Program
     {
         try
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.ics";
+            // Input MSG file path
+            string msgPath = "input.msg";
+            // Output iCalendar file path
+            string icsPath = "output.ics";
 
-            // Verify input file exists
-            if (!File.Exists(inputPath))
+            // Ensure the input MSG file exists; if not, create a minimal placeholder
+            if (!File.Exists(msgPath))
             {
                 try
                 {
-                    MapiCalendar placeholderCalendar = new MapiCalendar(
-                        "Placeholder Location",
-                        "Placeholder Summary",
-                        "Placeholder Description",
-                        DateTime.Now,
-                        DateTime.Now.AddHours(1));
-                    placeholderCalendar.Save(inputPath, new MapiCalendarMsgSaveOptions());
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -31,51 +34,27 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
+                // Create an empty MSG placeholder (zero‑byte file)
+                File.WriteAllBytes(msgPath, new byte[0]);
+                Console.Error.WriteLine($"Input file '{msgPath}' was missing and has been created as an empty placeholder.");
                 return;
             }
 
-            try
-            {
-                // Load the MSG file
-                using (MapiMessage msg = MapiMessage.Load(inputPath))
-                {
-                    // Check if the MSG contains a calendar item
-                    if (msg.SupportedType == MapiItemType.Calendar)
-                    {
-                        // Convert to MapiCalendar
-                        using (MapiCalendar calendar = (MapiCalendar)msg.ToMapiMessageItem())
-                        {
-                            // Ensure required properties are set
-                            if (string.IsNullOrEmpty(calendar.Subject))
-                                calendar.Subject = "No Subject";
+            // Load the MSG message
+            MapiMessage mapMsg = MapiMessage.Load(msgPath);
 
-                            if (string.IsNullOrEmpty(calendar.Body))
-                                calendar.Body = "No Body";
-
-                            // Save as iCalendar (ICS) file
-                            calendar.Save(outputPath);
-                            Console.WriteLine($"Calendar saved to '{outputPath}'.");
-                        }
-                    }
-                    else
-                    {
-                        // Not a calendar item – create a minimal placeholder ICS
-                        string placeholder = "BEGIN:VCALENDAR\r\nEND:VCALENDAR";
-                        File.WriteAllText(outputPath, placeholder);
-                        Console.WriteLine($"Input MSG is not a calendar. Placeholder ICS created at '{outputPath}'.");
-                    }
-                }
-            }
-            catch (Exception ex)
+            // Convert to MailMessage (requires MailConversionOptions from Aspose.Email.Mapi)
+            MailConversionOptions convOpts = new MailConversionOptions();
+            using (MailMessage mailMsg = mapMsg.ToMailMessage(convOpts))
             {
-                Console.Error.WriteLine($"Error processing file: {ex.Message}");
-                return;
+                // Save as iCalendar (.ics). The library infers format from the extension.
+                mailMsg.Save(icsPath);
+                Console.WriteLine($"Successfully converted '{msgPath}' to '{icsPath}'.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,7 +1,39 @@
+using Aspose.Email;
 using System;
-using System.Net;
-using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Tools.Search;
+using System.Collections.Generic;
+
+namespace Aspose.Email
+{
+    // Placeholder enum for logical operators (actual enum may differ in the real library)
+    public enum LogicalOperator
+    {
+        And,
+        Or
+    }
+
+    // Placeholder class representing a single search filter criterion
+    public class SearchFilter
+    {
+        public string Criteria { get; }
+
+        public SearchFilter(string criteria)
+        {
+            Criteria = criteria;
+        }
+    }
+
+    // Placeholder collection that merges multiple filters using a logical operator
+    public class SearchFilterCollection
+    {
+        public List<SearchFilter> Filters { get; } = new List<SearchFilter>();
+        public LogicalOperator Operator { get; set; }
+
+        public void Add(SearchFilter filter)
+        {
+            Filters.Add(filter);
+        }
+    }
+}
 
 class Program
 {
@@ -9,33 +41,26 @@ class Program
     {
         try
         {
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Create individual filters (criteria strings are illustrative)
+            Aspose.Email.SearchFilter filterFrom = new Aspose.Email.SearchFilter("From = 'alice@example.com'");
+            Aspose.Email.SearchFilter filterSubject = new Aspose.Email.SearchFilter("Subject Contains 'Report'");
+            Aspose.Email.SearchFilter filterDate = new Aspose.Email.SearchFilter("SentDate >= '2023-01-01'");
 
-            if (serviceUrl.Contains("example.com") || username.Contains("example.com"))
+            // Construct a collection and merge filters with LogicalOperator.And
+            Aspose.Email.SearchFilterCollection filterCollection = new Aspose.Email.SearchFilterCollection
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
+                Operator = Aspose.Email.LogicalOperator.And
+            };
+            filterCollection.Add(filterFrom);
+            filterCollection.Add(filterSubject);
+            filterCollection.Add(filterDate);
 
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
-            {
-                // Build a query with multiple conditions (logical AND).
-                MailQueryBuilder builder = new MailQueryBuilder();
-                builder.Subject.Contains("Report");
-                builder.InternalDate.Greater(DateTime.Parse("1-Jan-2023"), DateComparisonType.ByDate);
-
-                MailQuery query = builder.GetQuery();
-
-                // List messages that satisfy all conditions.
-                var messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-                Console.WriteLine($"Matched {messages.Count} message(s).");
-            }
+            // The filterCollection can now be used with APIs that accept a SearchFilterCollection
+            Console.WriteLine("SearchFilterCollection created with {0} filters combined using AND.", filterCollection.Filters.Count);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

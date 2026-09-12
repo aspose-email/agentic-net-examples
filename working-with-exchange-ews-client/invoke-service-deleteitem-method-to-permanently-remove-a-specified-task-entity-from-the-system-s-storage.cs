@@ -1,6 +1,6 @@
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
@@ -9,27 +9,29 @@ class Program
     {
         try
         {
-            // Placeholder connection details
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
+            // EWS service endpoint and credentials
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
             string password = "password";
 
-            // Skip execution when placeholders are detected
-            if (serviceUrl.Contains("example.com") || username == "username" || password == "password")
+            // Create the EWS client (implements IEWSClient)
+            using (IEWSClient service = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
+                // URI of the task to be deleted
+                string taskItemUri = "https://outlook.office365.com/EWS/Exchange.asmx/Tasks/12345";
 
-            // Create the EWS client
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
-            {
-                // URI of the task to be permanently deleted
-                string taskUri = "https://exchange.example.com/EWS/Exchange.asmx/Tasks/12345";
 
-                // Perform permanent deletion
-                client.DeleteItem(taskUri, DeletionOptions.DeletePermanently);
-                Console.WriteLine("Task deleted permanently.");
+                // Skip external calls when placeholder credentials are used
+                if (username.Contains("example.com") || password == "password")
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Permanently delete the task
+                service.DeleteItem(taskItemUri, DeletionOptions.DeletePermanently);
+
+                Console.WriteLine("Task deleted successfully.");
             }
         }
         catch (Exception ex)

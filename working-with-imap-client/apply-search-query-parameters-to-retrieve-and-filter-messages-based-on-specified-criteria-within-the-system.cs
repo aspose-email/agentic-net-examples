@@ -1,65 +1,56 @@
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
 
-class Program
+namespace AsposeEmailSearchExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder IMAP server credentials
-            string host = "imap.example.com";
-            int port = 993;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip real connection when placeholders are used
-            if (host.Contains("example.com"))
+            // Author note: This example demonstrates how to apply a MailQuery to filter IMAP messages.
+            try
             {
-                Console.WriteLine("Placeholder IMAP server detected. Skipping connection.");
-                return;
-            }
+                // IMAP server connection parameters (replace with real values).
+                string host = "imap.example.com";
+                int port = 993;
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create and connect the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-            {
-                try
+
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    // Select the folder to search
-                    client.SelectFolder("INBOX");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
 
-                    // Build the search query (e.g., subject contains "Report" and from contains "alice@example.com")
-                    ImapQueryBuilder builder = new ImapQueryBuilder();
-                    builder.Subject.Contains("Report");
-                    builder.From.Contains("alice@example.com");
-                    MailQuery query = builder.GetQuery();
+                // Create the IMAP client with automatic SSL security.
+                using (ImapClient imapClient = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+                {
+                    // Define a search query: unread messages with "Invoice" in the subject.
+                    MailQuery query = new MailQuery("(('Subject' Contains 'Invoice') & 'Seen' = 'False')");
 
-                    // Retrieve messages matching the query
-                    ImapMessageInfoCollection messages = client.ListMessages(query);
+                    // Retrieve messages that match the query from the currently selected folder (INBOX by default).
+                    ImapMessageInfoCollection messages = imapClient.ListMessages(query);
 
-                    // Process each matching message
-                    foreach (ImapMessageInfo info in messages)
+                    // Output basic information about each matched message.
+                    foreach (ImapMessageInfo messageInfo in messages)
                     {
-                        using (MailMessage message = client.FetchMessage(info.UniqueId))
-                        {
-                            Console.WriteLine($"Subject: {message.Subject}");
-                            Console.WriteLine($"From: {message.From}");
-                            Console.WriteLine();
-                        }
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+                        Console.WriteLine($"From: {messageInfo.From}");
+                        Console.WriteLine($"Date: {messageInfo.Date}");
+                        Console.WriteLine(new string('-', 40));
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Gracefully exit without rethrowing.
+            }
         }
     }
 }

@@ -1,58 +1,30 @@
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Tools.Verifications;
 
 class Program
 {
     static void Main()
     {
-        try
+        // Author: Aspose.Email example - Email address syntax validation
+        string[] emailAddresses = new string[]
         {
-            // Create an EmailValidator instance
-            EmailValidator validator = new EmailValidator();
+            "user@example.com",
+            "invalid-email",
+            "test@domain",
+            "john.doe@sub.example.co.uk"
+        };
 
-            // List of email addresses to validate
-            string[] emailAddresses = new string[]
-            {
-                "valid.user@example.com",
-                "invalid-email",
-                "another.valid+tag@sub.domain.org",
-                "bad@domain",
-                "user@.com"
-            };
+        EmailValidator validator = new EmailValidator();
 
-            foreach (string email in emailAddresses)
-            {
-                ValidationResult result;
-                validator.Validate(email, out result);
-
-                Console.WriteLine($"Email: {email}");
-                if (result.ReturnCode == ValidationResponseCode.ValidationSuccess)
-                {
-                    Console.WriteLine("  Status: Valid");
-                }
-                else if (result.ReturnCode == ValidationResponseCode.SyntaxValidationFailed)
-                {
-                    Console.WriteLine("  Status: Invalid syntax");
-                }
-                else if (result.ReturnCode == ValidationResponseCode.DomainValidationFailed)
-                {
-                    Console.WriteLine("  Status: Invalid domain");
-                }
-                else
-                {
-                    Console.WriteLine($"  Status: Validation error (Code: {result.ReturnCode})");
-                }
-
-                if (!string.IsNullOrEmpty(result.Message))
-                {
-                    Console.WriteLine($"  Details: {result.Message}");
-                }
-            }
-        }
-        catch (Exception ex)
+        foreach (string address in emailAddresses)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            ValidationResult result;
+            // Validate using syntax‑only policy
+            validator.Validate(address, ValidationPolicy.SyntaxOnly, out result);
+
+            bool isValid = result.ReturnCode == ValidationResponseCode.ValidationSuccess;
+            Console.WriteLine($"{address} => {(isValid ? "Valid" : "Invalid")}");
         }
     }
 }

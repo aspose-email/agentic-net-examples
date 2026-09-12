@@ -1,56 +1,52 @@
-using Aspose.Email.Tools.Search;
 using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Tools.Search;
+using Aspose.Email.Mime;
 
-class Program
+namespace AsposeEmailAqsSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard against executing with placeholder credentials
-            if (mailboxUri.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operation.");
-                return;
-            }
+                string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create EWS client inside a using block to ensure disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                try
+                if (username.Contains("example.com") || password == "password")
                 {
-                    // Build an AQS query (e.g., find messages with subject containing "Report")
-                    ExchangeAdvancedSyntaxQueryBuilder builder = new ExchangeAdvancedSyntaxQueryBuilder();
-                    builder.Subject.Contains("Report");
-                    MailQuery query = builder.GetQuery();
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
 
-                    // Perform the query against the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    string inboxUri = mailboxInfo.InboxUri;
 
-                    // Output the subjects of the matching messages
-                    foreach (ExchangeMessageInfo info in messages)
+                    ExchangeAdvancedSyntaxMailQuery query = new ExchangeAdvancedSyntaxMailQuery("(From:'john@example.com' AND Subject:'Report')");
+
+                    ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri, query);
+
+                    foreach (ExchangeMessageInfo messageInfo in messages)
                     {
-                        Console.WriteLine("Subject: " + info.Subject);
+                        MailMessage message = client.FetchMessage(messageInfo.UniqueUri);
+                        Console.WriteLine($"Subject: {message.Subject}");
+                        Console.WriteLine($"From: {message.From}");
+                        Console.WriteLine($"Sent: {messageInfo.InternalDate}");
+                        Console.WriteLine(new string('-', 40));
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Error during query execution: " + ex.Message);
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return;
+            }
         }
     }
 }

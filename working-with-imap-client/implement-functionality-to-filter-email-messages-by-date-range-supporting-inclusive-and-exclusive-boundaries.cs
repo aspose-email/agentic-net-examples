@@ -1,62 +1,63 @@
 using Aspose.Email.Clients;
-using System;
 using Aspose.Email;
 using Aspose.Email.Clients.Imap;
 using Aspose.Email.Tools.Search;
+using System;
 
-class Program
+namespace ImapDateRangeFilter
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder IMAP server details
+            // Author: Aspose.Email example – filter IMAP messages by date range.
+            // Adjust these credentials and server details as needed.
             string host = "imap.example.com";
             int port = 993;
             string username = "user@example.com";
             string password = "password";
 
-            // Guard against executing with placeholder credentials
-            if (host.Contains("example.com"))
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine("Placeholder IMAP server details detected. Skipping execution.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create and connect the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            // Define the date range.
+            // Inclusive start (>=) and exclusive end (<) boundaries.
+            DateTime startDateInclusive = new DateTime(2023, 1, 1);
+            DateTime endDateExclusive = new DateTime(2023, 2, 1);
+
+            // Build the query using MailQueryBuilder.
+            MailQueryBuilder builder = new MailQueryBuilder();
+            builder.SentDate.Since(startDateInclusive);   // SentDate >= startDateInclusive
+            builder.SentDate.Before(endDateExclusive);    // SentDate < endDateExclusive
+            MailQuery dateRangeQuery = builder.GetQuery();
+
+            try
             {
-                try
+                // Create and configure the IMAP client.
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
                 {
-                    // Define the date range (inclusive)
-                    DateTime startDate = new DateTime(2023, 1, 1);
-                    DateTime endDate = new DateTime(2023, 12, 31);
+                    // Select the folder to search (INBOX by default, but explicit selection is clearer).
+                    client.SelectFolder("INBOX");
 
-                    // Build a MailQuery for the date range
-                    string queryString = $"('SentDate' >= '{startDate:dd-MMM-yyyy}' AND 'SentDate' <= '{endDate:dd-MMM-yyyy}')";
-                    MailQuery query = new MailQuery(queryString);
+                    // Retrieve messages that match the date range query.
+                    ImapMessageInfoCollection messages = client.ListMessages(dateRangeQuery);
 
-                    // Retrieve messages that match the query
-                    ImapMessageInfoCollection messages = client.ListMessages(query);
-
-                    // Output basic information about each message
+                    Console.WriteLine($"Found {messages.Count} message(s) between {startDateInclusive:yyyy-MM-dd} and {endDateExclusive:yyyy-MM-dd} (exclusive).");
                     foreach (ImapMessageInfo info in messages)
                     {
-                        Console.WriteLine($"Subject: {info.Subject}");
-                        Console.WriteLine($"Sent Date: {info.Date}");
-                        Console.WriteLine(new string('-', 40));
+                        // ImapMessageInfo uses the 'Date' property for the message's internal date.
+                        Console.WriteLine($"UID: {info.UniqueId}, Subject: {info.Subject}, Sent: {info.Date}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
-                    return;
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during IMAP operation: {ex.Message}");
+            }
         }
     }
 }

@@ -1,49 +1,48 @@
 using System;
-using System.Net;
-using Aspose.Email;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        // Top‑level exception guard
         try
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
 
-            // Create the EWS client using the correct factory method
-            try
+            if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(clientSecret) || clientSecret.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(refreshToken) || refreshToken.StartsWith("YOUR_"))
             {
-                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-                {
-                    // Placeholder conversation identifier
-                    string conversationId = "conversation-id";
+                Console.Error.WriteLine("Provide valid OAuth credentials.");
+                return;
+            }
 
-                    // Attempt to delete all items belonging to the conversation permanently
-                    try
+            using (TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken))
+            {
+                OAuthNetworkCredential credentials = new OAuthNetworkCredential(tokenProvider);
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
+                {
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                    Console.WriteLine("Mailbox URI: " + mailboxInfo.MailboxUri);
+                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                    Console.WriteLine("Drafts URI: " + mailboxInfo.DraftsUri);
+
+                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
+                    foreach (ExchangeMessageInfo message in messages)
                     {
-                        client.DeleteConversationItems(conversationId);
-                        Console.WriteLine("All messages in the conversation have been permanently deleted.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to delete conversation items: {ex.Message}");
+                        Console.WriteLine(message.Subject);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to connect to Exchange server: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

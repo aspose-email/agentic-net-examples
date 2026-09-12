@@ -8,14 +8,15 @@ class Program
     {
         try
         {
-            string attachmentPath = "sample.txt";
+            // Path to the attachment file
+            string attachmentPath = "1.txt";
 
             // Ensure the attachment file exists; create a minimal placeholder if missing
             if (!File.Exists(attachmentPath))
             {
                 try
                 {
-                    File.WriteAllText(attachmentPath, "Sample attachment content");
+                    File.WriteAllText(attachmentPath, "Placeholder attachment content.");
                 }
                 catch (Exception ex)
                 {
@@ -24,25 +25,24 @@ class Program
                 }
             }
 
-            // Create the email message
+            // Create a new MailMessage instance
             using (MailMessage message = new MailMessage())
             {
-                message.From = "sender@example.com";
-                message.To = "receiver@example.com";
-                message.Subject = "Test message with attachment";
-                message.Body = "Please see the attached file.";
+                message.From = "sender@from.com";
+                message.To = "receiver@to.com";
+                message.Subject = "This is message";
+                message.Body = "This is body";
 
-                // Load and add the attachment
-                using (Attachment attachment = new Attachment(attachmentPath))
-                {
-                    message.Attachments.Add(attachment);
-                }
+                // Load the attachment and add it to the message
+                Attachment attachment = new Attachment(attachmentPath);
+                message.Attachments.Add(attachment);
 
-                // Prepare output directory and file path
-                string outputDirectory = "output";
-                string outputPath = Path.Combine(outputDirectory, "MessageWithAttachment.msg");
+                // Define output MSG file path
+                string outputPath = "MessageWithAttachment.msg";
 
-                if (!Directory.Exists(outputDirectory))
+                // Ensure the output directory exists
+                string outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
                 {
                     try
                     {
@@ -58,15 +58,13 @@ class Program
                 // Save the message as MSG
                 try
                 {
-                    message.Save(outputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    message.Save(outputPath);
+                    Console.WriteLine($"Message saved to {outputPath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to save message: {ex.Message}");
                 }
-
-                Console.WriteLine($"Message saved to {outputPath}");
             }
         }
         catch (Exception ex)

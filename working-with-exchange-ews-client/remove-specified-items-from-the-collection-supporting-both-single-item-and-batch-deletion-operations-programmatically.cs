@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -10,58 +10,37 @@ class Program
     {
         try
         {
-            // Placeholder connection details – replace with real values.
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Initialize the EWS client (replace with real credentials and URL)
+            string serviceUrl = "https://ews.example.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Skip execution when placeholder credentials are detected.
-            if (mailboxUri.Contains("example.com"))
+            IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password);
+
+            // ----- Single-item deletion -----
+            string singleItemUri = "https://ews.example.com/EWS/Item/12345";
+
+            // Skip external calls when placeholder credentials are used
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password" || singleItemUri.Contains("example.com"))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping execution.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client inside a using block to ensure disposal.
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            client.DeleteItems(new List<string> { singleItemUri }, DeletionOptions.DeletePermanently);
+
+            // ----- Batch deletion (multiple items) -----
+            List<string> batchItemUris = new List<string>
             {
-                try
-                {
-                    // Prepare deletion options – move items to Deleted Items folder.
-                    DeletionOptions deleteOptions = new DeletionOptions(DeletionType.MoveToDeletedItems);
-
-                    // ---------- Single item deletion ----------
-                    // URI of the message to delete.
-                    string singleMessageUri = "https://exchange.example.com/EWS/Exchange.asmx/Message/AAAkAD...";
-
-                    // Delete a single message.
-                    client.DeleteItem(singleMessageUri, deleteOptions);
-                    Console.WriteLine("Single message deleted successfully.");
-
-                    // ---------- Batch deletion ----------
-                    // URIs of the messages to delete.
-                    List<string> messageUris = new List<string>
-                    {
-                        "https://exchange.example.com/EWS/Exchange.asmx/Message/AAAkAD...1",
-                        "https://exchange.example.com/EWS/Exchange.asmx/Message/AAAkAD...2",
-                        "https://exchange.example.com/EWS/Exchange.asmx/Message/AAAkAD...3"
-                    };
-
-                    // Delete multiple messages in one call.
-                    client.DeleteItems(messageUris, deleteOptions);
-                    Console.WriteLine("Batch messages deleted successfully.");
-                }
-                catch (Exception ex)
-                {
-                    // Handle errors that occur during client operations.
-                    Console.Error.WriteLine($"Error during deletion: {ex.Message}");
-                }
-            }
+                "https://ews.example.com/EWS/Item/12346",
+                "https://ews.example.com/EWS/Item/12347",
+                "https://ews.example.com/EWS/Item/12348"
+            };
+            client.DeleteItems(batchItemUris, DeletionOptions.DeletePermanently);
         }
         catch (Exception ex)
         {
-            // Top‑level exception guard.
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,15 +1,18 @@
+using Aspose.Email;
+// Author: Aspose.Email example - retrieve body, metadata, and attachments from a MSG file
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             string msgPath = "sample.msg";
+
+            // Verify the input MSG file exists
             if (!File.Exists(msgPath))
             {
                 try
@@ -29,48 +32,52 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Message file '{msgPath}' does not exist.");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
+            // Ensure a directory exists for extracted attachments
             string attachmentsDir = "Attachments";
-            if (!Directory.Exists(attachmentsDir))
+            try
             {
-                Directory.CreateDirectory(attachmentsDir);
+                if (!Directory.Exists(attachmentsDir))
+                {
+                    Directory.CreateDirectory(attachmentsDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create attachments directory: {ex.Message}");
+                return;
             }
 
+            // Load the MSG file
             using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                // Metadata
-                Console.WriteLine($"Subject: {msg.Subject}");
-                Console.WriteLine($"From: {msg.SenderEmailAddress}");
-                Console.WriteLine($"Sent: {msg.DeliveryTime}");
-                Console.WriteLine($"Body: {msg.Body}");
-                Console.WriteLine($"HTML Body Length: {(msg.BodyHtml != null ? msg.BodyHtml.Length : 0)}");
-                Console.WriteLine($"Attachments Count: {(msg.Attachments != null ? msg.Attachments.Count : 0)}");
+                // Output basic metadata
+                Console.WriteLine("Subject: " + msg.Subject);
+                Console.WriteLine("From: " + msg.SenderName);
+                Console.WriteLine("Body: " + msg.Body);
 
-                // Attachments
-                if (msg.Attachments != null)
+                // Iterate through attachments and save each one
+                foreach (MapiAttachment attachment in msg.Attachments)
                 {
-                    foreach (MapiAttachment attachment in msg.Attachments)
+                    string attachmentPath = Path.Combine(attachmentsDir, attachment.FileName);
+                    try
                     {
-                        string attachmentPath = Path.Combine(attachmentsDir, attachment.FileName);
-                        try
-                        {
-                            attachment.Save(attachmentPath);
-                            Console.WriteLine($"Saved attachment: {attachment.FileName}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
-                        }
+                        attachment.Save(attachmentPath);
+                        Console.WriteLine($"Saved attachment: {attachmentPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ex.Message}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

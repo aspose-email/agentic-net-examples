@@ -1,68 +1,50 @@
-using Aspose.Email.Clients;
 using System;
-using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
-class Program
+namespace ImapAsyncExample
 {
-    static async System.Threading.Tasks.Task Main(string[] args)
+    class Program
     {
-        try
+        static async Task Main(string[] args)
         {
-            // Placeholder IMAP server details
-            string host = "imap.example.com";
+            // Placeholder credentials – replace with real values to run against an IMAP server
+            string host = "your_imap_host";
             int port = 993;
-            string username = "user@example.com";
-            string password = "password";
+            string username = "your_username";
+            string password = "your_password";
 
-            // Skip real network call when placeholders are used
-            if (host.Contains("example.com"))
+            // Guard against executing network calls with placeholder data
+            if (host.StartsWith("your_") || username.StartsWith("your_") || password.StartsWith("your_"))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping IMAP operations.");
+                Console.Error.WriteLine("Placeholder IMAP credentials detected. Skipping network operations.");
                 return;
             }
 
-            // Create and connect the IMAP client
-            using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
+            try
             {
-                try
+                // Create and configure the IMAP client (auto‑connects on first operation)
+                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
                 {
-                    // Asynchronously list messages in the INBOX folder
-                    ImapMessageInfoCollection messageInfos = await client.ListMessagesAsync("INBOX", false, null, CancellationToken.None);
+                    // Asynchronously retrieve the list of messages in the INBOX folder
+                    ImapMessageInfoCollection messageInfos = await client.ListMessagesAsync("INBOX");
+                    Console.WriteLine($"Total messages in INBOX: {messageInfos.Count}");
 
-                    List<MailMessage> messages = new List<MailMessage>();
-
-                    // Fetch each message asynchronously using its UniqueId
-                    foreach (ImapMessageInfo info in messageInfos)
+                    // Display subjects of the first few messages without fetching full content
+                    int messagesToShow = Math.Min(5, messageInfos.Count);
+                    for (int i = 0; i < messagesToShow; i++)
                     {
-                        MailMessage message = await client.FetchMessageAsync(info.UniqueId, CancellationToken.None);
-                        messages.Add(message);
+                        ImapMessageInfo info = messageInfos[i];
+                        Console.WriteLine($"Subject: {info.Subject}");
                     }
-
-                    // Output subjects of retrieved messages
-                    foreach (MailMessage msg in messages)
-                    {
-                        Console.WriteLine($"Subject: {msg.Subject}");
-                    }
-                }
-                catch (ImapException imapEx)
-                {
-                    Console.Error.WriteLine($"IMAP error: {imapEx.Message}");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                    return;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Fatal error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"IMAP operation failed: {ex.Message}");
+            }
         }
     }
 }

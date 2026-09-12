@@ -1,39 +1,41 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mime;
 
-class Program
+namespace EmailSerializationSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Create a mail message
-            using (MailMessage message = new MailMessage())
+            try
             {
-                message.From = "sender@example.com";
-                message.To.Add("recipient@example.com");
-                message.Subject = "Test Email";
+                // Create a simple email message
+                MailMessage message = new MailMessage();
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Test Message";
                 message.Body = "This is a test email.";
 
                 // Serialize the message into a memory stream
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    // Save the message in EML format to the stream
-                    message.Save(memoryStream, SaveOptions.DefaultEml);
+                    // Use default EML save options for in‑memory saving
+                    SaveOptions emlOptions = SaveOptions.DefaultEml;
+                    message.Save(memoryStream, emlOptions);
 
-                    // Reset the stream position for further processing if needed
+                    // Reset the stream position for any subsequent read operations
                     memoryStream.Position = 0;
 
-                    // Example: obtain the serialized bytes
-                    byte[] emailBytes = memoryStream.ToArray();
-                    Console.WriteLine($"Serialized email size: {emailBytes.Length} bytes");
+                    // Example: output the size of the serialized message
+                    Console.WriteLine($"Serialized message size: {memoryStream.Length} bytes");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

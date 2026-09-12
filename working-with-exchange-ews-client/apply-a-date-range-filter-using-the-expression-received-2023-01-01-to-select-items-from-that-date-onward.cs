@@ -1,7 +1,6 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Tools.Search;
 
@@ -11,50 +10,36 @@ class Program
     {
         try
         {
-            // Placeholder connection details
-            string mailboxUri = "https://example.com/EWS";
-            string username = "user@example.com";
+            // Initialize EWS client (replace with actual service URL and credentials)
+            string mailboxUri = "https://ews.example.com/EWS/Exchange.asmx";
+            string username = "username";
             string password = "password";
 
-            // Guard against real network calls with placeholder credentials
-            if (mailboxUri.Contains("example.com"))
+            // Skip external calls when placeholder credentials are used
+            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client
             using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
             {
-                try
-                {
-                    // Build a date filter for items on or after 2023-01-01
-                    MailQueryBuilder builder = new MailQueryBuilder();
-                    builder.InternalDate.Since(new DateTime(2023, 1, 1));
-                    MailQuery query = builder.GetQuery();
+                // Build a query to select messages received on or after 2023-01-01
+                MailQuery query = new MailQuery("Date >= '2023-01-01'");
 
-                    // List messages from the Inbox that satisfy the date filter
-                    ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
+                // Retrieve messages from the Inbox that match the query
+                ExchangeMessageInfoCollection messages = client.ListMessages("Inbox", query);
 
-                    foreach (var messageInfo in messages)
-                    {
-                        // Fetch the full message to access its properties
-                        MailMessage message = client.FetchMessage(messageInfo.UniqueUri);
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        // Dispose the fetched message
-                        message.Dispose();
-                    }
-                }
-                catch (Exception ex)
+                // Output basic information about each matching message
+                foreach (ExchangeMessageInfo info in messages)
                 {
-                    Console.Error.WriteLine($"EWS operation failed: {ex.Message}");
-                    return;
+                    Console.WriteLine($"Subject: {info.Subject}, Received: {info.InternalDate}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

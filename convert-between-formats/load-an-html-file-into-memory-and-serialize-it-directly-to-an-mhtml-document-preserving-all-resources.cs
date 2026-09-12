@@ -4,51 +4,58 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string inputPath = "input.html";
-            string outputPath = "output.mht";
+            // Author note: Example demonstrates loading an HTML file and saving it as MHTML with embedded resources.
+            string inputHtmlPath = "input.html";
+            string outputMhtmlPath = "output.mhtml";
 
-            // Ensure the input HTML file exists; create a minimal placeholder if missing.
-            if (!File.Exists(inputPath))
+            // Verify input file exists
+            if (!File.Exists(inputHtmlPath))
             {
                 try
                 {
-                    File.WriteAllText(inputPath, "<html><body><p>Placeholder</p></body></html>");
-                    Console.WriteLine($"Created placeholder HTML file at '{inputPath}'.");
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputHtmlPath, SaveOptions.DefaultEml);
+                    }
                 }
-                catch (Exception createEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder HTML file: {createEx.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
+
+                Console.Error.WriteLine($"Input file not found: {inputHtmlPath}");
+                return;
             }
 
-            // Ensure the output directory exists.
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputMhtmlPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the HTML file into a MailMessage.
-            using (MailMessage mailMessage = MailMessage.Load(inputPath, new HtmlLoadOptions()))
+            // Load HTML with options to locate resources
+            HtmlLoadOptions htmlLoadOptions = new HtmlLoadOptions
             {
-                // Save the message as MHTML, preserving all resources.
-                mailMessage.Save(outputPath, SaveOptions.DefaultMhtml);
+                PathToResources = Path.GetDirectoryName(inputHtmlPath)
+            };
+
+            using (MailMessage mailMessage = MailMessage.Load(inputHtmlPath, htmlLoadOptions))
+            {
+                // Save as MHTML using default options (preserves resources)
+                mailMessage.Save(outputMhtmlPath, SaveOptions.DefaultMhtml);
             }
 
-            Console.WriteLine($"HTML successfully converted to MHTML at '{outputPath}'.");
+            Console.WriteLine($"Successfully saved MHTML to: {outputMhtmlPath}");
         }
         catch (Exception ex)
         {

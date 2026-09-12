@@ -1,48 +1,45 @@
 using Aspose.Email.PersonalInfo;
-using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Clients.Exchange.WebService;
+using System;
 
 class Program
 {
     static void Main()
     {
+        // Replace with your actual Exchange service URL and credentials
+        const string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+        const string username   = "user@example.com";
+        const string password   = "password";
+
+        // The unique identifier (URI) of the contact to delete
+        const string contactUri = "https://exchange.example.com/EWS/Contacts/ContactId";
+
+        // Guard: skip external calls when placeholder values are detected
+        bool hasPlaceholders = serviceUrl.Contains("example.com") ||
+                               username.Contains("example.com") ||
+                               password == "password";
+
+        if (hasPlaceholders)
+        {
+            Console.WriteLine("Placeholder credentials detected. Skipping contact deletion.");
+            return;
+        }
+
         try
         {
-            // Placeholder credentials
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string userEmail = "user@example.com";
-
-            // Guard against placeholder credentials
-            if (clientId == "clientId" || clientSecret == "clientSecret" || refreshToken == "refreshToken")
+            // Create the Exchange Web Services client (IDisposable)
+            using (IEWSClient exchangeClient = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping contact deletion.");
-                return;
+                // Delete the contact using the generic DeleteItem method
+                exchangeClient.DeleteItem(contactUri, new DeletionOptions(DeletionType.Default));
             }
 
-            // Initialize Gmail client
-            using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, userEmail))
-            {
-                // URI of the contact to delete (replace with actual contact URI)
-                string contactUri = "https://www.googleapis.com/m8/feeds/contacts/default/full/1234567890abcdef";
-
-                // Guard against placeholder contact URI
-                if (contactUri.Contains("example") || contactUri.Contains("placeholder"))
-                {
-                    Console.Error.WriteLine("Placeholder contact URI detected. Skipping deletion.");
-                    return;
-                }
-
-                // Delete the contact
-                gmailClient.DeleteContact(contactUri);
-                Console.WriteLine("Contact deleted successfully.");
-            }
+            Console.WriteLine("Contact deleted successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Error deleting contact: {ex.Message}");
         }
     }
 }

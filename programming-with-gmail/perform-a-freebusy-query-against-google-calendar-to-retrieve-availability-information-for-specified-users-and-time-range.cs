@@ -4,100 +4,96 @@ using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Google;
 
-namespace FreeBusySample
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // ----- Configuration (replace with real values) -----
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string defaultEmail = "YOUR_EMAIL@example.com";
+
+            // Guard against placeholder values
+            if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(clientSecret) || clientSecret.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(refreshToken) || refreshToken.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(defaultEmail) || defaultEmail.StartsWith("YOUR_"))
             {
-                // Placeholder credentials – replace with real values to perform the query.
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string defaultEmail = "user@example.com";
+                Console.Error.WriteLine("Please replace placeholder configuration values with real credentials.");
+                return;
+            }
 
-                // Guard against executing network calls with placeholder credentials.
-                if (clientId == "clientId" ||
-                    clientSecret == "clientSecret" ||
-                    refreshToken == "refreshToken" ||
-                    defaultEmail == "user@example.com")
-                {
-                    Console.WriteLine("Placeholder credentials detected. Skipping free/busy query.");
-                    return;
-                }
+            // ----- Obtain OAuth access token -----
+            Aspose.Email.Clients.ITokenProvider tokenProvider = TokenProvider.Google.GetInstance(clientId, clientSecret, refreshToken);
+            OAuthToken oauthToken = tokenProvider.GetAccessToken();
+            string accessToken = oauthToken.Token;
 
-                // Create Gmail client.
-                IGmailClient gmailClient = null;
+            // ----- Create Gmail client -----
+            using (IGmailClient gmailClient = GmailClient.GetInstance(accessToken, defaultEmail))
+            {
                 try
                 {
-                    gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create Gmail client: {ex.Message}");
-                    return;
-                }
+                    // Define the time range for the free/busy query
+                    DateTime start = DateTime.UtcNow;
+                    DateTime end = start.AddHours(8);
 
-                using (gmailClient)
-                {
-                    // Define the time range for the free/busy query.
-                    DateTime timeMin = DateTime.UtcNow;
-                    DateTime timeMax = timeMin.AddHours(2);
+                    // List of calendar IDs (email addresses) to query
+                    string[] calendars = new string[] { "user1@example.com", "user2@example.com" };
 
-                    // List of calendar identifiers (email addresses) to query.
-                    List<string> calendarIds = new List<string>
-                    {
-                        "user1@example.com",
-                        "user2@example.com"
-                    };
+                    // Build the query
+                    FreebusyQuery query = new FreebusyQuery(start, end, calendars);
 
-                    // Build the free/busy query.
-                    FreebusyQuery query = new FreebusyQuery(timeMin, timeMax, calendarIds);
+                    // Execute the query
+                    FreebusyResponse response = gmailClient.GetFreebusyInfo(query);
 
-                    // Execute the query.
-                    FreebusyResponse response = null;
-                    try
-                    {
-                        response = gmailClient.GetFreebusyInfo(query);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to retrieve free/busy information: {ex.Message}");
-                        return;
-                    }
-
-                    // Process and display the results.
+                    // Process and display the results
                     if (response != null && response.Calendars != null)
                     {
-                        foreach (KeyValuePair<string, FreebusyCalendarInfo> calendarEntry in response.Calendars)
+                        foreach (KeyValuePair<string, FreebusyCalendarInfo> kvp in response.Calendars)
                         {
-                            Console.WriteLine($"Calendar ID: {calendarEntry.Key}");
-                            FreebusyCalendarInfo calendarInfo = calendarEntry.Value;
-                            if (calendarInfo != null && calendarInfo.Busy != null)
+                            FreebusyCalendarInfo calendarInfo = kvp.Value;
+                            Console.WriteLine($"Calendar: {calendarInfo.CalendarId}");
+
+                            // Print any errors associated with this calendar
+                            if (calendarInfo.Errors != null)
+                            {
+                                foreach (ErrorDetails err in calendarInfo.Errors)
+                                {
+                                    Console.WriteLine($"  Error: {err}");
+                                }
+                            }
+
+                            // Print busy time ranges
+                            if (calendarInfo.Busy != null)
                             {
                                 foreach (Aspose.Email.Clients.Google.Range busyRange in calendarInfo.Busy)
                                 {
                                     Console.WriteLine($"  Busy from {busyRange.Start} to {busyRange.End}");
                                 }
                             }
-                            else
-                            {
-                                Console.WriteLine("  No busy periods returned.");
-                            }
                         }
                     }
                     else
                     {
-                        Console.WriteLine("No free/busy data returned.");
+                        Console.WriteLine("No free/busy information returned.");
                     }
                 }
+                catch (GoogleClientException gex)
+                {
+                    Console.Error.WriteLine($"Google client error (code {gex.ErrorCode}): {gex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Fatal error: {ex.Message}");
         }
     }
 }

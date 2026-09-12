@@ -1,49 +1,47 @@
-using System;
-using System.Net;
 using Aspose.Email;
+using System;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailEwsDeleteFolderExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard against executing with placeholder credentials
-            if (mailboxUri.Contains("example.com") || username == "username" || password == "password")
+            try
             {
-                Console.WriteLine("Skipping execution because placeholder credentials are used.");
-                return;
-            }
+                // Replace with your actual Exchange Web Services URL and credentials
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Target folder URI to delete (example: Inbox subfolder)
-            string folderUri = "https://exchange.example.com/EWS/Exchange.asmx/Inbox/TargetFolder";
 
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                try
+                // Skip external calls when placeholder credentials are used
+                if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    // Delete the specified folder
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Create the EWS client (returns an IEWSClient implementation)
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
+                {
+                    // Obtain mailbox information to retrieve a folder URI.
+                    // In a real scenario, replace mailboxInfo.InboxUri with the URI of the folder you intend to delete.
+                    var mailboxInfo = client.GetMailboxInfo();
+                    string folderUri = mailboxInfo.InboxUri;
+
+                    // Delete the specified folder. This moves the folder to Deleted Items.
                     client.DeleteFolder(folderUri);
-                    Console.WriteLine($"Folder '{folderUri}' deleted successfully.");
-                }
-                catch (Exception ex)
-                {
-                    // Handle errors related to the DeleteFolder operation
-                    Console.Error.WriteLine($"Error deleting folder: {ex.Message}");
+
+                    Console.WriteLine($"Folder '{folderUri}' has been deleted (moved to Deleted Items).");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // Top‑level exception guard
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Gracefully report any errors.
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

@@ -8,61 +8,39 @@ class Program
     {
         try
         {
-            // Prepare output directory
-            string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "Output");
-            if (!Directory.Exists(outputDir))
+            // Ensure the output directory exists
+            string outputDirectory = "Output";
+            if (!Directory.Exists(outputDirectory))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(outputDirectory);
             }
 
-            // Create a simple email message
-            using (MailMessage message = new MailMessage())
+            // Create and configure a simple email message
+            using (MailMessage mailMessage = new MailMessage())
             {
-                message.From = new MailAddress("sender@example.com", "Sender");
-                message.To.Add(new MailAddress("recipient@example.com", "Recipient"));
-                message.Subject = "Sample Email";
-                message.Body = "This is a sample email message created with Aspose.Email.";
+                mailMessage.From = new MailAddress("sender@example.com");
+                mailMessage.To.Add(new MailAddress("recipient@example.com"));
+                mailMessage.Subject = "Sample Email";
+                mailMessage.Body = "This is a sample email body.";
 
                 // Save as EML
-                string emlPath = Path.Combine(outputDir, "sample.eml");
-                try
-                {
-                    message.Save(emlPath, SaveOptions.DefaultEml);
-                    Console.WriteLine($"EML saved to: {emlPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save EML: {ex.Message}");
-                }
+                string emlPath = Path.Combine(outputDirectory, "sample.eml");
+                mailMessage.Save(emlPath, SaveOptions.DefaultEml);
 
-                // Save as MSG
-                string msgPath = Path.Combine(outputDir, "sample.msg");
-                try
-                {
-                    message.Save(msgPath, SaveOptions.DefaultMsg);
-                    Console.WriteLine($"MSG saved to: {msgPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG: {ex.Message}");
-                }
+                // Save as MSG (Unicode)
+                string msgPath = Path.Combine(outputDirectory, "sample.msg");
+                mailMessage.Save(msgPath, SaveOptions.DefaultMsgUnicode);
 
                 // Save as MHTML
-                string mhtmlPath = Path.Combine(outputDir, "sample.mhtml");
-                try
-                {
-                    message.Save(mhtmlPath, SaveOptions.DefaultMhtml);
-                    Console.WriteLine($"MHTML saved to: {mhtmlPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MHTML: {ex.Message}");
-                }
+                string mhtmlPath = Path.Combine(outputDirectory, "sample.mhtml");
+                mailMessage.Save(mhtmlPath, SaveOptions.DefaultMhtml);
             }
+
+            Console.WriteLine("Email message saved in EML, MSG, and MHTML formats.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

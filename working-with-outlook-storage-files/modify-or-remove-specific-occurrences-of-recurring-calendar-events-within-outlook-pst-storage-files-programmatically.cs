@@ -1,64 +1,77 @@
+using Aspose.Email.Calendar;
 using System;
 using System.IO;
+using Aspose.Email;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailPstCalendarEdit
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string pstPath = "sample.pst";
-
-            // Verify PST file exists
-            if (!File.Exists(pstPath))
+            try
             {
-                Console.Error.WriteLine($"Error: File not found – {pstPath}");
-                return;
-            }
+                const string pstPath = "storage.pst";
 
-            // Open PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Get the Calendar (Appointments) folder
-                FolderInfo calendarFolder = pst.GetPredefinedFolder(StandardIpmFolder.Appointments);
-                if (calendarFolder == null)
+                // Ensure the PST file exists; create a minimal one if missing
+                if (!File.Exists(pstPath))
                 {
-                    Console.Error.WriteLine("Error: Calendar folder not found.");
-                    return;
+                    try
+                    {
+                        // Create a new Unicode PST file
+                        PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                        Console.WriteLine($"Created new PST file at '{pstPath}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
+                        return;
+                    }
                 }
 
-                // Define the subject of recurring events to remove
-                string targetSubject = "Team Meeting";
-
-                // Enumerate all messages in the Calendar folder
-                foreach (MessageInfo messageInfo in calendarFolder.EnumerateMessages())
+                // Open the PST file for read/write operations
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
                 {
-                    // Extract the full MAPI message
-                    using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
+                    try
                     {
-                        // Ensure the message is a calendar item
-                        if (mapiMessage.SupportedType != MapiItemType.Calendar)
-                            continue;
+                        // Get the Calendar folder (standard IPM folder)
+                        FolderInfo calendarFolder = pst.GetPredefinedFolder(StandardIpmFolder.Appointments);
 
-                        // Convert to MapiCalendar for easier access
-                        MapiCalendar calendar = (MapiCalendar)mapiMessage.ToMapiMessageItem();
+                        // Define the subject of the recurring appointment to remove
+                        const string targetSubject = "Team Meeting";
 
-                        // Check if the subject matches the target
-                        if (string.Equals(calendar.Subject, targetSubject, StringComparison.OrdinalIgnoreCase))
+                        // Iterate through all messages in the Calendar folder
+                        foreach (MessageInfo messageInfo in calendarFolder.EnumerateMessages())
                         {
-                            // Delete the entire recurring series (message) from the folder
-                            calendarFolder.DeleteChildItem(messageInfo.EntryId);
-                            Console.WriteLine($"Deleted recurring event: {calendar.Subject}");
+                            // Identify appointments by subject (you could also inspect recurrence properties)
+                            if (string.Equals(messageInfo.Subject, targetSubject, StringComparison.OrdinalIgnoreCase))
+                            {
+                                try
+                                {
+                                    // Convert the entry ID (byte[]) to a string representation required by DeleteItem
+                                    string entryIdString = Convert.ToBase64String(messageInfo.EntryId);
+                                    // Delete the entire recurring series (or a single occurrence) by entry ID
+                                    pst.DeleteItem(entryIdString);
+                                    Console.WriteLine($"Deleted appointment with Subject '{targetSubject}' (EntryId: {entryIdString}).");
+                                }
+                                catch (Exception delEx)
+                                {
+                                    Console.Error.WriteLine($"Failed to delete item '{messageInfo.EntryId}': {delEx.Message}");
+                                }
+                            }
                         }
+                    }
+                    catch (Exception pstEx)
+                    {
+                        Console.Error.WriteLine($"Error processing PST: {pstEx.Message}");
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

@@ -1,66 +1,73 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+// Author: Aspose.Email example – retrieves messages from Exchange via EWS
+public class Program
 {
-    static void Main()
+    public static void Main(string[] args)
     {
+        // Connection parameters (replace with real values)
+        string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+
+
+        // Skip external calls when placeholder credentials are used
+        if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+        {
+            Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+            return;
+        }
+
         try
         {
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
-
-            // Guard against placeholder credentials to avoid real network calls
-            if (mailboxUri.Contains("example.com") || username == "username")
+            // Create the EWS client and ensure it is disposed properly
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
-                return;
-            }
+                // Obtain mailbox information to get the Inbox URI
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                string inboxUri = mailboxInfo.InboxUri;
 
-            // Create EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
                 // List messages in the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
-                Console.WriteLine($"Found {messages.Count} messages in Inbox.");
+                ExchangeMessageInfoCollection messageInfos = client.ListMessages(inboxUri);
 
-                if (messages.Count > 0)
+                foreach (ExchangeMessageInfo msgInfo in messageInfos)
                 {
-                    // Fetch the first message
-                    ExchangeMessageInfo firstInfo = messages[0];
-                    using (MailMessage message = client.FetchMessage(firstInfo.UniqueUri))
+                    // Fetch the full message
+                    MailMessage message = client.FetchMessage(msgInfo.UniqueUri);
+
+                    // Display basic details
+                    Console.WriteLine($"Subject: {message.Subject}");
+                    Console.WriteLine($"Received: {msgInfo.InternalDate}");
+
+                    // Save the message to a file (guarded I/O)
+                    string outputDir = Path.Combine("SavedMessages");
+                    string outputPath = Path.Combine(outputDir, $"{msgInfo.UniqueUri.GetHashCode()}.eml");
+                    try
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
-
-                        // Prepare output path
-                        string outputPath = "message.eml";
-                        string directory = Path.GetDirectoryName(outputPath);
-                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                        if (!Directory.Exists(outputDir))
                         {
-                            Directory.CreateDirectory(directory);
+                            Directory.CreateDirectory(outputDir);
                         }
-
-                        // Save the message to a file with guarded I/O
-                        try
-                        {
-                            message.Save(outputPath, SaveOptions.DefaultEml);
-                            Console.WriteLine($"Message saved to {outputPath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save message: {ex.Message}");
-                        }
+                        message.Save(outputPath);
                     }
+                    catch (Exception ioEx)
+                    {
+                        Console.Error.WriteLine($"Failed to save message: {ioEx.Message}");
+                    }
+
+                    // Dispose the fetched MailMessage
+                    message.Dispose();
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Exchange operation failed: {ex.Message}");
+            return;
         }
     }
 }

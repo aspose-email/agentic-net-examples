@@ -1,9 +1,9 @@
-using Aspose.Email.PersonalInfo;
-using System;
-using System.IO;
 using Aspose.Email;
+using Aspose.Email.PersonalInfo;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using System;
+using System.IO;
 
 class Program
 {
@@ -11,22 +11,19 @@ class Program
     {
         try
         {
+            // Path to the PST file containing contacts
             string pstPath = "contacts.pst";
 
-            // Ensure PST file exists; create a minimal placeholder if missing
+            // Verify PST file exists
             if (!File.Exists(pstPath))
             {
-                try
-                {
-                    // Create an empty Unicode PST file
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating PST file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"PST file not found at path: {pstPath}");
+                return;
             }
+
+            // Directory where extracted contacts will be saved
+            string outputDir = "output";
+            Directory.CreateDirectory(outputDir); // Ensure the directory exists
 
             // Open the PST file
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
@@ -39,32 +36,46 @@ class Program
                     return;
                 }
 
-                // Enumerate all messages in the Contacts folder
+                Console.WriteLine($"Folder: {contactsFolder.DisplayName}");
+                Console.WriteLine($"Total items: {contactsFolder.ContentCount}");
+                Console.WriteLine($"Total unread items: {contactsFolder.ContentUnreadCount}");
+
+                // Enumerate each contact message
                 foreach (MessageInfo messageInfo in contactsFolder.EnumerateMessages())
                 {
+                    // Extract the full message (contact) from the PST
+                    MapiMessage contactMessage = pst.ExtractMessage(messageInfo);
+
+                    // Output basic contact information
+                    Console.WriteLine($"Contact Subject (Name): {contactMessage.Subject}");
+
+                    // Prepare a safe filename
+                    string safeFileName = string.IsNullOrWhiteSpace(contactMessage.Subject)
+                        ? "UnnamedContact"
+                        : contactMessage.Subject;
+
+                    foreach (char c in Path.GetInvalidFileNameChars())
+                    {
+                        safeFileName = safeFileName.Replace(c, '_');
+                    }
+
+                    string outputPath = Path.Combine(outputDir, $"{safeFileName}.msg");
+
                     try
                     {
-                        using (MapiMessage message = pst.ExtractMessage(messageInfo))
-                        {
-                            // Check if the item is a contact
-                            if (string.Equals(message.MessageClass, "IPM.Contact", StringComparison.OrdinalIgnoreCase))
-                            {
-                                // Display basic contact information (Subject often contains the display name)
-                                Console.WriteLine($"Contact: {message.Subject}");
-                            }
-                        }
+                        contactMessage.Save(outputPath);
+                        Console.WriteLine($"Saved contact to {outputPath}");
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Error processing message {messageInfo.Subject}: {ex.Message}");
-                        // Continue with next message
+                        Console.Error.WriteLine($"Failed to save contact '{safeFileName}': {ex.Message}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,44 +1,48 @@
 using System;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Placeholder connection details
-            string host = "imap.example.com";
-            string username = "user@example.com";
-            string password = "password";
+            string clientId = "YOUR_CLIENT_ID";
+            string clientSecret = "YOUR_CLIENT_SECRET";
+            string refreshToken = "YOUR_REFRESH_TOKEN";
+            string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
 
-            // Skip actual network call when placeholders are used
-            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
+            if (string.IsNullOrWhiteSpace(clientId) || clientId.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(clientSecret) || clientSecret.StartsWith("YOUR_") ||
+                string.IsNullOrWhiteSpace(refreshToken) || refreshToken.StartsWith("YOUR_"))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping folder rename operation.");
+                Console.Error.WriteLine("Provide valid OAuth credentials.");
                 return;
             }
 
-            // Connect to the IMAP server and rename the folder
-            using (ImapClient client = new ImapClient(host, username, password))
+            using (TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken))
             {
-                try
+                OAuthNetworkCredential credentials = new OAuthNetworkCredential(tokenProvider);
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, credentials))
                 {
-                    string oldFolderName = "OldFolder";
-                    string newFolderName = "NewFolder";
+                    ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
+                    Console.WriteLine("Mailbox URI: " + mailboxInfo.MailboxUri);
+                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+                    Console.WriteLine("Drafts URI: " + mailboxInfo.DraftsUri);
 
-                    client.RenameFolder(oldFolderName, newFolderName);
-                    Console.WriteLine($"Folder '{oldFolderName}' renamed to '{newFolderName}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during folder rename: {ex.Message}");
+                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
+                    foreach (ExchangeMessageInfo message in messages)
+                    {
+                        Console.WriteLine(message.Subject);
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

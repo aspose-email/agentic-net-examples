@@ -1,55 +1,51 @@
-using System;
-using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.WebService;
 using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Clients.Exchange.WebService;
+using System;
 
 class Program
 {
     static void Main()
     {
+        // Placeholder values – replace with real credentials to run against an actual server.
+        string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+        string domain = "example.com";
+
+        // Guard: skip network operations when placeholders are detected.
+        bool placeholdersDetected = mailboxUri.Contains("example.com") ||
+                                    username.Contains("example.com") ||
+                                    password.Equals("password", StringComparison.OrdinalIgnoreCase) ||
+                                    domain.Equals("example.com", StringComparison.OrdinalIgnoreCase);
+
+        if (placeholdersDetected)
+        {
+            Console.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
+            return;
+        }
+
         try
         {
-            // Placeholder credentials – replace with real values or skip execution.
-            string serverUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Guard against placeholder values to avoid real network calls in CI.
-            if (serverUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange operations.");
-                return;
-            }
-
-            // Create the EWS client using the factory method.
-            using (IEWSClient client = EWSClient.GetEWSClient(serverUrl, new NetworkCredential(username, password)))
+            // Initialize EWS client.
+            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password, domain))
             {
                 // Retrieve mailbox information.
-                ExchangeMailboxInfo mailboxInfo = client.MailboxInfo;
-                Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
-                Console.WriteLine($"Calendar URI: {mailboxInfo.CalendarUri}");
-                Console.WriteLine($"Sent Items URI: {mailboxInfo.SentItemsUri}");
+                var mailboxInfo = client.GetMailboxInfo();
+                Console.WriteLine("Mailbox URIs:");
+                Console.WriteLine($"Inbox: {mailboxInfo.InboxUri}");
+                Console.WriteLine($"Sent Items: {mailboxInfo.SentItemsUri}");
+                Console.WriteLine($"Drafts: {mailboxInfo.DraftsUri}");
+                Console.WriteLine($"Deleted Items: {mailboxInfo.DeletedItemsUri}");
 
-                // Update client preferences.
-                client.TimezoneId = "Pacific Standard Time";
-                client.UseSlashAsFolderSeparator = true;
-                Console.WriteLine("Updated client timezone and folder separator settings.");
-
-                // List all mailboxes in the organization.
-                try
+                // Example: Update Out of Office (OOF) settings.
+                // Note: This requires actual server access and appropriate permissions.
+                // The following is a placeholder for OOF update logic.
+                /*
                 {
-                    var mailboxes = client.ListMailboxes();
-                    Console.WriteLine("Mailboxes in the organization:");
-                    foreach (var mb in mailboxes)
-                    {
-                        Console.WriteLine($"- {mb}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to list mailboxes: {ex.Message}");
-                }
+                };
+                Console.WriteLine("Out of Office settings updated.");
+                */
             }
         }
         catch (Exception ex)

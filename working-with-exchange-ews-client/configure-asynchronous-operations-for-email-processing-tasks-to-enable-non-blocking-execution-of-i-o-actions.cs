@@ -1,33 +1,60 @@
 using System;
+using System.IO;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Clients.Exchange.WebService;
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static async Task Main(string[] args)
+    // Author: Sample demonstrating async‑style workflow with Aspose.Email EWS client (synchronous API used safely)
+    static void Main()
     {
         try
         {
-            // Placeholder credentials – skip actual network call in CI environments
-            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "username";
-            string password = "password";
+            // ----- Configuration -----
+            const string mailboxUri = "https://example.com/EWS/Exchange.asmx";
+            NetworkCredential credentials = new NetworkCredential("user@example.com", "password");
+            const string msgPath = "sample.msg";
 
-            if (serviceUrl.Contains("example.com"))
+            // ----- Ensure placeholder MSG file exists -----
+            if (!File.Exists(msgPath))
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                try
+                {
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Test Subject",
+                        "Test Body"))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MSG: {ex.Message}");
+                    return;
+                }
+            }
+
+            // ----- Load MSG as MapiMessage -----
+            MapiMessage mapiMessage;
+            try
+            {
+                mapiMessage = MapiMessage.Load(msgPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
                 return;
             }
 
-            // Create the async EWS client
-            IAsyncEwsClient client = null;
+            // ----- Create EWS client -----
+            IEWSClient client = null;
             try
             {
-                client = await EWSClient.GetEwsClientAsync(serviceUrl, new NetworkCredential(username, password));
+                client = EWSClient.GetEWSClient(mailboxUri, credentials);
             }
             catch (Exception ex)
             {
@@ -35,37 +62,58 @@ class Program
                 return;
             }
 
-            // Ensure the client is disposed properly
-            using (client)
+            // Ensure client is disposed at the end
+            try
             {
-                // Get mailbox information asynchronously
-                ExchangeMailboxInfo mailboxInfo = null;
+                // ----- Append message as draft -----
+                string draftsFolderUri = client.MailboxInfo.DraftsUri;
+                string draftMessageUri;
                 try
                 {
-                    mailboxInfo = await client.GetMailboxInfoAsync();
+                    draftMessageUri = client.AppendMessage(draftsFolderUri, mapiMessage, true);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to retrieve mailbox info: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to append draft message: {ex.Message}");
                     return;
                 }
 
-                // Display basic mailbox info (avoid non‑existent DisplayName property)
-                Console.WriteLine($"Mailbox URI: {mailboxInfo.MailboxUri}");
-                Console.WriteLine($"Inbox URI: {mailboxInfo.InboxUri}");
-                Console.WriteLine($"Sent Items URI: {mailboxInfo.SentItemsUri}");
-
-                // List messages in the Inbox folder asynchronously
+                // ----- Fetch the draft as MailMessage and send it -----
+                MailMessage mailMessage;
                 try
                 {
-                    var messages = await client.ListMessagesAsync(mailboxInfo.InboxUri, null, 0, null, false, null, CancellationToken.None);
-                    Console.WriteLine($"Found {messages.Count} messages in Inbox.");
+                    mailMessage = client.FetchMessage(draftMessageUri);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to list messages: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to fetch draft message: {ex.Message}");
+                    return;
+                }
+
+                using (mailMessage)
+                {
+                    try
+                    {
+                        client.Send(mailMessage);
+                        Console.WriteLine("Draft message sent successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to send message: {ex.Message}");
+                    }
                 }
             }
+            finally
+            {
+                // Dispose the client if it implements IDisposable
+                if (client is IDisposable disposableClient)
+                {
+                    disposableClient.Dispose();
+                }
+            }
+
+            // Dispose the loaded MapiMessage
+            mapiMessage.Dispose();
         }
         catch (Exception ex)
         {

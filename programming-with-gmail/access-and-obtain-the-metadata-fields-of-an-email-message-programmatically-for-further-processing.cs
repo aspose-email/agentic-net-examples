@@ -1,66 +1,75 @@
-using System;
-using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Google;
+using Aspose.Email.Mapi;
+using System;
+using System.IO;
 
-namespace AsposeEmailGmailMetadata
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Path to the Outlook MSG file
+            string msgPath = @"c:\outlookmessage.msg";
+
+            // Ensure the directory for the MSG file exists
+            string msgDir = Path.GetDirectoryName(msgPath);
+            if (!string.IsNullOrEmpty(msgDir) && !Directory.Exists(msgDir))
             {
-                // Placeholder credentials – replace with real values for actual execution
-                string clientId = "clientId";
-                string clientSecret = "clientSecret";
-                string refreshToken = "refreshToken";
-                string defaultEmail = "user@example.com";
+                Directory.CreateDirectory(msgDir);
+            }
 
-                // Skip network call when placeholders are used
-                bool placeholders = clientId == "clientId" ||
-                                    clientSecret == "clientSecret" ||
-                                    refreshToken == "refreshToken" ||
-                                    defaultEmail == "user@example.com";
-
-                if (placeholders)
+            // Verify that the file exists before attempting to load it
+            if (!File.Exists(msgPath))
+            {
+                // Create a placeholder MSG file if it does not exist
+                try
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping Gmail operations.");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                using (IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail))
-                {
-                    try
-                    {
-                        List<GmailMessageInfo> messages = gmailClient.ListMessages();
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
+                return;
+            }
 
-                        foreach (GmailMessageInfo messageInfo in messages)
-                        {
-                            // Fetch the full message to access detailed metadata
-                            using (MailMessage fullMessage = gmailClient.FetchMessage(messageInfo.Id))
-                            {
-                                Console.WriteLine("Subject: " + fullMessage.Subject);
-                                Console.WriteLine("From: " + fullMessage.From);
-                                Console.WriteLine("Date: " + fullMessage.Date);
-                                Console.WriteLine("To: " + fullMessage.To);
-                                Console.WriteLine("Message Id: " + fullMessage.MessageId);
-                                Console.WriteLine(new string('-', 40));
-                            }
-                        }
-                    }
-                    catch (Exception ex)
+            // Load the MSG file
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            {
+                // Output basic metadata
+                Console.WriteLine("Subject: " + msg.Subject);
+                Console.WriteLine("From: " + msg.SenderName);
+                Console.WriteLine("Body: " + msg.Body);
+
+                // Iterate through attachments, display their names and save them
+                foreach (MapiAttachment attachment in msg.Attachments)
+                {
+                    Console.WriteLine("Attachment Name: " + attachment.FileName);
+                    string savePath = Path.Combine(Directory.GetCurrentDirectory(), attachment.FileName);
+                    string saveDir = Path.GetDirectoryName(savePath);
+                    if (!string.IsNullOrEmpty(saveDir) && !Directory.Exists(saveDir))
                     {
-                        Console.Error.WriteLine("Error during Gmail operations: " + ex.Message);
-                        return;
+                        Directory.CreateDirectory(saveDir);
                     }
+                    attachment.Save(savePath);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Unhandled exception: " + ex.Message);
-            }
+        }
+        catch (Exception ex)
+        {
+            // Gracefully handle any unexpected errors
+            Console.Error.WriteLine("Error: " + ex.Message);
         }
     }
 }

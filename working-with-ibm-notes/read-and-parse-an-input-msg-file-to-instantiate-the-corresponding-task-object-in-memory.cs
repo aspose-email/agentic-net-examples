@@ -3,57 +3,78 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailMsgReader
 {
-    static void Main()
+    // Author: Generated example for loading MSG files with Aspose.Email
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string msgPath = "input.msg";
-
-            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(msgPath))
+            try
             {
+                // Determine the MSG file path (use first argument or default)
+                string msgPath = args.Length > 0 ? args[0] : "input.msg";
+
+                // Guard file existence
+                if (!File.Exists(msgPath))
+                {
                 try
                 {
-                    // Create a simple placeholder message.
                     using (MapiMessage placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "receiver@example.com",
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
-                        "This is a placeholder message body."))
+                        "Placeholder body."))
                     {
                         placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file into a MapiMessage instance.
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(msgPath))
+                    Console.Error.WriteLine($"Message file not found: {msgPath}");
+                    return;
+                }
+
+                // Load the Outlook MSG file
+                MapiMessage msg = MapiMessage.Load(msgPath);
+
+                // Display basic properties
+                Console.WriteLine("Subject: " + msg.Subject);
+                Console.WriteLine("From: " + msg.SenderName);
+                Console.WriteLine("Body: " + msg.Body);
+
+                // Process attachments if any
+                foreach (MapiAttachment attachment in msg.Attachments)
                 {
-                    // Example: output some basic properties.
-                    Console.WriteLine($"Subject: {message.Subject}");
-                    Console.WriteLine($"Sender: {message.SenderName} <{message.SenderEmailAddress}>");
-                    Console.WriteLine($"Body: {message.Body}");
-                    Console.WriteLine($"Number of Attachments: {message.Attachments.Count}");
+                    Console.WriteLine("Attachment Name: " + attachment.FileName);
+
+                    // Save attachment to the same directory as the MSG file
+                    try
+                    {
+                        string outputDir = Path.GetDirectoryName(msgPath) ?? Directory.GetCurrentDirectory();
+                        if (!Directory.Exists(outputDir))
+                        {
+                            Directory.CreateDirectory(outputDir);
+                        }
+
+                        string attachmentPath = Path.Combine(outputDir, attachment.FileName);
+                        attachment.Save(attachmentPath);
+                        Console.WriteLine($"Saved attachment to: {attachmentPath}");
+                    }
+                    catch (Exception ioEx)
+                    {
+                        Console.Error.WriteLine($"Failed to save attachment '{attachment.FileName}': {ioEx.Message}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -1,3 +1,5 @@
+using Aspose.Email.Clients;
+using Aspose.Email;
 using System;
 using Aspose.Email.Clients.Pop3;
 
@@ -7,44 +9,39 @@ class Program
     {
         try
         {
-            // Placeholder connection parameters
-            string host = "pop3.example.com";
-            int port = 110;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip real network call when using placeholder credentials/host
-            if (host.Contains("example.com"))
+            // Initialize POP3 client with server credentials
+            Pop3Client pop3Client = new Pop3Client
             {
-                Console.Error.WriteLine("Placeholder POP3 host detected. Skipping connection.");
-                return;
+                Host = "pop3.example.com",
+                Port = 110,
+                Username = "user@example.com",
+                Password = "password"
+                // Uncomment and adjust if SSL/TLS is required
+                // SecurityOptions = SecurityOptions.Auto
+            };
+
+            // Guard to avoid real network calls when placeholders are used
+            bool isPlaceholder = pop3Client.Host.Contains("example.com") ||
+                                 pop3Client.Username.Contains("example.com") ||
+                                 pop3Client.Password == "password";
+
+            if (isPlaceholder)
+            {
+                Console.WriteLine("Skipping POP3 operations due to placeholder credentials.");
             }
-
-            // Create and use the POP3 client
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
+            else
             {
-                try
-                {
-                    // Validate credentials (establishes connection)
-                    client.ValidateCredentials();
-                    Console.WriteLine("POP3 client connected successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Connection error: {ex.Message}");
-                    return;
-                }
+                // Perform a simple operation to establish the connection
+                int messageCount = pop3Client.GetMessageCount();
+                Console.WriteLine($"Message count: {messageCount}");
 
-                // Perform any required operations here (e.g., list messages)
-
-                // Explicitly disconnect the client to release network resources
-                client.Dispose(); // Disconnect
-                Console.WriteLine("POP3 client disconnected.");
+                // Explicitly release network resources
+                pop3Client.Dispose();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

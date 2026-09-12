@@ -2,75 +2,94 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Mapi;
 
-class Program
+namespace AsposeEmailPstSearch
 {
-    static void Main()
+    // Author: Aspose.Email example – case‑insensitive search in PST storage
+    class Program
     {
-        try
+        static void Main()
         {
-            string pstPath = "sample.pst";
-            // Ensure PST file exists; create a minimal placeholder if missing
+            const string pstPath = "storage.pst";
+            const string outputDir = "output";
+            const string searchTerm = "invoice"; // case‑insensitive term to search for
+
+            // Verify PST file exists
             if (!File.Exists(pstPath))
+            {
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                return;
+            }
+
+            // Ensure output directory exists
+            try
+            {
+                if (!Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create output directory '{outputDir}': {ex.Message}");
+                return;
+            }
+
+            try
+            {
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    // Process root folder
+                    ProcessFolder(pst, pst.RootFolder, searchTerm, outputDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error processing PST file: {ex.Message}");
+            }
+        }
+
+        private static void ProcessFolder(PersonalStorage pst, FolderInfo folder, string searchTerm, string outputDir)
+        {
+            // Enumerate messages in the current folder
+            foreach (MessageInfo messageInfo in folder.EnumerateMessages())
             {
                 try
                 {
-                    using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                    using (MapiMessage msg = pst.ExtractMessage(messageInfo))
                     {
-                        // Create a default Inbox folder
-                        placeholder.RootFolder.AddSubFolder("Inbox");
+                        if (!string.IsNullOrEmpty(msg.Subject) &&
+                            msg.Subject.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            string safeFileName = GetSafeFileName(msg.Subject);
+                            string outputPath = Path.Combine(outputDir, safeFileName + ".msg");
+                            msg.Save(outputPath);
+                            Console.WriteLine($"Saved matching message: {outputPath}");
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
-                    return;
+                    Console.Error.WriteLine($"Failed to extract/save message '{messageInfo.Subject}': {ex.Message}");
                 }
             }
 
-            // Open the PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Define the case‑insensitive search term
-                string searchTerm = "invoice";
-
-                // Iterate through all subfolders recursively
-                foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
-                {
-                    SearchFolder(folder, searchTerm);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    // Recursively search a folder for messages whose Subject contains the term (case‑insensitive)
-    private static void SearchFolder(FolderInfo folder, string term)
-    {
-        try
-        {
-            foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-            {
-                if (!string.IsNullOrEmpty(messageInfo.Subject) &&
-                    messageInfo.Subject.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    Console.WriteLine($"Found in folder \"{folder.DisplayName}\": Subject = {messageInfo.Subject}");
-                }
-            }
-
-            // Recurse into subfolders
+            // Recursively process subfolders
             foreach (FolderInfo subFolder in folder.GetSubFolders())
             {
-                SearchFolder(subFolder, term);
+                ProcessFolder(pst, subFolder, searchTerm, outputDir);
             }
         }
-        catch (Exception ex)
+
+        private static string GetSafeFileName(string original)
         {
-            Console.Error.WriteLine($"Error processing folder \"{folder.DisplayName}\": {ex.Message}");
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                original = original.Replace(c, '_');
+            }
+            // Trim length if necessary
+            return original.Length > 100 ? original.Substring(0, 100) : original;
         }
     }
 }

@@ -9,10 +9,11 @@ class Program
     {
         try
         {
-            string inputPath = "sample.msg";
-            string outputDir = "Extracted";
+            // Path to the MSG file
+            string msgPath = "sample.msg";
 
-            if (!File.Exists(inputPath))
+            // Verify the input file exists
+            if (!File.Exists(msgPath))
             {
                 try
                 {
@@ -22,7 +23,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath);
+                        placeholder.Save(msgPath);
                     }
                 }
                 catch (Exception ex)
@@ -31,53 +32,40 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Error: File not found – {inputPath}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
             }
 
-            Directory.CreateDirectory(outputDir);
-
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
+            // Load the Outlook MSG file
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
             {
-                // Extract regular attachments
-                foreach (MapiAttachment attachment in msg.Attachments)
+                Console.WriteLine($"Subject: {msg.Subject}");
+                Console.WriteLine($"From: {msg.SenderName}");
+
+                // Prepare output directory for extracted files
+                string outputDir = "Attachments";
+                if (!Directory.Exists(outputDir))
                 {
-                    string fileName = string.IsNullOrEmpty(attachment.FileName) ? "attachment.bin" : attachment.FileName;
-                    string safePath = Path.Combine(outputDir, fileName);
-                    try
-                    {
-                        attachment.Save(safePath);
-                        Console.WriteLine($"Saved attachment: {safePath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to save attachment {fileName}: {ex.Message}");
-                    }
+                    Directory.CreateDirectory(outputDir);
                 }
 
-                // Extract embedded images identified by MIME tag starting with "image/"
+                // Extract all attachments (including embedded objects)
                 foreach (MapiAttachment attachment in msg.Attachments)
                 {
-                    if (!string.IsNullOrEmpty(attachment.MimeTag) && attachment.MimeTag.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                    {
-                        string fileName = string.IsNullOrEmpty(attachment.FileName) ? "embedded_image.bin" : attachment.FileName;
-                        string safePath = Path.Combine(outputDir, "Embedded_" + fileName);
-                        try
-                        {
-                            attachment.Save(safePath);
-                            Console.WriteLine($"Saved embedded image: {safePath}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to save embedded image {fileName}: {ex.Message}");
-                        }
-                    }
+                    // Build a safe file name
+                    string safeFileName = string.IsNullOrEmpty(attachment.FileName) ? "unnamed_attachment" : attachment.FileName;
+                    string outputPath = Path.Combine(outputDir, safeFileName);
+
+                    // Save the attachment to disk
+                    attachment.Save(outputPath);
+                    Console.WriteLine($"Saved attachment: {outputPath}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Log any unexpected errors without crashing the application
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

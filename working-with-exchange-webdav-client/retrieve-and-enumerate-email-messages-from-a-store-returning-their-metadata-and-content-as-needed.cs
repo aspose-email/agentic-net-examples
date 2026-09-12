@@ -1,45 +1,66 @@
 using System;
+using System.IO;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
-using Aspose.Email.Clients.Exchange;
+using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/ews/Exchange.asmx";
-            string username = "username";
-            string password = "password";
+            const string pstPath = "storage.pst";
 
-            // Skip actual network call when placeholders are used
-            if (mailboxUri.Contains("example.com"))
+            if (!File.Exists(pstPath))
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping connection to Exchange server.");
+                Console.Error.WriteLine($"Error: PST file '{pstPath}' not found.");
                 return;
             }
 
-            // Create and use the Exchange client
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
-            {
-                // List messages from the Inbox folder
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri);
+            const string outputDir = "output";
+            Directory.CreateDirectory(outputDir);
 
-                foreach (ExchangeMessageInfo info in messages)
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                int totalItemsCount = pst.Store.GetTotalItemsCount();
+                Console.WriteLine($"Total items count: {totalItemsCount}");
+
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    Console.WriteLine($"Subject: {info.Subject}");
-                    Console.WriteLine($"From: {info.From}");
-                    Console.WriteLine($"Date: {info.InternalDate}");
-                    Console.WriteLine($"Has Attachments: {info.HasAttachments}");
-                    Console.WriteLine(new string('-', 40));
+                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                    {
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+
+                        MapiMessage msg = pst.ExtractMessage(messageInfo);
+
+                        string safeSubject = string.IsNullOrWhiteSpace(msg.Subject) ? "Untitled" : msg.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        string outputFile = Path.Combine(outputDir, $"{safeSubject}.msg");
+
+                        try
+                        {
+                            msg.Save(outputFile);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message '{msg.Subject}': {ex.Message}");
+                        }
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

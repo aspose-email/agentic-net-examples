@@ -1,40 +1,44 @@
-using System;
 using Aspose.Email;
-using Aspose.Email.Clients;
+using System;
+using System.Collections.Generic;
 using Aspose.Email.Clients.Google;
 
-class Program
+namespace GmailProvisionSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials for Google OAuth
-            string clientId = "clientId";
-            string clientSecret = "clientSecret";
-            string refreshToken = "refreshToken";
-            string defaultEmail = "user@example.com";
-
-            // If placeholder credentials are present, skip any external provisioning calls
-            if (clientId == "clientId" && clientSecret == "clientSecret")
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping Google Developer Console project provisioning.");
-                return;
-            }
+                // Replace the placeholder values with actual credentials from your Google Cloud Console.
+                string clientId = "YOUR_CLIENT_ID";
+                string clientSecret = "YOUR_CLIENT_SECRET";
+                string refreshToken = "YOUR_REFRESH_TOKEN";
+                string defaultEmail = "your.email@example.com";
 
-            // Create Gmail client (required variable name: gmailClient)
-            IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
-            using (gmailClient as IDisposable)
-            {
-                // Placeholder for actual provisioning logic.
-                // In a real scenario, you would call Google Cloud Resource Manager APIs here
-                // to create a new project and enable the Gmail API.
-                Console.WriteLine("Provisioning Google Developer Console project... (placeholder implementation)");
+                // Guard against placeholder literals.
+                if (clientId.StartsWith("YOUR_") ||
+                    clientSecret.StartsWith("YOUR_") ||
+                    refreshToken.StartsWith("YOUR_") ||
+                    defaultEmail.StartsWith("your.email@"))
+                {
+                    Console.Error.WriteLine("Please replace placeholder values with actual credentials.");
+                    return;
+                }
+
+                // Obtain an instance of the Gmail client.
+                IGmailClient gmailClient = GmailClient.GetInstance(clientId, clientSecret, refreshToken, defaultEmail);
+
+                // Retrieve the list of messages from the inbox.
+                List<GmailMessageInfo> messages = gmailClient.ListMessages();
+
+                Console.WriteLine($"Retrieved {messages.Count} messages from the inbox.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

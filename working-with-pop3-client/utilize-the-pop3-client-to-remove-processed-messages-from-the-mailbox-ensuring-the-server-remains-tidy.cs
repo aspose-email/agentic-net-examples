@@ -1,55 +1,63 @@
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
 
 class Program
 {
     static void Main()
     {
+        // Configuration placeholders – replace with real values when running against an actual server
+        const string host = "pop3.example.com";
+        const int port = 995;
+        const string username = "user@example.com";
+        const string password = "password";
+
+        // Guard: skip network operations when placeholders are detected
+        bool isPlaceholder = host.Contains("example.com") ||
+                             username.Contains("example.com") ||
+                             password == "password";
+
+        if (isPlaceholder)
+        {
+            Console.WriteLine("POP3 client configuration contains placeholder values. Skipping network operations.");
+            return;
+        }
+
         try
         {
-            string host = "pop.example.com";
-            int port = 110;
-            string username = "username";
-            string password = "password";
-
-            // Skip real network calls when placeholder credentials are used
-            if (host.Contains("example.com"))
+            // Initialize POP3 client with connection settings
+            using (Pop3Client pop3Client = new Pop3Client())
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping POP3 operations.");
-                return;
-            }
+                pop3Client.Host = host;
+                pop3Client.Port = port;
+                pop3Client.Username = username;
+                pop3Client.Password = password;
+                pop3Client.SecurityOptions = SecurityOptions.Auto;
 
-            using (Pop3Client client = new Pop3Client(host, port, username, password))
-            {
-                try
+                // Retrieve the total number of messages in the mailbox
+                int messageCount = pop3Client.GetMessageCount();
+                Console.WriteLine($"Total messages: {messageCount}");
+
+                // Process each message and delete it after processing
+                for (int i = 1; i <= messageCount; i++)
                 {
-                    // Validate connection credentials
-                    client.ValidateCredentials();
+                    // Fetch the message by its index (POP3 indices start at 1)
+                    MailMessage message = pop3Client.FetchMessage(i);
+                    // Example processing: output the subject
+                    Console.WriteLine($"Processing message {i}: {message.Subject}");
 
-                    // Retrieve list of messages
-                    Pop3MessageInfoCollection messages = client.ListMessages();
-
-                    foreach (Pop3MessageInfo info in messages)
-                    {
-                        // Placeholder processing logic
-                        Console.WriteLine($"Processing message: {info.Subject}");
-
-                        // Mark message for deletion after processing
-                        client.DeleteMessage(info.SequenceNumber);
-                    }
-
-                    // Commit deletions so the server removes the marked messages
+                    // Mark the message for deletion
+                    pop3Client.DeleteMessage(i);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"POP3 operation failed: {ex.Message}");
-                }
+
+                // Deletions are committed automatically when the client is disposed (QUIT command)
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Output any errors without crashing the application
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

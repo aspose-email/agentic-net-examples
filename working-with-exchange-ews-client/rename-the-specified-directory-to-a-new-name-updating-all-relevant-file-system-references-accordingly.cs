@@ -1,5 +1,7 @@
+using Aspose.Email;
 using System;
-using System.IO;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
 class Program
 {
@@ -7,41 +9,45 @@ class Program
     {
         try
         {
-            // Define the original directory path and the new directory name
-            string sourceDirectoryPath = "OldDirectory";
-            string destinationDirectoryPath = "NewDirectory";
+            // Exchange service URL and credentials
+            string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
 
-            // Verify that the source directory exists
-            if (!Directory.Exists(sourceDirectoryPath))
+
+            // Skip external calls when placeholder credentials are used
+            if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.Error.WriteLine($"Source directory does not exist: {sourceDirectoryPath}");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Verify that the destination directory does not already exist
-            if (Directory.Exists(destinationDirectoryPath))
+            // Create the EWS client (IEWSClient) and ensure it is disposed properly
+            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
             {
-                Console.Error.WriteLine($"Destination directory already exists: {destinationDirectoryPath}");
-                return;
-            }
+                // Retrieve mailbox folder URIs
+                ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                string inboxUri = mailboxInfo.InboxUri;
+                string archiveUri = mailboxInfo.InboxUri; // Replace with actual target folder URI
 
-            try
-            {
-                // Rename (move) the directory
-                Directory.Move(sourceDirectoryPath, destinationDirectoryPath);
-                Console.WriteLine($"Directory renamed from '{sourceDirectoryPath}' to '{destinationDirectoryPath}'.");
-            }
-            catch (Exception ex)
-            {
-                // Handle any errors that occur during the rename operation
-                Console.Error.WriteLine($"Error renaming directory: {ex.Message}");
-                return;
+                // List messages in the source folder (Inbox)
+                ExchangeMessageInfoCollection messages = client.ListMessages(inboxUri);
+                if (messages.Count > 0)
+                {
+                    // Take the first message and move it to the target folder
+                    string itemUri = messages[0].UniqueUri;
+                    string movedItemUri = client.MoveItem(itemUri, archiveUri);
+                    Console.WriteLine($"Message moved successfully. New URI: {movedItemUri}");
+                }
+                else
+                {
+                    Console.WriteLine("No messages found in the source folder.");
+                }
             }
         }
         catch (Exception ex)
         {
-            // Top-level exception guard
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

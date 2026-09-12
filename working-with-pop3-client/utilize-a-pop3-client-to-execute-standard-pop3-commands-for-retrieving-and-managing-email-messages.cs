@@ -3,6 +3,9 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
+using Aspose.Email.Clients; // for SecurityOptions
+
+// Author: Generated example demonstrating POP3 operations with Aspose.Email
 
 class Program
 {
@@ -10,64 +13,79 @@ class Program
     {
         try
         {
-            // Placeholder POP3 server credentials
-            string host = "pop.example.com";
-            string username = "user";
-            string password = "pass";
+            // POP3 server connection settings
+            string host = "pop3.example.com";
+            int port = 110; // use 995 for SSL
+            string username = "user@example.com";
+            string password = "password";
 
-            // Skip real network calls when placeholders are used
-            if (host.Contains("example.com") || (username == "user" && password == "pass"))
+            // Output directory for saved messages
+            string outputDir = "Emails";
+
+
+            // Skip external calls when placeholder credentials are used
+            if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Skipping POP3 operations due to placeholder credentials.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Ensure output directory exists before any file write
-            string outputDirectory = "Output";
-            try
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDir))
             {
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Failed to prepare output directory: {dirEx.Message}");
-                return;
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Create and connect POP3 client
-            using (Pop3Client client = new Pop3Client(host, username, password))
+            // Create and use the POP3 client
+            using (Pop3Client client = new Pop3Client(host, port, username, password))
             {
-                try
-                {
-                    // List messages in the mailbox
-                    Pop3MessageInfoCollection messages = client.ListMessages();
-                    Console.WriteLine($"Total messages: {messages.Count}");
+                // Optional: set security options if needed (e.g., SSLImplicit)
+                // client.SecurityOptions = SecurityOptions.SSLImplicit;
 
-                    if (messages.Count > 0)
+                // Get the total number of messages on the server
+                int messageCount = client.GetMessageCount();
+
+                Console.WriteLine($"Total messages on server: {messageCount}");
+
+                // Retrieve each message, display its subject, and save to a file
+                for (int i = 1; i <= messageCount; i++)
+                {
+                    try
                     {
-                        // Get first message info
-                        Pop3MessageInfo firstInfo = messages[0];
-                        Console.WriteLine($"Fetching message #{firstInfo.SequenceNumber}: {firstInfo.Subject}");
+                        using (MailMessage message = client.FetchMessage(i))
+                        {
+                            Console.WriteLine($"Message {i}: Subject = {message.Subject}");
 
-                        // Save the fetched message to a local .eml file
-                        string outputPath = Path.Combine(outputDirectory, $"Message_{firstInfo.SequenceNumber}.eml");
-                        client.SaveMessage(firstInfo.SequenceNumber, outputPath);
-                        Console.WriteLine($"Message saved to: {outputPath}");
-
-                        // Mark the message for deletion
-                        client.DeleteMessage(firstInfo.SequenceNumber);
-                        Console.WriteLine($"Message #{firstInfo.SequenceNumber} marked for deletion.");
-
-                        // Commit deletions on the server
-                        Console.WriteLine("Deletions committed.");
+                            string filePath = Path.Combine(outputDir, $"Message_{i}.eml");
+                            try
+                            {
+                                message.Save(filePath);
+                                Console.WriteLine($"Saved to {filePath}");
+                            }
+                            catch (Exception ioEx)
+                            {
+                                Console.Error.WriteLine($"Failed to save message {i}: {ioEx.Message}");
+                            }
+                        }
+                    }
+                    catch (Exception fetchEx)
+                    {
+                        Console.Error.WriteLine($"Failed to fetch message {i}: {fetchEx.Message}");
                     }
                 }
-                catch (Exception clientEx)
+
+                // Example: delete the first message after processing
+                if (messageCount > 0)
                 {
-                    Console.Error.WriteLine($"POP3 operation failed: {clientEx.Message}");
+                    try
+                    {
+                        client.DeleteMessage(1);
+                        Console.WriteLine("Deleted message 1 from the server.");
+                    }
+                    catch (Exception delEx)
+                    {
+                        Console.Error.WriteLine($"Failed to delete message 1: {delEx.Message}");
+                    }
                 }
             }
         }

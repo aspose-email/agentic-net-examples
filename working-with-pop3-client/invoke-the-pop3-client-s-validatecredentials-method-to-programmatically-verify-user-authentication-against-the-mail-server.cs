@@ -1,53 +1,52 @@
+using Aspose.Email;
 using System;
-using Aspose.Email.Clients;
 using Aspose.Email.Clients.Pop3;
+using Aspose.Email.Clients;
 
-class Program
+namespace Pop3ValidateCredentialsSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder credentials – replace with real values for actual validation
-            string host = "pop3.example.com";
-            int port = 110;
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip external call when placeholders are detected
-            if (host.Contains("example.com"))
-            {
-                Console.WriteLine("Placeholder credentials detected. Skipping validation.");
-                return;
-            }
-
-            Pop3Client client = null;
+            // Top‑level exception guard
             try
             {
-                client = new Pop3Client(host, port, username, password);
+                // POP3 server connection details
+                string host = "pop3.example.com";
+                int port = 110; // default POP3 port; change if needed
+                string username = "user@example.com";
+                string password = "password";
+
+
+                // Skip external calls when placeholder credentials are used
+                if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
+                {
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
+                }
+
+                // Create the POP3 client (will be disposed automatically)
+                using (Pop3Client pop3Client = new Pop3Client(host, port, username, password))
+                {
+                    // Validate credentials safely
+                    try
+                    {
+                        bool credentialsValid = pop3Client.ValidateCredentials();
+                        Console.WriteLine($"Credentials valid: {credentialsValid}");
+                    }
+                    catch (Exception ex)
+                    {
+                        // Connection/authentication errors are reported here
+                        Console.Error.WriteLine($"Credential validation failed: {ex.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to create POP3 client: {ex.Message}");
-                return;
+                // Any unexpected errors are caught here
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-
-            using (client)
-            {
-                try
-                {
-                    bool isValid = client.ValidateCredentials();
-                    Console.WriteLine(isValid ? "Credentials are valid." : "Invalid credentials.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Credential validation error: {ex.Message}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

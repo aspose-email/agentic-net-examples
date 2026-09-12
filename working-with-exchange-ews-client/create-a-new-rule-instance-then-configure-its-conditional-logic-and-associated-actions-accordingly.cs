@@ -1,56 +1,50 @@
 using System;
-using System.Collections.Generic;
 using Aspose.Email;
+using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-namespace AsposeEmailRuleSample
+namespace AsposeEmailExamples
 {
-    // Simple rule class with condition and action
-    public class Rule
-    {
-        public Func<MailMessage, bool> Condition { get; set; }
-        public Action<MailMessage> Action { get; set; }
-
-        public void Apply(MailMessage message)
-        {
-            if (Condition != null && Condition(message))
-            {
-                Action?.Invoke(message);
-            }
-        }
-    }
-
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
+            // Exchange Web Services (EWS) client configuration
+            string mailboxUri = "https://mail.example.com/EWS/Exchange.asmx";
+            string username = "user@example.com";
+            string password = "password";
+
+            // Create the EWS client inside a using block to ensure proper disposal
             try
             {
-                // Create a sample mail message
-                MailMessage sampleMessage = new MailMessage();
-                sampleMessage.From = "sender@example.com";
-                sampleMessage.To.Add("recipient@example.com");
-                sampleMessage.Subject = "Test Email";
-                sampleMessage.Body = "This is a test email.";
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+                {
+                    // Define a rule that moves messages from a specific sender to a target folder
+                    MailAddress fromAddress = new MailAddress("sender@example.com");
+                    string destinationFolderId = "Inbox/Invoices";
 
-                // Create a new rule instance
-                Rule moveToFolderRule = new Rule();
 
-                // Configure condition: subject contains "Test"
-                moveToFolderRule.Condition = (MailMessage msg) => msg.Subject != null && msg.Subject.Contains("Test");
+                    // Skip external calls when placeholder credentials are used
+                    if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
+                    {
+                        Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                        return;
+                    }
 
-                // Configure action: add a custom header
-                moveToFolderRule.Action = (MailMessage msg) => msg.Headers.Add("X-Processed", "True");
+                    InboxRule rule = InboxRule.CreateRuleMoveFrom(fromAddress, destinationFolderId);
+                    rule.DisplayName = "Move invoices from sender";
+                    rule.IsEnabled = true;
 
-                // Apply rule to the message
-                moveToFolderRule.Apply(sampleMessage);
+                    // Create the rule on the default mailbox
+                    client.CreateInboxRule(rule);
 
-                // Output result
-                Console.WriteLine("Rule applied. Header X-Processed: " + sampleMessage.Headers["X-Processed"]);
+                    Console.WriteLine("Inbox rule created successfully.");
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex.Message);
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                // In a real application, consider logging the exception details.
             }
         }
     }

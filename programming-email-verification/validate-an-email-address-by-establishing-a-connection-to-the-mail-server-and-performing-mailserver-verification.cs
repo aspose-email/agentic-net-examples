@@ -1,44 +1,40 @@
-using System;
 using Aspose.Email;
+using System;
 using Aspose.Email.Tools.Verifications;
 
 namespace EmailVerificationSample
 {
+    // Author: Aspose.Email example
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
+            // Email address to validate
+            string emailAddress = "example@example.com";
+
+            // Create the validator instance
+            EmailValidator validator = new EmailValidator();
+
+            // Subscribe to the MailServerValidating event (optional)
+            validator.MailServerValidating += (object sender, MailServerValidatingEventArgs e) =>
+            {
+                Console.WriteLine($"Validating mail server for domain: {e.Domain}");
+            };
+
             try
             {
-                Console.Write("Enter email address to validate: ");
-                string emailAddress = Console.ReadLine();
+                // Perform validation using the overload that returns a ValidationResult
+                ValidationResult validationResult;
+                validator.Validate(emailAddress, out validationResult);
 
-                if (string.IsNullOrWhiteSpace(emailAddress))
-                {
-                    Console.Error.WriteLine("Email address is empty.");
-                    return;
-                }
-
-                // Create the validator
-                EmailValidator validator = new EmailValidator();
-
-                // Perform validation using the MailServer policy (default overload)
-                ValidationResult result;
-                validator.Validate(emailAddress, out result);
-
-                // Check the validation result using the ReturnCode property
-                if (result.ReturnCode == ValidationResponseCode.ValidationSuccess)
-                {
-                    Console.WriteLine("The email address is valid.");
-                }
-                else
-                {
-                    Console.WriteLine($"Validation failed. Reason: {result.Message}");
-                }
+                // Output the validation outcome
+                Console.WriteLine($"ReturnCode: {validationResult.ReturnCode}");
+                Console.WriteLine($"Message   : {validationResult.Message}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                // Handle any unexpected errors gracefully
+                Console.Error.WriteLine($"Error during validation: {ex.Message}");
             }
         }
     }

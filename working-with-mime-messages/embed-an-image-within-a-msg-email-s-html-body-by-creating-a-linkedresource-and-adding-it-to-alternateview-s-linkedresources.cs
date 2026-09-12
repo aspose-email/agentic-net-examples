@@ -5,80 +5,67 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
+            // Input image path
+            string imagePath = "1.jpg";
+
+            // Verify the image file exists
+            if (!File.Exists(imagePath))
+            {
+                Console.Error.WriteLine($"Image file not found: {imagePath}");
+                return;
+            }
+
             // Output MSG file path
-            string outputPath = "EmbeddedImage_out.msg";
-            string outputDir = Path.GetDirectoryName(outputPath);
+            string outputMsgPath = "EmbeddedImage_out.msg";
+
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputMsgPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Image to embed
-            string imagePath = "1.jpg";
-            if (!File.Exists(imagePath))
-            {
-                try
-                {
-                    // Create an empty placeholder image file
-                    File.WriteAllBytes(imagePath, new byte[0]);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("Failed to create placeholder image: " + ex.Message);
-                    return;
-                }
-            }
-
             // Create the email message
-            using (MailMessage message = new MailMessage())
+            MailMessage eml = new MailMessage
             {
-                message.From = "AndrewIrwin@from.com";
-                message.To.Add("SusanMarc@to.com");
-                message.Subject = "This is an email";
+                From = "AndrewIrwin@from.com",
+                To = "SusanMarc@to.com",
+                Subject = "This is an email"
+            };
 
-                // Plain text view
-                using (AlternateView plainView = AlternateView.CreateAlternateViewFromString(
-                    "This is my plain text content", null, "text/plain"))
-                {
-                    // HTML view with CID reference
-                    using (AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
-                        "Here is an embedded image.<img src=cid:barcode>", null, "text/html"))
-                    {
-                        // Linked resource for the image
-                        using (LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg))
-                        {
-                            barcode.ContentId = "barcode";
+            // Plain text view (fallback for non‑HTML clients)
+            AlternateView plainView = AlternateView.CreateAlternateViewFromString(
+                "This is my plain text content",
+                null,
+                "text/plain");
 
-                            // Add linked resource to the message
-                            message.LinkedResources.Add(barcode);
+            // HTML view with a CID reference to the embedded image
+            AlternateView htmlView = AlternateView.CreateAlternateViewFromString(
+                "Here is an embedded image. <img src=cid:barcode>",
+                null,
+                "text/html");
 
-                            // Add alternate views
-                            message.AlternateViews.Add(plainView);
-                            message.AlternateViews.Add(htmlView);
+            // Create the linked resource (embedded image) and assign a Content‑Id
+            LinkedResource barcode = new LinkedResource(imagePath, MediaTypeNames.Image.Jpeg)
+            {
+                ContentId = "barcode"
+            };
 
-                            // Save the message as MSG
-                            try
-                            {
-                                message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
-                                Console.WriteLine("Message saved to " + outputPath);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine("Failed to save message: " + ex.Message);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
+            // Attach the linked resource and alternate views to the message
+            eml.LinkedResources.Add(barcode);
+            eml.AlternateViews.Add(plainView);
+            eml.AlternateViews.Add(htmlView);
+
+            // Save the message as a MSG file with Unicode support
+            eml.Save(outputMsgPath, SaveOptions.DefaultMsgUnicode);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,51 +1,55 @@
+using Aspose.Email.Mapi;
 using System;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
 class Program
 {
     static void Main()
     {
+        // Exchange server connection details
+        string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+        string username = "user@example.com";
+        string password = "password";
+
+
+        // Skip external calls when placeholder credentials are used
+        if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
+        {
+            Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+            return;
+        }
+
         try
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
+            // Initialize the EWS client
+            IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password);
 
-            // Skip execution when placeholders are detected
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com") || password == "password")
-            {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
-                return;
-            }
+            // Create a new task
+            ExchangeTask newTask = new ExchangeTask();
+            newTask.Subject = "Sample Task";
+            newTask.Body = "This is a sample task created via Aspose.Email.";
+            newTask.StartDate = DateTime.Now;
+            newTask.DueDate = DateTime.Now.AddDays(7);
 
-            // Create EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
-            {
-                try
-                {
-                    // Retrieve mailbox information
-                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
-                    Console.WriteLine("Inbox URI: " + mailboxInfo.InboxUri);
+            // Create the task in the default task folder; returns the task URI
+            string taskUri = client.CreateTask(newTask);
+            Console.WriteLine($"Task created. URI: {taskUri}");
 
-                    // List messages in the inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri);
-                    foreach (var msgInfo in messages)
-                    {
-                        Console.WriteLine("Subject: " + msgInfo.Subject);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("EWS operation error: " + ex.Message);
-                }
-            }
+            // Prepare updated task information using MapiTask (overload that accepts URI + MapiTask)
+            MapiTask updatedTask = new MapiTask();
+            updatedTask.Subject = "Updated Sample Task";
+            updatedTask.Body = "This is the updated body of the task.";
+            updatedTask.StartDate = DateTime.Now;
+            updatedTask.DueDate = DateTime.Now.AddDays(10);
+
+            // Update the existing task
+            string updatedTaskUri = client.UpdateTask(taskUri, updatedTask);
+            Console.WriteLine($"Task updated. New URI: {updatedTaskUri}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Unhandled exception: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,60 +1,61 @@
-using System;
-using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
+using System;
+using System.IO;
 
 class Program
 {
+    // Author: Aspose.Email example – extracts rich‑text body from an Outlook MSG file.
     static void Main()
     {
         try
         {
-            string msgPath = "input.msg";
+            // Path to the MSG file.
+            string msgPath = "sample.msg";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
+            // Verify that the input file exists.
             if (!File.Exists(msgPath))
             {
+                // Create a placeholder MSG file if it does not exist.
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "receiver@example.com",
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
-                        "Placeholder body text."))
+                        "Placeholder body."))
                     {
                         placeholder.Save(msgPath);
                     }
-
-                    Console.Error.WriteLine($"Input MSG file not found. Created placeholder at '{msgPath}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the MSG file and extract the rich‑text (RTF) body.
-            try
-            {
-                using (MapiMessage message = MapiMessage.Load(msgPath))
-                {
-                    string rtfBody = message.BodyRtf ?? string.Empty;
-
-                    // Subsequent processing of the rich‑text content can be done here.
-                    Console.WriteLine("Rich‑Text Body (RTF):");
-                    Console.WriteLine(rtfBody);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {msgPath}");
                 return;
+            }
+
+            // Load the Outlook message.
+            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            {
+                // Extract the rich‑text (RTF) body. If unavailable, fall back to the plain‑text body.
+                string rtfBody = msg.BodyRtf;
+                if (string.IsNullOrEmpty(rtfBody))
+                {
+                    rtfBody = msg.Body;
+                }
+
+                // Output the extracted rich‑text content.
+                Console.WriteLine("Rich‑Text Body:");
+                Console.WriteLine(rtfBody);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }

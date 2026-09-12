@@ -9,22 +9,23 @@ class Program
     {
         try
         {
-            string inputPath = "input.msg";
-            string outputPath = "output.msg";
+            // Input MSG file path
+            string inputMsgPath = "input.msg";
+            // Output EML file path
+            string outputEmlPath = "output.eml";
 
-            // Ensure the input MSG file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(inputPath))
+            // Verify input file exists
+            if (!File.Exists(inputMsgPath))
             {
                 try
                 {
                     using (MapiMessage placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "receiver@example.com",
-                        "Placeholder subject",
-                        "Placeholder body"))
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.Save(inputPath);
-                        Console.WriteLine($"Created placeholder MSG at {inputPath}");
+                        placeholder.Save(inputMsgPath);
                     }
                 }
                 catch (Exception ex)
@@ -32,67 +33,46 @@ class Program
                     Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the existing MSG file.
-            MapiMessage message;
-            try
-            {
-                message = MapiMessage.Load(inputPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
                 return;
             }
 
-            using (message)
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputEmlPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Prepare attachment data.
-                string attachmentName = "NewAttachment.txt";
-                byte[] attachmentData = System.Text.Encoding.UTF8.GetBytes("This is the content of the new attachment.");
+                Directory.CreateDirectory(outputDir);
+            }
 
-                // Add the attachment to the message.
-                try
-                {
-                    message.Attachments.Add(attachmentName, attachmentData);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error adding attachment: {ex.Message}");
-                    return;
-                }
+            // Load the MSG file
+            MapiMessage mapiMsg = MapiMessage.Load(inputMsgPath);
 
-                // Ensure the output directory exists.
-                try
+            // Convert to MailMessage for easier manipulation
+            MailConversionOptions conversionOpts = new MailConversionOptions();
+            using (MailMessage mailMsg = mapiMsg.ToMailMessage(conversionOpts))
+            {
+                // Create a new attachment (ensure the file exists or adjust path as needed)
+                string attachmentPath = "newfile.txt";
+                if (!File.Exists(attachmentPath))
                 {
-                    string outputDir = Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error ensuring output directory: {ex.Message}");
-                    return;
+                    // Create a minimal placeholder file if missing
+                    File.WriteAllText(attachmentPath, "Placeholder content");
                 }
 
-                // Save the modified message.
-                try
+                using (Attachment newAttachment = new Attachment(attachmentPath))
                 {
-                    message.Save(outputPath);
-                    Console.WriteLine($"Message saved with new attachment to {outputPath}");
+                    // Add the attachment to the email
+                    mailMsg.AddAttachment(newAttachment);
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
-                }
+
+                // Save the modified message to disk
+                mailMsg.Save(outputEmlPath);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

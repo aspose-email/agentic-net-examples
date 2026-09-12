@@ -1,80 +1,76 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Amp;
 
-class Program
+namespace AmpEmailParser
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputMsgPath = "input.msg";
-            string outputHtmlPath = "amp_body.html";
-
-            // Guard input file existence
-            if (!File.Exists(inputMsgPath))
+            try
             {
-                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
-                return;
-            }
+                // Path to the MSG file containing the AMP email
+                string msgFilePath = "sample.msg";
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputHtmlPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-            {
+                // Verify that the input file exists
+                if (!File.Exists(msgFilePath))
+                {
                 try
                 {
-                    Directory.CreateDirectory(outputDirectory);
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgFilePath);
+                    }
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
-            }
-
-            // Load the MSG file into an AmpMessage
-            using (FileStream inputStream = new FileStream(inputMsgPath, FileMode.Open, FileAccess.Read))
-            using (AmpMessage ampMessage = new AmpMessage())
-            {
-                try
-                {
-                    ampMessage.Import(inputStream);
-                }
-                catch (Exception importEx)
-                {
-                    Console.Error.WriteLine($"Failed to import MSG file: {importEx.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                // Access the AMP HTML body
-                string ampHtmlBody = ampMessage.AmpHtmlBody;
-                if (string.IsNullOrEmpty(ampHtmlBody))
-                {
-                    Console.WriteLine("The message does not contain AMP content.");
+                    Console.Error.WriteLine($"Input file not found: {msgFilePath}");
+                    return;
                 }
-                else
-                {
-                    Console.WriteLine("AMP HTML Body:");
-                    Console.WriteLine(ampHtmlBody);
 
-                    // Save AMP HTML to a file
-                    try
+                // Load the Outlook MSG file
+                MapiMessage mapiMessage = MapiMessage.Load(msgFilePath);
+
+                // Convert the MAPI message to a MailMessage using default conversion options
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
+                {
+                    // Attempt to treat the message as an AMP message
+                    AmpMessage ampMessage = mailMessage as AmpMessage;
+
+                    if (ampMessage != null)
                     {
-                        File.WriteAllText(outputHtmlPath, ampHtmlBody);
-                        Console.WriteLine($"AMP HTML body saved to: {outputHtmlPath}");
+                        // Access AMP structured content (example: list AMP components)
+                        // The AmpMessage class provides methods to work with AMP components.
+                        // Here we simply indicate that AMP content is present.
+                        Console.WriteLine("The message contains AMP content.");
                     }
-                    catch (Exception writeEx)
+                    else
                     {
-                        Console.Error.WriteLine($"Failed to write AMP HTML to file: {writeEx.Message}");
+                        Console.WriteLine("The message does not contain AMP content.");
                     }
+
+                    // Access common fields
+                    Console.WriteLine($"Subject: {mailMessage.Subject}");
+                    Console.WriteLine($"From: {mailMessage.From}");
+                    Console.WriteLine($"Body (Text): {mailMessage.Body}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

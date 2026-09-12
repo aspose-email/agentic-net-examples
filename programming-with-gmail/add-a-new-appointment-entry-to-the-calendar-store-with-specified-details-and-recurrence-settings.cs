@@ -1,66 +1,64 @@
+using Aspose.Email.Calendar.Recurrences;
 using System;
 using Aspose.Email;
 using Aspose.Email.Calendar;
-using Aspose.Email.Calendar.Recurrences;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder credentials – replace with real values for actual execution
-            string host = "example.com";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Guard against placeholder credentials to avoid live network calls in CI
-            if (host.Contains("example") || username.Contains("example"))
+            // Author note: This sample demonstrates creating a recurring appointment in an Exchange calendar.
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping network call.");
-                return;
-            }
+                // Exchange service connection details (replace with real values).
+                string serviceUrl = "https://exchange.example.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Prepare attendees
-            MailAddressCollection attendees = new MailAddressCollection();
-            attendees.Add(new MailAddress("person1@domain.com"));
-            attendees.Add(new MailAddress("person2@domain.com"));
 
-            // Create the appointment
-            Appointment appointment = new Appointment(
-                "Conference Room",
-                "Team Sync",
-                "Daily stand‑up meeting",
-                new DateTime(2024, 4, 1, 9, 0, 0),
-                new DateTime(2024, 4, 1, 9, 30, 0),
-                new MailAddress("organizer@domain.com"),
-                attendees);
-
-            // Define a daily recurrence pattern (every day, 10 occurrences)
-            DailyRecurrencePattern recurrence = new DailyRecurrencePattern(1);
-            recurrence.Occurs = 10; // Number of occurrences
-            // Alternatively, you could set recurrence.EndDate = new DateTime(2024, 4, 30);
-
-            appointment.Recurrence = recurrence;
-
-            // Connect to the Exchange server and add the appointment
-            using (IEWSClient client = EWSClient.GetEWSClient(host, username, password))
-            {
-                try
+                // Skip external calls when placeholder credentials are used
+                if (serviceUrl.Contains("example.com") || username.Contains("example.com") || password == "password")
                 {
-                    string uid = client.CreateAppointment(appointment);
-                    Console.WriteLine($"Appointment created with UID: {uid}");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                    return;
                 }
-                catch (Exception ex)
+
+                // Create the Exchange client.
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
-                    Console.Error.WriteLine($"Failed to create appointment: {ex.Message}");
+                    // Prepare attendees.
+                    MailAddressCollection attendees = new MailAddressCollection();
+                    attendees.Add(new MailAddress("person1@domain.com"));
+                    attendees.Add(new MailAddress("person2@domain.com"));
+
+                    // Define a daily recurrence pattern: every day, 5 occurrences.
+                    DailyRecurrencePattern dailyPattern = new DailyRecurrencePattern(1);
+                    dailyPattern.Occurs = 5; // Number of occurrences.
+
+                    // Create the appointment with recurrence.
+                    Appointment appointment = new Appointment(
+                        location: "Conference Room",
+                        summary: "Team Sync",
+                        description: "Weekly sync meeting",
+                        startDate: new DateTime(2023, 10, 1, 9, 0, 0),
+                        endDate: new DateTime(2023, 10, 1, 10, 0, 0),
+                        organizer: new MailAddress("organizer@domain.com"),
+                        attendees: attendees,
+                        recurrencePattern: dailyPattern);
+
+                                        appointment.Summary = "Meeting Summary";
+// Add the appointment to the default calendar folder.
+                    string appointmentId = client.CreateAppointment(appointment);
+                    Console.WriteLine($"Created appointment with ID: {appointmentId}");
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

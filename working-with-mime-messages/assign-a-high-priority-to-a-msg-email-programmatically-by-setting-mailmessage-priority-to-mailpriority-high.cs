@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mime;
 
 class Program
 {
@@ -8,44 +9,49 @@ class Program
     {
         try
         {
-            string emlPath = "Message.eml";
-            string msgPath = "outTest_out.msg";
+            string inputPath = "input.msg";
+            string outputPath = "output.msg";
 
-            // Ensure the input EML file exists; create a minimal placeholder if missing.
-            if (!File.Exists(emlPath))
+            if (!File.Exists(inputPath))
             {
                 try
                 {
-                    string placeholder = "From: test@example.com\r\nTo: test@example.com\r\nSubject: Test\r\n\r\nBody of the email.";
-                    File.WriteAllText(emlPath, placeholder);
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder EML file: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the email, set high priority, and save as MSG.
-            try
-            {
-                using (MailMessage mailMessage = MailMessage.Load(emlPath))
+                using (var placeholder = new MailMessage())
                 {
-                    mailMessage.Priority = MailPriority.High;
-
-                    MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
-                    mailMessage.Save(msgPath, saveOptions);
+                    placeholder.From = new MailAddress("sender@example.com");
+                    placeholder.To.Add(new MailAddress("recipient@example.com"));
+                    placeholder.Subject = "Placeholder Subject";
+                    placeholder.Body = "Placeholder body.";
+                    placeholder.Save(inputPath, SaveOptions.DefaultMsgUnicode);
                 }
             }
-            catch (Exception ex)
+
+            using (var message = MailMessage.Load(inputPath))
             {
-                Console.Error.WriteLine($"Error processing email files: {ex.Message}");
-                return;
+                message.Priority = MailPriority.High;
+                message.Save(outputPath, SaveOptions.DefaultMsgUnicode);
             }
+
+            Console.WriteLine("Message saved with high priority.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -10,66 +10,46 @@ class Program
     {
         try
         {
-            string icsPath = "input.ics";
-            string msgPath = "output.msg";
+            // Input and output file paths
+            const string icsPath = "input.ics";
+            const string msgPath = "output.msg";
 
-            // Ensure the input .ics file exists
+            // Verify the .ics file exists
             if (!File.Exists(icsPath))
             {
-                try
-                {
-                    // Create a minimal placeholder .ics file
-                    File.WriteAllText(icsPath, "BEGIN:VCALENDAR\r\nEND:VCALENDAR");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder .ics file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($".ics file not found: {icsPath}");
+                return;
             }
 
             // Load the appointment from the .ics file
             Appointment appointment;
             try
             {
+                // Appointment.Load is the standard way to read an iCalendar file
                 appointment = Appointment.Load(icsPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load appointment from .ics: {ex.Message}");
+                Console.Error.WriteLine($"Failed to load appointment: {ex.Message}");
                 return;
             }
 
-            // Modify the location
+            // Modify the location of the appointment
             appointment.Location = "New Conference Room";
 
-            // Convert to MAPI message
-            MapiMessage mapiMessage;
+            // Convert the appointment to a MAPI message
+            MapiMessage mapMsg = appointment.ToMapiMessage();
+
+            // Save the MAPI message as an Outlook .msg file
             try
             {
-                mapiMessage = appointment.ToMapiMessage();
+                mapMsg.Save(msgPath);
+                Console.WriteLine($"Appointment exported to MSG: {msgPath}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to convert appointment to MAPI message: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
             }
-
-            // Save as Outlook .msg file
-            try
-            {
-                using (mapiMessage)
-                {
-                    mapiMessage.Save(msgPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to save .msg file: {ex.Message}");
-                return;
-            }
-
-            Console.WriteLine("Appointment exported to MSG successfully.");
         }
         catch (Exception ex)
         {

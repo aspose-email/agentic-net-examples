@@ -1,50 +1,125 @@
-using Aspose.Email.Tools.Search;
+using Aspose.Email.Storage.Pst;
 using System;
 using System.Net;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Clients.Exchange;
 
-class Program
+namespace AsposeEmailEwsSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection details
-            string serviceUrl = "https://exchange.example.com/EWS";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip execution when placeholders are detected
-            if (serviceUrl.Contains("example.com"))
+            try
             {
-                Console.WriteLine("Placeholder credentials detected. Skipping archive operation.");
-                return;
-            }
+                // Exchange server connection parameters
+                string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
+                string username = "user@example.com";
+                string password = "password";
 
-            // Create the EWS client using the factory method
-            using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, new NetworkCredential(username, password)))
-            {
-                // Build a query to select messages that meet the criteria (e.g., subject contains "Report")
-                MailQueryBuilder builder = new MailQueryBuilder();
-                builder.Subject.Contains("Report");
-                MailQuery query = builder.GetQuery();
-
-                // Retrieve messages from the Inbox that match the query
-                ExchangeMessageInfoCollection messages = client.ListMessages(client.MailboxInfo.InboxUri, query);
-
-                // Archive each matching message
-                foreach (ExchangeMessageInfo info in messages)
+                // Create EWS client (IDisposable)
+                using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
                 {
-                    client.ArchiveItem(client.MailboxInfo.InboxUri, info.UniqueUri);
-                    Console.WriteLine($"Archived message: {info.Subject}");
+                    // -------------------- List messages in Inbox --------------------
+                    string inboxUri = client.MailboxInfo.InboxUri;
+                    ExchangeMessageInfoCollection messageInfos;
+                    try
+                    {
+                        messageInfos = client.ListMessages(inboxUri);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error listing messages: {ex.Message}");
+                        return;
+                    }
+
+                    if (messageInfos != null && messageInfos.Count > 0)
+                    {
+                        foreach (var msgInfo in messageInfos)
+                        {
+                            try
+                            {
+                                // Fetch full message and display subject
+                                using (MailMessage mail = client.FetchMessage(msgInfo.UniqueUri))
+                                {
+                                    Console.WriteLine($"Subject: {mail.Subject}");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Error fetching message {msgInfo.UniqueUri}: {ex.Message}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No messages found in Inbox.");
+                    }
+
+                    // -------------------- Create a subfolder under Inbox --------------------
+                    string newFolderName = "SampleFolder";
+
+                    // Skip external calls when placeholder credentials are used
+                    if (username.Contains("example.com") || password == "password")
+                    {
+                        Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+                        return;
+                    }
+
+                    ExchangeFolderInfo newFolderInfo = null;
+                    try
+                    {
+                        bool folderExists = client.FolderExists(inboxUri, newFolderName, out newFolderInfo);
+                        if (!folderExists)
+                        {
+                            newFolderInfo = client.CreateFolder(inboxUri, newFolderName, null, null);
+                            Console.WriteLine($"Created folder: {newFolderInfo.Uri}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Folder already exists: {newFolderInfo.Uri}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error handling folder '{newFolderName}': {ex.Message}");
+                    }
+
+                    // -------------------- Move first message to the new folder --------------------
+                    if (messageInfos != null && messageInfos.Count > 0 && newFolderInfo != null)
+                    {
+                        string firstMessageUri = messageInfos[0].UniqueUri;
+                        try
+                        {
+                            client.MoveItem(firstMessageUri, newFolderInfo.Uri);
+                            Console.WriteLine($"Moved message to {newFolderInfo.Uri}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Error moving message: {ex.Message}");
+                        }
+                    }
+
+                    // -------------------- Cleanup: delete the created folder --------------------
+                    if (newFolderInfo != null)
+                    {
+                        try
+                        {
+                            client.DeleteFolder(newFolderInfo.Uri, true);
+                            Console.WriteLine($"Deleted folder: {newFolderInfo.Uri}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Error deleting folder: {ex.Message}");
+                        }
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine(ex.Message);
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

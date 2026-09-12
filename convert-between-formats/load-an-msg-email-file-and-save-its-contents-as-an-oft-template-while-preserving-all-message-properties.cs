@@ -1,28 +1,29 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
+            // Author note: Example demonstrates loading a MSG file and saving it as an Outlook template (OFT) preserving all properties.
             string inputPath = "input.msg";
-            string outputPath = "template.oft";
+            string outputPath = "output.oft";
 
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath);
+                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
                     }
                 }
                 catch (Exception ex)
@@ -31,28 +32,27 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            try
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                using (MapiMessage message = MapiMessage.Load(inputPath))
-                {
-                    // Save the message as an Outlook template (OFT) preserving all properties
-                    message.SaveAsTemplate(outputPath);
-                    Console.WriteLine($"Message saved as OFT template to '{outputPath}'.");
-                }
+                Directory.CreateDirectory(outputDir);
             }
-            catch (Exception ex)
+
+            // Load the MSG message
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
-                return;
+                // Save as OFT template using default options (preserves all properties)
+                message.Save(outputPath, SaveOptions.DefaultOft);
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

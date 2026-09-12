@@ -9,12 +9,11 @@ class Program
     {
         try
         {
-            // Define file paths
             string inputMsgPath = "input.msg";
-            string replacementImagePath = "newImage.png";
             string outputMsgPath = "output.msg";
+            string replacementImagePath = "newImage.jpg";
 
-            // Guard input MSG file existence
+            // Verify input MSG file exists; create placeholder if missing
             if (!File.Exists(inputMsgPath))
             {
                 try
@@ -34,85 +33,53 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input MSG file not found: {inputMsgPath}");
+                Console.Error.WriteLine($"Input file '{inputMsgPath}' not found.");
                 return;
             }
 
-            // Guard replacement image existence
-            if (!File.Exists(replacementImagePath))
-            {
-                Console.Error.WriteLine($"Replacement image file not found: {replacementImagePath}");
-                return;
-            }
+            // Load the MSG message
+            MapiMessage msg = MapiMessage.Load(inputMsgPath);
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Analyze embedded images
+            Console.WriteLine("Embedded images found in the message:");
+            foreach (MapiAttachment attachment in msg.Attachments)
             {
-                try
+                string ext = Path.GetExtension(attachment.FileName)?.ToLowerInvariant();
+                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif")
                 {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
+                    Console.WriteLine($"- {attachment.FileName}");
                 }
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(inputMsgPath))
+            // Replace the first JPEG embedded image with a new one (if both exist)
+            if (File.Exists(replacementImagePath))
             {
-                // Iterate over attachments to find embedded images
-                foreach (MapiAttachment attachment in msg.Attachments)
+                byte[] newImageData = File.ReadAllBytes(replacementImagePath);
+                for (int i = 0; i < msg.Attachments.Count; i++)
                 {
-                    // Identify image attachments by file extension (common image types)
-                    string fileName = attachment.FileName ?? string.Empty;
-                    string extension = Path.GetExtension(fileName).ToLowerInvariant();
-
-                    bool isImage = extension == ".png" ||
-                                   extension == ".jpg" ||
-                                   extension == ".jpeg" ||
-                                   extension == ".gif" ||
-                                   extension == ".bmp";
-
-                    // Additional check using MimeTag if available
-                    if (!isImage && !string.IsNullOrEmpty(attachment.MimeTag))
+                    MapiAttachment att = msg.Attachments[i];
+                    string ext = Path.GetExtension(att.FileName)?.ToLowerInvariant();
+                    if (ext == ".jpg" || ext == ".jpeg")
                     {
-                        isImage = attachment.MimeTag.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    if (isImage)
-                    {
-                        try
-                        {
-                            // Replace image content with the new image bytes
-                            byte[] newImageData = File.ReadAllBytes(replacementImagePath);
-                            attachment.BinaryData = newImageData;
-                            Console.WriteLine($"Replaced image attachment: {fileName}");
-                        }
-                        catch (Exception imgEx)
-                        {
-                            Console.Error.WriteLine($"Failed to replace image '{fileName}': {imgEx.Message}");
-                        }
+                        // Replace the binary data of the existing attachment
+                        att.BinaryData = newImageData;
+                        Console.WriteLine($"Replaced image '{att.FileName}' with '{replacementImagePath}'.");
+                        break; // Replace only the first matching image
                     }
                 }
-
-                // Save the modified MSG
-                try
-                {
-                    msg.Save(outputMsgPath);
-                    Console.WriteLine($"Modified MSG saved to: {outputMsgPath}");
-                }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Failed to save modified MSG: {saveEx.Message}");
-                }
             }
+            else
+            {
+                Console.Error.WriteLine($"Replacement image '{replacementImagePath}' not found. Skipping replacement.");
+            }
+
+            // Save the modified MSG message
+            msg.Save(outputMsgPath);
+            Console.WriteLine($"Modified message saved to '{outputMsgPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

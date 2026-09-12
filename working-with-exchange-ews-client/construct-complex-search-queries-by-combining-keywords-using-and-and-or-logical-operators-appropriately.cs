@@ -1,63 +1,48 @@
-using Aspose.Email.Tools.Search;
 using System;
 using Aspose.Email;
+using Aspose.Email.Tools.Search;
 using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
-namespace AsposeEmailEwsSearchExample
+namespace ComplexMailQuerySample
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            // Top‑level exception guard
             try
             {
-                // Placeholder connection details – replace with real values when running against a live server
-                string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+                // EWS connection parameters
+                string mailboxUri = "https://outlook.office365.com/EWS/Exchange.asmx";
                 string username = "user@example.com";
                 string password = "password";
 
-                // Skip actual network call when placeholder data is detected (prevents CI failures)
-                if (mailboxUri.Contains("example.com"))
+
+                // Skip external calls when placeholder credentials are used
+                if (username.Contains("example.com") || password == "password")
                 {
-                    Console.WriteLine("Placeholder credentials detected. Skipping EWS operations.");
+                    Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                     return;
                 }
 
-                // Create the EWS client using the factory method (no direct constructor)
+                // Create EWS client (implements IDisposable)
                 using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
                 {
-                    // ------------------------------
-                    // Example 1: AND query
-                    // Subject contains "Report" AND From contains "alice@example.com"
-                    // ------------------------------
-                    ExchangeQueryBuilder andBuilder = new ExchangeQueryBuilder();
-                    andBuilder.Subject.Contains("Report");
-                    andBuilder.From.Contains("alice@example.com");
-                    MailQuery andQuery = andBuilder.GetQuery();
+                    // Retrieve mailbox information (folders URIs)
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
 
-                    // List messages that match the AND query
-                    ExchangeMessageInfoCollection andMessages = client.ListMessages(client.MailboxInfo.InboxUri, andQuery);
-                    Console.WriteLine($"AND query returned {andMessages.Count} message(s).");
+                    // Construct a complex MailQuery with AND (&) and OR (|) operators
+                    // Example: (From contains 'test@test.com' OR Seen = True) AND SentDate >= 12-May-2010
+                    MailQuery mailQuery = new MailQuery("(('From' Contains 'test@test.com' | 'Seen' = 'True') & 'SentDate' >= '12-May-2010')");
 
-                    // ------------------------------
-                    // Example 2: OR query
-                    // From contains "alice@example.com" OR From contains "bob@example.com"
-                    // ------------------------------
-                    ExchangeQueryBuilder orBuilder = new ExchangeQueryBuilder();
-                    MailQuery fromAlice = orBuilder.From.Contains("alice@example.com");
-                    MailQuery fromBob = orBuilder.From.Contains("bob@example.com");
-                    MailQuery orQuery = orBuilder.Or(fromAlice, fromBob);
+                    // Search messages in the Inbox that satisfy the query
+                    ExchangeMessageInfoCollection messages = client.ListMessages(mailboxInfo.InboxUri, mailQuery);
 
-                    // List messages that match the OR query
-                    ExchangeMessageInfoCollection orMessages = client.ListMessages(client.MailboxInfo.InboxUri, orQuery);
-                    Console.WriteLine($"OR query returned {orMessages.Count} message(s).");
+                    Console.WriteLine($"Found {messages.Count} message(s) matching the complex query.");
                 }
             }
             catch (Exception ex)
             {
-                // Friendly error output – prevents unhandled exceptions from crashing the program
                 Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }

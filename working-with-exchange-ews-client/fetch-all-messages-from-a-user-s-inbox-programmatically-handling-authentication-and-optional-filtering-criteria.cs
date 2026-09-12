@@ -1,65 +1,53 @@
-using Aspose.Email.Clients.Exchange;
 using System;
-using System.Net;
 using Aspose.Email;
+using Aspose.Email.Clients;
+using Aspose.Email.Clients.Exchange;
 using Aspose.Email.Clients.Exchange.WebService;
 
-class Program
+namespace AsposeEmailInboxFetch
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
+            // Replace with your actual EWS endpoint and credentials
+            string serviceUrl = "https://outlook.office365.com/EWS/Exchange.asmx";
             string username = "user@example.com";
             string password = "password";
 
-            // Skip real network call when placeholders are detected
-            if (mailboxUri.Contains("example.com") || username.Contains("example.com"))
+
+            // Skip external calls when placeholder credentials are used
+            if (username.Contains("example.com") || password == "password")
             {
-                Console.WriteLine("Placeholder credentials detected – skipping connection.");
+                Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
                 return;
             }
 
-            // Create the EWS client inside a using block to ensure disposal
-            using (IEWSClient client = EWSClient.GetEWSClient(mailboxUri, username, password))
+            try
             {
-                try
+                // Create and use the EWS client
+                using (IEWSClient client = EWSClient.GetEWSClient(serviceUrl, username, password))
                 {
-                    // List all messages in the default Inbox folder
-                    ExchangeMessageInfoCollection messageInfos = client.ListMessages();
+                    // Get mailbox information to locate the Inbox folder URI
+                    ExchangeMailboxInfo mailboxInfo = client.GetMailboxInfo();
+                    string inboxUri = mailboxInfo.InboxUri;
 
-                    foreach (ExchangeMessageInfo info in messageInfos)
+                    // Retrieve all messages from the Inbox
+                    ExchangeMessageInfoCollection messageInfos = client.ListMessages(inboxUri);
+
+                    foreach (ExchangeMessageInfo messageInfo in messageInfos)
                     {
-                        // Output basic information
-                        Console.WriteLine($"Subject: {info.Subject}");
-                        Console.WriteLine($"From: {info.From}");
-                        Console.WriteLine($"Received: {info.InternalDate}");
-                        Console.WriteLine($"URI: {info.UniqueUri}");
-                        Console.WriteLine(new string('-', 40));
-
-                        // Optionally fetch the full message if needed
-                        using (MailMessage fullMessage = client.FetchMessage(info.UniqueUri))
-                        {
-                            // Example: display the first 100 characters of the body
-                            string bodySnippet = fullMessage.Body != null && fullMessage.Body.Length > 100
-                                ? fullMessage.Body.Substring(0, 100) + "..."
-                                : fullMessage.Body;
-                            Console.WriteLine($"Body snippet: {bodySnippet}");
-                            Console.WriteLine(new string('=', 40));
-                        }
+                        Console.WriteLine($"Subject: {messageInfo.Subject}");
+                        Console.WriteLine($"Received: {messageInfo.InternalDate}");
+                        Console.WriteLine();
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during message retrieval: {ex.Message}");
-                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                // Gracefully handle any errors (connection, authentication, etc.)
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

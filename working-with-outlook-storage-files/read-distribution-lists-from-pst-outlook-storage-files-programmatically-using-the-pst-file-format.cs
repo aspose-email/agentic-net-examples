@@ -10,79 +10,88 @@ class Program
     {
         try
         {
-            string pstPath = "sample.pst";
+            const string pstPath = "storage.pst";
 
-            // Ensure PST file exists; create a minimal one if missing
             if (!File.Exists(pstPath))
             {
-                try
-                {
-                    using (PersonalStorage createdPst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Create a default Contacts folder (optional)
-                        createdPst.CreatePredefinedFolder("Contacts", StandardIpmFolder.Contacts);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                return;
             }
 
-            // Open the PST file and read distribution lists
+            const string tempMsgDir = "ExtractedMessages";
+            try
+            {
+                if (!Directory.Exists(tempMsgDir))
+                    Directory.CreateDirectory(tempMsgDir);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create temporary directory '{tempMsgDir}': {ex.Message}");
+                return;
+            }
+
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Process the root folder
-                ProcessFolder(pst.RootFolder, pst);
-
-                // Recursively process subfolders
-                foreach (FolderInfo subFolder in pst.RootFolder.GetSubFolders())
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    ProcessFolderRecursive(subFolder, pst);
+                    Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                    Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                    Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                    {
+                        Console.WriteLine($"Processing message: {messageInfo.Subject}");
+
+                        // Extract as MapiMessage
+                        MapiMessage mapiMsg;
+                        try
+                        {
+                            mapiMsg = pst.ExtractMessage(messageInfo);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to extract message '{messageInfo.Subject}': {ex.Message}");
+                            continue;
+                        }
+
+                        // Build a safe filename
+                        string safeSubject = string.IsNullOrWhiteSpace(mapiMsg.Subject) ? "NoSubject" : mapiMsg.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            safeSubject = safeSubject.Replace(c, '_');
+
+                        string msgFilePath = Path.Combine(tempMsgDir, $"{safeSubject}_{Guid.NewGuid()}.msg");
+
+                        try
+                        {
+                            mapiMsg.Save(msgFilePath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to save message '{mapiMsg.Subject}': {ex.Message}");
+                            continue;
+                        }
+
+                        // Check for distribution list
+                        if (mapiMsg.SupportedType == MapiItemType.DistList)
+                        {
+                            object item = mapiMsg.ToMapiMessageItem();
+                            if (item is MapiDistributionList distList)
+                            {
+                                Console.WriteLine($"Distribution List: {distList.DisplayName}");
+                                Console.WriteLine($"Members count: {distList.Members.Count}");
+                                foreach (MapiDistributionListMember member in distList.Members)
+                                {
+                                    Console.WriteLine($" - {member.DisplayName} <{member.EmailAddress}>");
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    // Process a single folder's messages
-    private static void ProcessFolder(FolderInfo folder, PersonalStorage pst)
-    {
-        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-        {
-            using (MapiMessage msg = pst.ExtractMessage(messageInfo))
-            {
-                if (msg.SupportedType == MapiItemType.DistList)
-                {
-                    // Convert to a distribution list object
-                    MapiDistributionList distList = (MapiDistributionList)msg.ToMapiMessageItem();
-
-                    Console.WriteLine($"Distribution List: {distList.DisplayName}");
-                    Console.WriteLine($"Members count: {distList.Members.Count}");
-
-                    foreach (MapiDistributionListMember member in distList.Members)
-                    {
-                        Console.WriteLine($" - {member.DisplayName} <{member.EmailAddress}>");
-                    }
-
-                    Console.WriteLine();
-                }
-            }
-        }
-    }
-
-    // Recursively process subfolders
-    private static void ProcessFolderRecursive(FolderInfo folder, PersonalStorage pst)
-    {
-        ProcessFolder(folder, pst);
-
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            ProcessFolderRecursive(subFolder, pst);
         }
     }
 }

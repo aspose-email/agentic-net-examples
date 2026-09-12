@@ -1,75 +1,69 @@
+using Aspose.Email;
 using System;
 using System.IO;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Tools.Search;
 
-namespace AsposeEmailPstSplitter
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main(string[] args)
+        try
         {
+            // Author note: Example demonstrates splitting a PST file into smaller parts.
+            string pstFilePath = "input.pst";
+            string outputFolder = "PstParts";
+            long chunkSizeBytes = 10L * 1024 * 1024; // 10 MB per part
+            string partFileNamePrefix = "Part_";
+
+            // Ensure the output directory exists.
             try
             {
-                // Define source PST file and output folder.
-                string sourcePstPath = "source.pst";
-                string outputFolder = "PstParts";
-
-                // Ensure the source PST file exists; create a minimal placeholder if missing.
-                if (!File.Exists(sourcePstPath))
+                if (!Directory.Exists(outputFolder))
                 {
-                    try
-                    {
-                        // Create an empty Unicode PST file.
-                        using (PersonalStorage.Create(sourcePstPath, FileFormatVersion.Unicode))
-                        {
-                            // No additional content needed for the placeholder.
-                        }
-                        Console.WriteLine($"Placeholder PST created at: {sourcePstPath}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Error creating placeholder PST: {ex.Message}");
-                        return;
-                    }
-                }
-
-                // Ensure the output directory exists.
-                try
-                {
-                    if (!Directory.Exists(outputFolder))
-                    {
-                        Directory.CreateDirectory(outputFolder);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating output directory: {ex.Message}");
-                    return;
-                }
-
-                // Open the source PST and split it into smaller parts.
-                try
-                {
-                    using (PersonalStorage pst = PersonalStorage.FromFile(sourcePstPath))
-                    {
-                        // Define the approximate size of each split part (e.g., 10 MB).
-                        long chunkSize = 10L * 1024 * 1024; // 10 megabytes
-
-                        // Perform the split operation. Parts will be created in the output folder.
-                        pst.SplitInto(chunkSize, outputFolder);
-                        Console.WriteLine($"PST split completed. Parts are stored in: {outputFolder}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error during PST splitting: {ex.Message}");
-                    return;
+                    Directory.CreateDirectory(outputFolder);
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+                Console.Error.WriteLine($"Failed to create output directory '{outputFolder}': {ex.Message}");
+                return;
             }
+
+            // Verify the PST file exists; create a minimal placeholder if missing.
+            if (!File.Exists(pstFilePath))
+            {
+                try
+                {
+                    // Create an empty PST with Unicode format.
+                    PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode);
+                    Console.WriteLine($"Placeholder PST created at '{pstFilePath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
+                    return;
+                }
+            }
+
+            // Load the PST and split it.
+            try
+            {
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+                {
+                    pst.SplitInto(chunkSizeBytes, partFileNamePrefix, outputFolder);
+                    Console.WriteLine($"PST split completed. Parts are located in '{outputFolder}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error during PST processing: {ex.Message}");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

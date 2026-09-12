@@ -1,97 +1,115 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 using Aspose.Email.Clients;
 using Aspose.Email.Clients.Graph;
 
-class Program
+namespace AsposeEmailGraphSample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Paths for input MSG and a placeholder output file
-            string msgPath = "config.msg";
-            string placeholderOutput = "placeholder.txt";
-
-            
-            string outputDir = Path.GetDirectoryName(placeholderOutput);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                Directory.CreateDirectory(outputDir);
-            }
-// Ensure the input MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(msgPath))
-            {
-                using (MailMessage placeholder = new MailMessage("placeholder@example.com", "placeholder@example.com", "Placeholder", ""))
-                {
-                    placeholder.Save(msgPath, SaveOptions.DefaultEml);
-                }
-                Console.Error.WriteLine($"Input MSG file not found. Created placeholder at {msgPath}.");
-                return;
-            }
-
-            // Load the MSG file safely
-            string clientId;
-            string clientSecret;
             try
             {
-                using (FileStream fs = new FileStream(msgPath, FileMode.Open, FileAccess.Read))
-                using (MailMessage msg = MailMessage.Load(fs))
+                // Path to the MSG file that contains configuration (ClientId, TenantId, ClientSecret)
+                string msgPath = "config.msg";
+
+                // Verify the MSG file exists
+                if (!File.Exists(msgPath))
                 {
-                    clientId = msg.Subject?.Trim() ?? string.Empty;
-                    clientSecret = msg.Body?.Trim() ?? string.Empty;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
-                return;
-            }
-
-            // Extracted configuration (example: clientId from subject, clientSecret from body)
-            string refreshToken = "placeholder_refresh_token";
-            string tenantId = "your_tenant_id";
-
-            // Validate extracted data before proceeding
-            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
-            {
-                Console.Error.WriteLine("Configuration data missing in MSG file. Skipping Graph operations.");
-                return;
-            }
-
-            // Create a token provider (Outlook) using the extracted credentials
-            TokenProvider tokenProvider = TokenProvider.Outlook.GetInstance(clientId, clientSecret, refreshToken);
-
-            // Initialize the Graph client
-            using (IGraphClient client = GraphClient.GetClient(tokenProvider, tenantId))
-            {
-                // The Graph client in Aspose.Email focuses on mail operations.
-                // As a safe fallback, list mail folders instead of Azure AD app creation.
                 try
                 {
-                    var folders = client.ListFolders();
-                    Console.WriteLine($"Retrieved {folders.Count} folders.");
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Graph operation failed: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
                 }
-            }
 
-            // Write a simple placeholder output to indicate completion
-            try
-            {
-                File.WriteAllText(placeholderOutput, "Operation completed.");
+                    Console.Error.WriteLine($"Input file not found: {msgPath}");
+                    return;
+                }
+
+                // Load the MSG file
+                MapiMessage mapiMsg = MapiMessage.Load(msgPath);
+                string body = mapiMsg.Body ?? string.Empty;
+
+                // Simple parsing of key=value lines in the message body
+                string clientId = null;
+                string tenantId = null;
+                string clientSecret = null;
+
+                using (StringReader reader = new StringReader(body))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        if (line.StartsWith("ClientId=", StringComparison.OrdinalIgnoreCase))
+                            clientId = line.Substring("ClientId=".Length).Trim();
+                        else if (line.StartsWith("TenantId=", StringComparison.OrdinalIgnoreCase))
+                            tenantId = line.Substring("TenantId=".Length).Trim();
+                        else if (line.StartsWith("ClientSecret=", StringComparison.OrdinalIgnoreCase))
+                            clientSecret = line.Substring("ClientSecret=".Length).Trim();
+                    }
+                }
+
+                if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(clientSecret))
+                {
+                    Console.Error.WriteLine("Required configuration (ClientId, TenantId, ClientSecret) not found in the MSG file.");
+                    return;
+                }
+
+                // ------------------------------------------------------------
+                // NOTE: The following token provider creation depends on the
+                // specific Aspose.Email version and available overloads.
+                // Adjust the factory method and parameters according to the
+                // library version you are using.
+                // ------------------------------------------------------------
+                Aspose.Email.Clients.ITokenProvider tokenProvider = null;
+                // Placeholder for token provider initialization.
+                // Example (if supported):
+                // tokenProvider = Aspose.Email.Clients.TokenProvider.Outlook.GetInstance(clientId, clientSecret, // replace this placeholder with the correct implementation.
+                // -----------------------------------------------------------------
+                if (tokenProvider == null)
+                {
+                    Console.Error.WriteLine("TokenProvider initialization is not implemented. Please provide a valid Aspose.Email.Clients.ITokenProvider instance.");
+                    return;
+                }
+
+                // Initialize Graph client
+                using (IGraphClient graphClient = GraphClient.GetClient(tokenProvider, tenantId))
+                {
+                    // ------------------------------------------------------------
+                    // Placeholder: Create Azure AD application via Microsoft Graph.
+                    // Aspose.Email.GraphClient does not expose a direct method for
+                    // creating Azure AD applications. You would need to issue a
+                    // POST request to the "/applications" endpoint, which is not
+                    // covered by the current API surface.
+                    // ------------------------------------------------------------
+                    // Example (pseudo-code):
+                    // var appDefinition = new { displayName = "MyApp", ... };
+                    // graphClient.Post("/applications", appDefinition);
+                    // -----------------------------------------------------------------
+                    // Implement the actual request using the appropriate GraphClient
+                    // method when it becomes available.
+                    // -----------------------------------------------------------------
+                    Console.WriteLine("Graph client initialized. Implement Azure AD application creation logic here.");
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to write output file: {ex.Message}");
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

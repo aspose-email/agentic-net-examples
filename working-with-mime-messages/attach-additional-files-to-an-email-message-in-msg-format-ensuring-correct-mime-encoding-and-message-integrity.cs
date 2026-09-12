@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,114 +8,70 @@ class Program
     {
         try
         {
-            // Define file paths
-            string inputMsgPath = "input.msg";
-            string outputMsgPath = "output.msg";
-            string attachmentFilePath = "attachment.txt";
+            // Output MSG file path
+            const string outputMsgPath = "AddAttachments.msg";
 
-            // Ensure the attachment file exists; create a placeholder if missing
-            if (!File.Exists(attachmentFilePath))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputMsgPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    File.WriteAllText(attachmentFilePath, "Placeholder attachment content.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder attachment: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Ensure the input MSG file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputMsgPath))
+            // Create the email message
+            using (MailMessage message = new MailMessage())
             {
-                try
+                message.From = "sender@from.com";
+                message.To = "receiver@to.com";
+                message.Subject = "Message with attachments";
+                message.Body = "Please see the attached files.";
+
+                // List of files to attach
+                string[] attachmentFiles = new string[]
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
+                    "1.txt",
+                    "1.jpg",
+                    "1.doc",
+                    "1.rar",
+                    "1.pdf"
+                };
+
+                foreach (string filePath in attachmentFiles)
+                {
+                    // Guard file existence; create a minimal placeholder if missing
+                    if (!File.Exists(filePath))
                     {
-                        placeholder.Save(inputMsgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                try
-                {
-                    using (MapiMessage placeholderMsg = new MapiMessage("sender@example.com", "receiver@example.com", "Sample Subject", "Sample Body"))
-                    {
-                        placeholderMsg.Save(inputMsgPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Load the existing MSG file
-            MapiMessage message;
-            try
-            {
-                message = MapiMessage.Load(inputMsgPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error loading MSG file: {ex.Message}");
-                return;
-            }
-
-            // Use using to ensure the message is disposed
-            using (message)
-            {
-                // Read attachment bytes
-                byte[] attachmentData;
-                try
-                {
-                    attachmentData = File.ReadAllBytes(attachmentFilePath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error reading attachment file: {ex.Message}");
-                    return;
-                }
-
-                // Add the attachment to the message
-                try
-                {
-                    // The Add method handles proper MIME encoding internally
-                    message.Attachments.Add(Path.GetFileName(attachmentFilePath), attachmentData);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error adding attachment: {ex.Message}");
-                    return;
-                }
-
-                // Save the updated message
-                try
-                {
-                    // Ensure the output directory exists
-                    string outputDirectory = Path.GetDirectoryName(outputMsgPath);
-                    if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                    {
-                        Directory.CreateDirectory(outputDirectory);
+                        try
+                        {
+                            File.WriteAllText(filePath, $"Placeholder content for {Path.GetFileName(filePath)}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Failed to create placeholder for '{filePath}': {ex.Message}");
+                            continue;
+                        }
                     }
 
-                    message.Save(outputMsgPath);
-                    Console.WriteLine($"Message saved with attachment to: {outputMsgPath}");
+                    // Add the attachment to the message
+                    try
+                    {
+                        Attachment attachment = new Attachment(filePath);
+                        message.AddAttachment(attachment);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to add attachment '{filePath}': {ex.Message}");
+                    }
+                }
+
+                // Save the message as MSG with proper MIME encoding
+                try
+                {
+                    message.Save(outputMsgPath, SaveOptions.DefaultMsg);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error saving MSG file: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to save MSG file '{outputMsgPath}': {ex.Message}");
                 }
             }
         }

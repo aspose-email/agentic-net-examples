@@ -1,72 +1,54 @@
-using Aspose.Email.Clients;
 using System;
 using Aspose.Email;
+using Aspose.Email.Clients;
 using Aspose.Email.Clients.Imap;
-using Aspose.Email.Tools.Search;
 
-namespace AsposeEmailExample
+class Program
 {
-    class Program
+    public static void Main(string[] args)
     {
-        static void Main()
+        // IMAP server connection settings
+        string host = "imap.example.com";
+        int port = 993;
+        string username = "user@example.com";
+        string password = "password";
+        string folderName = "INBOX";
+
+        // Skip external calls when placeholder credentials are used
+        if (host.Contains("example.com") || username.Contains("example.com") || password == "password")
         {
-            try
+            Console.Error.WriteLine("Placeholder credentials detected. Skipping external calls.");
+            return;
+        }
+
+        string messageUid = "12345"; // UID of the message to modify
+
+        try
+        {
+            // Initialize and configure the IMAP client
+            using (ImapClient client = new ImapClient())
             {
-                // Placeholder connection settings
-                string host = "imap.example.com";
-                int port = 993;
-                string username = "username";
-                string password = "password";
+                client.Host = host;
+                client.Port = port;
+                client.Username = username;
+                client.Password = password;
+                client.SecurityOptions = SecurityOptions.SSLImplicit;
 
-                // Guard against executing real network calls with placeholder credentials
-                if (host.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase) || password.Equals("password", StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine("Placeholder IMAP settings detected. Skipping live connection.");
-                    return;
-                }
+                // Select the target folder
+                client.SelectFolder(folderName);
 
-                // Create and use the IMAP client
-                using (ImapClient client = new ImapClient(host, port, username, password, SecurityOptions.Auto))
-                {
-                    try
-                    {
-                        // Select the INBOX folder
-                        client.SelectFolder("INBOX");
+                // Add the "Seen" (read) flag
+                client.AddMessageFlags(messageUid, ImapMessageFlags.IsRead);
 
-                        // Retrieve the list of messages in the folder
-                        ImapMessageInfoCollection messages = client.ListMessages();
+                // Add the "Answered" flag
+                client.AddMessageFlags(messageUid, ImapMessageFlags.Answered);
 
-                        if (messages != null && messages.Count > 0)
-                        {
-                            // Take the first message as an example
-                            ImapMessageInfo firstMessage = messages[0];
-
-                            // Combine desired flags: Read, Answered, Flagged (used as importance)
-                            ImapMessageFlags flagsToAdd = ImapMessageFlags.IsRead |
-                                                          ImapMessageFlags.Answered |
-                                                          ImapMessageFlags.Flagged;
-
-                            // Apply the flags to the message using its unique identifier
-                            client.AddMessageFlags(firstMessage.UniqueId, flagsToAdd);
-                            Console.WriteLine($"Flags applied to message UID: {firstMessage.UniqueId}");
-                        }
-                        else
-                        {
-                            Console.WriteLine("No messages found in the INBOX folder.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // Handle any errors that occur during IMAP operations
-                        Console.Error.WriteLine($"IMAP operation error: {ex.Message}");
-                    }
-                }
+                Console.WriteLine("Message flags updated successfully.");
             }
-            catch (Exception ex)
-            {
-                // Top‑level exception guard
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
