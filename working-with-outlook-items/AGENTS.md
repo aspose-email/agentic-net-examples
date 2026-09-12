@@ -18,16 +18,16 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (511 file(s))
-- `using Aspose.Email;` (504 file(s))
-- `using System.IO;` (425 file(s))
-- `using Aspose.Email.Mapi;` (335 file(s))
+- `using System;` (514 file(s))
+- `using Aspose.Email;` (507 file(s))
+- `using System.IO;` (427 file(s))
+- `using Aspose.Email.Mapi;` (337 file(s))
 - `using System.Collections.Generic;` (113 file(s))
 - `using Aspose.Email.PersonalInfo;` (70 file(s))
 - `using Aspose.Email.Storage.Pst;` (43 file(s))
 - `using Aspose.Email.Calendar;` (40 file(s))
-- `using Aspose.Email.Calendar.Recurrences;` (27 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService;` (27 file(s))
+- `using Aspose.Email.Calendar.Recurrences;` (27 file(s))
 - `using Aspose.Email.Clients.Exchange.Dav;` (27 file(s))
 - `using Aspose.Email.Clients.Exchange;` (26 file(s))
 - `using System.Text;` (23 file(s))
@@ -41,8 +41,8 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - `using System.Threading;` (9 file(s))
 - `using Aspose.Email.Mime;` (7 file(s))
 - `using System.Text.RegularExpressions;` (7 file(s))
+- `using Aspose.Email.Clients.Smtp;` (7 file(s))
 - `using Aspose.Email.Clients.Pop3;` (7 file(s))
-- `using Aspose.Email.Clients.Smtp;` (6 file(s))
 - `using System.Xml.Linq;` (6 file(s))
 - `using System.Diagnostics;` (5 file(s))
 - `using System.Threading.Tasks;` (5 file(s))
@@ -183,6 +183,8 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [create-a-mapimessage-from-a-file-and-embed-an-inline-image-within-the-email-body.cs](./create-a-mapimessage-from-a-file-and-embed-an-inline-image-within-the-email-body.cs) | create a mapimessage from a file and embed an inline image within the email body |
 | [create-a-mapimessage-from-a-file-modify-its-importance-flag-and-save-the-changes-back-to-msg.cs](./create-a-mapimessage-from-a-file-modify-its-importance-flag-and-save-the-changes-back-to-msg.cs) | create a mapimessage from a file modify its importance flag and save the changes back to msg |
 | [create-a-mapinote-with-a-specific-subject-and-multiline-body-then-save-it-as-msg.cs](./create-a-mapinote-with-a-specific-subject-and-multiline-body-then-save-it-as-msg.cs) | create a mapinote with a specific subject and multiline body then save it as msg |
+| [create-a-meeting-request-with-a-location-url-add-a-reminder-and-verify-the-url-appears-in-the-msg-file.cs](./create-a-meeting-request-with-a-location-url-add-a-reminder-and-verify-the-url-appears-in-the-msg-file.cs) | create a meeting request with a location url add a reminder and verify the url appears in the msg file |
+| [create-a-meeting-request-with-an-audio-reminder-attach-an-agenda-pdf-and-send-it-to-all-participants.cs](./create-a-meeting-request-with-an-audio-reminder-attach-an-agenda-pdf-and-send-it-to-all-participants.cs) | create a meeting request with an audio reminder attach an agenda pdf and send it to all participants |
 | [create-a-monthly-recurrence-on-the-third-tuesday-of-each-month-and-generate-its-corresponding-rrule-string.cs](./create-a-monthly-recurrence-on-the-third-tuesday-of-each-month-and-generate-its-corresponding-rrule-string.cs) | create a monthly recurrence on the third tuesday of each month and generate its corresponding rrule string |
 | [create-a-new-distribution-list-from-selected-contacts-and-assign-a-descriptive-name-programmatically.cs](./create-a-new-distribution-list-from-selected-contacts-and-assign-a-descriptive-name-programmatically.cs) | create a new distribution list from selected contacts and assign a descriptive name programmatically |
 | [create-a-new-mapicalendar-set-subject-and-location-and-save-it-as-an-ics-file.cs](./create-a-new-mapicalendar-set-subject-and-location-and-save-it-as-an-ics-file.cs) | create a new mapicalendar set subject and location and save it as an ics file |
@@ -312,6 +314,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [iterate-through-the-files-collection-using-a-foreach-loop-efficiently.cs](./iterate-through-the-files-collection-using-a-foreach-loop-efficiently.cs) | iterate through the files collection using a foreach loop efficiently |
 | [load-a-calendar-from-an-eml-file-add-a-reminder-and-save-as-an-ics-file-preserving-data.cs](./load-a-calendar-from-an-eml-file-add-a-reminder-and-save-as-an-ics-file-preserving-data.cs) | load a calendar from an eml file add a reminder and save as an ics file preserving data |
 | [load-a-calendar-from-an-msg-file-change-its-time-zone-to-eastern-time-and-save-as-ics.cs](./load-a-calendar-from-an-msg-file-change-its-time-zone-to-eastern-time-and-save-as-ics.cs) | load a calendar from an msg file change its time zone to eastern time and save as ics |
+| [load-a-calendar-from-an-msg-file-duplicate-the-appointment-modify-the-duplicate-start-time-and-save-both.cs](./load-a-calendar-from-an-msg-file-duplicate-the-appointment-modify-the-duplicate-start-time-and-save-both.cs) | load a calendar from an msg file duplicate the appointment modify the duplicate start time and save both |
 | [load-a-calendar-from-an-msg-file-enumerate-attendees-and-output-their-email-addresses-to-a-text-file.cs](./load-a-calendar-from-an-msg-file-enumerate-attendees-and-output-their-email-addresses-to-a-text-file.cs) | load a calendar from an msg file enumerate attendees and output their email addresses to a text file |
 | [load-a-calendar-from-an-msg-file-update-its-subject-line-and-save-the-changes-without-altering-properties.cs](./load-a-calendar-from-an-msg-file-update-its-subject-line-and-save-the-changes-without-altering-properties.cs) | load a calendar from an msg file update its subject line and save the changes without altering properties |
 | [load-a-distribution-list-from-a-pst-file-and-enumerate-its-member-entries-programmatically.cs](./load-a-distribution-list-from-a-pst-file-and-enumerate-its-member-entries-programmatically.cs) | load a distribution list from a pst file and enumerate its member entries programmatically |
@@ -586,7 +589,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [write-documentation-describing-best-practices-for-preserving-embedded-messages-during-conversion.cs](./write-documentation-describing-best-practices-for-preserving-embedded-messages-during-conversion.cs) | write documentation describing best practices for preserving embedded messages during conversion |
 
 ## Category Statistics
-- Total examples: 511
+- Total examples: 514
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -595,5 +598,5 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-06-23 | `20260623_163422_590290_7c4847fe` | [examples/batch-20260623_163422_590290_7c4847fe](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260623_163422_590290_7c4847fe) |
+| 2026-07-03 | `20260703_195250_975767_98f5eb68` | [examples/batch-20260703_195250_975767_98f5eb68](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260703_195250_975767_98f5eb68) |
 <!-- AUTOGENERATED:END -->

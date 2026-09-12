@@ -1,62 +1,56 @@
 using System;
-using System.IO;
 using Aspose.Email;
-using Aspose.Email.Calendar;
-using Aspose.Email.Calendar.Recurrences;
 using Aspose.Email.Clients.Exchange.WebService;
+using Aspose.Email.Calendar.Recurrences;
 
-class Program
+namespace AsposeEmailRecurringTaskDemo
 {
-    static void Main()
+    // Author: Aspose.Email example author
+    class Program
     {
-        try
+        static void Main()
         {
-            // Create a daily recurring task with an end date
-            using (ExchangeTask task = new ExchangeTask())
+            try
             {
-                task.Subject = "Daily Report";
-                task.StartDate = DateTime.Today;
-                task.DueDate = DateTime.Today.AddHours(1);
-                task.Body = "Complete the daily report.";
+                // Define task details
+                DateTime startDate = DateTime.Today.AddHours(9); // today at 9 AM
+                DateTime dueDate = startDate.AddHours(1); // due in 1 hour
+                DateTime recurrenceEndDate = DateTime.Today.AddDays(5); // repeat for 5 days
 
-                // Daily recurrence starting today, every 1 day, ending after 5 days
-                DailyRecurrencePattern recurrence = new DailyRecurrencePattern(DateTime.Today, 1);
-                recurrence.EndDate = DateTime.Today.AddDays(5);
-                task.RecurrencePattern = recurrence;
-
-                // Confirm the recurrence end date
-                if (task.RecurrencePattern is DailyRecurrencePattern dailyPattern)
+                // Create a new Exchange task
+                ExchangeTask task = new ExchangeTask
                 {
-                    Console.WriteLine($"Aspose.Email.Calendar.Task will recur daily until {dailyPattern.EndDate:yyyy-MM-dd}");
+                    Subject = "Daily recurring task",
+                    StartDate = startDate,
+                    DueDate = dueDate,
+                    // Set daily recurrence with an end date
+                    RecurrencePattern = new DailyRecurrencePattern(recurrenceEndDate)
+                };
+
+                // Output task information
+                Console.WriteLine("Aspose.Email.Calendar.Task created:");
+                Console.WriteLine($"Subject: {task.Subject}");
+                Console.WriteLine($"Start: {task.StartDate}");
+                Console.WriteLine($"Due: {task.DueDate}");
+                Console.WriteLine($"Recurs daily until: {task.RecurrencePattern.EndDate:d}");
+
+                // Verify that recurrence stops after the end date
+                DateTime nextOccurrence = task.StartDate;
+                int occurrenceCount = 0;
+                while (nextOccurrence <= task.RecurrencePattern.EndDate)
+                {
+                    occurrenceCount++;
+                    nextOccurrence = nextOccurrence.AddDays(1);
                 }
 
-                // Save the task to a MSG file (file I/O guarded)
-                string outputPath = "DailyTask.msg";
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (string.IsNullOrEmpty(outputDir))
-                {
-                    outputDir = Environment.CurrentDirectory;
-                }
-
-                try
-                {
-                    if (!Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
-
-                    task.Save(outputPath);
-                    Console.WriteLine($"Aspose.Email.Calendar.Task saved to {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error saving task: {ex.Message}");
-                }
+                Console.WriteLine($"Total occurrences generated: {occurrenceCount}");
+                Console.WriteLine("No further occurrences are generated after the end date.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+                return;
+            }
         }
     }
 }

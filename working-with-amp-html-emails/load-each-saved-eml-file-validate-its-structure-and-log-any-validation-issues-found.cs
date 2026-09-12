@@ -9,64 +9,48 @@ class Program
     {
         try
         {
-            // Directory that contains the .eml files
-            string emailsDirectory = "Emails";
+            const string folderPath = "emlFiles";
 
-            // Ensure the directory exists; create if missing
-            if (!Directory.Exists(emailsDirectory))
+            // Ensure the directory exists; create a placeholder EML if the folder is missing.
+            if (!Directory.Exists(folderPath))
             {
-                try
-                {
-                    Directory.CreateDirectory(emailsDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create directory '{emailsDirectory}': {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(folderPath);
+                string placeholderPath = Path.Combine(folderPath, "placeholder.eml");
+                File.WriteAllText(placeholderPath, "Subject: Placeholder\r\n\r\nThis is a placeholder email.");
+                Console.WriteLine($"Created placeholder EML at {placeholderPath}");
             }
 
-            // Get all .eml files in the directory
             string[] emlFiles;
             try
             {
-                emlFiles = Directory.GetFiles(emailsDirectory, "*.eml");
+                emlFiles = Directory.GetFiles(folderPath, "*.eml");
             }
-            catch (Exception getFilesEx)
+            catch (Exception ioEx)
             {
-                Console.Error.WriteLine($"Failed to enumerate .eml files: {getFilesEx.Message}");
+                Console.Error.WriteLine($"Failed to enumerate .eml files: {ioEx.Message}");
                 return;
             }
 
-            // If no .eml files are present, create a minimal placeholder file
             if (emlFiles.Length == 0)
             {
-                string placeholderPath = Path.Combine(emailsDirectory, "placeholder.eml");
-                string minimalEmlContent = "Subject: Placeholder\r\n\r\nThis is a minimal placeholder email.";
-                try
-                {
-                    File.WriteAllText(placeholderPath, minimalEmlContent);
-                    emlFiles = new string[] { placeholderPath };
-                }
-                catch (Exception writeEx)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder .eml file: {writeEx.Message}");
-                    return;
-                }
+                Console.WriteLine("No .eml files found to validate.");
+                return;
             }
 
-            // Validate each .eml file and log any issues
-            foreach (string emlFilePath in emlFiles)
+            foreach (string filePath in emlFiles)
             {
                 try
                 {
-                    MessageValidationResult validationResult = MessageValidator.Validate(emlFilePath);
-                    Console.WriteLine($"File: {Path.GetFileName(emlFilePath)}");
-                    Console.WriteLine($"Validation Result: {validationResult}");
+                    // Validate the EML file using Aspose.Email's MessageValidator.
+                    MessageValidationResult validationResult = MessageValidator.Validate(filePath);
+
+                    // Output validation details. The exact properties of MessageValidationResult may vary;
+                    // using ToString provides a readable summary.
+                    Console.WriteLine($"Validation result for '{Path.GetFileName(filePath)}': {validationResult}");
                 }
                 catch (Exception validateEx)
                 {
-                    Console.Error.WriteLine($"Error validating '{emlFilePath}': {validateEx.Message}");
+                    Console.Error.WriteLine($"Error validating '{Path.GetFileName(filePath)}': {validateEx.Message}");
                 }
             }
         }

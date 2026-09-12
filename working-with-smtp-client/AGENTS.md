@@ -18,30 +18,31 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (167 file(s))
-- `using Aspose.Email;` (166 file(s))
-- `using Aspose.Email.Clients.Smtp;` (136 file(s))
-- `using Aspose.Email.Clients;` (84 file(s))
-- `using System.IO;` (54 file(s))
+- `using System;` (174 file(s))
+- `using Aspose.Email;` (173 file(s))
+- `using Aspose.Email.Clients.Smtp;` (143 file(s))
+- `using Aspose.Email.Clients;` (91 file(s))
+- `using System.IO;` (55 file(s))
 - `using System.Collections.Generic;` (21 file(s))
-- `using System.Net;` (19 file(s))
+- `using System.Net;` (20 file(s))
 - `using Aspose.Email.Clients.Exchange.Dav;` (11 file(s))
 - `using Aspose.Email.Mime;` (11 file(s))
 - `using System.Threading;` (9 file(s))
-- `using System.Text;` (8 file(s))
+- `using System.Text;` (9 file(s))
 - `using Aspose.Email.Clients.Imap;` (5 file(s))
 - `using Aspose.Email.Clients.Google;` (4 file(s))
 - `using System.Net.Security;` (4 file(s))
 - `using Aspose.Email.Mapi;` (4 file(s))
 - `using System.Security.Cryptography.X509Certificates;` (3 file(s))
+- `using System.IO.Compression;` (3 file(s))
 - `using System.Security.Cryptography;` (3 file(s))
 - `using System.Threading.Tasks;` (3 file(s))
 - `using Aspose.Email.Clients.Exchange.WebService;` (2 file(s))
-- `using System.IO.Compression;` (2 file(s))
 - `using System.Linq;` (2 file(s))
 - `using System.Data;` (2 file(s))
 - `using System.Diagnostics;` (2 file(s))
 - `using System.Text.Json;` (2 file(s))
+- `using Aspose.Words;` (2 file(s))
 - `using Aspose.Email.Clients.DeliveryService.SendGrid;` (1 file(s))
 - `using Aspose.Email.AntiSpam;` (1 file(s))
 - `using System.Net.NetworkInformation;` (1 file(s))
@@ -55,7 +56,6 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - `using Aspose.Email.Calendar;` (1 file(s))
 - `using var client = new SmtpClient(smtpHost, smtpPort, smtpUser, smtpPass);` (1 file(s))
 - `using var payloadStream = new MemoryStream(payloadBytes);` (1 file(s))
-- `using Aspose.Words;` (1 file(s))
 - `using System.Net.Mime;` (1 file(s))
 - `using System.Text.RegularExpressions;` (1 file(s))
 
@@ -91,6 +91,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [apply-a-retry-policy-that-attempts-to-resend-a-failed-message-up-to-three-times-with-exponential-backoff.cs](./apply-a-retry-policy-that-attempts-to-resend-a-failed-message-up-to-three-times-with-exponential-backoff.cs) | apply a retry policy that attempts to resend a failed message up to three times with exponential backoff |
 | [attach-a-pdf-document-from-a-memory-stream-to-an-email-and-transmit-it-using-tls-encryption.cs](./attach-a-pdf-document-from-a-memory-stream-to-an-email-and-transmit-it-using-tls-encryption.cs) | attach a pdf document from a memory stream to an email and transmit it using tls encryption |
 | [authenticate-to-the-smtp-server-using-cram-md5-by-setting-authenticationtype-property.cs](./authenticate-to-the-smtp-server-using-cram-md5-by-setting-authenticationtype-property.cs) | authenticate to the smtp server using cram md5 by setting authenticationtype property |
+| [bind-the-smtp-client-to-a-loopback-address-for-testing-email-sending-functionality-in-a-development-environment.cs](./bind-the-smtp-client-to-a-loopback-address-for-testing-email-sending-functionality-in-a-development-environment.cs) | bind the smtp client to a loopback address for testing email sending functionality in a development environment |
 | [bind-the-smtp-client-to-a-specific-local-ip-address-using-bindipendpoint.cs](./bind-the-smtp-client-to-a-specific-local-ip-address-using-bindipendpoint.cs) | bind the smtp client to a specific local ip address using bindipendpoint |
 | [bind-the-smtp-client-to-the-ipv6-address-of-the-host-machine-for-dual-stack-compatibility.cs](./bind-the-smtp-client-to-the-ipv6-address-of-the-host-machine-for-dual-stack-compatibility.cs) | bind the smtp client to the ipv6 address of the host machine for dual stack compatibility |
 | [configure-a-maximum-attachment-size-limit-of-10-mb-and-reject-oversized-files-before-sending.cs](./configure-a-maximum-attachment-size-limit-of-10-mb-and-reject-oversized-files-before-sending.cs) | configure a maximum attachment size limit of 10 mb and reject oversized files before sending |
@@ -113,6 +114,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [configure-the-client-to-automatically-retry-sending-when-encountering-transient-4xx-smtp-error-codes.cs](./configure-the-client-to-automatically-retry-sending-when-encountering-transient-4xx-smtp-error-codes.cs) | configure the client to automatically retry sending when encountering transient 4xx smtp error codes |
 | [configure-the-client-to-automatically-strip-html-tags-from-the-body-when-sending-to-plain-text-only-recipients.cs](./configure-the-client-to-automatically-strip-html-tags-from-the-body-when-sending-to-plain-text-only-recipients.cs) | configure the client to automatically strip html tags from the body when sending to plain text only recipients |
 | [configure-the-client-to-reuse-a-single-smtp-connection-for-sending-a-batch-of-fifty-messages.cs](./configure-the-client-to-reuse-a-single-smtp-connection-for-sending-a-batch-of-fifty-messages.cs) | configure the client to reuse a single smtp connection for sending a batch of fifty messages |
+| [configure-the-client-to-use-a-connection-pool-with-a-maximum-of-five-simultaneous-smtp-sessions.cs](./configure-the-client-to-use-a-connection-pool-with-a-maximum-of-five-simultaneous-smtp-sessions.cs) | configure the client to use a connection pool with a maximum of five simultaneous smtp sessions |
 | [configure-the-client-to-use-a-specific-tls-protocol-version-such-as-tls-1-2-for-secure-connections.cs](./configure-the-client-to-use-a-specific-tls-protocol-version-such-as-tls-1-2-for-secure-connections.cs) | configure the client to use a specific tls protocol version such as tls 1 2 for secure connections |
 | [configure-the-smtp-client-to-ignore-certificate-revocation-checks-for-testing-environments.cs](./configure-the-smtp-client-to-ignore-certificate-revocation-checks-for-testing-environments.cs) | configure the smtp client to ignore certificate revocation checks for testing environments |
 | [configure-the-smtp-client-to-use-a-connection-timeout-of-10-seconds-and-a-read-timeout-of-30-seconds.cs](./configure-the-smtp-client-to-use-a-connection-timeout-of-10-seconds-and-a-read-timeout-of-30-seconds.cs) | configure the smtp client to use a connection timeout of 10 seconds and a read timeout of 30 seconds |
@@ -122,6 +124,8 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [configure-the-smtp-client-to-use-a-specific-authentication-realm-when-connecting-to-the-server.cs](./configure-the-smtp-client-to-use-a-specific-authentication-realm-when-connecting-to-the-server.cs) | configure the smtp client to use a specific authentication realm when connecting to the server |
 | [configure-the-smtp-client-to-use-a-specific-local-ip-address-for-outbound-connections.cs](./configure-the-smtp-client-to-use-a-specific-local-ip-address-for-outbound-connections.cs) | configure the smtp client to use a specific local ip address for outbound connections |
 | [configure-the-smtp-client-to-use-a-specific-network-interface-for-outbound-traffic-on-multi-homed-servers.cs](./configure-the-smtp-client-to-use-a-specific-network-interface-for-outbound-traffic-on-multi-homed-servers.cs) | configure the smtp client to use a specific network interface for outbound traffic on multi homed servers |
+| [configure-the-smtp-client-to-use-a-specific-source-port-range-for-outbound-connections.cs](./configure-the-smtp-client-to-use-a-specific-source-port-range-for-outbound-connections.cs) | configure the smtp client to use a specific source port range for outbound connections |
+| [configure-the-smtp-client-to-use-ipv6-addresses-when-connecting-to-the-mail-server.cs](./configure-the-smtp-client-to-use-ipv6-addresses-when-connecting-to-the-mail-server.cs) | configure the smtp client to use ipv6 addresses when connecting to the mail server |
 | [configure-the-smtp-client-to-use-ntlm-authentication-with-domain-credentials-for-secure-login.cs](./configure-the-smtp-client-to-use-ntlm-authentication-with-domain-credentials-for-secure-login.cs) | configure the smtp client to use ntlm authentication with domain credentials for secure login |
 | [configure-the-smtpclient-s-log-level-to-detailed-to-aid-troubleshooting-when-transmitting-msg-format-emails.cs](./configure-the-smtpclient-s-log-level-to-detailed-to-aid-troubleshooting-when-transmitting-msg-format-emails.cs) | configure the smtpclient s log level to detailed to aid troubleshooting when transmitting msg format emails |
 | [configure-the-smtpclient-to-log-smtp-operations-by-specifying-a-logfile-path-and-loglevel-during-msg-email-loading.cs](./configure-the-smtpclient-to-log-smtp-operations-by-specifying-a-logfile-path-and-loglevel-during-msg-email-loading.cs) | configure the smtpclient to log smtp operations by specifying a logfile path and loglevel during msg email loading |
@@ -192,6 +196,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [send-a-message-with-multiple-bcc-recipients-while-keeping-their-addresses-hidden-from-other-recipients.cs](./send-a-message-with-multiple-bcc-recipients-while-keeping-their-addresses-hidden-from-other-recipients.cs) | send a message with multiple bcc recipients while keeping their addresses hidden from other recipients |
 | [send-a-multipart-alternative-email-that-includes-both-plain-text-and-html-versions-for-client-compatibility.cs](./send-a-multipart-alternative-email-that-includes-both-plain-text-and-html-versions-for-client-compatibility.cs) | send a multipart alternative email that includes both plain text and html versions for client compatibility |
 | [send-a-plain-text-email-through-an-smtp-server-using-explicit-ssl-on-port-465.cs](./send-a-plain-text-email-through-an-smtp-server-using-explicit-ssl-on-port-465.cs) | send a plain text email through an smtp server using explicit ssl on port 465 |
+| [send-an-email-with-a-compressed-pdf-attachment-generated-on-the-fly-from-html-using-a-third-party-library.cs](./send-an-email-with-a-compressed-pdf-attachment-generated-on-the-fly-from-html-using-a-third-party-library.cs) | send an email with a compressed pdf attachment generated on the fly from html using a third party library |
 | [send-an-email-with-a-compressed-zip-attachment-ensuring-the-attachment-size-does-not-exceed-5-mb.cs](./send-an-email-with-a-compressed-zip-attachment-ensuring-the-attachment-size-does-not-exceed-5-mb.cs) | send an email with a compressed zip attachment ensuring the attachment size does not exceed 5 mb |
 | [send-an-email-with-a-custom-x-language-header-indicating-the-primary-language-of-the-message-content.cs](./send-an-email-with-a-custom-x-language-header-indicating-the-primary-language-of-the-message-content.cs) | send an email with a custom x language header indicating the primary language of the message content |
 | [send-an-email-with-a-dynamically-generated-pdf-attachment-created-from-html-content-at-runtime.cs](./send-an-email-with-a-dynamically-generated-pdf-attachment-created-from-html-content-at-runtime.cs) | send an email with a dynamically generated pdf attachment created from html content at runtime |
@@ -222,7 +227,9 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [use-a-secure-socket-layer-ssl-stream-wrapper-to-encrypt-the-entire-smtp-session.cs](./use-a-secure-socket-layer-ssl-stream-wrapper-to-encrypt-the-entire-smtp-session.cs) | use a secure socket layer ssl stream wrapper to encrypt the entire smtp session |
 | [use-an-http-proxy-that-requires-custom-authentication-headers-and-configure-smtpclient-proxy-accordingly.cs](./use-an-http-proxy-that-requires-custom-authentication-headers-and-configure-smtpclient-proxy-accordingly.cs) | use an http proxy that requires custom authentication headers and configure smtpclient proxy accordingly |
 | [use-an-http-proxy-with-ntlm-authentication-to-send-emails-from-a-windows-domain-joined-environment.cs](./use-an-http-proxy-with-ntlm-authentication-to-send-emails-from-a-windows-domain-joined-environment.cs) | use an http proxy with ntlm authentication to send emails from a windows domain joined environment |
+| [use-bindipendpoint-to-enforce-sending-emails-through-a-specific-nic-when-multiple-adapters-are-present.cs](./use-bindipendpoint-to-enforce-sending-emails-through-a-specific-nic-when-multiple-adapters-are-present.cs) | use bindipendpoint to enforce sending emails through a specific nic when multiple adapters are present |
 | [use-bindipendpoint-to-select-a-specific-network-interface-for-sending-emails-from-a-multi-homed-server.cs](./use-bindipendpoint-to-select-a-specific-network-interface-for-sending-emails-from-a-multi-homed-server.cs) | use bindipendpoint to select a specific network interface for sending emails from a multi homed server |
+| [use-oauth2-token-authentication-instead-of-password-credentials-for-connecting-to-the-smtp-service.cs](./use-oauth2-token-authentication-instead-of-password-credentials-for-connecting-to-the-smtp-service.cs) | use oauth2 token authentication instead of password credentials for connecting to the smtp service |
 | [use-smtpclient-to-authenticate-to-the-smtp-server-with-basic-ntlm-or-oauth2-credentials-when-sending-an-msg-email.cs](./use-smtpclient-to-authenticate-to-the-smtp-server-with-basic-ntlm-or-oauth2-credentials-when-sending-an-msg-email.cs) | use smtpclient to authenticate to the smtp server with basic ntlm or oauth2 credentials when sending an msg email |
 | [use-the-smtp-client-to-send-a-message-with-a-multipart-related-structure-containing-inline-images.cs](./use-the-smtp-client-to-send-a-message-with-a-multipart-related-structure-containing-inline-images.cs) | use the smtp client to send a message with a multipart related structure containing inline images |
 | [validate-credentials-against-the-smtp-server-and-log-detailed-error-messages-for-authentication-failures.cs](./validate-credentials-against-the-smtp-server-and-log-detailed-error-messages-for-authentication-failures.cs) | validate credentials against the smtp server and log detailed error messages for authentication failures |
@@ -231,7 +238,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [validate-smtp-server-credentials-without-sending-an-email-by-calling-validatecredentials.cs](./validate-smtp-server-credentials-without-sending-an-email-by-calling-validatecredentials.cs) | validate smtp server credentials without sending an email by calling validatecredentials |
 
 ## Category Statistics
-- Total examples: 167
+- Total examples: 174
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -240,5 +247,5 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-06-23 | `20260623_163422_590290_7c4847fe` | [examples/batch-20260623_163422_590290_7c4847fe](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260623_163422_590290_7c4847fe) |
+| 2026-07-03 | `20260703_195250_975767_98f5eb68` | [examples/batch-20260703_195250_975767_98f5eb68](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260703_195250_975767_98f5eb68) |
 <!-- AUTOGENERATED:END -->
