@@ -2,83 +2,59 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Clients;
-using Aspose.Email.Clients.Imap;
+using Aspose.Email.Storage.Mbox;
 
 class Program
 {
+    // Author: Generated example for asynchronous audit logging while reading MBOX messages.
     static async Task Main(string[] args)
     {
         try
         {
-            // Configuration (replace with real values)
-            string host = "imap.example.com";
-            string username = "user@example.com";
-            string password = "password";
-            string logFilePath = "audit.log";
+            const string mboxPath = "storage.mbox";
+            const string logPath = "audit.log";
 
-            // Guard against placeholder credentials/host
-            if (host.Contains("example.com"))
+            // Verify MBOX file exists.
+            if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine("Placeholder host detected. Skipping execution.");
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // Ensure the directory for the log file exists
-            string logDirectory = Path.GetDirectoryName(logFilePath);
-            if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
+            // Ensure the directory for the log file exists.
+            string? logDir = Path.GetDirectoryName(logPath);
+            if (!string.IsNullOrEmpty(logDir) && !Directory.Exists(logDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(logDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create log directory: {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(logDir);
             }
 
-            // Create and connect the IMAP client
-            using (ImapClient client = new ImapClient(host, username, password))
+            // Open the log file for asynchronous writing.
+            await using (StreamWriter logWriter = new StreamWriter(new FileStream(logPath, FileMode.Append, FileAccess.Write, FileShare.Read)))
             {
-                try
-                {
-                    client.SecurityOptions = SecurityOptions.Auto;
-                    client.ValidateCredentials();
-                }
-                catch (Exception connEx)
-                {
-                    Console.Error.WriteLine($"IMAP connection failed: {connEx.Message}");
-                    return;
-                }
+                // Create the MBOX reader.
+                MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
 
-                // Open the log file for appending
-                using (StreamWriter logWriter = new StreamWriter(logFilePath, true))
+                // Iterate through each message info object.
+                foreach (MboxMessageInfo mboxMessageInfo in mbox.EnumerateMessageInfo())
                 {
-                    try
-                    {
-                        // Asynchronously list messages in the INBOX folder
-                        ImapMessageInfoCollection messageInfos = await client.ListMessagesAsync("INBOX", false);
+                    // Write subject to console.
+                    Console.WriteLine($"Subject: {mboxMessageInfo.Subject}");
 
-                        // Write each subject line to the log file
-                        foreach (ImapMessageInfo messageInfo in messageInfos)
-                        {
-                            string subject = messageInfo.Subject ?? string.Empty;
-                            logWriter.WriteLine(subject);
-                        }
-                    }
-                    catch (Exception ioEx)
-                    {
-                        Console.Error.WriteLine($"Error during message retrieval or logging: {ioEx.Message}");
-                        return;
-                    }
+                    // Asynchronously log the subject for audit.
+                    await logWriter.WriteLineAsync(mboxMessageInfo.Subject);
+
+                    // Extract the full MIME message.
+                    MailMessage eml = mbox.ExtractMessage(mboxMessageInfo.EntryId, new EmlLoadOptions());
+
+                    // Save the extracted message as an .eml file (optional).
+                    string emlFileName = $"{eml.Subject}.eml";
+                    eml.Save(emlFileName);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

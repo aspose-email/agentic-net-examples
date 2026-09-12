@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
@@ -10,7 +11,8 @@ class Program
     {
         try
         {
-            string mboxPath = "sample.mbox";
+            const string mboxPath = "storage.mbox";
+            const string outputDir = "output";
 
             // Ensure the MBOX file exists; create an empty placeholder if missing.
             if (!File.Exists(mboxPath))
@@ -21,55 +23,76 @@ class Program
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
+                    Console.Error.WriteLine($"Unable to create placeholder MBOX file: {ex.Message}");
                     return;
                 }
             }
 
-            const int maxRetries = 3;
-            int attempt = 0;
-            bool readSuccessful = false;
+            // Ensure output directory exists.
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
 
-            while (attempt < maxRetries && !readSuccessful)
+            const int maxRetries = 3;
+            const int retryDelayMs = 2000;
+            bool opened = false;
+
+            for (int attempt = 1; attempt <= maxRetries && !opened; attempt++)
             {
-                attempt++;
                 try
                 {
-                    // Create the reader with default load options.
-                    using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                    using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
                     {
-                        MailMessage message;
-                        // Read messages sequentially.
-                        while ((message = reader.ReadNextMessage()) != null)
+                        while (true)
                         {
+                            MailMessage message = mbox.ReadNextMessage();
+                            if (message == null)
+                                break;
+
                             Console.WriteLine($"Subject: {message.Subject}");
+                            Console.WriteLine($"From: {message.From}");
+                            Console.WriteLine($"To: {message.To}");
+
+                            // Create a safe file name.
+                            string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "No_Subject" : message.Subject;
+                            safeSubject = Regex.Replace(safeSubject, @"[\\/:*?""<>|]", "_");
+                            string emlPath = Path.Combine(outputDir, $"{safeSubject}.eml");
+
+                            try
+                            {
+                                message.Save(emlPath);
+                            }
+                            catch (Exception saveEx)
+                            {
+                                Console.Error.WriteLine($"Failed to save message '{message.Subject}': {saveEx.Message}");
+                            }
                         }
                     }
 
-                    readSuccessful = true;
+                    opened = true; // Successfully processed.
                 }
                 catch (IOException ioEx)
                 {
-                    // Likely a file lock; log and retry after a short delay.
-                    Console.Error.WriteLine($"Attempt {attempt}: Unable to read MBOX file - {ioEx.Message}");
-                    if (attempt >= maxRetries)
+                    if (attempt == maxRetries)
                     {
-                        Console.Error.WriteLine("Maximum retry attempts reached. Exiting.");
+                        Console.Error.WriteLine($"Failed to open MBOX after {maxRetries} attempts: {ioEx.Message}");
                         return;
                     }
-                    Thread.Sleep(1000);
+
+                    Console.Error.WriteLine($"Attempt {attempt} failed due to I/O error: {ioEx.Message}. Retrying in {retryDelayMs} ms...");
+                    Thread.Sleep(retryDelayMs);
                 }
                 catch (Exception ex)
                 {
-                    // Any other unexpected error aborts the operation.
-                    Console.Error.WriteLine($"Unexpected error on attempt {attempt}: {ex.Message}");
+                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
                     return;
                 }
             }
+
+            if (!opened)
+                Console.Error.WriteLine("Unable to open the MBOX file.");
         }
         catch (Exception ex)
         {
-            // Top-level guard for any unforeseen exceptions.
             Console.Error.WriteLine($"Fatal error: {ex.Message}");
         }
     }

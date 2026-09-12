@@ -5,76 +5,93 @@ using System.Threading.Tasks;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace MboxAsyncCancellationExample
 {
-    static async Task Main(string[] args)
+    class Program
     {
-        try
+        static async Task Main(string[] args)
         {
-            string mboxPath = "sample.mbox";
-            string outputDir = "output";
-
-            // Guard file existence
-            if (!File.Exists(mboxPath))
+            try
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
-                return;
-            }
+                const string mboxPath = "storage.mbox";
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputDir))
-            {
+                if (!File.Exists(mboxPath))
+                {
+                    Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                    return;
+                }
+
+                // Prepare output directory
+                string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "output");
                 Directory.CreateDirectory(outputDir);
-            }
 
-            using (CancellationTokenSource cts = new CancellationTokenSource())
-            {
-                // Allow user to cancel with Ctrl+C
-                Console.CancelKeyPress += (s, e) =>
+                using var cts = new CancellationTokenSource();
+
+                // Listen for user cancellation
+                Task cancelTask = Task.Run(() =>
                 {
-                    e.Cancel = true;
-                    cts.Cancel();
-                    Console.WriteLine("Cancellation requested...");
-                };
-
-                // Asynchronously create the reader
-                MboxStorageReader reader = await MboxStorageReader.CreateReaderAsync(
-                    mboxPath,
-                    new MboxLoadOptions(),
-                    cts.Token);
-
-                using (reader)
-                {
-                    int messageIndex = 0;
-                    while (!cts.Token.IsCancellationRequested)
+                    Console.WriteLine("Press 'c' to cancel the operation...");
+                    while (Console.ReadKey(true).KeyChar != 'c')
                     {
-                        // Read next message sequentially
-                        MailMessage message = reader.ReadNextMessage();
+                        // ignore other keys
+                    }
+                    cts.Cancel();
+                });
+
+                // Read MBOX messages in a background task to keep Main responsive
+                await Task.Run(() =>
+                {
+                    using var mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
+
+                    while (true)
+                    {
+                        if (cts.Token.IsCancellationRequested)
+                        {
+                            Console.WriteLine("Operation cancelled by user.");
+                            break;
+                        }
+
+                        // Read the next message; returns null when end of file is reached
+                        MailMessage message = mboxReader.ReadNextMessage();
                         if (message == null)
-                            break; // No more messages
+                            break;
 
                         using (message)
                         {
-                            string safeSubject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
-                            string fileName = Path.Combine(outputDir, $"Message_{++messageIndex}_{safeSubject}.eml");
+                            Console.WriteLine($"Subject: {message.Subject}");
+                            Console.WriteLine($"From: {message.From}");
+                            Console.WriteLine($"To: {message.To}");
 
-                            try
-                            {
-                                message.Save(fileName);
-                                Console.WriteLine($"Saved: {fileName}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to save message: {ex.Message}");
-                            }
+                            string safeSubject = MakeSafeFileName(message.Subject);
+                            string outputFile = Path.Combine(outputDir, $"{safeSubject}.eml");
+
+                            // Save the message
+                            message.Save(outputFile);
+                            Console.WriteLine($"Saved: {outputFile}");
                         }
                     }
-                }
+                }, cts.Token);
+
+                // Ensure the cancel listener task ends
+                cts.Cancel();
+                await cancelTask;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
-        catch (Exception ex)
+
+        private static string MakeSafeFileName(string name)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            if (string.IsNullOrEmpty(name))
+                return "Untitled";
+
+            foreach (char invalidChar in Path.GetInvalidFileNameChars())
+            {
+                name = name.Replace(invalidChar, '_');
+            }
+            return name;
         }
     }
 }

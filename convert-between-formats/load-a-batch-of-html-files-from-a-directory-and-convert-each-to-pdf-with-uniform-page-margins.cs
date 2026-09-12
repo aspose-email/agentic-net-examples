@@ -1,112 +1,80 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Words;
 using Aspose.Words.Saving;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            string inputDirectory = "inputHtml";
-            string outputDirectory = "outputPdf";
+            string inputDir = "InputHtml";
+            string outputDir = "OutputPdf";
 
             // Verify input directory exists
-            if (!Directory.Exists(inputDirectory))
+            if (!Directory.Exists(inputDir))
             {
-                Console.Error.WriteLine($"Input directory does not exist: {inputDirectory}");
+                Console.Error.WriteLine($"Input directory '{inputDir}' does not exist.");
                 return;
             }
 
             // Ensure output directory exists
-            try
+            if (!Directory.Exists(outputDir))
             {
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                return;
-            }
-
-            string[] htmlFiles;
-            try
-            {
-                htmlFiles = Directory.GetFiles(inputDirectory, "*.html");
-            }
-            catch (Exception fileEx)
-            {
-                Console.Error.WriteLine($"Failed to enumerate HTML files: {fileEx.Message}");
-                return;
-            }
-
-            foreach (string htmlFilePath in htmlFiles)
-            {
-                // Guard each file existence (redundant after GetFiles but required by rules)
-                if (!File.Exists(htmlFilePath))
-                {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(htmlFilePath, Aspose.Email.SaveOptions.DefaultEml);
-                    }
+                    Directory.CreateDirectory(outputDir);
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory '{outputDir}': {ex.Message}");
                     return;
                 }
+            }
 
-                    Console.Error.WriteLine($"File not found: {htmlFilePath}");
-                    continue;
-                }
-
+            string[] htmlFiles = Directory.GetFiles(inputDir, "*.html");
+            foreach (string htmlPath in htmlFiles)
+            {
                 try
                 {
-                    // Load HTML into MailMessage
-                    HtmlLoadOptions loadOptions = new HtmlLoadOptions();
-                    using (MailMessage mailMessage = MailMessage.Load(htmlFilePath, loadOptions))
+                    // Load HTML as a MailMessage
+                    MailMessage mailMessage = MailMessage.Load(htmlPath, new HtmlLoadOptions());
+
+                    // Save to MHTML in memory
+                    using (MemoryStream mhtmlStream = new MemoryStream())
                     {
-                        // Save MailMessage as MHTML into a memory stream
-                        using (MemoryStream mhtmlStream = new MemoryStream())
+                        mailMessage.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
+                        mhtmlStream.Position = 0;
+
+                        // Load MHTML into Aspose.Words Document
+                        Document doc = new Document(mhtmlStream);
+
+                        // Set uniform page margins (1 inch = 72 points)
+                        const double marginInPoints = 72.0;
+                        foreach (Section section in doc.Sections)
                         {
-                            mailMessage.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
-                            mhtmlStream.Position = 0;
-
-                            // Load MHTML into Aspose.Words Document
-                            Document document = new Document(mhtmlStream);
-            {
-                                // Set uniform page margins (1 inch = 72 points)
-                                document.FirstSection.PageSetup.LeftMargin = 72;
-                                document.FirstSection.PageSetup.RightMargin = 72;
-                                document.FirstSection.PageSetup.TopMargin = 72;
-                                document.FirstSection.PageSetup.BottomMargin = 72;
-
-                                // Determine PDF output path
-                                string pdfFileName = Path.GetFileNameWithoutExtension(htmlFilePath) + ".pdf";
-                                string pdfFilePath = Path.Combine(outputDirectory, pdfFileName);
-
-                                // Save as PDF
-                                document.Save(pdfFilePath, Aspose.Words.SaveFormat.Pdf);
-                                Console.WriteLine($"Converted '{htmlFilePath}' to PDF successfully.");
-                            }
+                            section.PageSetup.LeftMargin = marginInPoints;
+                            section.PageSetup.RightMargin = marginInPoints;
+                            section.PageSetup.TopMargin = marginInPoints;
+                            section.PageSetup.BottomMargin = marginInPoints;
                         }
+
+                        // Determine PDF output path
+                        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(htmlPath);
+                        string pdfPath = Path.Combine(outputDir, fileNameWithoutExt + ".pdf");
+
+                        // Save as PDF
+                        doc.Save(pdfPath, Aspose.Words.SaveFormat.Pdf);
+                        Console.WriteLine($"Converted '{htmlPath}' to PDF successfully.");
                     }
+
+                    mailMessage.Dispose();
                 }
-                catch (Exception conversionEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error processing file '{htmlFilePath}': {conversionEx.Message}");
+                    Console.Error.WriteLine($"Error processing file '{htmlPath}': {ex.Message}");
                 }
             }
         }

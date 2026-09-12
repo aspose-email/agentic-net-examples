@@ -1,89 +1,63 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
     static void Main()
     {
-        try
+        // Author note: This example loads an Outlook OFT template, sets custom sender/recipient,
+        // and saves the result as an MSG file.
+
+        string oftPath = "template.oft";
+        string msgPath = "output.msg";
+
+        // Guard against missing input file
+        if (!File.Exists(oftPath))
         {
-            string templatePath = "template.oft";
-            string outputPath = "output.msg";
-
-            // Ensure the directory for the output exists
-            try
-            {
-                string outputDir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to prepare output directory: {ex.Message}");
-                return;
-            }
-
-            // Guard input file existence; create a minimal placeholder if missing
-            if (!File.Exists(templatePath))
-            {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage())
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.Subject = "Placeholder OFT";
-                        placeholder.Body = "This is a placeholder Outlook template.";
-                        placeholder.SaveAsTemplate(templatePath);
+                        placeholder.Save(oftPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder OFT: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
-            }
 
+            Console.Error.WriteLine($"Input OFT file not found: {oftPath}");
+            return;
+        }
+
+        try
+        {
             // Load the OFT template
-            MapiMessage message;
-            try
-            {
-                message = MapiMessage.Load(templatePath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load OFT template: {ex.Message}");
-                return;
-            }
+            MapiMessage oftMessage = MapiMessage.Load(oftPath);
 
-            using (message)
-            {
-                // Inject custom sender information
-                message.SenderName = "John Doe";
-                message.SenderEmailAddress = "john.doe@example.com";
-                message.SenderSmtpAddress = "john.doe@example.com";
+            // Set custom sender details
+            oftMessage.SenderName = "John Doe";
+            oftMessage.SenderEmailAddress = "john.doe@example.com";
 
-                // Clear existing recipients and add a custom recipient
-                message.Recipients.Clear();
-                message.Recipients.Add("jane.smith@example.com", "Jane Smith", MapiRecipientType.MAPI_TO);
+            // Replace recipients with a single TO recipient
+            oftMessage.Recipients.Clear();
+            oftMessage.Recipients.Add("jane.smith@example.com",
+                "Jane Smith",
+                MapiRecipientType.MAPI_TO);
 
-                // Save as MSG
-                try
-                {
-                    message.Save(outputPath);
-                    Console.WriteLine($"Message saved to {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG file: {ex.Message}");
-                }
-            }
+            // Save the modified message as MSG
+            oftMessage.Save(msgPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

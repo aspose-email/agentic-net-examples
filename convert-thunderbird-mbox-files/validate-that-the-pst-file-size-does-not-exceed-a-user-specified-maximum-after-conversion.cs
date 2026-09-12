@@ -1,82 +1,77 @@
+using Aspose.Email.Storage.Pst;
 using Aspose.Email;
 using System;
 using System.IO;
 using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
 
+// Author: Example demonstrating MBOX to PST conversion with size validation
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            // Paths for source MBOX and target PST
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
+            // Expect: args[0] = input MBOX path, args[1] = output PST path, args[2] = max size in bytes
+            if (args.Length < 3)
+            {
+                Console.Error.WriteLine("Usage: <program> <mboxPath> <pstPath> <maxSizeBytes>");
+                return;
+            }
 
-            // Verify the source MBOX file exists
+            string mboxPath = args[0];
+            string pstPath = args[1];
+            string maxSizeString = args[2];
+
+            if (!long.TryParse(maxSizeString, out long maxSizeBytes))
+            {
+                Console.Error.WriteLine("Invalid maximum size value.");
+                return;
+            }
+
+            // Guard: ensure input MBOX file exists
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // Prompt user for maximum allowed PST size (in megabytes)
-            Console.Write("Enter maximum PST size in megabytes: ");
-            string sizeInput = Console.ReadLine();
-            if (!double.TryParse(sizeInput, out double maxMegabytes) || maxMegabytes <= 0)
+            // Guard: ensure output directory exists
+            string outputDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
             {
-                Console.Error.WriteLine("Invalid size value.");
-                return;
-            }
-            long maxBytes = (long)(maxMegabytes * 1024 * 1024);
-
-            // Convert MBOX to PST
-            PersonalStorage pst = null;
-            try
-            {
-                pst = MailStorageConverter.MboxToPst(mboxPath, pstPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                return;
-            }
-            finally
-            {
-                pst?.Dispose();
-            }
-
-            // Verify the resulting PST file size
-            try
-            {
-                if (!File.Exists(pstPath))
+                try
                 {
-                    Console.Error.WriteLine($"PST file was not created: {pstPath}");
+                    Directory.CreateDirectory(outputDirectory);
+                }
+                catch (Exception dirEx)
+                {
+                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
                     return;
                 }
-
-                FileInfo pstInfo = new FileInfo(pstPath);
-                long pstSize = pstInfo.Length;
-                Console.WriteLine($"PST size: {pstSize} bytes");
-
-                if (pstSize > maxBytes)
-                {
-                    Console.WriteLine("PST exceeds the maximum allowed size.");
-                }
-                else
-                {
-                    Console.WriteLine("PST size is within the allowed limit.");
-                }
             }
-            catch (Exception ex)
+
+            // Convert MBOX to PST
+            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath))
             {
-                Console.Error.WriteLine($"Error checking PST size: {ex.Message}");
+                // Conversion completed; PersonalStorage will be disposed automatically
+            }
+
+            // Validate PST file size against the user‑specified maximum
+            FileInfo pstInfo = new FileInfo(pstPath);
+            long pstSizeBytes = pstInfo.Length;
+
+            if (pstSizeBytes > maxSizeBytes)
+            {
+                Console.WriteLine($"PST size {pstSizeBytes} bytes exceeds the allowed maximum of {maxSizeBytes} bytes.");
+            }
+            else
+            {
+                Console.WriteLine($"PST size {pstSizeBytes} bytes is within the allowed limit of {maxSizeBytes} bytes.");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }

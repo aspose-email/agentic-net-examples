@@ -4,9 +4,9 @@
   "framework": "net8.0",
   "package": "Aspose.Email",
   "package_version": "26.1.0",
-  "total_examples": 3083,
+  "total_examples": 3085,
   "total_categories": 17,
-  "last_updated": "2026-06-23",
+  "last_updated": "2026-07-05",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -245,8 +245,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -259,7 +259,7 @@
           "category": "convert-between-formats",
           "path": "convert-between-formats/batch-convert-all-pst-subfolders-to-individual-eml-files-maintaining-the-original-folder-hierarchy-on-disk.cs",
           "file": "batch-convert-all-pst-subfolders-to-individual-eml-files-maintaining-the-original-folder-hierarchy-on-disk.cs",
-          "api_area": "Pst",
+          "api_area": "Convert Between Formats",
           "tags": [
             "aspose-email",
             "between",
@@ -270,8 +270,7 @@
             "formats",
             "mapi",
             "pst",
-            "standalone-example",
-            "storage"
+            "standalone-example"
           ],
           "formats": [
             "eml",
@@ -281,7 +280,6 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
             "Aspose.Email.Mapi"
           ],
           "standalone": true,
@@ -304,8 +302,10 @@
             "dotnet8",
             "formats",
             "html",
+            "merging",
             "msg",
-            "standalone-example"
+            "standalone-example",
+            "tools"
           ],
           "formats": [
             "html",
@@ -314,7 +314,8 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email"
+            "Aspose.Email",
+            "Aspose.Email.Tools.Merging"
           ],
           "standalone": true,
           "validated": true,
@@ -327,7 +328,7 @@
           "category": "convert-between-formats",
           "path": "convert-between-formats/batch-convert-multiple-mbox-files-to-vcf-grouping-contacts-by-organization-and-creating-separate-files-per-group.cs",
           "file": "batch-convert-multiple-mbox-files-to-vcf-grouping-contacts-by-organization-and-creating-separate-files-per-group.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "between",
@@ -335,12 +336,12 @@
             "csharp",
             "dotnet8",
             "formats",
-            "mapi",
             "mbox",
+            "mime",
             "personalinfo",
-            "pst",
             "standalone-example",
             "storage",
+            "vcard",
             "vcf"
           ],
           "formats": [
@@ -352,10 +353,9 @@
             "System.IO",
             "System.Collections.Generic",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi",
-            "Aspose.Email.PersonalInfo"
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Mime",
+            "Aspose.Email.PersonalInfo.VCard"
           ],
           "standalone": true,
           "validated": true,
@@ -422,9 +422,7 @@
             "System",
             "System.IO",
             "System.IO.Compression",
-            "Aspose.Email",
-            "Aspose.Words",
-            "Aspose.Words.Saving"
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -471,7 +469,7 @@
           "category": "convert-between-formats",
           "path": "convert-between-formats/batch-process-mbox-files-converting-each-to-a-separate-pst-file-named-after-the-original-mailbox.cs",
           "file": "batch-process-mbox-files-converting-each-to-a-separate-pst-file-named-after-the-original-mailbox.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "between",
@@ -479,6 +477,7 @@
             "csharp",
             "dotnet8",
             "formats",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -489,12 +488,13 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email.Mapi",
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
+            "Aspose.Email.Storage.Mbox",
             "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email.Storage"
           ],
           "standalone": true,
           "validated": true,
@@ -539,7 +539,7 @@
           "category": "convert-between-formats",
           "path": "convert-between-formats/convert-a-batch-of-eml-files-in-a-directory-to-pdf-documents-with-inline-attachment-rendering.cs",
           "file": "convert-a-batch-of-eml-files-in-a-directory-to-pdf-documents-with-inline-attachment-rendering.cs",
-          "api_area": "Convert Between Formats",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "between",
@@ -548,6 +548,8 @@
             "dotnet8",
             "eml",
             "formats",
+            "mbox",
+            "mime",
             "pdf",
             "standalone-example",
             "storage"
@@ -560,7 +562,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Mime",
             "Aspose.Words",
             "Aspose.Words.Saving"
           ],
@@ -595,7 +598,6 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Collections.Generic",
             "Aspose.Email",
             "Aspose.Email.Mapi",
             "Aspose.Words",
@@ -616,7 +618,6 @@
           "tags": [
             "aspose-email",
             "between",
-            "calendar",
             "convert",
             "csharp",
             "dotnet8",
@@ -632,8 +633,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Mapi",
-            "Aspose.Email.Calendar"
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -666,7 +666,6 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Collections.Generic",
             "Aspose.Email",
             "Aspose.Email.Mapi",
             "Aspose.Words",
@@ -701,8 +700,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Words",
-            "Aspose.Words.Saving"
+            "Aspose.Words"
           ],
           "standalone": true,
           "validated": true,
@@ -735,8 +733,7 @@
             "System.IO",
             "Aspose.Email",
             "Aspose.Email.Calendar",
-            "Aspose.Words",
-            "Aspose.Words.Saving"
+            "Aspose.Words"
           ],
           "standalone": true,
           "validated": true,
@@ -757,13 +754,17 @@
             "csharp",
             "dotnet8",
             "formats",
-            "standalone-example"
+            "standalone-example",
+            "tools"
           ],
           "formats": [],
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email"
+            "System.Net",
+            "System.Text.RegularExpressions",
+            "Aspose.Email",
+            "Aspose.Email.Tools"
           ],
           "standalone": true,
           "validated": true,
@@ -914,7 +915,9 @@
             "eml",
             "formats",
             "html",
-            "standalone-example"
+            "search",
+            "standalone-example",
+            "tools"
           ],
           "formats": [
             "eml",
@@ -923,7 +926,8 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email"
+            "Aspose.Email",
+            "Aspose.Email.Tools.Search"
           ],
           "standalone": true,
           "validated": true,
@@ -1075,7 +1079,6 @@
             "csharp",
             "dotnet8",
             "formats",
-            "mapi",
             "mhtml",
             "oft",
             "standalone-example"
@@ -1087,8 +1090,7 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email",
-            "Aspose.Email.Mapi"
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -1187,7 +1189,6 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Collections.Generic",
             "Aspose.Email",
             "Aspose.Email.Mapi"
           ],
@@ -1329,7 +1330,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Words"
+            "Aspose.Words",
+            "Aspose.Words.Saving"
           ],
           "standalone": true,
           "validated": true,
@@ -1528,7 +1530,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Words"
+            "Aspose.Words",
+            "Aspose.Words.Saving"
           ],
           "standalone": true,
           "validated": true,
@@ -1653,8 +1656,10 @@
             "formats",
             "html",
             "mbox",
+            "search",
             "standalone-example",
-            "storage"
+            "storage",
+            "tools"
           ],
           "formats": [
             "html",
@@ -1664,7 +1669,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Tools.Search"
           ],
           "standalone": true,
           "validated": true,
@@ -1760,7 +1766,6 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Text",
             "Aspose.Email"
           ],
           "standalone": true,
@@ -1851,7 +1856,6 @@
             "csharp",
             "dotnet8",
             "formats",
-            "mapi",
             "mhtml",
             "ost",
             "pst",
@@ -1863,11 +1867,11 @@
             "ost"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Storage",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -1961,10 +1965,10 @@
             "msg"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
             "System.IO.Compression",
-            "Aspose.Email",
             "Aspose.Email.Mapi"
           ],
           "standalone": true,
@@ -1982,13 +1986,11 @@
           "tags": [
             "aspose-email",
             "between",
-            "calendar",
             "convert",
             "csharp",
             "dotnet8",
             "formats",
             "ics",
-            "mapi",
             "mhtml",
             "standalone-example"
           ],
@@ -1999,9 +2001,7 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email",
-            "Aspose.Email.Calendar",
-            "Aspose.Email.Mapi"
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -2033,10 +2033,9 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Text.RegularExpressions",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -2058,8 +2057,10 @@
             "dotnet8",
             "formats",
             "mbox",
+            "personalinfo",
             "standalone-example",
             "storage",
+            "vcard",
             "vcf"
           ],
           "formats": [
@@ -2070,7 +2071,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.PersonalInfo.VCard"
           ],
           "standalone": true,
           "validated": true,
@@ -2092,6 +2094,7 @@
             "dotnet8",
             "formats",
             "mhtml",
+            "mime",
             "standalone-example",
             "vcf"
           ],
@@ -2102,7 +2105,8 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email"
+            "Aspose.Email",
+            "Aspose.Email.Mime"
           ],
           "standalone": true,
           "validated": true,
@@ -2233,12 +2237,11 @@
             "pdf"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "System.Text",
-            "System.Collections.Generic",
-            "Aspose.Email",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mapi",
+            "Aspose.Words"
           ],
           "standalone": true,
           "validated": true,
@@ -2260,6 +2263,7 @@
             "dotnet8",
             "formats",
             "html",
+            "mime",
             "pdf",
             "standalone-example"
           ],
@@ -2271,6 +2275,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
+            "Aspose.Email.Mime",
             "Aspose.Words",
             "Aspose.Words.Saving"
           ],
@@ -2305,7 +2310,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Words"
+            "Aspose.Words",
+            "Aspose.Words.Saving"
           ],
           "standalone": true,
           "validated": true,
@@ -2337,7 +2343,6 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Collections.Generic",
             "Aspose.Email",
             "Aspose.Words",
             "Aspose.Words.Saving"
@@ -2494,6 +2499,7 @@
             "dotnet8",
             "emlx",
             "formats",
+            "mime",
             "standalone-example"
           ],
           "formats": [
@@ -2502,7 +2508,8 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email"
+            "Aspose.Email",
+            "Aspose.Email.Mime"
           ],
           "standalone": true,
           "validated": true,
@@ -2524,8 +2531,7 @@
             "dotnet8",
             "formats",
             "html",
-            "standalone-example",
-            "tools"
+            "standalone-example"
           ],
           "formats": [
             "html"
@@ -2533,9 +2539,7 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Text",
-            "Aspose.Email",
-            "Aspose.Email.Tools"
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -2564,7 +2568,6 @@
           ],
           "namespaces": [
             "System",
-            "System.Collections.Generic",
             "System.IO",
             "Aspose.Email"
           ],
@@ -3253,6 +3256,7 @@
             "dotnet8",
             "formats",
             "html",
+            "mime",
             "pdf",
             "standalone-example"
           ],
@@ -3264,6 +3268,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
+            "Aspose.Email.Mime",
             "Aspose.Words"
           ],
           "standalone": true,
@@ -3588,6 +3593,7 @@
             "dotnet8",
             "formats",
             "html",
+            "mapi",
             "mhtml",
             "standalone-example"
           ],
@@ -3598,8 +3604,8 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Text.RegularExpressions",
-            "Aspose.Email"
+            "Aspose.Email",
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -3697,6 +3703,7 @@
           "namespaces": [
             "System",
             "System.IO",
+            "System.Text",
             "System.Text.RegularExpressions",
             "Aspose.Email"
           ],
@@ -3928,9 +3935,9 @@
             "oft"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Email.Mapi"
           ],
           "standalone": true,
@@ -3953,6 +3960,7 @@
             "dotnet8",
             "eml",
             "formats",
+            "mapi",
             "msg",
             "standalone-example"
           ],
@@ -3963,7 +3971,8 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email"
+            "Aspose.Email",
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -4176,7 +4185,6 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Text",
             "Aspose.Email",
             "Aspose.Email.Storage.Pst",
             "Aspose.Email.Mapi"
@@ -4402,7 +4410,6 @@
           "tags": [
             "aspose-email",
             "between",
-            "calendar",
             "convert",
             "csharp",
             "dotnet8",
@@ -4410,7 +4417,6 @@
             "ics",
             "mapi",
             "msg",
-            "recurrences",
             "standalone-example"
           ],
           "formats": [
@@ -4421,9 +4427,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Mapi",
-            "Aspose.Email.Calendar",
-            "Aspose.Email.Calendar.Recurrences"
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -4444,6 +4448,7 @@
             "csharp",
             "dotnet8",
             "formats",
+            "mime",
             "pdf",
             "standalone-example"
           ],
@@ -4454,7 +4459,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Words"
+            "Aspose.Email.Mime"
           ],
           "standalone": true,
           "validated": true,
@@ -4541,7 +4546,6 @@
             "csharp",
             "dotnet8",
             "formats",
-            "mapi",
             "oft",
             "standalone-example"
           ],
@@ -4551,8 +4555,7 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email",
-            "Aspose.Email.Mapi"
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -4618,8 +4621,9 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Collections.Generic",
+            "System.Text",
             "System.Text.RegularExpressions",
+            "System.Collections.Generic",
             "Aspose.Email",
             "Aspose.Words",
             "Aspose.Words.Saving"
@@ -4654,7 +4658,6 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Words"
           ],
           "standalone": true,
@@ -4708,15 +4711,15 @@
         },
         {
           "name": "Aspose.Email",
-          "count": 135
+          "count": 134
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 46
+          "count": 44
         },
         {
           "name": "Aspose.Words",
-          "count": 37
+          "count": 36
         },
         {
           "name": "Aspose.Words.Saving",
@@ -4724,38 +4727,50 @@
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 13
-        },
-        {
-          "name": "System.Collections.Generic",
           "count": 11
         },
         {
-          "name": "Aspose.Email.Calendar",
-          "count": 9
-        },
-        {
           "name": "Aspose.Email.Storage.Mbox",
-          "count": 8
+          "count": 10
         },
         {
-          "name": "System.Text",
+          "name": "Aspose.Email.Mime",
           "count": 8
         },
         {
           "name": "System.Text.RegularExpressions",
-          "count": 8
-        },
-        {
-          "name": "Aspose.Email.Storage",
           "count": 7
         },
         {
-          "name": "Aspose.Email.PersonalInfo",
-          "count": 3
+          "name": "Aspose.Email.Calendar",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Storage",
+          "count": 6
+        },
+        {
+          "name": "System.Text",
+          "count": 6
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo.VCard",
+          "count": 2
         },
         {
           "name": "System.IO.Compression",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.PersonalInfo",
           "count": 2
         },
         {
@@ -4767,11 +4782,11 @@
           "count": 1
         },
         {
-          "name": "Aspose.Words.Tables",
+          "name": "Aspose.Email.Tools.Merging",
           "count": 1
         },
         {
-          "name": "System.Threading.Tasks",
+          "name": "System.Net",
           "count": 1
         },
         {
@@ -4779,11 +4794,11 @@
           "count": 1
         },
         {
-          "name": "Aspose.Email.Mime",
+          "name": "Aspose.Words.Tables",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Calendar.Recurrences",
+          "name": "System.Threading.Tasks",
           "count": 1
         }
       ],
@@ -4791,18 +4806,18 @@
         "Aspose.Email",
         "Aspose.Email.Mapi",
         "Aspose.Email.Storage.Pst",
-        "Aspose.Email.Calendar",
         "Aspose.Email.Storage.Mbox",
-        "Aspose.Email.Storage",
-        "Aspose.Email.PersonalInfo",
-        "Aspose.Email.Tools",
         "Aspose.Email.Mime",
-        "Aspose.Email.Calendar.Recurrences"
+        "Aspose.Email.Calendar",
+        "Aspose.Email.Storage",
+        "Aspose.Email.PersonalInfo.VCard",
+        "Aspose.Email.Tools.Search",
+        "Aspose.Email.PersonalInfo"
       ]
     },
     {
       "name": "convert-thunderbird-mbox-files",
-      "file_count": 189,
+      "file_count": 191,
       "files": [
         "add-a-feature-to-embed-a-custom-comment-in-the-pst-file-properties-for-identification.cs",
         "add-a-feature-to-encrypt-the-resulting-pst-file-using-a-user-provided-password.cs",
@@ -4882,6 +4897,7 @@
         "enable-multi-threaded-processing-of-mbox-chunks-to-accelerate-conversion-on-multi-core-systems.cs",
         "enumerate-a-batch-of-messages-with-enumeratemessages-for-pagination-starting-at-a-given-index.cs",
         "enumerate-only-message-metadata-using-enumeratemessageinfo-for-fast-scanning-without-loading-full-mailmessage-object.cs",
+        "enumerate-only-message-metadata-using-enumeratemessageinfo-for-fast-scanning-without-loading-full-mailmessage-objects.cs",
         "export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs",
         "expose-a-rest-api-endpoint-that-accepts-an-uploaded-mbox-file-and-returns-the-generated-pst-stream.cs",
         "expose-an-api-endpoint-that-triggers-asynchronous-mbox-splitting-with-optional-cancellation-token.cs",
@@ -4978,6 +4994,7 @@
         "use-a-try-finally-block-to-ensure-the-mboxstoragereader-is-disposed-after-splitting.cs",
         "use-asynchronous-programming-to-read-mbox-messages-while-writing-pst-entries-concurrently-for-performance.cs",
         "use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-arc.cs",
+        "use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-archive.cs",
         "use-linq-to-filter-messages-containing-specific-keywords-before-adding-them-to-the-pst-file.cs",
         "use-parallel-foreach-to-process-multiple-mbox-files-concurrently-each-invoking-its-own-splitinto-operation.cs",
         "use-reflection-to-dynamically-discover-available-mboxloadoptions-properties-for-advanced-user-configuration.cs",
@@ -5159,11 +5176,12 @@
             "pst"
           ],
           "namespaces": [
-            "Aspose.Email.Mapi",
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Pst",
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -5218,7 +5236,6 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -5228,9 +5245,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -5273,16 +5288,16 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/add-support-for-converting-only-messages-that-contain-attachments-skipping-plain-text-only-emails.cs",
           "file": "add-support-for-converting-only-messages-that-contain-attachments-skipping-plain-text-only-emails.cs",
-          "api_area": "Convert Thunderbird Mbox Files",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
             "csharp",
             "dotnet8",
             "files",
-            "mapi",
             "mbox",
             "standalone-example",
+            "storage",
             "thunderbird"
           ],
           "formats": [],
@@ -5290,7 +5305,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -5352,9 +5367,9 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Email.Storage",
             "Aspose.Email.Storage.Pst"
           ],
@@ -5523,7 +5538,6 @@
             "mapi",
             "mbox",
             "standalone-example",
-            "storage",
             "thunderbird"
           ],
           "formats": [],
@@ -5531,8 +5545,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Mapi",
-            "Aspose.Email.Storage"
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -5560,10 +5573,11 @@
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email",
             "System",
+            "Aspose.Email",
             "Aspose.Email.Storage",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mapi",
+            "System.Diagnostics"
           ],
           "standalone": true,
           "validated": true,
@@ -5756,8 +5770,9 @@
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email",
+            "Aspose.Email.Clients",
             "System",
+            "Aspose.Email",
             "Aspose.Email.Clients.Imap",
             "Aspose.Email.Tools.Search"
           ],
@@ -5788,7 +5803,6 @@
           "formats": [],
           "namespaces": [
             "System",
-            "Aspose.Email",
             "Aspose.Email.Tools.Search"
           ],
           "standalone": true,
@@ -5819,10 +5833,10 @@
             "pst"
           ],
           "namespaces": [
-            "System",
-            "System.IO",
-            "System.Diagnostics",
             "Aspose.Email",
+            "System",
+            "System.Diagnostics",
+            "System.IO",
             "Aspose.Email.Storage",
             "Aspose.Email.Storage.Pst"
           ],
@@ -5837,13 +5851,14 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/benchmark-memory-usage-when-converting-large-mbox-archives-with-and-without-batch-processing.cs",
           "file": "benchmark-memory-usage-when-converting-large-mbox-archives-with-and-without-batch-processing.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -5854,12 +5869,15 @@
             "mbox"
           ],
           "namespaces": [
-            "Aspose.Email",
             "System",
-            "System.IO",
+            "System.Collections.Generic",
             "System.Diagnostics",
+            "System.IO",
+            "Aspose.Email",
             "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Storage.Pst",
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -6001,13 +6019,14 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/close-the-mboxreader-instance-once-all-messages-have-been-transferred-to-the-pst-archive.cs",
           "file": "close-the-mboxreader-instance-once-all-messages-have-been-transferred-to-the-pst-archive.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -6018,12 +6037,11 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email.Mapi",
             "System",
-            "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -6085,6 +6103,7 @@
             "Aspose.Email",
             "System",
             "System.IO",
+            "Aspose.Email.Storage",
             "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
@@ -6098,27 +6117,25 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/compute-total-number-of-unique-senders-by-iterating-over-message-metadata.cs",
           "file": "compute-total-number-of-unique-senders-by-iterating-over-message-metadata.cs",
-          "api_area": "Exchange",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
-            "clients",
             "convert",
             "csharp",
-            "dav",
             "dotnet8",
-            "exchange",
             "files",
             "mbox",
             "standalone-example",
+            "storage",
             "thunderbird"
           ],
           "formats": [],
           "namespaces": [
             "System",
+            "System.IO",
             "System.Collections.Generic",
             "Aspose.Email",
-            "Aspose.Email.Clients.Exchange",
-            "Aspose.Email.Clients.Exchange.Dav"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -6139,7 +6156,6 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -6149,9 +6165,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -6302,7 +6316,6 @@
             "csharp",
             "dotnet8",
             "files",
-            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -6313,13 +6326,11 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email.Storage.Pst",
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Storage"
           ],
           "standalone": true,
           "validated": true,
@@ -6332,7 +6343,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/configure-mboxtopstconversionoptions-to-preserve-original-message-flags-such-as-read-unread-status-accurately.cs",
           "file": "configure-mboxtopstconversionoptions-to-preserve-original-message-flags-such-as-read-unread-status-accurately.cs",
-          "api_area": "Pst",
+          "api_area": "Convert Thunderbird Mbox Files",
           "tags": [
             "aspose-email",
             "convert",
@@ -6340,14 +6351,12 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email.Storage.Pst",
             "System",
             "System.IO",
             "Aspose.Email",
@@ -6411,9 +6420,9 @@
           ],
           "formats": [],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Email.Storage.Pst",
             "Aspose.Email.Mapi"
           ],
@@ -6435,6 +6444,7 @@
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -6448,9 +6458,9 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
             "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -6481,11 +6491,11 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email.Storage.Pst",
             "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage"
           ],
           "standalone": true,
           "validated": true,
@@ -6505,7 +6515,6 @@
             "csharp",
             "dotnet8",
             "files",
-            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -6517,14 +6526,12 @@
             "pst"
           ],
           "namespaces": [
-            "Aspose.Email.Mapi",
+            "Aspose.Email",
             "System",
             "System.Collections.Generic",
             "System.IO",
             "System.Text.Json",
-            "Aspose.Email",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -6662,7 +6669,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/create-a-diagnostic-report-summarizing-memory-usage-conversion-time-and-any-warnings-after-each-run.cs",
           "file": "create-a-diagnostic-report-summarizing-memory-usage-conversion-time-and-any-warnings-after-each-run.cs",
-          "api_area": "Pst",
+          "api_area": "Convert Thunderbird Mbox Files",
           "tags": [
             "aspose-email",
             "convert",
@@ -6670,19 +6677,15 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
-            "storage",
             "thunderbird"
           ],
           "formats": [],
           "namespaces": [
             "System",
-            "System.IO",
             "System.Diagnostics",
-            "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "System.IO",
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -6858,7 +6861,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/create-a-powershell-script-that-invokes-the-net-conversion-library-with-specified-parameters.cs",
           "file": "create-a-powershell-script-that-invokes-the-net-conversion-library-with-specified-parameters.cs",
-          "api_area": "Pst",
+          "api_area": "Convert Thunderbird Mbox Files",
           "tags": [
             "aspose-email",
             "convert",
@@ -6866,18 +6869,14 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
-            "storage",
             "thunderbird"
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -6939,12 +6938,12 @@
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email.Tools.Search",
             "System",
             "System.Collections.Generic",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Tools.Search"
           ],
           "standalone": true,
           "validated": true,
@@ -6975,11 +6974,12 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Pst",
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -7026,7 +7026,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/create-a-scheduled-azure-function-that-processes-incoming-mbox-blobs-and-stores-pst-results-in-blob-storage.cs",
           "file": "create-a-scheduled-azure-function-that-processes-incoming-mbox-blobs-and-stores-pst-results-in-blob-storage.cs",
-          "api_area": "Pst",
+          "api_area": "Convert Thunderbird Mbox Files",
           "tags": [
             "aspose-email",
             "convert",
@@ -7047,8 +7047,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage"
           ],
           "standalone": true,
           "validated": true,
@@ -7106,8 +7105,9 @@
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email",
             "System",
+            "Aspose.Email",
+            "Aspose.Email.Clients",
             "Aspose.Email.Clients.Pop3"
           ],
           "standalone": true,
@@ -7139,9 +7139,9 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Email.Storage",
             "Aspose.Email.Storage.Pst"
           ],
@@ -7191,29 +7191,25 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/create-unit-tests-that-simulate-conversion-of-messages-with-large-base64-encoded-attachments.cs",
           "file": "create-unit-tests-that-simulate-conversion-of-messages-with-large-base64-encoded-attachments.cs",
-          "api_area": "Mbox",
+          "api_area": "Convert Thunderbird Mbox Files",
           "tags": [
             "aspose-email",
             "convert",
             "csharp",
             "dotnet8",
             "files",
-            "mapi",
             "mbox",
-            "pst",
+            "search",
             "standalone-example",
-            "storage",
-            "thunderbird"
+            "thunderbird",
+            "tools"
           ],
           "formats": [],
           "namespaces": [
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Tools.Search"
           ],
           "standalone": true,
           "validated": true,
@@ -7260,7 +7256,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/detect-and-skip-duplicate-email-messages-based-on-message-id-header-during-conversion.cs",
           "file": "detect-and-skip-duplicate-email-messages-based-on-message-id-header-during-conversion.cs",
-          "api_area": "Convert Thunderbird Mbox Files",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
@@ -7278,7 +7274,7 @@
             "System.Collections.Generic",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -7371,9 +7367,9 @@
             "mbox"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
@@ -7405,9 +7401,9 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Email.Storage",
             "Aspose.Email.Storage.Pst"
           ],
@@ -7422,7 +7418,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/disable-automatic-charset-detection-and-enforce-iso-8859-1-encoding-via-mboxstoragereaderoptions.cs",
           "file": "disable-automatic-charset-detection-and-enforce-iso-8859-1-encoding-via-mboxstoragereaderoptions.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
@@ -7430,7 +7426,6 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -7441,8 +7436,6 @@
             "System.IO",
             "System.Text",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst",
             "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
@@ -7474,7 +7467,7 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Text",
+            "System.Text.RegularExpressions",
             "Aspose.Email",
             "Aspose.Email.Storage.Mbox"
           ],
@@ -7497,7 +7490,6 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -7508,12 +7500,11 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Text",
+            "System.Collections.Generic",
             "System.Threading.Tasks",
             "Aspose.Email",
             "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -7526,7 +7517,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/enumerate-a-batch-of-messages-with-enumeratemessages-for-pagination-starting-at-a-given-index.cs",
           "file": "enumerate-a-batch-of-messages-with-enumeratemessages-for-pagination-starting-at-a-given-index.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
@@ -7534,7 +7525,6 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -7543,8 +7533,9 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email"
+            "System.Linq",
+            "Aspose.Email",
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -7583,11 +7574,11 @@
           "package_version": "26.1.0"
         },
         {
-          "title": "Export conversion logs to a json file for downstream analysis and troubleshooting",
+          "title": "Enumerate only message metadata using enumeratemessageinfo for fast scanning without loading full mailmessage objects",
           "category": "convert-thunderbird-mbox-files",
-          "path": "convert-thunderbird-mbox-files/export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs",
-          "file": "export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs",
-          "api_area": "Pst",
+          "path": "convert-thunderbird-mbox-files/enumerate-only-message-metadata-using-enumeratemessageinfo-for-fast-scanning-without-loading-full-mailmessage-objects.cs",
+          "file": "enumerate-only-message-metadata-using-enumeratemessageinfo-for-fast-scanning-without-loading-full-mailmessage-objects.cs",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
@@ -7595,9 +7586,37 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
+            "thunderbird"
+          ],
+          "formats": [],
+          "namespaces": [
+            "Aspose.Email",
+            "System",
+            "System.IO",
+            "Aspose.Email.Storage.Mbox"
+          ],
+          "standalone": true,
+          "validated": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.1.0"
+        },
+        {
+          "title": "Export conversion logs to a json file for downstream analysis and troubleshooting",
+          "category": "convert-thunderbird-mbox-files",
+          "path": "convert-thunderbird-mbox-files/export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs",
+          "file": "export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs",
+          "api_area": "Convert Thunderbird Mbox Files",
+          "tags": [
+            "aspose-email",
+            "convert",
+            "csharp",
+            "dotnet8",
+            "files",
+            "mbox",
+            "standalone-example",
             "thunderbird"
           ],
           "formats": [],
@@ -7605,10 +7624,8 @@
             "System",
             "System.IO",
             "System.Collections.Generic",
-            "System.Text.Json",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "System.Text.Json"
           ],
           "standalone": true,
           "validated": true,
@@ -7621,7 +7638,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/expose-a-rest-api-endpoint-that-accepts-an-uploaded-mbox-file-and-returns-the-generated-pst-stream.cs",
           "file": "expose-a-rest-api-endpoint-that-accepts-an-uploaded-mbox-file-and-returns-the-generated-pst-stream.cs",
-          "api_area": "Pst",
+          "api_area": "Convert Thunderbird Mbox Files",
           "tags": [
             "aspose-email",
             "convert",
@@ -7640,10 +7657,9 @@
           ],
           "namespaces": [
             "Aspose.Email",
-            "System",
-            "System.IO",
             "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "System",
+            "System.IO"
           ],
           "standalone": true,
           "validated": true,
@@ -7690,7 +7706,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/expose-configuration-via-appsettings-json-to-allow-runtime-adjustment-of-batch-size-and-signature-removal.cs",
           "file": "expose-configuration-via-appsettings-json-to-allow-runtime-adjustment-of-batch-size-and-signature-removal.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
@@ -7706,11 +7722,12 @@
           "formats": [],
           "namespaces": [
             "Aspose.Email",
+            "Aspose.Email.Storage",
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Storage.Pst",
             "System",
             "System.IO",
-            "System.Text.Json",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "System.Text.Json"
           ],
           "standalone": true,
           "validated": true,
@@ -7739,11 +7756,11 @@
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email",
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -7777,8 +7794,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -7828,6 +7845,7 @@
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -7836,10 +7854,11 @@
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email",
+            "Aspose.Email.Storage.Pst",
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -7860,6 +7879,7 @@
             "dotnet8",
             "files",
             "mbox",
+            "mime",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -7869,7 +7889,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Mime"
           ],
           "standalone": true,
           "validated": true,
@@ -7882,16 +7903,14 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/generate-a-csv-report-with-entryid-subject-and-date-using-enumeratemessageinfo-data.cs",
           "file": "generate-a-csv-report-with-entryid-subject-and-date-using-enumeratemessageinfo-data.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
             "csharp",
             "dotnet8",
             "files",
-            "mapi",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -7899,10 +7918,9 @@
           "formats": [],
           "namespaces": [
             "Aspose.Email",
+            "Aspose.Email.Storage.Mbox",
             "System",
-            "System.IO",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "System.IO"
           ],
           "standalone": true,
           "validated": true,
@@ -7922,6 +7940,7 @@
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -7930,12 +7949,12 @@
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email.Storage.Pst",
             "System",
             "System.Collections.Generic",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage"
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -7999,12 +8018,11 @@
             "mbox"
           ],
           "namespaces": [
+            "Aspose.Email.Storage.Pst",
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email.Storage"
           ],
           "standalone": true,
           "validated": true,
@@ -8017,7 +8035,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/implement-a-cleanup-routine-that-deletes-temporary-pst-files-if-conversion-fails-unexpectedly.cs",
           "file": "implement-a-cleanup-routine-that-deletes-temporary-pst-files-if-conversion-fails-unexpectedly.cs",
-          "api_area": "Pst",
+          "api_area": "Convert Thunderbird Mbox Files",
           "tags": [
             "aspose-email",
             "convert",
@@ -8037,8 +8055,7 @@
             "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage"
           ],
           "standalone": true,
           "validated": true,
@@ -8086,7 +8103,6 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -8098,9 +8114,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -8188,6 +8202,7 @@
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -8201,7 +8216,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
+            "Aspose.Email.Mapi",
             "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
@@ -8358,13 +8373,14 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/implement-a-feature-that-truncates-email-bodies-exceeding-a-specified-length-during-pst-conversion.cs",
           "file": "implement-a-feature-that-truncates-email-bodies-exceeding-a-specified-length-during-pst-conversion.cs",
-          "api_area": "Convert Thunderbird Mbox Files",
+          "api_area": "Pst",
           "tags": [
             "aspose-email",
             "convert",
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -8378,7 +8394,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage"
+            "Aspose.Email.Storage.Pst",
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -8534,6 +8551,7 @@
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -8544,6 +8562,7 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email.Mapi",
             "System",
             "System.IO",
             "Aspose.Email",
@@ -8576,7 +8595,7 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Collections.Generic"
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -8641,8 +8660,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -8655,13 +8674,14 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/implement-a-progress-bar-in-a-wpf-application-that-reflects-real-time-conversion-status.cs",
           "file": "implement-a-progress-bar-in-a-wpf-application-that-reflects-real-time-conversion-status.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -8670,11 +8690,15 @@
           ],
           "formats": [],
           "namespaces": [
-            "System",
-            "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Mbox",
+            "Aspose.Email.Storage.Pst",
+            "System",
+            "System.Collections.Generic",
+            "System.IO",
+            "System.Linq",
+            "System.Threading.Tasks"
           ],
           "standalone": true,
           "validated": true,
@@ -8727,6 +8751,7 @@
             "dotnet8",
             "files",
             "mbox",
+            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -8735,9 +8760,12 @@
           "namespaces": [
             "System",
             "System.IO",
-            "Aspose.Email",
+            "System.Linq",
+            "System.Collections.Generic",
+            "Aspose.Email.Storage.Mbox",
             "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -8768,6 +8796,7 @@
           "namespaces": [
             "System",
             "System.IO",
+            "System.Text.RegularExpressions",
             "System.Threading",
             "Aspose.Email",
             "Aspose.Email.Storage.Mbox"
@@ -8822,6 +8851,7 @@
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -8832,10 +8862,11 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email.Mapi",
+            "Aspose.Email",
             "System",
             "System.IO",
             "System.Threading",
-            "Aspose.Email",
             "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
@@ -9036,11 +9067,11 @@
           ],
           "formats": [],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
-            "Aspose.Email.Mapi",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Pst",
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -9093,9 +9124,11 @@
             "dotnet8",
             "files",
             "mbox",
+            "search",
             "standalone-example",
             "storage",
-            "thunderbird"
+            "thunderbird",
+            "tools"
           ],
           "formats": [],
           "namespaces": [
@@ -9103,8 +9136,9 @@
             "System.IO",
             "System.Linq",
             "Aspose.Email",
+            "Aspose.Email.Storage.Mbox",
             "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Mbox"
+            "Aspose.Email.Tools.Search"
           ],
           "standalone": true,
           "validated": true,
@@ -9117,7 +9151,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/implement-retry-logic-for-transient-i-o-errors-when-opening-the-mbox-file-stream.cs",
           "file": "implement-retry-logic-for-transient-i-o-errors-when-opening-the-mbox-file-stream.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
@@ -9125,7 +9159,6 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -9134,13 +9167,10 @@
             "mbox"
           ],
           "namespaces": [
-            "Aspose.Email",
             "System",
             "System.IO",
-            "System.Text",
             "System.Threading",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst",
+            "Aspose.Email",
             "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
@@ -9161,8 +9191,8 @@
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
-            "mime",
             "standalone-example",
             "thunderbird"
           ],
@@ -9170,9 +9200,8 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Text",
             "Aspose.Email",
-            "Aspose.Email.Mime"
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -9185,7 +9214,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/initialize-mboxtopstconversionoptions-and-set-removesignature-to-true-for-signature-free-conversion-of-all-messages.cs",
           "file": "initialize-mboxtopstconversionoptions-and-set-removesignature-to-true-for-signature-free-conversion-of-all-messages.cs",
-          "api_area": "Pst",
+          "api_area": "Convert Thunderbird Mbox Files",
           "tags": [
             "aspose-email",
             "convert",
@@ -9193,14 +9222,12 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email.Storage.Pst",
             "Aspose.Email",
             "System",
             "System.IO",
@@ -9249,7 +9276,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/integrate-the-conversion-routine-into-a-windows-service-that-monitors-a-folder-for-new-mbox-files.cs",
           "file": "integrate-the-conversion-routine-into-a-windows-service-that-monitors-a-folder-for-new-mbox-files.cs",
-          "api_area": "Mbox",
+          "api_area": "Pst",
           "tags": [
             "aspose-email",
             "convert",
@@ -9266,13 +9293,12 @@
             "mbox"
           ],
           "namespaces": [
-            "System",
-            "System.IO",
-            "System.Threading",
             "Aspose.Email",
             "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Pst",
+            "System",
+            "System.IO",
+            "System.Threading"
           ],
           "standalone": true,
           "validated": true,
@@ -9386,6 +9412,7 @@
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -9396,6 +9423,7 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email.Mapi",
             "System",
             "System.IO",
             "Aspose.Email",
@@ -9510,16 +9538,14 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/log-conversion-progress-including-message-subject-and-index-to-a-text-file-for-audit-purposes.cs",
           "file": "log-conversion-progress-including-message-subject-and-index-to-a-text-file-for-audit-purposes.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
             "csharp",
             "dotnet8",
             "files",
-            "mapi",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -9529,8 +9555,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -9625,12 +9650,12 @@
             "mbox"
           ],
           "namespaces": [
+            "Aspose.Email.Storage.Pst",
             "Aspose.Email",
             "System",
             "System.IO",
             "System.Diagnostics",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage"
           ],
           "standalone": true,
           "validated": true,
@@ -9652,16 +9677,14 @@
             "files",
             "mbox",
             "standalone-example",
-            "storage",
             "thunderbird"
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email",
             "System",
-            "System.Diagnostics",
             "System.IO",
-            "Aspose.Email.Storage"
+            "System.Diagnostics",
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -9683,16 +9706,14 @@
             "files",
             "mbox",
             "standalone-example",
-            "storage",
             "thunderbird"
           ],
           "formats": [],
           "namespaces": [
-            "Aspose.Email",
             "System",
             "System.Diagnostics",
             "System.IO",
-            "Aspose.Email.Storage"
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -9791,6 +9812,8 @@
             "System",
             "System.Diagnostics",
             "System.IO",
+            "System.Threading",
+            "System.Threading.Tasks",
             "Aspose.Email",
             "Aspose.Email.Storage.Mbox"
           ],
@@ -9855,6 +9878,7 @@
           "namespaces": [
             "Aspose.Email",
             "System",
+            "Aspose.Email.Clients",
             "Aspose.Email.Clients.Pop3"
           ],
           "standalone": true,
@@ -10009,9 +10033,9 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Email.Storage",
             "Aspose.Email.Storage.Pst"
           ],
@@ -10074,9 +10098,8 @@
           "formats": [],
           "namespaces": [
             "System",
-            "System.IO",
-            "System.Text",
-            "System.Text.Json"
+            "System.Text.Json",
+            "System.Text.Json.Serialization"
           ],
           "standalone": true,
           "validated": true,
@@ -10307,7 +10330,6 @@
             "csharp",
             "dotnet8",
             "files",
-            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -10321,8 +10343,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Storage",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -10351,9 +10373,9 @@
             "mbox"
           ],
           "namespaces": [
+            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email",
             "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
@@ -10388,9 +10410,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -10422,6 +10443,7 @@
             "System",
             "System.IO",
             "System.Threading",
+            "System.Threading.Tasks",
             "Aspose.Email",
             "Aspose.Email.Storage.Mbox"
           ],
@@ -10468,15 +10490,12 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/serialize-extracted-mailmessage-to-json-for-api-integration-and-store-it-in-a-file.cs",
           "file": "serialize-extracted-mailmessage-to-json-for-api-integration-and-store-it-in-a-file.cs",
-          "api_area": "Exchange.Dav",
+          "api_area": "Convert Thunderbird Mbox Files",
           "tags": [
             "aspose-email",
-            "clients",
             "convert",
             "csharp",
-            "dav",
             "dotnet8",
-            "exchange",
             "files",
             "mbox",
             "standalone-example",
@@ -10486,10 +10505,9 @@
           "namespaces": [
             "System",
             "System.IO",
-            "System.Collections.Generic",
+            "System.Linq",
             "System.Text.Json",
-            "Aspose.Email",
-            "Aspose.Email.Clients.Exchange.Dav"
+            "Aspose.Email"
           ],
           "standalone": true,
           "validated": true,
@@ -10542,7 +10560,6 @@
             "dotnet8",
             "files",
             "mbox",
-            "pst",
             "standalone-example",
             "storage",
             "thunderbird"
@@ -10554,9 +10571,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -10576,8 +10591,8 @@
             "csharp",
             "dotnet8",
             "files",
-            "mapi",
             "mbox",
+            "mime",
             "standalone-example",
             "thunderbird"
           ],
@@ -10586,7 +10601,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mime"
           ],
           "standalone": true,
           "validated": true,
@@ -10606,7 +10621,6 @@
             "csharp",
             "dotnet8",
             "files",
-            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -10620,8 +10634,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Storage",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -10696,7 +10710,7 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/use-asynchronous-programming-to-read-mbox-messages-while-writing-pst-entries-concurrently-for-performance.cs",
           "file": "use-asynchronous-programming-to-read-mbox-messages-while-writing-pst-entries-concurrently-for-performance.cs",
-          "api_area": "Pst",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
             "convert",
@@ -10715,14 +10729,14 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email.Mapi",
             "System",
-            "System.IO",
             "System.Collections.Generic",
+            "System.IO",
             "System.Threading.Tasks",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
             "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -10735,6 +10749,37 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-arc.cs",
           "file": "use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-arc.cs",
+          "api_area": "Mbox",
+          "tags": [
+            "aspose-email",
+            "convert",
+            "csharp",
+            "dotnet8",
+            "files",
+            "mbox",
+            "standalone-example",
+            "storage",
+            "thunderbird"
+          ],
+          "formats": [],
+          "namespaces": [
+            "System",
+            "System.Collections.Generic",
+            "System.IO",
+            "Aspose.Email",
+            "Aspose.Email.Storage.Mbox"
+          ],
+          "standalone": true,
+          "validated": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.1.0"
+        },
+        {
+          "title": "Use enumeratemessageinfo to build an index of message dates for quick chronological navigation across the entire archive",
+          "category": "convert-thunderbird-mbox-files",
+          "path": "convert-thunderbird-mbox-files/use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-archive.cs",
+          "file": "use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-archive.cs",
           "api_area": "Mbox",
           "tags": [
             "aspose-email",
@@ -10785,12 +10830,12 @@
           ],
           "namespaces": [
             "System",
-            "System.Collections.Generic",
             "System.IO",
             "System.Linq",
+            "System.Collections.Generic",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -10853,6 +10898,7 @@
           "namespaces": [
             "System",
             "System.IO",
+            "System.Text",
             "System.Reflection",
             "Aspose.Email",
             "Aspose.Email.Storage.Mbox"
@@ -10875,6 +10921,7 @@
             "csharp",
             "dotnet8",
             "files",
+            "mapi",
             "mbox",
             "pst",
             "standalone-example",
@@ -10885,10 +10932,11 @@
             "pst"
           ],
           "namespaces": [
-            "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email",
+            "Aspose.Email.Storage.Pst",
+            "Aspose.Email.Mapi"
           ],
           "standalone": true,
           "validated": true,
@@ -10924,10 +10972,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Storage.Mbox",
-            "Aspose.Email.Mapi"
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -10995,6 +11041,8 @@
           "namespaces": [
             "System",
             "System.IO",
+            "System.Collections.Generic",
+            "System.Linq",
             "Aspose.Email",
             "Aspose.Email.Storage.Pst",
             "Aspose.Email.Mapi"
@@ -11031,6 +11079,7 @@
             "System",
             "System.IO",
             "Aspose.Email",
+            "Aspose.Email.Storage",
             "Aspose.Email.Storage.Pst",
             "Aspose.Email.Mapi"
           ],
@@ -11127,11 +11176,11 @@
             "pst"
           ],
           "namespaces": [
+            "Aspose.Email.Storage.Pst",
             "Aspose.Email",
             "System",
             "System.IO",
-            "Aspose.Email.Storage",
-            "Aspose.Email.Storage.Pst"
+            "Aspose.Email.Storage"
           ],
           "standalone": true,
           "validated": true,
@@ -11212,17 +11261,16 @@
           "category": "convert-thunderbird-mbox-files",
           "path": "convert-thunderbird-mbox-files/write-each-message-subject-line-to-a-log-file-during-asynchronous-reading-for-audit-purposes.cs",
           "file": "write-each-message-subject-line-to-a-log-file-during-asynchronous-reading-for-audit-purposes.cs",
-          "api_area": "Imap",
+          "api_area": "Mbox",
           "tags": [
             "aspose-email",
-            "clients",
             "convert",
             "csharp",
             "dotnet8",
             "files",
-            "imap",
             "mbox",
             "standalone-example",
+            "storage",
             "thunderbird"
           ],
           "formats": [],
@@ -11231,8 +11279,7 @@
             "System.IO",
             "System.Threading.Tasks",
             "Aspose.Email",
-            "Aspose.Email.Clients",
-            "Aspose.Email.Clients.Imap"
+            "Aspose.Email.Storage.Mbox"
           ],
           "standalone": true,
           "validated": true,
@@ -11266,8 +11313,8 @@
             "System",
             "System.IO",
             "Aspose.Email",
-            "Aspose.Email.Storage.Pst",
-            "Aspose.Email.Storage"
+            "Aspose.Email.Storage",
+            "Aspose.Email.Storage.Pst"
           ],
           "standalone": true,
           "validated": true,
@@ -11279,70 +11326,70 @@
       "required_namespaces": [
         {
           "name": "System",
-          "count": 189
+          "count": 191
         },
         {
           "name": "Aspose.Email",
-          "count": 182
+          "count": 184
         },
         {
           "name": "System.IO",
-          "count": 181
+          "count": 182
         },
         {
           "name": "Aspose.Email.Storage.Pst",
-          "count": 117
-        },
-        {
-          "name": "Aspose.Email.Storage",
-          "count": 77
+          "count": 99
         },
         {
           "name": "Aspose.Email.Storage.Mbox",
-          "count": 66
+          "count": 74
+        },
+        {
+          "name": "Aspose.Email.Storage",
+          "count": 60
         },
         {
           "name": "Aspose.Email.Mapi",
-          "count": 46
-        },
-        {
-          "name": "System.Threading",
-          "count": 20
+          "count": 50
         },
         {
           "name": "System.Collections.Generic",
-          "count": 20
+          "count": 24
         },
         {
-          "name": "System.Text",
-          "count": 19
+          "name": "System.Threading",
+          "count": 21
         },
         {
           "name": "System.Threading.Tasks",
-          "count": 13
+          "count": 16
+        },
+        {
+          "name": "System.Text",
+          "count": 15
         },
         {
           "name": "System.Diagnostics",
-          "count": 12
+          "count": 13
+        },
+        {
+          "name": "System.Linq",
+          "count": 8
+        },
+        {
+          "name": "Aspose.Email.Tools.Search",
+          "count": 7
         },
         {
           "name": "System.Text.Json",
           "count": 6
         },
         {
-          "name": "Aspose.Email.Tools.Search",
-          "count": 5
+          "name": "Aspose.Email.Clients",
+          "count": 4
         },
         {
-          "name": "System.Linq",
-          "count": 3
-        },
-        {
-          "name": "Aspose.Email.Clients.Imap",
-          "count": 3
-        },
-        {
-          "name": "Aspose.Email.Clients.Exchange.Dav",
+          "name": "System.Text.RegularExpressions",
           "count": 3
         },
         {
@@ -11350,7 +11397,15 @@
           "count": 2
         },
         {
+          "name": "Aspose.Email.Clients.Imap",
+          "count": 2
+        },
+        {
           "name": "Aspose.Email.Clients.Pop3",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Mime",
           "count": 2
         },
         {
@@ -11358,23 +11413,15 @@
           "count": 2
         },
         {
-          "name": "Aspose.Email.Clients",
-          "count": 2
-        },
-        {
-          "name": "Aspose.Email.Clients.Exchange",
-          "count": 1
-        },
-        {
           "name": "System.Runtime.InteropServices",
           "count": 1
         },
         {
-          "name": "System.Text.RegularExpressions",
+          "name": "System.Text.Json.Serialization",
           "count": 1
         },
         {
-          "name": "Aspose.Email.Mime",
+          "name": "Aspose.Email.Clients.Exchange.Dav",
           "count": 1
         },
         {
@@ -11389,14 +11436,14 @@
       "key_apis": [
         "Aspose.Email",
         "Aspose.Email.Storage.Pst",
-        "Aspose.Email.Storage",
         "Aspose.Email.Storage.Mbox",
+        "Aspose.Email.Storage",
         "Aspose.Email.Mapi",
         "Aspose.Email.Tools.Search",
+        "Aspose.Email.Clients",
         "Aspose.Email.Clients.Imap",
-        "Aspose.Email.Clients.Exchange.Dav",
         "Aspose.Email.Clients.Pop3",
-        "Aspose.Email.Clients"
+        "Aspose.Email.Mime"
       ]
     },
     {

@@ -10,77 +10,32 @@ class Program
     {
         try
         {
-            string icsPath = "input.ics";
-            string msgPath = "output.msg";
+            // Author note: Example demonstrates loading an iCalendar file, updating its location, and saving as MSG.
+            string icsPath = "event.ics";
+            string msgPath = "updated_event.msg";
 
-            // Ensure input file exists; create minimal placeholder if missing
+            // Verify input file exists
             if (!File.Exists(icsPath))
             {
-                try
-                {
-                    using (StreamWriter writer = new StreamWriter(icsPath))
-                    {
-                        writer.WriteLine("BEGIN:VCALENDAR");
-                        writer.WriteLine("VERSION:2.0");
-                        writer.WriteLine("BEGIN:VEVENT");
-                        writer.WriteLine("UID:placeholder");
-                        writer.WriteLine("DTSTAMP:20240101T000000Z");
-                        writer.WriteLine("DTSTART:20240102T100000Z");
-                        writer.WriteLine("DTEND:20240102T110000Z");
-                        writer.WriteLine("SUMMARY:Sample Event");
-                        writer.WriteLine("LOCATION:Old Location");
-                        writer.WriteLine("END:VEVENT");
-                        writer.WriteLine("END:VCALENDAR");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder .ics file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Input file not found: {icsPath}");
+                return;
             }
 
             // Load the appointment from the .ics file
-            Appointment appointment;
-            try
-            {
-                appointment = Appointment.Load(icsPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to load appointment: {ex.Message}");
-                return;
-            }
+            Appointment appointment = Appointment.Load(icsPath);
 
-            // Modify the location
+            // Modify the location of the appointment
             appointment.Location = "New Location";
 
-            // Convert to MAPI message and save as .msg
-            try
-            {
-                using (MapiMessage mapiMessage = appointment.ToMapiMessage())
-                {
-                    // Ensure output directory exists
-                    string outputDir = Path.GetDirectoryName(msgPath);
-                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-                    {
-                        Directory.CreateDirectory(outputDir);
-                    }
+            // Convert the appointment to a MAPI message
+            MapiMessage mapiMessage = appointment.ToMapiMessage();
 
-                    mapiMessage.Save(msgPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to convert/save MSG: {ex.Message}");
-                return;
-            }
-
-            Console.WriteLine("Appointment location updated and saved as MSG successfully.");
+            // Save the MAPI message as a .msg file
+            mapiMessage.Save(msgPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -1,7 +1,8 @@
+using Aspose.Email.Mapi;
+using Aspose.Email;
 using System;
 using System.IO;
 using System.Threading;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 
 class Program
@@ -10,72 +11,62 @@ class Program
     {
         try
         {
-            // Define PST file path
-            string pstFilePath = "output.pst";
+            // Author note: Example demonstrates retry logic for transient I/O errors while creating a PST file.
+            const string pstPath = "output.pst";
+            const int maxAttempts = 3;
+            int attempt = 0;
+            int delayMs = 1000; // initial back‑off delay
 
-            // Ensure the directory for the PST file exists
-            string directory = Path.GetDirectoryName(pstFilePath);
+            // Ensure the target directory exists
+            string directory = Path.GetDirectoryName(pstPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                try
-                {
-                    Directory.CreateDirectory(directory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create directory '{directory}': {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(directory);
             }
 
-            // Retry parameters
-            const int maxAttempts = 3;
-            const int delayMilliseconds = 1000;
-
-            // Attempt to create the PST file with retry logic for transient I/O errors
-            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            PersonalStorage pst = null;
+            try
             {
-                try
+                while (true)
                 {
-                    // Create a new Unicode PST file
-                    using (PersonalStorage pst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
+                    try
                     {
-                        // Example: add a predefined folder (Inbox) to the PST
-                        pst.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
-                        Console.WriteLine($"PST file created successfully at '{pstFilePath}'.");
+                        // Create the PST file (Unicode version)
+                        pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
+                        break; // success
                     }
+                    catch (IOException ioEx)
+                    {
+                        attempt++;
+                        if (attempt >= maxAttempts)
+                        {
+                            Console.Error.WriteLine($"Failed to create PST after {attempt} attempts: {ioEx.Message}");
+                            return;
+                        }
 
-                    // Creation succeeded, exit the retry loop
-                    break;
-                }
-                catch (IOException ioEx)
-                {
-                    // Transient I/O error – retry unless this was the last attempt
-                    Console.Error.WriteLine($"I/O error on attempt {attempt}: {ioEx.Message}");
-                    if (attempt == maxAttempts)
-                    {
-                        Console.Error.WriteLine("Maximum retry attempts reached. PST creation failed.");
-                        return;
+                        Console.Error.WriteLine($"Transient I/O error (attempt {attempt}): {ioEx.Message}");
+                        Thread.Sleep(delayMs);
+                        delayMs *= 2; // exponential back‑off
                     }
-                    Thread.Sleep(delayMilliseconds);
                 }
-                catch (AsposeException aspEx)
-                {
-                    // Non-transient Aspose-specific error – report and abort
-                    Console.Error.WriteLine($"Aspose error: {aspEx.Message}");
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    // Unexpected error – report and abort
-                    Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                    return;
-                }
+
+                // Example: add a subfolder to the PST root
+                FolderInfo rootFolder = pst.RootFolder;
+                rootFolder.AddSubFolder("MyFolder");
+
+                // Example: add a simple message to the new folder
+                MailMessage message = new MailMessage("sender@example.com", "recipient@example.com", "Test", "This is a test message.");
+                FolderInfo subFolder = rootFolder.GetSubFolder("MyFolder");
+                subFolder.AddMessage(MapiMessage.FromMailMessage(message));
+            }
+            finally
+            {
+                pst?.Dispose();
             }
         }
-        catch (Exception outerEx)
+        catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {outerEx.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

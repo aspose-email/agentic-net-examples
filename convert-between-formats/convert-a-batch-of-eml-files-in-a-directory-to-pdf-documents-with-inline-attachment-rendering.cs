@@ -1,88 +1,95 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
+using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Mime;
 using Aspose.Words;
 using Aspose.Words.Saving;
 
-namespace ConvertEmlBatchToPdf
+class Program
 {
-    class Program
+    static void Main()
     {
-        static void Main()
+        // Placeholder for Aspose license (if available)
+        // var emailLicense = new Aspose.Email.License();
+        // emailLicense.SetLicense("Aspose.Email.lic");
+        // var wordsLicense = new Aspose.Words.License();
+        // wordsLicense.SetLicense("Aspose.Words.lic");
+
+        string inputFolder = "InputEml";
+        string outputFolder = "OutputPdf";
+
+        if (!Directory.Exists(inputFolder))
+        {
+            Console.Error.WriteLine($"Input folder '{inputFolder}' does not exist.");
+            return;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(outputFolder);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to create output folder '{outputFolder}': {ex.Message}");
+            return;
+        }
+
+        string[] emlFiles;
+        try
+        {
+            emlFiles = Directory.GetFiles(inputFolder, "*.eml");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error enumerating EML files: {ex.Message}");
+            return;
+        }
+
+        if (emlFiles.Length == 0)
+        {
+            Console.WriteLine("No EML files found to process.");
+            return;
+        }
+
+        foreach (string emlPath in emlFiles)
         {
             try
             {
-                string inputDirectory = "InputEml";
-                string outputDirectory = "OutputPdf";
-
-                if (!Directory.Exists(inputDirectory))
+                // Load the EML file with options to preserve attachments and embedded messages
+                var loadOptions = new EmlLoadOptions
                 {
-                    Console.Error.WriteLine($"Input directory '{inputDirectory}' does not exist.");
-                    return;
-                }
+                    PreserveTnefAttachments = true,
+                    PreserveEmbeddedMessageFormat = true
+                };
 
-                if (!Directory.Exists(outputDirectory))
+                using (MailMessage mailMessage = MailMessage.Load(emlPath, loadOptions))
                 {
-                    try
+                    // Convert the email to MHTML using Aspose.Email
+                    using (var mhtmlStream = new MemoryStream())
                     {
-                        Directory.CreateDirectory(outputDirectory);
-                    }
-                    catch (Exception dirEx)
-                    {
-                        Console.Error.WriteLine($"Failed to create output directory '{outputDirectory}': {dirEx.Message}");
-                        return;
-                    }
-                }
+                        var mhtmlSaveOptions = Aspose.Email.SaveOptions.DefaultMhtml;
+                        mailMessage.Save(mhtmlStream, mhtmlSaveOptions);
+                        mhtmlStream.Position = 0; // Reset stream position for reading
 
-                string[] emlFiles;
-                try
-                {
-                    emlFiles = Directory.GetFiles(inputDirectory, "*.eml");
-                }
-                catch (Exception fileEx)
-                {
-                    Console.Error.WriteLine($"Error accessing files in '{inputDirectory}': {fileEx.Message}");
-                    return;
-                }
+                        // Load MHTML into Aspose.Words Document
+                        var wordsDoc = new Document(mhtmlStream);
 
-                foreach (string emlPath in emlFiles)
-                {
-                    try
-                    {
-                        // Load the EML file with explicit Aspose.Email load options
-                        Aspose.Email.EmlLoadOptions loadOptions = new Aspose.Email.EmlLoadOptions();
-                        using (MailMessage message = MailMessage.Load(emlPath, loadOptions))
-                        {
-                            // Save the message as MHTML into a memory stream
-                            using (MemoryStream mhtmlStream = new MemoryStream())
-                            {
-                                message.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
-                                mhtmlStream.Position = 0;
+                        // Prepare PDF output path
+                        string pdfFileName = Path.GetFileNameWithoutExtension(emlPath) + ".pdf";
+                        string pdfPath = Path.Combine(outputFolder, pdfFileName);
 
-                                // Load the MHTML into Aspose.Words Document
-                                Document document = new Document(mhtmlStream);
+                        // Save as PDF using Aspose.Words
+                        var pdfSaveOptions = new Aspose.Words.Saving.PdfSaveOptions();
+                        wordsDoc.Save(pdfPath, pdfSaveOptions);
 
-                                // Determine PDF output path
-                                string pdfFileName = Path.GetFileNameWithoutExtension(emlPath) + ".pdf";
-                                string pdfPath = Path.Combine(outputDirectory, pdfFileName);
-
-                                // Save as PDF
-                                document.Save(pdfPath, Aspose.Words.SaveFormat.Pdf);
-                            }
-                        }
-
-                        Console.WriteLine($"Converted '{emlPath}' to PDF successfully.");
-                    }
-                    catch (Exception convertEx)
-                    {
-                        Console.Error.WriteLine($"Failed to convert '{emlPath}': {convertEx.Message}");
+                        Console.WriteLine($"Converted '{emlPath}' to '{pdfPath}'.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"Failed to convert '{emlPath}': {ex.Message}");
             }
         }
     }

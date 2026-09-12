@@ -1,96 +1,85 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Text.Json;
 using Aspose.Email;
-using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
+using System.Text.Json;
 
 namespace AsposeEmailConversionLogExport
 {
-    // Represents a single conversion log entry.
-    public class ConversionLog
-    {
-        public string MessageSubject { get; set; }
-        public string SourcePath { get; set; }
-        public string DestinationPath { get; set; }
-        public DateTime Timestamp { get; set; }
-        public bool Success { get; set; }
-        public string ErrorMessage { get; set; }
-    }
-
+    // Author: Generated example for exporting conversion logs to JSON
     class Program
     {
         static void Main(string[] args)
         {
             try
             {
-                // Define paths.
-                string inputMboxPath = "input.mbox";
-                string outputPstPath = "output.pst";
-                string logJsonPath = "conversion_log.json";
+                // Define file paths
+                string inputPath = "TestEml.eml";
+                string outputPath = "output.msg";
+                string logPath = "conversion.log";
+                string jsonPath = "conversion_log.json";
 
-                // Guard input file existence.
-                if (!File.Exists(inputMboxPath))
+                // Ensure input file exists; create a minimal placeholder if missing
+                if (!File.Exists(inputPath))
                 {
-                    Console.Error.WriteLine($"Input MBOX file not found: {inputMboxPath}");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
 
-                // Ensure output directory exists.
-                string outputDirectory = Path.GetDirectoryName(outputPstPath);
-                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
+                    string placeholderEml = "From: example@example.com\r\nTo: recipient@example.com\r\nSubject: Test\r\n\r\nThis is a test email.";
+                    File.WriteAllText(inputPath, placeholderEml);
                 }
 
-                // Prepare log collection.
-                List<ConversionLog> logs = new List<ConversionLog>();
+                // Initialize log file (clear any existing content)
+                File.WriteAllText(logPath, string.Empty);
 
-                // Define the mail handler to capture each message conversion.
-                MailStorageConverter.MailHandler handler = delegate (MailMessage message)
+                // Set up EML load options
+                EmlLoadOptions emlLoadOptions = new EmlLoadOptions()
                 {
-                    logs.Add(new ConversionLog
-                    {
-                        MessageSubject = message.Subject,
-                        SourcePath = inputMboxPath,
-                        DestinationPath = outputPstPath,
-                        Timestamp = DateTime.Now,
-                        Success = true,
-                        ErrorMessage = null
-                    });
+                    PreserveTnefAttachments = true,
+                    PreserveEmbeddedMessageFormat = true
                 };
 
-                // Perform conversion inside a using block to dispose the PST.
-                using (PersonalStorage pst = MailStorageConverter.MboxToPst(inputMboxPath, outputPstPath, handler))
+                // Load the EML message and convert it to MSG
+                using (MailMessage message = MailMessage.Load(inputPath, emlLoadOptions))
                 {
-                    // No additional actions required; conversion occurs during the call.
+                    message.Save(outputPath, SaveOptions.DefaultMsg);
+                    string successLog = $"[{DateTime.UtcNow:u}] Conversion succeeded from {inputPath} to {outputPath}{Environment.NewLine}";
+                    File.AppendAllText(logPath, successLog);
                 }
 
-                // Serialize logs to JSON.
-                string json = JsonSerializer.Serialize(logs, new JsonSerializerOptions { WriteIndented = true });
+                // Read the log file lines
+                string[] logLines = File.ReadAllLines(logPath);
+                List<string> logEntries = new List<string>(logLines);
 
-                // Ensure log file directory exists.
-                string logDirectory = Path.GetDirectoryName(logJsonPath);
-                if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
+                // Serialize log entries to JSON with indentation
+                JsonSerializerOptions jsonOptions = new JsonSerializerOptions
                 {
-                    Directory.CreateDirectory(logDirectory);
-                }
+                    WriteIndented = true
+                };
+                string json = JsonSerializer.Serialize(logEntries, jsonOptions);
 
-                // Write JSON to file with guard.
-                try
-                {
-                    File.WriteAllText(logJsonPath, json);
-                    Console.WriteLine($"Conversion log written to: {logJsonPath}");
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Failed to write log file: {ioEx.Message}");
-                }
+                // Write JSON to the output file
+                File.WriteAllText(jsonPath, json);
+
+                Console.WriteLine("Conversion completed. Log exported to " + jsonPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"An error occurred: {ex.Message}");
+                Console.Error.WriteLine("Error: " + ex.Message);
             }
         }
     }

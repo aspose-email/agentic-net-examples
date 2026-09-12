@@ -7,55 +7,52 @@ class Program
 {
     static void Main()
     {
+        // Path to the Thunderbird MBOX file.
+        string mboxPath = "storage.mbox";
+
+        // Verify that the MBOX file exists before attempting to read it.
+        if (!File.Exists(mboxPath))
+        {
+            Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+            return;
+        }
+
         try
         {
-            string mboxPath = "sample.mbox";
-
-            // Guard file existence
-            if (!File.Exists(mboxPath))
+            // Create a reader for the MBOX file. MboxLoadOptions can be customized if needed.
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
-                return;
-            }
+                Console.WriteLine($"Opened MBOX file: {mboxPath}");
+                int messageIndex = 0;
 
-            // Create reader with load options inside try/catch
-            try
-            {
-                using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                // Sequentially read each message using ReadNextMessage(out string) to obtain the "From" marker.
+                while (true)
                 {
-                    int messageIndex = 0;
+                    string fromMarker;
+                    MailMessage message = reader.ReadNextMessage(out fromMarker);
 
-                    while (true)
-                    {
-                        // Read next message with from‑marker information
-                        MailMessage message = reader.ReadNextMessage(out string fromMarker);
-                        if (message == null)
-                            break;
+                    // When null is returned, we have reached the end of the storage.
+                    if (message == null)
+                        break;
 
-                        using (message)
-                        {
-                            messageIndex++;
-                            Console.WriteLine($"--- Message {messageIndex} ---");
-                            Console.WriteLine($"From marker: {fromMarker}");
-                            Console.WriteLine($"Subject: {message.Subject}");
-                            Console.WriteLine($"From: {message.From}");
-                            Console.WriteLine($"To: {message.To}");
-                            Console.WriteLine();
-                        }
-                    }
-
-                    Console.WriteLine($"Total messages processed: {messageIndex}");
+                    messageIndex++;
+                    Console.WriteLine($"--- Message #{messageIndex} ---");
+                    Console.WriteLine($"From marker: {fromMarker}");
+                    Console.WriteLine($"Subject    : {message.Subject}");
+                    Console.WriteLine($"From       : {message.From}");
+                    Console.WriteLine($"To         : {string.Join(", ", message.To)}");
+                    Console.WriteLine($"Date       : {message.Date}");
+                    Console.WriteLine($"CurrentDataSize (bytes read so far): {reader.CurrentDataSize}");
+                    Console.WriteLine();
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error reading MBOX file: {ex.Message}");
-                return;
+
+                Console.WriteLine($"Finished processing {messageIndex} message(s).");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            // Surface any errors without crashing the application.
+            Console.Error.WriteLine($"Error while processing MBOX: {ex.Message}");
         }
     }
 }

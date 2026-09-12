@@ -5,93 +5,63 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputFolder = @"C:\Templates\Oft";
-            string outputFolder = @"C:\Converted\Msg";
-            string signatureText = "\r\n--\r\nCompany Signature";
+            // Author note: This example processes all .oft files in a folder,
+            // converts each to .msg format and appends a common signature.
 
-            // Verify input folder exists
+            string inputFolder = "Templates"; // folder containing OFT templates
+            string outputFolder = "Converted";
+
+            // Ensure input folder exists
             if (!Directory.Exists(inputFolder))
             {
-                Console.Error.WriteLine($"Input folder does not exist: {inputFolder}");
+                Console.Error.WriteLine($"Input folder '{inputFolder}' does not exist.");
                 return;
             }
 
-            // Ensure output folder exists
+            // Create output folder if it does not exist
             if (!Directory.Exists(outputFolder))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputFolder);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output folder: {ex.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputFolder);
             }
 
-            string[] oftFiles;
-            try
-            {
-                oftFiles = Directory.GetFiles(inputFolder, "*.oft");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error enumerating OFT files: {ex.Message}");
-                return;
-            }
+            // Define the common email signature
+            const string signature = "\n--\nYour Company Signature";
 
+            // Process each .oft file in the input folder
+            string[] oftFiles = Directory.GetFiles(inputFolder, "*.oft");
             foreach (string oftPath in oftFiles)
             {
-                if (!File.Exists(oftPath))
-                {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
+                    // Load the OFT template as a MapiMessage
+                    MapiMessage mapMsg = MapiMessage.Load(oftPath);
+
+                    // Convert to MailMessage using required MailConversionOptions
+                    MailMessage mailMsg = mapMsg.ToMailMessage(new MailConversionOptions());
+
+                    // Append the signature to the body (plain text)
+                    if (!string.IsNullOrEmpty(mailMsg.Body))
                     {
-                        placeholder.Save(oftPath);
+                        mailMsg.Body += signature;
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                    Console.Error.WriteLine($"File not found, skipping: {oftPath}");
-                    continue;
-                }
-
-                string fileNameWithoutExt = Path.GetFileNameWithoutExtension(oftPath);
-                string msgPath = Path.Combine(outputFolder, fileNameWithoutExt + ".msg");
-
-                try
-                {
-                    using (MapiMessage templateMessage = MapiMessage.Load(oftPath))
+                    else
                     {
-                        // Convert to MailMessage for easy body manipulation
-                        using (MailMessage mail = templateMessage.ToMailMessage(new MailConversionOptions()))
-                        {
-                            // Append the common signature
-                            mail.Body = (mail.Body ?? string.Empty) + signatureText;
-
-                            // Convert back to MapiMessage
-                            using (MapiMessage signedMessage = MapiMessage.FromMailMessage(mail))
-                            {
-                                // Save as MSG
-                                signedMessage.Save(msgPath);
-                                Console.WriteLine($"Converted: {oftPath} -> {msgPath}");
-                            }
-                        }
+                        mailMsg.Body = signature;
                     }
+
+                    // Determine output .msg file path
+                    string outputPath = Path.Combine(outputFolder,
+                        Path.GetFileNameWithoutExtension(oftPath) + ".msg");
+
+                    // Save as MSG; format inferred from extension
+                    mailMsg.Save(outputPath);
+
+                    // Dispose MailMessage (MapiMessage does not implement IDisposable)
+                    mailMsg.Dispose();
                 }
                 catch (Exception ex)
                 {

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Tools; // For HtmlSaveOptions and ResourceRenderingMode
 
 class Program
 {
@@ -8,10 +9,13 @@ class Program
     {
         try
         {
-            string inputPath = "input.mhtml";
-            string outputPath = "output.html";
+            // Author note: This sample demonstrates loading an MHTML file,
+            // embedding its inline images as base64, and saving the result as HTML.
 
-            // Guard against missing input file
+            const string inputPath = "input.mhtml";
+            const string outputPath = "output.html";
+
+            // Ensure the input file exists before attempting to load it.
             if (!File.Exists(inputPath))
             {
                 try
@@ -31,35 +35,27 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file '{inputPath}' not found.");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            try
+            // Load the MHTML message with default load options.
+            using (MailMessage message = MailMessage.Load(inputPath, new MhtmlLoadOptions()))
             {
-                // Load the MHTML message
-                MhtmlLoadOptions loadOptions = new MhtmlLoadOptions();
-                using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
+                // Configure HTML save options to embed resources (images) as base64.
+                HtmlSaveOptions htmlOptions = new HtmlSaveOptions
                 {
-                    // Configure HTML save options to embed images as base64
-                    HtmlSaveOptions saveOptions = new HtmlSaveOptions
-                    {
-                        ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
-                    };
+                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                };
 
-                    // Save as HTML with embedded images
-                    message.Save(outputPath, saveOptions);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing the message: {ex.Message}");
-                return;
+                // Save the message as an HTML file with embedded images.
+                message.Save(outputPath, htmlOptions);
+                Console.WriteLine($"HTML file saved successfully: {outputPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

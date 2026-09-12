@@ -1,81 +1,85 @@
+using Aspose.Email.Mapi;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage.Mbox;
-using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
-class Program
+namespace MboxToPstAsync
 {
-    static async Task Main(string[] args)
+    class Program
     {
-        try
+        // Author note: This sample demonstrates asynchronous reading of MBOX messages
+        // and concurrent writing to a PST file using Aspose.Email for .NET.
+        static async Task Main(string[] args)
         {
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
-
-            // Guard input file
-            if (!File.Exists(mboxPath))
+            try
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
-                return;
-            }
+                // Input and output file paths.
+                string mboxFilePath = "input.mbox";
+                string pstFilePath = "output.pst";
 
-            // Ensure output directory exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                Directory.CreateDirectory(pstDirectory);
-            }
-
-            // Create PST file (Unicode version)
-            PersonalStorage pst = await PersonalStorage.CreateAsync(pstPath, FileFormatVersion.Unicode);
-            using (pst)
-            {
-                // Create standard Inbox folder
-                pst.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
-
-                // Open MBOX reader
-                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                // Guard file system access.
+                if (!File.Exists(mboxFilePath))
                 {
-                    List<Task> processingTasks = new List<Task>();
-
-                    while (true)
-                    {
-                        MailMessage mailMessage = mboxReader.ReadNextMessage();
-                        if (mailMessage == null)
-                            break;
-
-                        // Capture current message for the task
-                        MailMessage currentMessage = mailMessage;
-
-                        Task task = Task.Run(() =>
-                        {
-                            using (currentMessage)
-                            {
-                                // Convert to MAPI message
-                                MapiMessage mapiMessage = MapiMessage.FromMailMessage(currentMessage);
-                                using (mapiMessage)
-                                {
-                                    // Add to Inbox folder
-                                    FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                                    inboxFolder.AddMessage(mapiMessage);
-                                }
-                            }
-                        });
-
-                        processingTasks.Add(task);
-                    }
-
-                    await Task.WhenAll(processingTasks);
+                    Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
+                    return;
                 }
+
+                // Ensure the directory for the PST file exists.
+                string pstDirectory = Path.GetDirectoryName(pstFilePath);
+                if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+                {
+                    Directory.CreateDirectory(pstDirectory);
+                }
+
+                // Create PST storage.
+                using (PersonalStorage pstStorage = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
+                {
+                    // Create (or get) a folder inside the PST where messages will be stored.
+                    FolderInfo pstFolder = pstStorage.RootFolder.AddSubFolder("Imported");
+
+                    // Open the MBOX reader.
+                    using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
+                    {
+                        List<Task> writeTasks = new List<Task>();
+
+                        // Read messages sequentially; each read message is handed off to a background task.
+                        while (true)
+                        {
+                            MailMessage message = mboxReader.ReadNextMessage();
+                            if (message == null)
+                                break;
+
+                            // Capture the current message for the task closure.
+                            MailMessage capturedMessage = message;
+
+                            // Queue a task that writes the message into the PST folder.
+                            Task writeTask = Task.Run(() =>
+                            {
+                                // PST folder operations are not thread‑safe; protect with a lock.
+                                lock (pstFolder)
+                                {
+                                    pstFolder.AddMessage(MapiMessage.FromMailMessage(capturedMessage));
+                                }
+                            });
+
+                            writeTasks.Add(writeTask);
+                        }
+
+                        // Await completion of all write operations.
+                        await Task.WhenAll(writeTasks);
+                    }
+                }
+
+                Console.WriteLine("MBOX to PST conversion completed successfully.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

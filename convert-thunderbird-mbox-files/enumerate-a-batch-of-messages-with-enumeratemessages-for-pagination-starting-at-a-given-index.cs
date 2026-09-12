@@ -1,56 +1,78 @@
 using System;
 using System.IO;
-using Aspose.Email.Storage.Pst;
+using System.Linq;
 using Aspose.Email;
+using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace MboxBatchEnumeration
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            const string pstPath = "sample.pst";
+            // Input MBOX file path
+            const string mboxPath = "storage.mbox";
+            // Output directory for extracted messages
+            const string outputDir = "output";
 
-            // Ensure PST file exists; create a minimal placeholder if missing
-            if (!File.Exists(pstPath))
+            // Verify input file exists
+            if (!File.Exists(mboxPath))
             {
-                try
+                Console.Error.WriteLine($"Input file not found: {mboxPath}");
+                return;
+            }
+
+            // Ensure output directory exists
+            try
+            {
+                if (!Directory.Exists(outputDir))
                 {
-                    // Create a new Unicode PST file
-                    PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                    // Add a default Inbox folder
-                    using (PersonalStorage pstCreate = PersonalStorage.FromFile(pstPath))
+                    Directory.CreateDirectory(outputDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create output directory '{outputDir}': {ex.Message}");
+                return;
+            }
+
+            // Pagination parameters
+            const int startIndex = 0;   // zero‑based start index
+            const int batchSize = 10;   // number of messages to retrieve
+
+            try
+            {
+                // Create the MBOX reader
+                using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                {
+                    // Enumerate a batch of messages
+                    foreach (MailMessage message in reader.EnumerateMessages(startIndex, batchSize))
                     {
-                        pstCreate.CreatePredefinedFolder("Inbox", StandardIpmFolder.Inbox);
+                        // Sanitize subject for filename
+                        string subject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
+                        string safeSubject = new string(subject.Select(ch => Path.GetInvalidFileNameChars().Contains(ch) ? '_' : ch).ToArray());
+
+                        // Build unique file path
+                        string fileName = $"{safeSubject}_{Guid.NewGuid()}.eml";
+                        string filePath = Path.Combine(outputDir, fileName);
+
+                        try
+                        {
+                            // Save the message as .eml
+                            message.Save(filePath);
+                            Console.WriteLine($"Saved: {filePath}");
+                        }
+                        catch (Exception saveEx)
+                        {
+                            Console.Error.WriteLine($"Failed to save message '{subject}': {saveEx.Message}");
+                        }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder PST: {ex.Message}");
-                    return;
-                }
             }
-
-            // Open the PST and enumerate a batch of messages
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            catch (Exception ex)
             {
-                // Retrieve the Inbox folder
-                FolderInfo inboxFolder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-
-                // Define pagination parameters
-                int startIndex = 0;   // zero‑based start index
-                int count = 10;       // number of messages to retrieve
-
-                // Enumerate messages with pagination
-                foreach (MessageInfo messageInfo in inboxFolder.EnumerateMessages(startIndex, count))
-                {
-                    Console.WriteLine($"Subject: {messageInfo.Subject}");
-                }
+                Console.Error.WriteLine($"Error processing MBOX file: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

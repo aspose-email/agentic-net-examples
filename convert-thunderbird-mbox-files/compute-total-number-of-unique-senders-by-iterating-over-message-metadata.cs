@@ -1,56 +1,47 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange;
-using Aspose.Email.Clients.Exchange.Dav;
+using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace UniqueSendersCounter
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Placeholder connection details
-            string mailboxUri = "https://exchange.example.com/EWS/Exchange.asmx";
-            string username = "user@example.com";
-            string password = "password";
-
-            // Skip real network calls when placeholders are used
-            if (mailboxUri.Contains("example.com"))
+            try
             {
-                Console.Error.WriteLine("Placeholder credentials detected. Skipping Exchange connection.");
-                return;
-            }
+                const string mboxPath = "storage.mbox";
 
-            using (ExchangeClient client = new ExchangeClient(mailboxUri, username, password))
-            {
-                try
+                if (!File.Exists(mboxPath))
                 {
-                    // Retrieve messages from the Inbox folder
-                    ExchangeMessageInfoCollection messages = client.ListMessages("Inbox");
-                    HashSet<string> uniqueSenders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                    return;
+                }
 
-                    foreach (ExchangeMessageInfo info in messages)
+                var uniqueSenders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                {
+                    foreach (MboxMessageInfo messageInfo in mbox.EnumerateMessageInfo())
                     {
-                        if (info != null && info.Sender != null)
+                        // 'From' is a MailAddress; extract the address string.
+                        string? sender = messageInfo.From?.Address ?? messageInfo.From?.ToString();
+
+                        if (!string.IsNullOrEmpty(sender))
                         {
-                            // Sender is typically a MailAddress; use its string representation
-                            string senderAddress = info.Sender.ToString();
-                            uniqueSenders.Add(senderAddress);
+                            uniqueSenders.Add(sender);
                         }
                     }
+                }
 
-                    Console.WriteLine($"Total unique senders: {uniqueSenders.Count}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Exchange operation error: {ex.Message}");
-                }
+                Console.WriteLine($"Total unique senders: {uniqueSenders.Count}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

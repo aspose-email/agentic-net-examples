@@ -2,75 +2,65 @@ using System;
 using System.IO;
 using System.Text;
 using Aspose.Email;
-using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage.Mbox;
 
 class Program
 {
     static void Main()
     {
+        // Author note: Simple console app that reads a Thunderbird MBOX file,
+        // disables charset auto‑detection by specifying ISO‑8859‑1 encoding,
+        // and saves each message as an individual .eml file.
+
+        string mboxPath = "input.mbox";
+        string outputDir = "output";
+
+        // Guard input file existence
+        if (!File.Exists(mboxPath))
+        {
+            Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
+            return;
+        }
+
+        // Ensure the output directory exists
+        if (!Directory.Exists(outputDir))
+        {
+            Directory.CreateDirectory(outputDir);
+        }
+
         try
         {
-            // Define input MBOX and output PST paths
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
-
-            // Ensure the MBOX file exists; create a minimal placeholder if missing
-            if (!File.Exists(mboxPath))
-            {
-                try
-                {
-                    using (FileStream fs = File.Create(mboxPath))
-                    {
-                        // Create an empty MBOX file
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure the directory for PST exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create PST directory: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Configure MBOX loading options: disable auto charset detection and enforce ISO‑8859‑1
+            // Configure load options: enforce ISO‑8859‑1 encoding
             MboxLoadOptions loadOptions = new MboxLoadOptions
             {
-                PreferredTextEncoding = Encoding.GetEncoding("ISO-8859-1")
+                PreferredTextEncoding = Encoding.GetEncoding(28591) // ISO‑8859‑1
             };
 
-            // Create the MBOX reader
-            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
+            // Create the reader with the specified options
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
             {
-                // Create a new PST file (Unicode format)
-                using (PersonalStorage pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
+                int messageIndex = 0;
+                while (true)
                 {
-                    // Convert MBOX to PST, placing messages into the root folder named "Inbox"
-                    MboxToPstConversionOptions conversionOptions = new MboxToPstConversionOptions();
-                    MailStorageConverter.MboxToPst(mboxReader, pst, "Inbox", conversionOptions);
+                    // Sequentially read each message; returns null when no more messages
+                    MailMessage message = reader.ReadNextMessage();
+                    if (message == null)
+                        break;
+
+                    // Build a safe filename from the subject
+                    string subject = string.IsNullOrEmpty(message.Subject) ? $"Message_{messageIndex}" : message.Subject;
+                    foreach (char invalid in Path.GetInvalidFileNameChars())
+                        subject = subject.Replace(invalid, '_');
+
+                    string emlPath = Path.Combine(outputDir, $"{subject}.eml");
+                    message.Save(emlPath);
+                    messageIndex++;
                 }
             }
-
-            Console.WriteLine("MBOX to PST conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            Console.Error.WriteLine($"Error processing MBOX file: {ex.Message}");
         }
     }
 }

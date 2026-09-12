@@ -18,31 +18,31 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 - Files are standalone `.cs` examples stored directly in this folder.
 
 ## Required Namespaces
-- `using System;` (189 file(s))
-- `using Aspose.Email;` (182 file(s))
-- `using System.IO;` (181 file(s))
-- `using Aspose.Email.Storage.Pst;` (117 file(s))
-- `using Aspose.Email.Storage;` (77 file(s))
-- `using Aspose.Email.Storage.Mbox;` (66 file(s))
-- `using Aspose.Email.Mapi;` (46 file(s))
-- `using System.Threading;` (20 file(s))
-- `using System.Collections.Generic;` (20 file(s))
-- `using System.Text;` (19 file(s))
-- `using System.Threading.Tasks;` (13 file(s))
-- `using System.Diagnostics;` (12 file(s))
+- `using System;` (191 file(s))
+- `using Aspose.Email;` (184 file(s))
+- `using System.IO;` (182 file(s))
+- `using Aspose.Email.Storage.Pst;` (99 file(s))
+- `using Aspose.Email.Storage.Mbox;` (74 file(s))
+- `using Aspose.Email.Storage;` (60 file(s))
+- `using Aspose.Email.Mapi;` (50 file(s))
+- `using System.Collections.Generic;` (24 file(s))
+- `using System.Threading;` (21 file(s))
+- `using System.Threading.Tasks;` (16 file(s))
+- `using System.Text;` (15 file(s))
+- `using System.Diagnostics;` (13 file(s))
+- `using System.Linq;` (8 file(s))
+- `using Aspose.Email.Tools.Search;` (7 file(s))
 - `using System.Text.Json;` (6 file(s))
-- `using Aspose.Email.Tools.Search;` (5 file(s))
-- `using System.Linq;` (3 file(s))
-- `using Aspose.Email.Clients.Imap;` (3 file(s))
-- `using Aspose.Email.Clients.Exchange.Dav;` (3 file(s))
+- `using Aspose.Email.Clients;` (4 file(s))
+- `using System.Text.RegularExpressions;` (3 file(s))
 - `using System.Security.Cryptography;` (2 file(s))
+- `using Aspose.Email.Clients.Imap;` (2 file(s))
 - `using Aspose.Email.Clients.Pop3;` (2 file(s))
+- `using Aspose.Email.Mime;` (2 file(s))
 - `using System.IO.Compression;` (2 file(s))
-- `using Aspose.Email.Clients;` (2 file(s))
-- `using Aspose.Email.Clients.Exchange;` (1 file(s))
 - `using System.Runtime.InteropServices;` (1 file(s))
-- `using System.Text.RegularExpressions;` (1 file(s))
-- `using Aspose.Email.Mime;` (1 file(s))
+- `using System.Text.Json.Serialization;` (1 file(s))
+- `using Aspose.Email.Clients.Exchange.Dav;` (1 file(s))
 - `using System.Reflection;` (1 file(s))
 - `using Aspose.Email.Calendar;` (1 file(s))
 
@@ -127,6 +127,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [enable-multi-threaded-processing-of-mbox-chunks-to-accelerate-conversion-on-multi-core-systems.cs](./enable-multi-threaded-processing-of-mbox-chunks-to-accelerate-conversion-on-multi-core-systems.cs) | enable multi threaded processing of mbox chunks to accelerate conversion on multi core systems |
 | [enumerate-a-batch-of-messages-with-enumeratemessages-for-pagination-starting-at-a-given-index.cs](./enumerate-a-batch-of-messages-with-enumeratemessages-for-pagination-starting-at-a-given-index.cs) | enumerate a batch of messages with enumeratemessages for pagination starting at a given index |
 | [enumerate-only-message-metadata-using-enumeratemessageinfo-for-fast-scanning-without-loading-full-mailmessage-object.cs](./enumerate-only-message-metadata-using-enumeratemessageinfo-for-fast-scanning-without-loading-full-mailmessage-object.cs) | enumerate only message metadata using enumeratemessageinfo for fast scanning without loading full mailmessage object |
+| [enumerate-only-message-metadata-using-enumeratemessageinfo-for-fast-scanning-without-loading-full-mailmessage-objects.cs](./enumerate-only-message-metadata-using-enumeratemessageinfo-for-fast-scanning-without-loading-full-mailmessage-objects.cs) | enumerate only message metadata using enumeratemessageinfo for fast scanning without loading full mailmessage objects |
 | [export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs](./export-conversion-logs-to-a-json-file-for-downstream-analysis-and-troubleshooting.cs) | export conversion logs to a json file for downstream analysis and troubleshooting |
 | [expose-a-rest-api-endpoint-that-accepts-an-uploaded-mbox-file-and-returns-the-generated-pst-stream.cs](./expose-a-rest-api-endpoint-that-accepts-an-uploaded-mbox-file-and-returns-the-generated-pst-stream.cs) | expose a rest api endpoint that accepts an uploaded mbox file and returns the generated pst stream |
 | [expose-an-api-endpoint-that-triggers-asynchronous-mbox-splitting-with-optional-cancellation-token.cs](./expose-an-api-endpoint-that-triggers-asynchronous-mbox-splitting-with-optional-cancellation-token.cs) | expose an api endpoint that triggers asynchronous mbox splitting with optional cancellation token |
@@ -223,6 +224,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [use-a-try-finally-block-to-ensure-the-mboxstoragereader-is-disposed-after-splitting.cs](./use-a-try-finally-block-to-ensure-the-mboxstoragereader-is-disposed-after-splitting.cs) | use a try finally block to ensure the mboxstoragereader is disposed after splitting |
 | [use-asynchronous-programming-to-read-mbox-messages-while-writing-pst-entries-concurrently-for-performance.cs](./use-asynchronous-programming-to-read-mbox-messages-while-writing-pst-entries-concurrently-for-performance.cs) | use asynchronous programming to read mbox messages while writing pst entries concurrently for performance |
 | [use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-arc.cs](./use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-arc.cs) | use enumeratemessageinfo to build an index of message dates for quick chronological navigation across the entire arc |
+| [use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-archive.cs](./use-enumeratemessageinfo-to-build-an-index-of-message-dates-for-quick-chronological-navigation-across-the-entire-archive.cs) | use enumeratemessageinfo to build an index of message dates for quick chronological navigation across the entire archive |
 | [use-linq-to-filter-messages-containing-specific-keywords-before-adding-them-to-the-pst-file.cs](./use-linq-to-filter-messages-containing-specific-keywords-before-adding-them-to-the-pst-file.cs) | use linq to filter messages containing specific keywords before adding them to the pst file |
 | [use-parallel-foreach-to-process-multiple-mbox-files-concurrently-each-invoking-its-own-splitinto-operation.cs](./use-parallel-foreach-to-process-multiple-mbox-files-concurrently-each-invoking-its-own-splitinto-operation.cs) | use parallel foreach to process multiple mbox files concurrently each invoking its own splitinto operation |
 | [use-reflection-to-dynamically-discover-available-mboxloadoptions-properties-for-advanced-user-configuration.cs](./use-reflection-to-dynamically-discover-available-mboxloadoptions-properties-for-advanced-user-configuration.cs) | use reflection to dynamically discover available mboxloadoptions properties for advanced user configuration |
@@ -240,7 +242,7 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 | [write-integration-tests-that-verify-end-to-end-conversion-from-a-sample-mbox-to-a-valid-pst-file.cs](./write-integration-tests-that-verify-end-to-end-conversion-from-a-sample-mbox-to-a-valid-pst-file.cs) | write integration tests that verify end to end conversion from a sample mbox to a valid pst file |
 
 ## Category Statistics
-- Total examples: 189
+- Total examples: 191
 
 ## General Tips
 - Follow root boundaries and testing guide.
@@ -249,5 +251,5 @@ See the root [AGENTS.md](../AGENTS.md) for repository-wide conventions.
 <!-- AUTOGENERATED:START -->
 | Date | Run ID | Branch/Commit |
 |------|--------|---------------|
-| 2026-06-23 | `20260623_163422_590290_7c4847fe` | [examples/batch-20260623_163422_590290_7c4847fe](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260623_163422_590290_7c4847fe) |
+| 2026-07-05 | `20260705_142952_369917_c0ab6b5c` | [examples/batch-20260705_142952_369917_c0ab6b5c](https://github.com/aspose-email/agentic-net-examples/tree/examples/batch-20260705_142952_369917_c0ab6b5c) |
 <!-- AUTOGENERATED:END -->

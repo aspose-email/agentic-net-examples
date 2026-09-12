@@ -1,8 +1,10 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
+
+// Author: Aspose.Email example - MBOX to PST conversion with options
 
 class Program
 {
@@ -10,14 +12,11 @@ class Program
     {
         try
         {
-            // Paths for the source MBOX file and the target PST file.
-            string mboxPath = "sample.mbox";
-            string pstPath = "sample.pst";
+            // Input and output file paths
+            string mboxPath = "input.mbox";
+            string pstPath = "output.pst";
 
-            // Configuration flag: when true, automatic creation of PST subfolders during conversion is disabled.
-            bool disableAutoCreateSubfolders = true;
-
-            // Ensure the input MBOX file exists. If it does not, create an empty placeholder.
+            // Ensure the input MBOX file exists; create an empty placeholder if missing
             if (!File.Exists(mboxPath))
             {
                 try
@@ -31,43 +30,34 @@ class Program
                 }
             }
 
-            // Ensure the output PST path does not refer to an existing directory.
-            if (Directory.Exists(pstPath))
+            // Ensure the directory for the PST file exists
+            string pstDirectory = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
             {
-                Console.Error.WriteLine("The PST output path points to an existing directory.");
-                return;
-            }
-
-            // Prepare conversion options.
-            MboxToPstConversionOptions options = new MboxToPstConversionOptions();
-
-            // If subfolder creation is disabled, attach a handler that can be used to customize message processing.
-            if (disableAutoCreateSubfolders)
-            {
-                options.MessageHandler = (MailMessage message) =>
+                try
                 {
-                    // Custom handling can be added here.
-                    // The presence of this handler indicates that subfolders should not be created automatically.
-                };
-            }
-
-            // Perform the conversion inside a using block to ensure the PST is properly disposed.
-            try
-            {
-                using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath, options))
+                    Directory.CreateDirectory(pstDirectory);
+                }
+                catch (Exception ex)
                 {
-                    Console.WriteLine("MBOX to PST conversion completed successfully.");
+                    Console.Error.WriteLine($"Failed to create PST directory: {ex.Message}");
+                    return;
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                return;
-            }
+
+            // Configure conversion options
+            MboxToPstConversionOptions options = new MboxToPstConversionOptions();
+
+            // Note: Aspose.Email does not provide a specific flag to disable automatic PST subfolder creation.
+            // The conversion will create the target folder if it does not exist.
+
+            // Perform the conversion
+            MailStorageConverter.MboxToPst(mboxPath, pstPath, options);
+            Console.WriteLine("MBOX to PST conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }

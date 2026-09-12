@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Words;
-using Aspose.Words.Saving;
 
 class Program
 {
@@ -10,12 +9,10 @@ class Program
     {
         try
         {
-            string inputEmlPath = "signed.eml";
-            string tempMhtmlPath = "temp.mhtml";
-            string outputPdfPath = "signed.pdf";
+            string inputPath = "signed.eml";
+            string outputPath = "signed.pdf";
 
-            // Verify input file exists
-            if (!File.Exists(inputEmlPath))
+            if (!File.Exists(inputPath))
             {
                 try
                 {
@@ -25,7 +22,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputEmlPath, Aspose.Email.SaveOptions.DefaultEml);
+                        placeholder.Save(inputPath, Aspose.Email.SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -34,37 +31,27 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputEmlPath}");
+                // Create a placeholder EML file if the input does not exist.
+
+                Console.Error.WriteLine($"Input file not found. Placeholder created at {inputPath}");
                 return;
             }
 
-            // Load the signed S/MIME email
-            using (MailMessage mailMessage = MailMessage.Load(inputEmlPath))
+            // Load the email message.
+            using (MailMessage mailMessage = MailMessage.Load(inputPath))
             {
-                // Save the email as MHTML to preserve visual layout (including signature)
-                mailMessage.Save(tempMhtmlPath, Aspose.Email.SaveOptions.DefaultMhtml);
-            }
-
-            // Convert MHTML to PDF using Aspose.Words
-            Document document = new Document(tempMhtmlPath);
-            {
-                document.Save(outputPdfPath, Aspose.Words.SaveFormat.Pdf);
-            }
-
-            // Clean up temporary MHTML file
-            try
-            {
-                if (File.Exists(tempMhtmlPath))
+                // Convert the email to MHTML and then to PDF via Aspose.Words.
+                using (MemoryStream mhtmlStream = new MemoryStream())
                 {
-                    File.Delete(tempMhtmlPath);
-                }
-            }
-            catch (Exception cleanupEx)
-            {
-                Console.Error.WriteLine($"Failed to delete temporary file: {cleanupEx.Message}");
-            }
+                    mailMessage.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
+                    mhtmlStream.Position = 0;
 
-            Console.WriteLine($"Conversion completed successfully. PDF saved to: {outputPdfPath}");
+                    Document doc = new Document(mhtmlStream);
+                    doc.Save(outputPath, Aspose.Words.SaveFormat.Pdf);
+                }
+
+                Console.WriteLine($"PDF saved to: {outputPath}");
+            }
         }
         catch (Exception ex)
         {

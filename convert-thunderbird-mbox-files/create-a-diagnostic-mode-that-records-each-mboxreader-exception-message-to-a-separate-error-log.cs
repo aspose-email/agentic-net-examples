@@ -9,71 +9,68 @@ class Program
     {
         try
         {
-            // Paths (adjust as needed)
-            string mboxPath = "input.mbox";
-            string outputFolder = "output";
-            string errorLogPath = "error.log";
-
-            // Guard input file
+            // Ensure the MBOX file exists; create an empty placeholder if missing.
+            string mboxPath = "storage.mbox";
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
-                return;
+                File.WriteAllText(mboxPath, string.Empty);
             }
 
-            // Ensure output directory exists
-            try
-            {
-                Directory.CreateDirectory(outputFolder);
-            }
-            catch (Exception dirEx)
-            {
-                Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                return;
-            }
+            // Prepare error log directory.
+            string errorLogDir = "ErrorLogs";
+            Directory.CreateDirectory(errorLogDir);
 
-            // Open error log for appending
-            using (StreamWriter errorLog = new StreamWriter(errorLogPath, true))
+            // Create the MboxStorageReader instance.
+            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                // Create the MBOX reader
-                using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
+                int messageIndex = 0;
+                while (true)
                 {
-                    int messageIndex = 0;
-                    while (true)
+                    MailMessage message = null;
+                    try
                     {
-                        MailMessage message = null;
+                        // Read the next message sequentially.
+                        message = reader.ReadNextMessage();
+                        if (message == null)
+                            break; // No more messages.
+
+                        // Sanitize subject for file name.
+                        string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(c, '_');
+                        }
+
+                        string emlPath = $"{safeSubject}_{messageIndex}.eml";
+
+                        // Save the extracted message.
+                        message.Save(emlPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Record exception message to a separate error log file.
+                        string logFileName = $"error_{messageIndex}.log";
+                        string logPath = Path.Combine(errorLogDir, logFileName);
                         try
                         {
-                            // Read the next message; returns null when no more messages are available
-                            message = reader.ReadNextMessage();
-                            if (message == null)
-                                break;
-
-                            // Save each message as HTML
-                            string htmlPath = Path.Combine(outputFolder, $"Message_{messageIndex}.html");
-                            message.Save(htmlPath, new HtmlSaveOptions());
-
-                            messageIndex++;
+                            File.WriteAllText(logPath, ex.Message);
                         }
-                        catch (Exception readEx)
+                        catch
                         {
-                            // Record the exception for this message
-                            errorLog.WriteLine($"{DateTime.Now:u} - Message {messageIndex}: {readEx.Message}");
-                            // Continue with next message
+                            // Suppress any logging failures.
                         }
-                        finally
-                        {
-                            // Dispose the message if it was created
-                            if (message != null)
-                                message.Dispose();
-                        }
+                    }
+                    finally
+                    {
+                        message?.Dispose();
+                        messageIndex++;
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Fatal error: {ex.Message}");
         }
     }
 }

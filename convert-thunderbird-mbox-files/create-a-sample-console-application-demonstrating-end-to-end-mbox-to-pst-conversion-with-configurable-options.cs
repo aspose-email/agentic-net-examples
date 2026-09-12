@@ -1,74 +1,69 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
-        // Top‑level exception guard
         try
         {
-            // Paths can be changed as needed
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
+            // Define input MBOX and output PST file paths
+            string mboxFilePath = "input.mbox";
+            string pstFilePath = "output.pst";
 
-            // Guard file I/O: ensure the source MBOX exists
-            if (!File.Exists(mboxPath))
+            // Ensure the input MBOX file exists; create a minimal placeholder if missing
+            if (!File.Exists(mboxFilePath))
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
-                // Create a minimal placeholder MBOX to keep the sample runnable
                 try
                 {
-                    File.WriteAllText(mboxPath, string.Empty);
-                    Console.WriteLine($"Created empty placeholder MBOX at {mboxPath}");
+                    Directory.CreateDirectory(Path.GetDirectoryName(mboxFilePath) ?? ".");
+                    // Minimal MBOX content (single empty message)
+                    File.WriteAllText(mboxFilePath, "From - Mon Jan 01 00:00:00 2020\r\n\r\n");
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX: {ex.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
                     return;
                 }
             }
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            // Ensure the directory for the PST file exists
+            try
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
+                string pstDirectory = Path.GetDirectoryName(pstFilePath) ?? ".";
+                Directory.CreateDirectory(pstDirectory);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create PST directory: {ex.Message}");
+                return;
             }
 
-            // Configure conversion options
-            MboxToPstConversionOptions options = new MboxToPstConversionOptions
-            {
-                // Example option: strip signatures from messages
-                RemoveSignature = true,
-                // Example handler: add a custom header to each message before it is stored
-                MessageHandler = (MailMessage msg) =>
-                {
-                    msg.Headers.Add("X-Converted-By", "Aspose.Email");
-                }
-            };
+            // Configure conversion options (default options used here)
+            MboxToPstConversionOptions conversionOptions = new MboxToPstConversionOptions();
 
-            // Perform the conversion; the returned PersonalStorage must be disposed
-            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath, options))
+            // Perform the conversion inside a using block to ensure the PST storage is disposed
+            try
             {
-                Console.WriteLine($"MBOX to PST conversion succeeded. PST saved at: {pstPath}");
+                using (PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath, conversionOptions))
+                {
+                    // Conversion succeeded; the PST file is now created at pstFilePath
+                    Console.WriteLine($"MBOX file '{mboxFilePath}' successfully converted to PST file '{pstFilePath}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
+                return;
             }
         }
         catch (Exception ex)
         {
-            // Global exception handling
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

@@ -2,8 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using Aspose.Email;
-using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Storage;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -11,85 +12,81 @@ class Program
     {
         try
         {
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
+            // Input MBOX file path
+            string mboxPath = "storage.mbox";
 
-            // Ensure the MBOX file exists; create a minimal placeholder if missing.
+            // Output directory for extracted EML files
+            string outputDir = "ExtractedMessages";
+
+            // Ensure the output directory exists
+            if (!Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Verify the MBOX file exists
             if (!File.Exists(mboxPath))
             {
-                try
-                {
-                    File.WriteAllText(mboxPath, string.Empty);
-                    Console.WriteLine($"Created placeholder MBOX file at '{mboxPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Guard PST output path directory.
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create directory for PST file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Count total messages in the MBOX to calculate progress.
-            int totalMessages;
-            try
-            {
-                using (MboxStorageReader countReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
-                {
-                    totalMessages = countReader.EnumerateMessageInfo().Count();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error while counting messages: {ex.Message}");
+                Console.Error.WriteLine($"Input file not found: {mboxPath}");
                 return;
             }
 
-            if (totalMessages == 0)
+            // Create the MBOX reader
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                Console.WriteLine("No messages found in the MBOX file. Conversion skipped.");
-                return;
-            }
+                // Get total number of messages for progress calculation
+                int totalMessages = mboxReader.EnumerateMessageInfo().Count();
 
-            int processedCount = 0;
+                if (totalMessages == 0)
+                {
+                    Console.WriteLine("No messages found in the MBOX file.");
+                    return;
+                }
 
-            // Set up conversion options with a progress handler.
-            MboxToPstConversionOptions options = new MboxToPstConversionOptions();
-            options.MessageHandler = (MailMessage message) =>
-            {
-                processedCount++;
-                int percent = (int)((processedCount / (double)totalMessages) * 100);
-                Console.WriteLine($"Conversion progress: {percent}% ({processedCount}/{totalMessages})");
-            };
+                int processed = 0;
 
-            // Perform the conversion.
-            try
-            {
-                MailStorageConverter.MboxToPst(mboxPath, pstPath, options);
-                Console.WriteLine("MBOX to PST conversion completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
+                // Iterate through each message info object
+                foreach (Aspose.Email.Storage.Mbox.MboxMessageInfo messageInfo in mboxReader.EnumerateMessageInfo())
+                {
+                    // Extract the full MIME message using required EmlLoadOptions
+                    MailMessage emlMessage = mboxReader.ExtractMessage(messageInfo.EntryId, new EmlLoadOptions());
+
+                    // Build a safe file name from the subject
+                    string safeSubject = string.Join("_", emlMessage.Subject.Split(Path.GetInvalidFileNameChars()));
+                    if (string.IsNullOrWhiteSpace(safeSubject))
+                    {
+                        safeSubject = "Untitled";
+                    }
+
+                    string emlPath = Path.Combine(outputDir, $"{safeSubject}.eml");
+
+                    // Save the extracted message
+                    try
+                    {
+                        emlMessage.Save(emlPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save message '{emlMessage.Subject}': {ex.Message}");
+                        // Continue processing remaining messages
+                    }
+
+                    // Update progress
+                    processed++;
+                    int percent = (int)((processed / (double)totalMessages) * 100);
+                    ReportProgress(percent);
+                }
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
+    }
+
+    // Simple progress reporter (could be bound to a UI progress bar)
+    static void ReportProgress(int percent)
+    {
+        Console.WriteLine($"Progress: {percent}%");
     }
 }

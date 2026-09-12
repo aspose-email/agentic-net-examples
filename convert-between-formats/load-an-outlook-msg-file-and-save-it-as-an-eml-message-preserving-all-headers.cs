@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -8,21 +9,22 @@ class Program
     {
         try
         {
+            // Author note: This sample loads an Outlook MSG file and saves it as an EML file preserving all headers.
             string inputPath = "input.msg";
             string outputPath = "output.eml";
 
-            // Verify input MSG file exists
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                        placeholder.Save(inputPath);
                     }
                 }
                 catch (Exception ex)
@@ -35,41 +37,20 @@ class Program
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
-                }
-            }
+            // Load the MSG file
+            MapiMessage mapiMessage = MapiMessage.Load(inputPath);
 
-            // Load MSG file into MailMessage and save as EML preserving all headers
-            try
+            // Convert to MailMessage with default conversion options
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
             {
-                using (MailMessage mailMessage = MailMessage.Load(inputPath))
-                {
-                    // Save as EML; default options preserve headers
-                    mailMessage.Save(outputPath);
-                }
+                // Save as EML; default options preserve all headers
+                mailMessage.Save(outputPath);
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing message: {ex.Message}");
-                return;
-            }
-
-            Console.WriteLine($"Message saved as EML to: {outputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

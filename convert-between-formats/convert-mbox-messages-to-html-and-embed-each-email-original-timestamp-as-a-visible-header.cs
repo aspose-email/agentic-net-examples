@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -9,18 +10,19 @@ class Program
     {
         try
         {
-            string mboxPath = "input.mbox";
-            string outputDirectory = "output_html";
+            const string mboxPath = "storage.mbox";
+            const string outputDir = "output_html";
 
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
                 return;
             }
 
             try
             {
-                Directory.CreateDirectory(outputDirectory);
+                if (!Directory.Exists(outputDir))
+                    Directory.CreateDirectory(outputDir);
             }
             catch (Exception ex)
             {
@@ -28,36 +30,44 @@ class Program
                 return;
             }
 
-            using (FileStream mboxStream = File.OpenRead(mboxPath))
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                MboxStorageReader reader = MboxStorageReader.CreateReader(mboxStream, new MboxLoadOptions());
-                using (reader)
+                int messageIndex = 0;
+                MailMessage mailMessage;
+                while ((mailMessage = mboxReader.ReadNextMessage()) != null)
                 {
-                    int messageIndex = 0;
-                    MailMessage mailMessage;
-                    while ((mailMessage = reader.ReadNextMessage()) != null)
+                    try
                     {
-                        using (mailMessage)
+                        // Build a visible timestamp header (using the original Date header)
+                        string timestampHeader = $"<h2>{mailMessage.Date.ToString("F")}</h2>";
+
+                        // Prepend the timestamp to the HTML body
+                        if (!string.IsNullOrEmpty(mailMessage.HtmlBody))
                         {
-                            string timestampHeader = $"<h2>{mailMessage.Date}</h2>";
-                            string bodyContent = string.IsNullOrEmpty(mailMessage.HtmlBody)
-                                ? System.Net.WebUtility.HtmlEncode(mailMessage.Body)
-                                : mailMessage.HtmlBody;
-                            string combinedHtml = $"{timestampHeader}<hr/>{bodyContent}";
-
-                            string outputPath = Path.Combine(outputDirectory, $"message_{messageIndex}.html");
-                            try
-                            {
-                                File.WriteAllText(outputPath, combinedHtml);
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Failed to write HTML for message {messageIndex}: {ex.Message}");
-                            }
-
-                            messageIndex++;
+                            mailMessage.HtmlBody = timestampHeader + mailMessage.HtmlBody;
                         }
+                        else
+                        {
+                            string plainBody = string.IsNullOrEmpty(mailMessage.Body) ? string.Empty : mailMessage.Body;
+                            mailMessage.HtmlBody = timestampHeader + $"<pre>{plainBody}</pre>";
+                        }
+
+                        // Create a safe file name based on the subject and index
+                        string safeSubject = string.IsNullOrEmpty(mailMessage.Subject) ? "NoSubject" : mailMessage.Subject;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            safeSubject = safeSubject.Replace(c, '_');
+
+                        string outputPath = Path.Combine(outputDir, $"{safeSubject}_{messageIndex}.html");
+
+                        // Save as HTML
+                        mailMessage.Save(outputPath, SaveOptions.DefaultHtml);
                     }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to process message #{messageIndex}: {ex.Message}");
+                    }
+
+                    messageIndex++;
                 }
             }
         }

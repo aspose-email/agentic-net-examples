@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
@@ -10,85 +10,50 @@ class Program
     {
         try
         {
-            // Paths
-            string pstPath = "archive.pst";
-            string outputRoot = "ExtractedMessages";
+            const string pstPath = "storage.pst";
 
-            // Ensure output directory exists
-            if (!Directory.Exists(outputRoot))
-            {
-                Directory.CreateDirectory(outputRoot);
-            }
-
-            // Verify PST file exists before attempting to open
             if (!File.Exists(pstPath))
             {
                 Console.Error.WriteLine($"PST file not found: {pstPath}");
                 return;
             }
 
-            // Open PST file
+            const string outputDir = "output";
+            Directory.CreateDirectory(outputDir);
+
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                // Process the root folder
-                ProcessFolder(pst.RootFolder, outputRoot, pst);
+                FolderInfo rootFolder = pst.RootFolder;
+                MessageInfoCollection messages = rootFolder.GetContents(true);
+
+                foreach (MessageInfo messageInfo in messages)
+                {
+                    try
+                    {
+                        MapiMessage mapiMsg = pst.ExtractMessage(messageInfo);
+
+                        string subject = string.IsNullOrEmpty(mapiMsg.Subject) ? "NoSubject" : mapiMsg.Subject;
+                        foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                        {
+                            subject = subject.Replace(invalidChar, '_');
+                        }
+
+                        string fileName = $"{subject}.msg";
+                        string fullPath = Path.Combine(outputDir, fileName);
+
+                        mapiMsg.Save(fullPath);
+                        Console.WriteLine($"Saved: {fullPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to process message ID {messageInfo.EntryId}: {ex.Message}");
+                    }
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
-    }
-
-    // Recursively process a folder and its subfolders
-    private static void ProcessFolder(FolderInfo folder, string outputPath, PersonalStorage pst)
-    {
-        // Create a subdirectory for this folder
-        string folderPath = Path.Combine(outputPath, MakeValidFileName(folder.DisplayName));
-        if (!Directory.Exists(folderPath))
-        {
-            Directory.CreateDirectory(folderPath);
-        }
-
-        // Enumerate messages in the current folder
-        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
-        {
-            try
-            {
-                // Extract the message; this may throw if the message is corrupted
-                using (MapiMessage message = pst.ExtractMessage(messageInfo))
-                {
-                    // Build a safe filename from the subject
-                    string subject = string.IsNullOrEmpty(message.Subject) ? "NoSubject" : message.Subject;
-                    string safeFileName = MakeValidFileName(subject) + ".msg";
-                    string filePath = Path.Combine(folderPath, safeFileName);
-
-                    // Save the message
-                    message.Save(filePath);
-                    Console.WriteLine($"Saved: {filePath}");
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log the error and continue with the next message
-                Console.Error.WriteLine($"Failed to process message '{messageInfo.Subject}': {ex.Message}");
-            }
-        }
-
-        // Recursively process subfolders
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            ProcessFolder(subFolder, folderPath, pst);
-        }
-    }
-
-    // Helper to create a filesystem‑safe name
-    private static string MakeValidFileName(string name)
-    {
-        foreach (char c in Path.GetInvalidFileNameChars())
-        {
-            name = name.Replace(c, '_');
-        }
-        return name;
     }
 }

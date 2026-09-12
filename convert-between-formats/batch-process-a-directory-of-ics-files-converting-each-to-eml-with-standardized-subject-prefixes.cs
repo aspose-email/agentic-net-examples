@@ -5,13 +5,13 @@ using Aspose.Email.Calendar;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
             // Define input and output directories
-            string inputDirectory = "ics";
-            string outputDirectory = "eml";
+            string inputDirectory = "InputIcs";
+            string outputDirectory = "OutputEml";
 
             // Verify input directory exists
             if (!Directory.Exists(inputDirectory))
@@ -27,59 +27,42 @@ class Program
                 {
                     Directory.CreateDirectory(outputDirectory);
                 }
-                catch (Exception dirEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                     return;
                 }
             }
 
-            // Get all .ics files in the input directory
-            string[] icsFiles;
-            try
-            {
-                icsFiles = Directory.GetFiles(inputDirectory, "*.ics");
-            }
-            catch (Exception fileEx)
-            {
-                Console.Error.WriteLine($"Failed to enumerate .ics files: {fileEx.Message}");
-                return;
-            }
-
+            // Process each .ics file in the input directory
+            string[] icsFiles = Directory.GetFiles(inputDirectory, "*.ics");
             foreach (string icsPath in icsFiles)
             {
                 try
                 {
-                    // Guard against missing file
-                    if (!File.Exists(icsPath))
-                    {
-                        Console.Error.WriteLine($"File not found: {icsPath}");
-                        continue;
-                    }
-
-                    // Load the calendar appointment from the .ics file
+                    // Load the iCalendar file as an Appointment
                     Appointment appointment = Appointment.Load(icsPath);
 
-                    // Convert the appointment to a MailMessage
+                    // Convert to a MailMessage (EML)
                     using (MailMessage mailMessage = appointment.ToMailMessage())
                     {
-                        // Add a standardized prefix to the subject
-                        const string subjectPrefix = "[Standard] ";
-                        mailMessage.Subject = subjectPrefix + (mailMessage.Subject ?? string.Empty);
+                        // Standardize subject with a prefix
+                        string originalSubject = appointment.Summary ?? string.Empty;
+                        mailMessage.Subject = $"[Converted] {originalSubject}";
 
-                        // Determine output .eml file path
-                        string emlFileName = Path.GetFileNameWithoutExtension(icsPath) + ".eml";
-                        string emlPath = Path.Combine(outputDirectory, emlFileName);
+                        // Build output file path using the original file name (without extension)
+                        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(icsPath);
+                        string emlPath = Path.Combine(outputDirectory, $"{fileNameWithoutExt}.eml");
 
                         // Save the MailMessage as .eml
                         mailMessage.Save(emlPath);
-
                         Console.WriteLine($"Converted '{icsPath}' to '{emlPath}'.");
                     }
                 }
-                catch (Exception itemEx)
+                catch (Exception exFile)
                 {
-                    Console.Error.WriteLine($"Error processing '{icsPath}': {itemEx.Message}");
+                    Console.Error.WriteLine($"Error processing file '{icsPath}': {exFile.Message}");
+                    // Continue with next file
                 }
             }
         }

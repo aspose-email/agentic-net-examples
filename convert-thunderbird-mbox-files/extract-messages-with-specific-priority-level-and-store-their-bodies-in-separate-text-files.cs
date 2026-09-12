@@ -3,79 +3,93 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace ExtractHighPriorityMessages
 {
-    static void Main()
+    // Author: Aspose.Email example
+    class Program
     {
-        try
+        static void Main()
         {
-            // Define input MBOX file and output directory.
-            string inputMboxPath = "input.mbox";
-            string outputDirectory = "ExtractedBodies";
+            const string mboxPath = "input.mbox";
+            const string outputDirectory = "HighPriorityMessages";
 
-            // Verify that the input file exists.
-            if (!File.Exists(inputMboxPath))
+            // Verify input file exists
+            if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"Input file not found: {inputMboxPath}");
+                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // Ensure the output directory exists.
+            // Ensure output directory exists
             try
             {
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
+                Directory.CreateDirectory(outputDirectory);
             }
-            catch (Exception dirEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
+                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                 return;
             }
 
-            // Create a reader for the MBOX storage.
             try
             {
-                using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(inputMboxPath, new MboxLoadOptions()))
+                // Create MBOX reader
+                using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
                 {
-                    int messageIndex = 0;
-                    foreach (MailMessage message in mboxReader.EnumerateMessages())
+                    // Iterate through each message info
+                    foreach (MboxMessageInfo messageInfo in mbox.EnumerateMessageInfo())
                     {
-                        // Filter messages by the desired priority (e.g., High).
-                        if (message.Priority == MailPriority.High)
+                        // Extract full message
+                        using (MailMessage mailMessage = mbox.ExtractMessage(messageInfo.EntryId, new EmlLoadOptions()))
                         {
-                            // Build a safe file name using the message index.
-                            string safeFileName = $"Message_{messageIndex}_Body.txt";
-                            string outputPath = Path.Combine(outputDirectory, safeFileName);
+                            // Check for High priority
+                            if (mailMessage.Priority == MailPriority.High)
+                            {
+                                // Sanitize subject for filename
+                                string safeSubject = MakeSafeFileName(mailMessage.Subject);
+                                if (string.IsNullOrWhiteSpace(safeSubject))
+                                    safeSubject = "NoSubject";
 
-                            // Write the message body to a text file.
-                            try
-                            {
-                                using (StreamWriter writer = new StreamWriter(outputPath, false))
+                                // Truncate to avoid overly long paths
+                                if (safeSubject.Length > 100)
+                                    safeSubject = safeSubject.Substring(0, 100);
+
+                                string outputPath = Path.Combine(outputDirectory, safeSubject + ".txt");
+
+                                // Write body to text file
+                                try
                                 {
-                                    writer.Write(message.Body);
+                                    File.WriteAllText(outputPath, mailMessage.Body);
+                                    Console.WriteLine($"Saved high‑priority message: {outputPath}");
                                 }
-                                Console.WriteLine($"Saved body of message #{messageIndex} to '{outputPath}'.");
-                            }
-                            catch (Exception writeEx)
-                            {
-                                Console.Error.WriteLine($"Failed to write file '{outputPath}': {writeEx.Message}");
+                                catch (Exception writeEx)
+                                {
+                                    Console.Error.WriteLine($"Failed to write file '{outputPath}': {writeEx.Message}");
+                                }
                             }
                         }
-                        messageIndex++;
                     }
                 }
+
+                Console.WriteLine("Processing complete.");
             }
-            catch (Exception readEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error reading MBOX file: {readEx.Message}");
-                return;
+                Console.Error.WriteLine($"Error processing MBOX file: {ex.Message}");
             }
         }
-        catch (Exception ex)
+
+        // Helper to replace invalid filename characters
+        private static string MakeSafeFileName(string name)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            if (string.IsNullOrEmpty(name))
+                return string.Empty;
+
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                name = name.Replace(c, '_');
+            }
+            return name;
         }
     }
 }

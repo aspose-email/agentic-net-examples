@@ -1,50 +1,66 @@
-using Aspose.Email;
 using System;
+using Aspose.Email;
 using Aspose.Email.Storage;
 using Aspose.Email.Mapi;
+using System.Diagnostics;
 
-namespace AsposeEmailSignatureToggleTest
+namespace AsposeEmailSignatureToggleTests
 {
+    // Author: Generated example for toggling signature removal options
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             try
             {
                 TestMboxToPstConversionOptions();
                 TestMapiConversionOptions();
+                Console.WriteLine("All signature toggle tests passed.");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
 
-        private static void TestMboxToPstConversionOptions()
+        static void TestMboxToPstConversionOptions()
         {
-            // Create options with signature removal disabled
-            MboxToPstConversionOptions optionsWithoutRemoval = new MboxToPstConversionOptions();
-            optionsWithoutRemoval.RemoveSignature = false;
-            Console.WriteLine($"MboxToPstConversionOptions.RemoveSignature (expected false): {optionsWithoutRemoval.RemoveSignature}");
+            // Create options with default settings
+            MboxToPstConversionOptions options = new MboxToPstConversionOptions();
 
-            // Create options with signature removal enabled
-            MboxToPstConversionOptions optionsWithRemoval = new MboxToPstConversionOptions();
-            optionsWithRemoval.RemoveSignature = true;
-            Console.WriteLine($"MboxToPstConversionOptions.RemoveSignature (expected true): {optionsWithRemoval.RemoveSignature}");
+            // Verify default is false
+            if (options.RemoveSignature != false)
+                throw new InvalidOperationException("Default RemoveSignature should be false.");
+
+            // Enable signature removal
+            options.RemoveSignature = true;
+            if (options.RemoveSignature != true)
+                throw new InvalidOperationException("RemoveSignature should be true after setting.");
+
+            // Disable again
+            options.RemoveSignature = false;
+            if (options.RemoveSignature != false)
+                throw new InvalidOperationException("RemoveSignature should be false after resetting.");
         }
 
-        private static void TestMapiConversionOptions()
+        static void TestMapiConversionOptions()
         {
-            // Create options with signature removal disabled
-            MapiConversionOptions mapiOptionsWithoutRemoval = new MapiConversionOptions();
-            mapiOptionsWithoutRemoval.RemoveSignature = false;
-            Console.WriteLine($"MapiConversionOptions.RemoveSignature (expected false): {mapiOptionsWithoutRemoval.RemoveSignature}");
+            // Create options with default settings
+            MapiConversionOptions options = new MapiConversionOptions();
 
-            // Create options with signature removal enabled
-            MapiConversionOptions mapiOptionsWithRemoval = new MapiConversionOptions();
-            mapiOptionsWithRemoval.RemoveSignature = true;
-            Console.WriteLine($"MapiConversionOptions.RemoveSignature (expected true): {mapiOptionsWithRemoval.RemoveSignature}");
+            // Verify default is false
+            if (options.RemoveSignature != false)
+                throw new InvalidOperationException("Default RemoveSignature should be false.");
+
+            // Enable signature removal
+            options.RemoveSignature = true;
+            if (options.RemoveSignature != true)
+                throw new InvalidOperationException("RemoveSignature should be true after setting.");
+
+            // Disable again
+            options.RemoveSignature = false;
+            if (options.RemoveSignature != false)
+                throw new InvalidOperationException("RemoveSignature should be false after resetting.");
         }
     }
 }

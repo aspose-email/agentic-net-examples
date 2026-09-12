@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Words;
+using Aspose.Words.Saving;
 
 class Program
 {
@@ -9,76 +10,100 @@ class Program
     {
         try
         {
-            string inputHtmlPath = "input.html";
-            string outputPdfPath = "output.pdf";
+            // Input HTML email file path
+            string htmlPath = "email.html";
 
             // Verify input file exists
-            if (!File.Exists(inputHtmlPath))
+            if (!File.Exists(htmlPath))
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputHtmlPath, Aspose.Email.SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                Console.Error.WriteLine($"Input file not found: {inputHtmlPath}");
+                Console.Error.WriteLine($"Input file '{htmlPath}' not found.");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPdfPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            // Read HTML content
+            string htmlContent;
+            try
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
+                htmlContent = File.ReadAllText(htmlPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to read '{htmlPath}': {ex.Message}");
+                return;
             }
 
-            // Load HTML email into MailMessage
-            using (MailMessage email = MailMessage.Load(inputHtmlPath, new HtmlLoadOptions()))
+            // Create a MailMessage and set its HTML body
+            using (MailMessage message = new MailMessage())
             {
-                // Save MailMessage as MHTML into a memory stream
+                message.HtmlBody = htmlContent;
+                message.Subject = Path.GetFileNameWithoutExtension(htmlPath);
+
+                // Save the email to an MHTML stream using Aspose.Email
                 using (MemoryStream mhtmlStream = new MemoryStream())
                 {
-                    email.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
-                    mhtmlStream.Position = 0;
+                    try
+                    {
+                        message.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
+                        mhtmlStream.Position = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to convert email to MHTML: {ex.Message}");
+                        return;
+                    }
 
-                    // Load MHTML into Aspose.Words Document
-                    Document doc = new Document(mhtmlStream);
-            {
-                        // Set custom metadata
-                        doc.BuiltInDocumentProperties.Author = "Custom Author";
-                        doc.BuiltInDocumentProperties.Title = "Custom Title";
-                        doc.BuiltInDocumentProperties.Subject = "Custom Subject";
+                    // Load the MHTML into Aspose.Words Document
+                    Document doc;
+                    try
+                    {
+                        doc = new Document(mhtmlStream);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to load MHTML into Word document: {ex.Message}");
+                        return;
+                    }
 
-                        // Save as PDF
-                        doc.Save(outputPdfPath, Aspose.Words.SaveFormat.Pdf);
+                    // Set PDF metadata using Word document properties
+                    doc.BuiltInDocumentProperties.Author = "Author Name";
+                    doc.BuiltInDocumentProperties.Title = "Document Title";
+                    doc.BuiltInDocumentProperties.Subject = "Document Subject";
+
+                    // Output PDF file path
+                    string pdfPath = $"{htmlPath}.pdf";
+
+                    // Ensure output directory exists
+                    try
+                    {
+                        string outputDir = Path.GetDirectoryName(pdfPath);
+                        if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                        {
+                            Directory.CreateDirectory(outputDir);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+                        return;
+                    }
+
+                    // Save the document as PDF with Aspose.Words
+                    try
+                    {
+                        Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions();
+                        doc.Save(pdfPath, pdfOptions);
+                        Console.WriteLine($"PDF saved to '{pdfPath}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to save PDF: {ex.Message}");
                     }
                 }
             }
-
-            Console.WriteLine($"PDF successfully created at: {outputPdfPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

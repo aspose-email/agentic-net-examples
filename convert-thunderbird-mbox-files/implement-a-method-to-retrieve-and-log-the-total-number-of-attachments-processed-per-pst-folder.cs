@@ -1,75 +1,56 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
 
-class Program
+namespace AsposeEmailPstAttachmentCounter
 {
-    static void Main()
+    class Program
     {
-        try
-        {
-            string pstPath = "sample.pst";
-
-            // Ensure the PST file exists; create a minimal placeholder if it does not.
-            if (!File.Exists(pstPath))
-            {
-                try
-                {
-                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Empty PST created.
-                    }
-                }
-                catch (Exception createEx)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder PST: {createEx.Message}");
-                    return;
-                }
-            }
-
-            // Open the PST file.
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
-            {
-                // Process the root folder and all subfolders.
-                ProcessFolder(pst, pst.RootFolder);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-        }
-    }
-
-    private static void ProcessFolder(PersonalStorage pst, FolderInfo folder)
-    {
-        int totalAttachments = 0;
-
-        // Enumerate all messages in the current folder.
-        foreach (MessageInfo messageInfo in folder.EnumerateMessages())
+        static void Main(string[] args)
         {
             try
             {
-                // Extract attachments for the current message.
-                MapiAttachmentCollection attachments = pst.ExtractAttachments(messageInfo);
-                if (attachments != null)
+                // Path to the PST file (placeholder if not present)
+                string pstPath = "storage.pst";
+
+                // Create a minimal PST file if it does not exist
+                if (!File.Exists(pstPath))
                 {
-                    totalAttachments += attachments.Count;
+                    using (PersonalStorage.Create(pstPath, FileFormatVersion.Unicode)) { }
+                }
+
+                // Open the PST file
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    // Iterate through each subfolder of the root folder
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                    {
+                        int totalAttachmentsInFolder = 0;
+
+                        // Enumerate all messages in the current folder
+                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        {
+                            // Extract the full message
+                            MapiMessage message = pst.ExtractMessage(messageInfo);
+                            if (message?.Attachments != null)
+                            {
+                                totalAttachmentsInFolder += message.Attachments.Count;
+                            }
+                        }
+
+                        // Log the total number of attachments for the folder
+                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                        Console.WriteLine($"Total attachments: {totalAttachmentsInFolder}");
+                    }
                 }
             }
-            catch (Exception msgEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to extract attachments from message '{messageInfo.Subject}': {msgEx.Message}");
+                // Log any unexpected errors
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-        }
-
-        Console.WriteLine($"Folder '{folder.DisplayName}' - Total Attachments: {totalAttachments}");
-
-        // Recursively process subfolders.
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            ProcessFolder(pst, subFolder);
         }
     }
 }

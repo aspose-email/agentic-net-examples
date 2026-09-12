@@ -1,8 +1,8 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
-using Aspose.Email.Mapi;
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,89 +10,62 @@ class Program
     {
         try
         {
-            const string pstPath = "sample.pst";
+            // Author: Sample code for safe extraction of PST messages with invalid EntryId handling
+            string pstFilePath = "sample.pst";
 
-            // Ensure PST file exists; create a minimal one if missing
-            if (!File.Exists(pstPath))
+            // Guard file existence
+            if (!File.Exists(pstFilePath))
             {
-                try
-                {
-                    // Create a new Unicode PST file
-                    using (PersonalStorage pstCreate = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
-                    {
-                        // Create a predefined Inbox folder
-                        FolderInfo inbox = pstCreate.GetPredefinedFolder(StandardIpmFolder.Inbox);
-
-                        // Create a simple message
-                        MapiMessage simpleMsg = new MapiMessage(
-                            "sender@example.com",
-                            "recipient@example.com",
-                            "Test Subject",
-                            "This is a test message.");
-
-                        // Add the message to the Inbox and obtain its EntryId
-                        string validEntryId = inbox.AddMessage(simpleMsg);
-                        Console.WriteLine($"Created sample PST with message EntryId: {validEntryId}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder PST file: {ex.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"PST file not found: {pstFilePath}");
+                return;
             }
 
-            // Open the PST file for reading
-            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            // Ensure output directory exists
+            string outputDir = "ExtractedMessages";
+            if (!Directory.Exists(outputDir))
             {
-                // Get the Inbox folder (or first subfolder if Inbox not present)
-                FolderInfo folder = pst.GetPredefinedFolder(StandardIpmFolder.Inbox);
-                if (folder == null)
-                {
-                    Console.Error.WriteLine("Inbox folder not found in PST.");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
+            }
 
-                // Enumerate messages in the folder
-                foreach (MessageInfo messageInfo in folder.EnumerateMessages())
+            // Open PST storage
+            using (PersonalStorage pstStorage = PersonalStorage.FromFile(pstFilePath))
+            {
+                // Get the root folder
+                FolderInfo rootFolder = pstStorage.RootFolder;
+
+                // Enumerate all message EntryIds
+                foreach (string entryId in rootFolder.EnumerateMessagesEntryId())
                 {
                     try
                     {
-                        // Attempt to extract the message using the MessageInfo object
-                        using (MapiMessage extractedMsg = pst.ExtractMessage(messageInfo))
-                        {
-                            Console.WriteLine($"Extracted message: Subject = {extractedMsg.Subject}");
-                        }
-                    }
-                    catch (Aspose.Email.AsposeException ex)
-                    {
-                        Console.Error.WriteLine($"Failed to extract message with Subject '{messageInfo.Subject}': {ex.Message}");
-                    }
-                }
+                        // Attempt to extract the message
+                        MapiMessage message = pstStorage.ExtractMessage(entryId);
 
-                // Demonstrate handling of an invalid EntryId
-                const string invalidEntryId = "InvalidEntryIdString";
-                try
-                {
-                    using (MapiMessage invalidMsg = pst.ExtractMessage(invalidEntryId))
-                    {
-                        // This line should not be reached if the EntryId is invalid
-                        Console.WriteLine($"Unexpectedly extracted message with Subject = {invalidMsg.Subject}");
+                        // Build a safe file name
+                        string safeSubject = string.IsNullOrWhiteSpace(message.Subject) ? "NoSubject" : message.Subject;
+                        foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                        {
+                            safeSubject = safeSubject.Replace(invalidChar, '_');
+                        }
+
+                        string outputPath = Path.Combine(outputDir, $"{safeSubject}_{entryId}.msg");
+
+                        // Save the extracted message
+                        message.Save(outputPath);
+                        Console.WriteLine($"Extracted: {outputPath}");
                     }
-                }
-                catch (Aspose.Email.AsposeException ex)
-                {
-                    Console.Error.WriteLine($"Handled invalid EntryId gracefully: {ex.Message}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Unexpected error while handling invalid EntryId: {ex.Message}");
+                    catch (Exception ex)
+                    {
+                        // Log extraction failure but continue processing other messages
+                        Console.Error.WriteLine($"Failed to extract message with EntryId '{entryId}': {ex.Message}");
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unhandled exception: {ex.Message}");
+            // Top‑level exception guard
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

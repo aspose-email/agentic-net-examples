@@ -1,47 +1,69 @@
 using Aspose.Email;
 using System;
 using System.IO;
+using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main()
+    // Author: Aspose.Email .NET sample for MBOX to PST conversion
+    static void Main(string[] args)
     {
         try
         {
-            // Define input and output PST file paths
-            string inputPstPath = "input.pst";
-            string outputDirectory = "output";
-            string outputPstPath = Path.Combine(outputDirectory, "compressed.pst");
+            // Input and output paths (can be overridden via command‑line arguments)
+            string mboxPath = args.Length > 0 ? args[0] : "input.mbox";
+            string pstPath = args.Length > 1 ? args[1] : "output.pst";
 
-            // Ensure the output directory exists
-            if (!Directory.Exists(outputDirectory))
+            // Guard: ensure source MBOX exists; create an empty placeholder if missing
+            if (!File.Exists(mboxPath))
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            // If the input PST does not exist, create a minimal placeholder PST
-            if (!File.Exists(inputPstPath))
-            {
-                // Create a new empty PST with Unicode format (only supported version)
-                using (PersonalStorage placeholderPst = PersonalStorage.Create(inputPstPath, FileFormatVersion.Unicode))
+                try
                 {
-                    // No additional actions needed; the PST file is created on disposal
+                    File.WriteAllText(mboxPath, string.Empty);
+                    Console.WriteLine($"Placeholder MBOX created at '{mboxPath}'.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create placeholder MBOX: {ex.Message}");
+                    return;
                 }
             }
 
-            // Open the existing PST file
-            using (PersonalStorage pst = PersonalStorage.FromFile(inputPstPath))
+            // Guard: ensure destination directory exists
+            try
             {
-                // Save (compress) the PST to a new file
-                pst.SaveAs(outputPstPath, FileFormat.Pst);
+                string pstDir = Path.GetDirectoryName(pstPath);
+                if (!string.IsNullOrEmpty(pstDir) && !Directory.Exists(pstDir))
+                {
+                    Directory.CreateDirectory(pstDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to prepare PST directory: {ex.Message}");
+                return;
             }
 
-            Console.WriteLine("PST compression completed successfully.");
+            // Perform conversion inside a try/catch to handle library errors
+            try
+            {
+                // MailStorageConverter.MboxToPst returns a PersonalStorage instance which must be disposed
+                using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath))
+                {
+                    // Conversion succeeded; additional processing can be added here if needed
+                    Console.WriteLine($"Successfully converted '{mboxPath}' to PST '{pstPath}'.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
+                return;
+            }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

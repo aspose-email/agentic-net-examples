@@ -1,74 +1,79 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using Aspose.Email;
 using Aspose.Email.Storage.Pst;
 using Aspose.Email.Mapi;
 
-namespace ValidatePstAttachmentFilenames
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
+            // Path to the source PST file
+            string pstPath = "storage.pst";
+
+            // Verify PST file exists
+            if (!File.Exists(pstPath))
             {
-                // Path to the PST file to be validated
-                string pstFilePath = "input.pst";
+                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                return;
+            }
 
-                // Directory where extracted attachments will be saved
-                string attachmentOutputDir = "ExtractedAttachments";
+            // Directory to store extracted MSG files
+            string outputDir = "ExtractedMsg";
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
 
-                // Guard against missing PST file
-                if (!File.Exists(pstFilePath))
+            // Open the PST file
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+            {
+                // Iterate through each subfolder in the root folder
+                foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                 {
-                    Console.Error.WriteLine($"PST file not found: {pstFilePath}");
-                    return;
-                }
-
-                // Ensure the output directory exists
-                try
-                {
-                    if (!Directory.Exists(attachmentOutputDir))
+                    // Enumerate messages in the current folder
+                    foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
                     {
-                        Directory.CreateDirectory(attachmentOutputDir);
-                    }
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory '{attachmentOutputDir}': {dirEx.Message}");
-                    return;
-                }
-
-                // Open the PST file
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
-                {
-                    // Iterate through each folder in the PST root
-                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
-                    {
-                        // Enumerate all messages in the current folder
-                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        // ----- Capture original attachment filenames -----
+                        MapiAttachmentCollection originalAttachments = pst.ExtractAttachments(messageInfo);
+                        List<string> originalNames = new List<string>();
+                        foreach (MapiAttachment attachment in originalAttachments)
                         {
-                            // Extract the full message as a MapiMessage
-                            using (MapiMessage mapiMessage = pst.ExtractMessage(messageInfo))
+                            originalNames.Add(attachment.FileName);
+                        }
+
+                        // ----- Extract the message and save as MSG -----
+                        using (MapiMessage mapiMsg = pst.ExtractMessage(messageInfo))
+                        {
+                            using (MailMessage mail = mapiMsg.ToMailMessage(new MailConversionOptions()))
                             {
-                                // Process each attachment in the message
-                                foreach (MapiAttachment attachment in mapiMessage.Attachments)
+                                string safeSubject = string.IsNullOrWhiteSpace(mail.Subject) ? "NoSubject" : mail.Subject;
+                                // Use EntryId to avoid filename collisions
+                                string msgFileName = $"{safeSubject}_{messageInfo.EntryId}.msg";
+                                string msgPath = Path.Combine(outputDir, msgFileName);
+                                mail.Save(msgPath, SaveOptions.DefaultMsg);
+
+                                // ----- Load the saved MSG and verify attachment filenames -----
+                                using (MailMessage loadedMail = MailMessage.Load(msgPath))
                                 {
-                                    // Preserve the original attachment filename
-                                    string originalFileName = attachment.FileName;
-
-                                    // Build the full path for saving the attachment
-                                    string savedAttachmentPath = Path.Combine(attachmentOutputDir, originalFileName);
-
-                                    // Save the attachment to disk
-                                    try
+                                    List<string> loadedNames = new List<string>();
+                                    foreach (Attachment att in loadedMail.Attachments)
                                     {
-                                        attachment.Save(savedAttachmentPath);
-                                        Console.WriteLine($"Attachment '{originalFileName}' from message '{mapiMessage.Subject}' saved to '{savedAttachmentPath}'.");
+                                        loadedNames.Add(att.Name);
                                     }
-                                    catch (Exception attachEx)
+
+                                    bool match = originalNames.Count == loadedNames.Count &&
+                                                 !originalNames.Except(loadedNames).Any();
+
+                                    if (match)
                                     {
-                                        Console.Error.WriteLine($"Failed to save attachment '{originalFileName}': {attachEx.Message}");
+                                        Console.WriteLine($"Message '{mail.Subject}' attachments validated.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine($"Attachment filename mismatch in message '{mail.Subject}'.");
                                     }
                                 }
                             }
@@ -76,10 +81,10 @@ namespace ValidatePstAttachmentFilenames
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"An error occurred: {ex.Message}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

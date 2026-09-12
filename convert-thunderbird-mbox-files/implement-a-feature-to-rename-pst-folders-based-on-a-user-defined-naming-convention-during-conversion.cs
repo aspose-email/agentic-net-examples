@@ -1,3 +1,4 @@
+using Aspose.Email.Mapi;
 using System;
 using System.IO;
 using Aspose.Email;
@@ -10,83 +11,62 @@ class Program
     {
         try
         {
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
+            // Input PST path (will be created if missing)
+            const string pstPath = "input.pst";
 
-            // Ensure input MBOX file exists
-            if (!File.Exists(mboxPath))
+            // Ensure the PST file exists; create a minimal placeholder if not.
+            if (!File.Exists(pstPath))
             {
-                try
+                using (PersonalStorage placeholder = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode))
                 {
-                    File.WriteAllText(mboxPath, string.Empty);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
+                    // Create a sample folder with one message.
+                    FolderInfo sampleFolder = placeholder.RootFolder.AddSubFolder("SampleFolder");
+                    MailMessage sampleMsg = new MailMessage("sender@example.com", "receiver@example.com", "Sample", "This is a placeholder message.");
+                    sampleFolder.AddMessage(MapiMessage.FromMailMessage(sampleMsg));
                 }
             }
 
-            // Convert MBOX to PST
-            PersonalStorage pstStorage;
-            try
-            {
-                pstStorage = MailStorageConverter.MboxToPst(mboxPath, pstPath);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                return;
-            }
-
-            // Open the created PST for further processing
+            // Open the PST file for read/write.
             using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
             {
-                try
+                // Iterate over each top‑level folder and rename it using a custom convention.
+                foreach (FolderInfo originalFolder in pst.RootFolder.GetSubFolders())
                 {
-                    RenameFoldersRecursively(pst.RootFolder);
+                    // Define the new folder name (e.g., prefix with "Renamed_").
+                    string newFolderName = $"Renamed_{originalFolder.DisplayName}";
+
+                    // Skip if a folder with the target name already exists.
+                    bool alreadyExists = false;
+                    foreach (FolderInfo existing in pst.RootFolder.GetSubFolders())
+                    {
+                        if (string.Equals(existing.DisplayName, newFolderName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            alreadyExists = true;
+                            break;
+                        }
+                    }
+                    if (alreadyExists)
+                        continue;
+
+                    // Create the new folder.
+                    FolderInfo newFolder = pst.RootFolder.AddSubFolder(newFolderName);
+
+                    // Move all messages from the original folder to the new folder.
+                    foreach (MessageInfo msgInfo in originalFolder.EnumerateMessages())
+                    {
+                        pst.MoveItem(msgInfo, newFolder);
+                    }
+
+                    // Note: Sub‑folders are not moved in this simple example.
                 }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Folder renaming failed: {ex.Message}");
-                    return;
-                }
+                // Changes are persisted when the PersonalStorage object is disposed.
             }
 
-            Console.WriteLine("PST conversion and folder renaming completed successfully.");
+            Console.WriteLine("Folder renaming completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
-    }
-
-    private static void RenameFoldersRecursively(FolderInfo folder)
-    {
-        // Rename current folder (skip root folder which has no display name)
-        if (!string.IsNullOrEmpty(folder.DisplayName))
-        {
-            string newName = GetRenamedFolderName(folder.DisplayName);
-            try
-            {
-                folder.ChangeDisplayName(newName);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to rename folder '{folder.DisplayName}': {ex.Message}");
-            }
-        }
-
-        // Process subfolders
-        foreach (FolderInfo subFolder in folder.GetSubFolders())
-        {
-            RenameFoldersRecursively(subFolder);
-        }
-    }
-
-    private static string GetRenamedFolderName(string originalName)
-    {
-        // Example naming convention: prepend "Renamed_"
-        return $"Renamed_{originalName}";
     }
 }

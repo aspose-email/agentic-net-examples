@@ -1,97 +1,82 @@
-using System;
-using System.IO;
-using System.Diagnostics;
 using Aspose.Email;
+using System;
+using System.Diagnostics;
+using System.IO;
 using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Paths for the source MBOX and the PST outputs (SSD and HDD)
+            // Input MBOX file path
             string mboxPath = "input.mbox";
-            string ssdPstPath = "ssd_output.pst";
-            string hddPstPath = "hdd_output.pst";
 
-            // Ensure the source MBOX file exists; create a minimal placeholder if missing
+            // Ensure the MBOX file exists; create a minimal placeholder if missing
             if (!File.Exists(mboxPath))
             {
                 try
                 {
-                    string placeholderEmail = "From - Mon Jan 01 00:00:00 2020\r\nSubject: Placeholder\r\n\r\nThis is a placeholder email.\r\n";
-                    File.WriteAllText(mboxPath, placeholderEmail);
-                    Console.WriteLine($"Created placeholder MBOX file at '{mboxPath}'.");
+                    Directory.CreateDirectory(Path.GetDirectoryName(mboxPath) ?? ".");
+                    // Minimal MBOX content with a single empty message
+                    File.WriteAllText(mboxPath, "From - Mon Jan 01 00:00:00 2020\r\nSubject: Test\r\n\r\n");
                 }
-                catch (Exception ioEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ioEx.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
                     return;
                 }
             }
 
+            // Output PST paths for SSD and HDD simulations
+            string ssdPstPath = "ssd_output.pst";
+            string hddPstPath = "hdd_output.pst";
+
             // Ensure output directories exist
             try
             {
-                string ssdDir = Path.GetDirectoryName(ssdPstPath);
-                if (!string.IsNullOrEmpty(ssdDir) && !Directory.Exists(ssdDir))
-                {
-                    Directory.CreateDirectory(ssdDir);
-                }
-
-                string hddDir = Path.GetDirectoryName(hddPstPath);
-                if (!string.IsNullOrEmpty(hddDir) && !Directory.Exists(hddDir))
-                {
-                    Directory.CreateDirectory(hddDir);
-                }
+                Directory.CreateDirectory(Path.GetDirectoryName(ssdPstPath) ?? ".");
+                Directory.CreateDirectory(Path.GetDirectoryName(hddPstPath) ?? ".");
             }
-            catch (Exception dirEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to prepare output directories: {dirEx.Message}");
+                Console.Error.WriteLine($"Failed to create output directories: {ex.Message}");
                 return;
             }
 
-            // Benchmark conversion to SSD PST
+            // Benchmark conversion to SSD location
             Stopwatch ssdTimer = new Stopwatch();
-            ssdTimer.Start();
             try
             {
-                using (PersonalStorage ssdPst = MailStorageConverter.MboxToPst(mboxPath, ssdPstPath))
-                {
-                    // PST is created and disposed automatically
-                }
+                ssdTimer.Start();
+                PersonalStorage ssdPst = MailStorageConverter.MboxToPst(mboxPath, ssdPstPath);
+                ssdPst.Dispose();
+                ssdTimer.Stop();
+                Console.WriteLine($"SSD conversion time: {ssdTimer.ElapsedMilliseconds} ms");
             }
-            catch (Exception convEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"SSD conversion failed: {convEx.Message}");
+                Console.Error.WriteLine($"SSD conversion failed: {ex.Message}");
                 return;
             }
-            ssdTimer.Stop();
-            TimeSpan ssdDuration = ssdTimer.Elapsed;
 
-            // Benchmark conversion to HDD PST
+            // Benchmark conversion to HDD location
             Stopwatch hddTimer = new Stopwatch();
-            hddTimer.Start();
             try
             {
-                using (PersonalStorage hddPst = MailStorageConverter.MboxToPst(mboxPath, hddPstPath))
-                {
-                    // PST is created and disposed automatically
-                }
+                hddTimer.Start();
+                PersonalStorage hddPst = MailStorageConverter.MboxToPst(mboxPath, hddPstPath);
+                hddPst.Dispose();
+                hddTimer.Stop();
+                Console.WriteLine($"HDD conversion time: {hddTimer.ElapsedMilliseconds} ms");
             }
-            catch (Exception convEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"HDD conversion failed: {convEx.Message}");
+                Console.Error.WriteLine($"HDD conversion failed: {ex.Message}");
                 return;
             }
-            hddTimer.Stop();
-            TimeSpan hddDuration = hddTimer.Elapsed;
-
-            // Output benchmark results
-            Console.WriteLine($"SSD conversion time: {ssdDuration.TotalMilliseconds} ms");
-            Console.WriteLine($"HDD conversion time: {hddDuration.TotalMilliseconds} ms");
         }
         catch (Exception ex)
         {

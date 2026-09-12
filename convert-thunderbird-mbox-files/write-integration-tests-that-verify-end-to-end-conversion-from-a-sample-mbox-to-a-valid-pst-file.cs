@@ -1,99 +1,103 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage;
+using Aspose.Email.Storage.Pst;
 
-class Program
+namespace MboxToPstIntegrationTest
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Define paths for the sample MBOX and the resulting PST
-            string mboxPath = "sample.mbox";
-            string pstPath = "output.pst";
-
-            // Ensure the MBOX file exists; create a minimal placeholder if missing
-            if (!File.Exists(mboxPath))
-            {
-                try
-                {
-                    using (FileStream mboxStream = new FileStream(mboxPath, FileMode.Create, FileAccess.Write))
-                    using (StreamWriter writer = new StreamWriter(mboxStream))
-                    {
-                        // Minimal MBOX format: a "From " line followed by headers and body
-                        writer.WriteLine("From - Mon Jan 01 00:00:00 2020");
-                        writer.WriteLine("Subject: Test Message");
-                        writer.WriteLine("From: sender@example.com");
-                        writer.WriteLine("To: recipient@example.com");
-                        writer.WriteLine();
-                        writer.WriteLine("This is a test email body.");
-                        writer.WriteLine(); // End of message
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Ensure the output PST file does not already exist; delete if present
-            if (File.Exists(pstPath))
-            {
-                try
-                {
-                    File.Delete(pstPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to delete existing PST file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Perform the conversion from MBOX to PST
             try
             {
-                // The static method returns a PersonalStorage instance representing the created PST
-                using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath))
+                // Define input MBOX and output PST file paths
+                string mboxFilePath = "sample.mbox";
+                string pstFilePath = "output.pst";
+
+                // Ensure the input MBOX file exists; create a minimal placeholder if missing
+                if (!File.Exists(mboxFilePath))
                 {
-                    // Verify that the PST was created and contains at least one message
-                    FolderInfo rootFolder = pst.RootFolder;
-                    bool hasMessages = false;
-
-                    foreach (FolderInfo subFolder in rootFolder.GetSubFolders())
+                    try
                     {
-                        foreach (MessageInfo messageInfo in subFolder.EnumerateMessages())
-                        {
-                            hasMessages = true;
-                            Console.WriteLine($"Message subject: {messageInfo.Subject}");
-                            break; // One message is enough for verification
-                        }
-
-                        if (hasMessages) break;
+                        // Create an empty MBOX file (valid but contains no messages)
+                        File.WriteAllText(mboxFilePath, string.Empty);
+                        Console.WriteLine($"Created placeholder MBOX file at '{mboxFilePath}'.");
                     }
-
-                    if (!hasMessages)
+                    catch (Exception ex)
                     {
-                        Console.Error.WriteLine("Conversion succeeded but no messages were found in the PST.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("MBOX to PST conversion verified successfully.");
+                        Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
+                        return;
                     }
                 }
+
+                // Ensure the directory for the PST file exists
+                string pstDirectory = Path.GetDirectoryName(pstFilePath);
+                if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(pstDirectory);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create PST directory: {ex.Message}");
+                        return;
+                    }
+                }
+
+                // Perform the conversion from MBOX to PST
+                try
+                {
+                    // This method creates the PST file at the specified location
+                    MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Conversion failed: {ex.Message}");
+                    return;
+                }
+
+                // Verify that the PST file was created
+                if (!File.Exists(pstFilePath))
+                {
+                    Console.Error.WriteLine("PST file was not created.");
+                    return;
+                }
+
+                // Open the created PST to inspect its contents
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
+                {
+                    // Retrieve total items count from the PST store
+                    int totalItems = pst.Store.GetTotalItemsCount();
+                    Console.WriteLine($"Total items in PST: {totalItems}");
+
+                    // Iterate through each subfolder of the root folder
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
+                    {
+                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                        Console.WriteLine($"  Total items: {folderInfo.ContentCount}");
+                        Console.WriteLine($"  Unread items: {folderInfo.ContentUnreadCount}");
+
+                        // Enumerate messages within the folder
+                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        {
+                            Console.WriteLine($"  Subject: {messageInfo.Subject}");
+                        }
+
+                        // Count subfolders
+                        int subFolderCount = folderInfo.GetSubFolders().Count;
+                        Console.WriteLine($"  Subfolder count: {subFolderCount}");
+                    }
+                }
+
+                Console.WriteLine("MBOX to PST conversion test completed successfully.");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

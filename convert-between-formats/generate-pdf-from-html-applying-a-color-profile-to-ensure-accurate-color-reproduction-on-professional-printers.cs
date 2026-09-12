@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mime;
 using Aspose.Words;
 using Aspose.Words.Saving;
 
@@ -10,72 +11,52 @@ class Program
     {
         try
         {
-            // Define input and output paths
-            string inputHtmlPath = "input.html";
-            string outputPdfPath = "output.pdf";
+            // Paths
+            string htmlFilePath = "input.html";
+            string pdfOutputPath = "output.pdf";
+            string colorProfilePath = "color_profile.icc"; // Placeholder for ICC profile (not used in this example)
 
-            // Ensure input HTML file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputHtmlPath))
+            // Ensure input HTML exists; create a minimal file if missing
+            if (!File.Exists(htmlFilePath))
             {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(inputHtmlPath, Aspose.Email.SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
-                    return;
-                }
-
-                string inputDir = Path.GetDirectoryName(inputHtmlPath);
-                if (!string.IsNullOrEmpty(inputDir) && !Directory.Exists(inputDir))
-                {
-                    Directory.CreateDirectory(inputDir);
-                }
-
-                File.WriteAllText(inputHtmlPath, "<html><body><p>Placeholder HTML content.</p></body></html>");
+                string minimalHtml = "<html><body><h1>Sample HTML</h1><p>This is a placeholder.</p></body></html>";
+                File.WriteAllText(htmlFilePath, minimalHtml);
+                Console.WriteLine($"Created placeholder HTML file at: {htmlFilePath}");
             }
 
-            // Ensure the output directory exists
-            string outputDir = Path.GetDirectoryName(outputPdfPath);
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(pdfOutputPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
                 Directory.CreateDirectory(outputDir);
-            }
 
-            // Load the HTML file into a MailMessage using HtmlLoadOptions
-            using (MailMessage message = MailMessage.Load(inputHtmlPath, new HtmlLoadOptions()))
+            // Load HTML into a MailMessage
+            using (MailMessage message = new MailMessage())
             {
+                message.HtmlBody = File.ReadAllText(htmlFilePath);
+                message.Subject = "HTML to PDF Conversion";
+
                 // Save the MailMessage as MHTML into a memory stream
                 using (MemoryStream mhtmlStream = new MemoryStream())
                 {
                     message.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
                     mhtmlStream.Position = 0; // Reset stream position for reading
 
-                    // Load the MHTML stream into an Aspose.Words Document
-                    Document doc = new Document(mhtmlStream);
+                    // Load the MHTML into Aspose.Words Document
+                    Document doc = new Document(mhtmlStream, new Aspose.Words.Loading.LoadOptions());
 
-                    // (Optional) Configure PDF save options, e.g., embed color profile if needed
+                    // Prepare PDF save options (custom color profile not supported in this version)
                     Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions();
-                    // pdfOptions.ColorMode = PdfColorMode.Rgb; // Example setting; adjust as required
 
-                    // Save the document as PDF
-                    doc.Save(outputPdfPath, pdfOptions);
+                    // Save as PDF
+                    doc.Save(pdfOutputPath, pdfOptions);
                 }
             }
 
-            Console.WriteLine("PDF generated successfully at: " + Path.GetFullPath(outputPdfPath));
+            Console.WriteLine($"PDF generated successfully at: {pdfOutputPath}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

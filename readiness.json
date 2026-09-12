@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "product": "Aspose.Email",
+  "platform": "net",
+  "framework": "net8.0",
+  "package": "Aspose.Email",
+  "package_version": "26.1.0",
+  "total_examples": 3085,
+  "total_categories": 17,
+  "last_updated": "2026-07-05",
+  "generated_assets": {
+    "readme": "README.md",
+    "agents": "AGENTS.md",
+    "llms": "llms.txt",
+    "index": "index.json",
+    "category_readmes": true
+  },
+  "readiness_signals": {
+    "standalone_examples": true,
+    "compile_and_run_validated": true,
+    "category_agent_guides": true,
+    "machine_readable_index": true,
+    "machine_readable_readiness": true,
+    "ai_friendly_navigation": true
+  },
+  "agentic_examples_section": "https://metrics.aspose.com/agents/sections/examples"
+}

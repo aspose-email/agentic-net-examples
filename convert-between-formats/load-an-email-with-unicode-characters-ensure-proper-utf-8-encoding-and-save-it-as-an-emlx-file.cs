@@ -3,18 +3,22 @@ using System.IO;
 using System.Text;
 using Aspose.Email;
 
-class Program
+namespace EmailConversion
 {
-    static void Main()
+    // Author: Aspose.Email example for loading Unicode email and saving as EMLX
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPath = "unicode_email.eml";
-            string outputPath = "unicode_email.emlx";
-
-            // Verify input file exists; create a minimal placeholder if missing
-            if (!File.Exists(inputPath))
+            try
             {
+                // Define input and output file paths
+                string inputPath = "input.eml";
+                string outputPath = "output.emlx";
+
+                // Verify that the input file exists
+                if (!File.Exists(inputPath))
+                {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -32,69 +36,33 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    using (FileStream placeholderStream = File.Create(inputPath))
-                    {
-                        string placeholderContent = "Subject: =?utf-8?B?5L2g5aW9?=\r\n\r\nこんにちは世界";
-                        byte[] bytes = Encoding.UTF8.GetBytes(placeholderContent);
-                        placeholderStream.Write(bytes, 0, bytes.Length);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder input file: {ex.Message}");
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
                     return;
                 }
-            }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
-            {
-                try
+                // Configure load options to enforce UTF-8 encoding
+                EmlLoadOptions loadOptions = new EmlLoadOptions
                 {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception ex)
+                    PreferredTextEncoding = Encoding.UTF8
+                };
+
+                // Load the email message with the specified options
+                using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
                 {
-                    Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                    return;
+                    // Use default EMLX save options
+                    SaveOptions saveOptions = SaveOptions.DefaultEmlx;
+
+                    // Save the message as an EMLX file
+                    message.Save(outputPath, saveOptions);
                 }
-            }
 
-            // Load the email with UTF-8 encoding preference
-            EmlxLoadOptions loadOptions = new EmlxLoadOptions();
-            loadOptions.PreferredTextEncoding = Encoding.UTF8;
-
-            MailMessage mailMessage;
-            try
-            {
-                mailMessage = MailMessage.Load(inputPath, loadOptions);
+                Console.WriteLine($"Email successfully saved as EMLX to: {outputPath}");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load email: {ex.Message}");
-                return;
+                // Log any unexpected errors
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            using (mailMessage)
-            {
-                // Save as EMLX format
-                EmlSaveOptions saveOptions = new EmlSaveOptions(MailMessageSaveType.EmlxFormat);
-                try
-                {
-                    mailMessage.Save(outputPath, saveOptions);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save email as EMLX: {ex.Message}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

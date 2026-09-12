@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -9,14 +8,13 @@ class Program
     {
         try
         {
+            // Author note: Simple MHTML to OFT conversion using Aspose.Email.
             string inputPath = "input.mht";
-            string outputPath = "template.oft";
+            string outputPath = "output.oft";
 
-            // Ensure input MHTML file exists; create a minimal placeholder if missing.
-            try
+            // Verify input file exists.
+            if (!File.Exists(inputPath))
             {
-                if (!File.Exists(inputPath))
-                {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -34,40 +32,25 @@ class Program
                     return;
                 }
 
-                    using (StreamWriter writer = new StreamWriter(inputPath))
-                    {
-                        writer.WriteLine("<html><body><p>Placeholder MHTML content.</p></body></html>");
-                    }
-                }
-            }
-            catch (Exception ioEx)
-            {
-                Console.Error.WriteLine($"File I/O error: {ioEx.Message}");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Load the MHTML file into a MailMessage.
-            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+            // Load the MHTML message.
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Convert MailMessage to MapiMessage.
-                using (MapiMessage mapiMessage = MapiMessage.FromMailMessage(mailMessage))
-                {
-                    // Save as Outlook File Template (OFT).
-                    try
-                    {
-                        mapiMessage.SaveAsTemplate(outputPath);
-                        Console.WriteLine($"OFT template saved to '{outputPath}'.");
-                    }
-                    catch (Exception saveEx)
-                    {
-                        Console.Error.WriteLine($"Error saving OFT template: {saveEx.Message}");
-                    }
-                }
+                // Get default options for Outlook template (OFT) format.
+                MsgSaveOptions oftOptions = SaveOptions.DefaultOft;
+
+                // Save the message as an OFT template.
+                message.Save(outputPath, oftOptions);
             }
+
+            Console.WriteLine($"Successfully converted '{inputPath}' to '{outputPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

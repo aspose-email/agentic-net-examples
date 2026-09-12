@@ -1,56 +1,61 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
 
+// Author: Aspose.Email .NET sample for MBOX to PST conversion
 class Program
 {
     static void Main()
     {
         try
         {
+            // Paths – adjust as needed
             string mboxPath = "input.mbox";
             string pstPath = "output.pst";
 
-            // Verify input file exists
+            // Verify source MBOX file exists
             if (!File.Exists(mboxPath))
             {
-                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
+                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
             // Ensure output directory exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            string pstDir = Path.GetDirectoryName(pstPath);
+            if (!string.IsNullOrEmpty(pstDir) && !Directory.Exists(pstDir))
             {
-                Directory.CreateDirectory(pstDirectory);
+                try
+                {
+                    Directory.CreateDirectory(pstDir);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to create directory '{pstDir}': {ex.Message}");
+                    return;
+                }
             }
 
-            // Set conversion options with a handler to preserve calendar attachments
-            MboxToPstConversionOptions conversionOptions = new MboxToPstConversionOptions();
-            conversionOptions.MessageHandler = (MailMessage message) =>
+            // Perform conversion inside a safe block
+            PersonalStorage pst = null;
+            try
             {
-                // Detect calendar attachments (Content-Type: text/calendar)
-                foreach (Attachment attachment in message.Attachments)
-                {
-                    if (attachment.ContentType.MediaType.Equals("text/calendar", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Console.WriteLine($"Preserving calendar attachment in message: {message.Subject}");
-                        // No further action required; the conversion retains the attachment.
-                    }
-                }
-            };
-
-            // Perform the conversion
-            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath, conversionOptions))
+                pst = MailStorageConverter.MboxToPst(mboxPath, pstPath);
+                Console.WriteLine($"Conversion succeeded. PST saved to '{pstPath}'.");
+            }
+            catch (Exception ex)
             {
-                Console.WriteLine("MBOX to PST conversion completed successfully.");
+                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
+            }
+            finally
+            {
+                pst?.Dispose();
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

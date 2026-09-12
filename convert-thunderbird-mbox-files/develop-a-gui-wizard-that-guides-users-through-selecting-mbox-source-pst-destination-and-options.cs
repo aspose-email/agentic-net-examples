@@ -1,6 +1,6 @@
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage;
 using Aspose.Email.Storage.Pst;
 
@@ -10,83 +10,56 @@ class Program
     {
         try
         {
-            // Prompt for MBOX source path
+            Console.WriteLine("=== MBOX to PST Conversion Wizard ===");
+
+            // Prompt for source MBOX file
             Console.Write("Enter the full path to the source MBOX file: ");
             string mboxPath = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(mboxPath) || !File.Exists(mboxPath))
+            {
+                Console.Error.WriteLine("Error: The specified MBOX file does not exist.");
+                return;
+            }
 
-            // Prompt for PST destination path
+            // Prompt for destination PST file
             Console.Write("Enter the full path for the destination PST file: ");
             string pstPath = Console.ReadLine();
-
-            // Prompt for option to remove signature
-            Console.Write("Remove signatures during conversion? (y/n): ");
-            string removeSignatureInput = Console.ReadLine();
-            bool removeSignature = removeSignatureInput != null && removeSignatureInput.Trim().ToLower() == "y";
-
-            // Guard source file existence
-            if (string.IsNullOrEmpty(mboxPath))
+            if (string.IsNullOrWhiteSpace(pstPath))
             {
-                Console.Error.WriteLine("Source MBOX path is empty.");
+                Console.Error.WriteLine("Error: Invalid PST file path.");
                 return;
             }
 
-            if (!File.Exists(mboxPath))
-            {
-                try
-                {
-                    // Create an empty placeholder MBOX file
-                    using (FileStream placeholder = File.Create(mboxPath))
-                    {
-                        // No content needed
-                    }
-                    Console.WriteLine($"Placeholder MBOX file created at: {mboxPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Guard destination directory existence
-            if (string.IsNullOrEmpty(pstPath))
-            {
-                Console.Error.WriteLine("Destination PST path is empty.");
-                return;
-            }
-
+            // Ensure the destination directory exists
             string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            if (!Directory.Exists(pstDirectory))
             {
                 try
                 {
                     Directory.CreateDirectory(pstDirectory);
                 }
-                catch (Exception ex)
+                catch (Exception dirEx)
                 {
-                    Console.Error.WriteLine($"Failed to create destination directory: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating directory '{pstDirectory}': {dirEx.Message}");
                     return;
                 }
             }
 
-            // Set conversion options
-            MboxToPstConversionOptions options = new MboxToPstConversionOptions();
-            options.RemoveSignature = removeSignature;
-            options.MessageHandler = delegate (MailMessage message)
-            {
-                Console.WriteLine($"Processing message: {message.Subject}");
-            };
+            // Prompt for optional conversion settings
+            Console.Write("Preserve folder hierarchy from MBOX? (y/n): ");
+            string preserveInput = Console.ReadLine();
+            bool preserveFolders = preserveInput?.Trim().ToLower() == "y";
 
-            // Perform conversion
-            try
+            // Prepare conversion options (default options are used; additional settings can be applied here)
+            MboxToPstConversionOptions options = new MboxToPstConversionOptions();
+            // Note: Specific option properties (e.g., PreserveFolderStructure) can be set if available in the referenced version.
+
+            // Perform the conversion
+            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath, options))
             {
-                MailStorageConverter.MboxToPst(mboxPath, pstPath, options);
+                // The conversion method returns a PersonalStorage instance representing the created PST.
+                // No further action is required for a basic conversion.
                 Console.WriteLine("Conversion completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                return;
             }
         }
         catch (Exception ex)

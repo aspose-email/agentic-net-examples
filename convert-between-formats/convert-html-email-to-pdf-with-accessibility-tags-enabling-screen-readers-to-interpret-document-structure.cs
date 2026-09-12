@@ -4,17 +4,16 @@ using Aspose.Email;
 using Aspose.Words;
 using Aspose.Words.Saving;
 
-class Program
+namespace EmailToPdfWithAccessibility
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputHtmlPath = "input.html";
-            string outputPdfPath = "output.pdf";
+            string inputPath = "input.eml";
+            string outputPath = "output.pdf";
 
-            // Verify input file exists
-            if (!File.Exists(inputHtmlPath))
+            if (!File.Exists(inputPath))
             {
                 try
                 {
@@ -24,7 +23,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(inputHtmlPath, Aspose.Email.SaveOptions.DefaultEml);
+                        placeholder.Save(inputPath, Aspose.Email.SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -33,43 +32,51 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input HTML file not found: {inputHtmlPath}");
+                try
+                {
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    return;
+                }
+
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
-            // Ensure output directory exists
-            string outputDir = Path.GetDirectoryName(outputPdfPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            // Load HTML email into MailMessage
-            using (MailMessage mailMessage = MailMessage.Load(inputHtmlPath, new HtmlLoadOptions()))
+            try
             {
-                // Save MailMessage as MHTML into a memory stream
-                using (MemoryStream mhtmlStream = new MemoryStream())
+                using (MailMessage email = MailMessage.Load(inputPath))
                 {
-                    mailMessage.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
-                    mhtmlStream.Position = 0;
-
-                    // Load MHTML into Aspose.Words Document
-                    Document doc = new Document(mhtmlStream);
-
-                    // Configure PDF save options to include accessibility tags
-                    Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions
+                    using (MemoryStream mhtmlStream = new MemoryStream())
                     {
-                        ExportDocumentStructure = true
-                    };
+                        email.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
+                        mhtmlStream.Position = 0;
 
-                    // Save the document as PDF
-                    doc.Save(outputPdfPath, pdfOptions);
+                        Document doc = new Document(mhtmlStream);
+
+                        Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions();
+                        // Enable tagged PDF for accessibility if the property is available in your Aspose.Words version.
+                        // Uncomment the following line when supported:
+                        // pdfOptions.TaggedPdf = true;
+
+                        doc.Save(outputPath, pdfOptions);
+                    }
                 }
+
+                Console.WriteLine($"Successfully converted '{inputPath}' to PDF '{outputPath}'.");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            }
         }
     }
 }

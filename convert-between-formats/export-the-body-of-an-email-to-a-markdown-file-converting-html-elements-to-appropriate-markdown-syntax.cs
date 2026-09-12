@@ -9,8 +9,10 @@ class Program
     {
         try
         {
-            // Input EML/MSG file path
-            string inputPath = "sample.eml";
+            // Input EML file path
+            string inputPath = "input.eml";
+            // Output Markdown file path
+            string outputPath = "output.md";
 
             // Verify input file exists
             if (!File.Exists(inputPath))
@@ -36,44 +38,41 @@ class Program
                 return;
             }
 
-            // Load the email message
-            using (MailMessage message = MailMessage.Load(inputPath))
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Prefer HTML body; fall back to plain text if HTML is not available
-                string htmlContent = message.HtmlBody ?? message.Body ?? string.Empty;
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Load the email message
+            using (MailMessage mailMessage = MailMessage.Load(inputPath))
+            {
+                // Prefer HTML body; fall back to plain text
+                string htmlBody = mailMessage.HtmlBody ?? mailMessage.Body ?? string.Empty;
 
                 // Convert HTML to Markdown
-                string markdown = ConvertHtmlToMarkdown(htmlContent);
+                string markdown = ConvertHtmlToMarkdown(htmlBody);
 
-                // Output Markdown file path
-                string outputPath = "output.md";
-
-                // Ensure the directory for the output file exists
-                string outputDirectory = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-
-                // Write Markdown content to file
+                // Write Markdown to file
                 try
                 {
                     File.WriteAllText(outputPath, markdown);
-                    Console.WriteLine($"Markdown file created at: {outputPath}");
+                    Console.WriteLine($"Markdown saved to {outputPath}");
                 }
-                catch (Exception writeEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to write markdown file: {writeEx.Message}");
+                    Console.Error.WriteLine($"Failed to write markdown file: {ex.Message}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 
-    // Very simple HTML‑to‑Markdown conversion (covers common tags)
+    // Simple HTML‑to‑Markdown conversion handling common tags
     private static string ConvertHtmlToMarkdown(string html)
     {
         if (string.IsNullOrEmpty(html))
@@ -81,45 +80,26 @@ class Program
 
         string markdown = html;
 
-        // Replace line breaks with newlines
-        markdown = Regex.Replace(markdown, @"\r\n|\r|\n", "\n");
+        // Replace line breaks
+        markdown = Regex.Replace(markdown, @"<(br|br\s*/?)>", "\n", RegexOptions.IgnoreCase);
 
-        // Bold: <b> or <strong>
-        markdown = Regex.Replace(markdown, @"<(b|strong)>(.*?)</\1>", "**$2**", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        // Replace paragraphs with double line breaks
+        markdown = Regex.Replace(markdown, @"</p\s*>", "\n\n", RegexOptions.IgnoreCase);
+        markdown = Regex.Replace(markdown, @"<p\s*>", string.Empty, RegexOptions.IgnoreCase);
 
-        // Italic: <i> or <em>
-        markdown = Regex.Replace(markdown, @"<(i|em)>(.*?)</\1>", "*$2*", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        // Bold tags
+        markdown = Regex.Replace(markdown, @"<(b|strong)\s*>", "**", RegexOptions.IgnoreCase);
+        markdown = Regex.Replace(markdown, @"</(b|strong)\s*>", "**", RegexOptions.IgnoreCase);
 
-        // Headings: <h1> to <h6>
-        for (int level = 1; level <= 6; level++)
-        {
-            string pattern = $@"<h{level}>(.*?)</h{level}>";
-            string replacement = new string('#', level) + " $1";
-            markdown = Regex.Replace(markdown, pattern, replacement, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        }
+        // Italic tags
+        markdown = Regex.Replace(markdown, @"<(i|em)\s*>", "*", RegexOptions.IgnoreCase);
+        markdown = Regex.Replace(markdown, @"</(i|em)\s*>", "*", RegexOptions.IgnoreCase);
 
-        // Links: <a href="url">text</a>
-        markdown = Regex.Replace(markdown, @"<a\s+href\s*=\s*[""']([^""']+)[""']\s*>(.*?)</a>", "[$2]($1)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-        // Images: <img src="url" alt="text" />
-        markdown = Regex.Replace(markdown, @"<img\s+[^>]*src\s*=\s*[""']([^""']+)[""'][^>]*>", "![]($1)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-        // Unordered lists: <ul><li>Item</li></ul>
-        markdown = Regex.Replace(markdown, @"<ul>\s*(<li>.*?</li>\s*)+</ul>", match =>
-        {
-            string listHtml = match.Value;
-            string listMarkdown = Regex.Replace(listHtml, @"<li>(.*?)</li>", "- $1", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            return listMarkdown;
-        }, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-        // Ordered lists: <ol><li>Item</li></ol>
-        markdown = Regex.Replace(markdown, @"<ol>\s*(<li>.*?</li>\s*)+</ol>", match =>
-        {
-            string listHtml = match.Value;
-            int index = 1;
-            string listMarkdown = Regex.Replace(listHtml, @"<li>(.*?)</li>", m => $"{index++}. {m.Groups[1].Value}", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            return listMarkdown;
-        }, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        // Links: <a href="url">text</a> -> [text](url)
+        markdown = Regex.Replace(markdown,
+            @"<a\s+href\s*=\s*[""'](?<url>[^""']+)[""']\s*>(?<text>.*?)</a>",
+            m => $"[{m.Groups["text"].Value}]({m.Groups["url"].Value})",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
         // Remove any remaining HTML tags
         markdown = Regex.Replace(markdown, @"<[^>]+>", string.Empty);
@@ -127,9 +107,7 @@ class Program
         // Decode HTML entities
         markdown = System.Net.WebUtility.HtmlDecode(markdown);
 
-        // Trim excess whitespace
-        markdown = markdown.Trim();
-
-        return markdown;
+        // Trim leading/trailing whitespace
+        return markdown.Trim();
     }
 }

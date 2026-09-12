@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Calendar;
 
 class Program
 {
@@ -10,29 +9,24 @@ class Program
     {
         try
         {
-            string inputPath = "meetingRequest.msg";
-            string outputPath = "meetingRequest.ics";
+            // Input MSG file containing the meeting request
+            const string inputPath = "meeting.msg";
+            // Desired output iCalendar file
+            const string outputPath = "meeting.ics";
 
-            // Guard file existence
+            // Verify the input file exists
             if (!File.Exists(inputPath))
             {
                 try
                 {
-                    MapiCalendar placeholderCalendar = new MapiCalendar(
-                        "Placeholder Location",
-                        "Placeholder Summary",
-                        "Placeholder Description",
-                        DateTime.Now,
-                        DateTime.Now.AddHours(1));
-                    if (string.IsNullOrEmpty(placeholderCalendar.Subject))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholderCalendar.Subject = "Placeholder Summary";
+                        placeholder.Save(inputPath);
                     }
-                    if (string.IsNullOrEmpty(placeholderCalendar.Body))
-                    {
-                        placeholderCalendar.Body = "Placeholder Description";
-                    }
-                    placeholderCalendar.Save(inputPath, MapiCalendarSaveOptions.DefaultMsg);
                 }
                 catch (Exception ex)
                 {
@@ -40,68 +34,32 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+                Console.Error.WriteLine($"Input file '{inputPath}' not found.");
                 return;
             }
 
-            // Load the MSG file
-            using (MapiMessage msg = MapiMessage.Load(inputPath))
+            // Ensure the output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                // Verify that the MSG contains a calendar item
-                if (msg.SupportedType != MapiItemType.Calendar)
-                {
-                    // Create minimal placeholder iCalendar file
-                    try
-                    {
-                        File.WriteAllText(outputPath, "BEGIN:VCALENDAR\r\nEND:VCALENDAR");
-                        Console.WriteLine("Input MSG is not a calendar. Placeholder iCalendar created.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Failed to write placeholder iCalendar: {ex.Message}");
-                    }
-                    return;
-                }
-
-                // Convert to MapiCalendar
-                MapiCalendar mapiCalendar = (MapiCalendar)msg.ToMapiMessageItem();
-
-                // Ensure attendees are set via MapiCalendarAttendees
-                MapiCalendarAttendees attendees = new MapiCalendarAttendees
-                {
-                    AppointmentRecipients = new MapiRecipientCollection()
-                };
-
-                // Example: copy existing recipients if any
-                if (mapiCalendar.Attendees != null && mapiCalendar.Attendees.AppointmentRecipients != null)
-                {
-                    foreach (MapiRecipient recipient in mapiCalendar.Attendees.AppointmentRecipients)
-                    {
-                        attendees.AppointmentRecipients.Add(recipient);
-                    }
-                }
-
-                // If there were no attendees, you could add custom ones here:
-                // attendees.AppointmentRecipients.Add(new MapiRecipient("person1@example.com"));
-                // attendees.AppointmentRecipients.Add(new MapiRecipient("person2@example.com"));
-
-                mapiCalendar.Attendees = attendees;
-
-                // Save as iCalendar preserving time‑zone information
-                try
-                {
-                    mapiCalendar.Save(outputPath, new MapiCalendarIcsSaveOptions());
-                    Console.WriteLine($"iCalendar saved to: {outputPath}");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to save iCalendar: {ex.Message}");
-                }
+                Directory.CreateDirectory(outputDir);
             }
+
+            // Load the MSG file as a MapiMessage
+            MapiMessage mapMsg = MapiMessage.Load(inputPath);
+
+            // Convert to MailMessage (MailMessage implements IDisposable)
+            using (MailMessage mailMsg = mapMsg.ToMailMessage(new MailConversionOptions()))
+            {
+                // Save as iCalendar (.ics). The library infers the format from the extension.
+                mailMsg.Save(outputPath);
+            }
+
+            Console.WriteLine($"Meeting request successfully saved to '{outputPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

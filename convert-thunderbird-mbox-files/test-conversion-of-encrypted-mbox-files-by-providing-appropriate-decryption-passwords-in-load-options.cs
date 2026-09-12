@@ -1,57 +1,73 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
-using Aspose.Email.Storage.Pst;
 
 class Program
 {
     static void Main()
     {
+        // Path to the (potentially encrypted) MBOX file
+        string mboxPath = "encrypted.mbox";
+
+        // Verify that the input MBOX file exists
+        if (!File.Exists(mboxPath))
+        {
+            Console.Error.WriteLine($"Input file not found: {mboxPath}");
+            return;
+        }
+
+        // Prepare output directory
+        string outputDir = Path.Combine(Path.GetDirectoryName(mboxPath) ?? string.Empty, "output");
         try
         {
-            string mboxPath = "encrypted.mbox";
-            string pstPath = "output.pst";
+            if (!Directory.Exists(outputDir))
+                Directory.CreateDirectory(outputDir);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
+            return;
+        }
 
-            // Ensure the MBOX file exists; create a minimal placeholder if missing.
-            if (!File.Exists(mboxPath))
+        // Create load options.
+        // If the MBOX is encrypted, provide the password via the constructor (if supported).
+        // Adjust the constructor usage according to the Aspose.Email version you reference.
+        MboxLoadOptions loadOptions = new MboxLoadOptions(); // new MboxLoadOptions("yourPassword") if supported
+
+        try
+        {
+            // Create the MBOX reader with the load options
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
             {
-                try
+                int messageIndex = 0;
+                MailMessage message;
+                // Read messages sequentially
+                while ((message = mboxReader.ReadNextMessage()) != null)
                 {
-                    File.WriteAllText(mboxPath, string.Empty);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
-            }
+                    using (message)
+                    {
+                        // Determine a safe file name based on the subject
+                        string subject = message.Subject ?? string.Empty;
+                        foreach (char c in Path.GetInvalidFileNameChars())
+                            subject = subject.Replace(c, '_');
 
-            // Load options for MBOX. No password property exists; only encoding options are available.
-            MboxLoadOptions loadOptions = new MboxLoadOptions();
+                        if (string.IsNullOrWhiteSpace(subject))
+                            subject = $"Message_{messageIndex}";
 
-            // Create a reader for the MBOX file.
-            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
-            {
-                // Convert the MBOX to PST using the built‑in converter.
-                try
-                {
-                    // The conversion method does not require explicit load options for decryption.
-                    // If the MBOX is encrypted and a password is needed, Aspose.Email currently
-                    // handles it internally based on the file format; no explicit password property is exposed.
-                    MailStorageConverter.MboxToPst(mboxPath, pstPath);
-                    Console.WriteLine($"Conversion completed. PST saved to '{pstPath}'.");
-                }
-                catch (Exception convEx)
-                {
-                    Console.Error.WriteLine($"Conversion failed: {convEx.Message}");
+                        string outputPath = Path.Combine(outputDir, $"{subject}.eml");
+
+                        // Save the message as .eml
+                        message.Save(outputPath);
+                        Console.WriteLine($"Saved: {outputPath}");
+                        messageIndex++;
+                    }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"An error occurred while processing the MBOX file: {ex.Message}");
         }
     }
 }

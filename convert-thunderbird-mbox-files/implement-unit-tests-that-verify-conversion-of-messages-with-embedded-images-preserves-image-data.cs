@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using System.Text;
 using Aspose.Email;
-using Aspose.Email.Mime;
+using Aspose.Email.Mapi;
+
 
 class Program
 {
@@ -10,70 +10,123 @@ class Program
     {
         try
         {
-            // Define paths
-            string baseDir = Path.Combine(Directory.GetCurrentDirectory(), "EmailTest");
-            string emlPath = Path.Combine(baseDir, "sample.eml");
-            string htmlPath = Path.Combine(baseDir, "sample.html");
+            // Prepare test directory
+            string testDir = Path.Combine(Environment.CurrentDirectory, "TestData");
+            if (!Directory.Exists(testDir))
+                Directory.CreateDirectory(testDir);
 
-            // Ensure base directory exists
-            if (!Directory.Exists(baseDir))
-            {
-                Directory.CreateDirectory(baseDir);
-            }
+            // Define file paths
+            string originalMsgPath = Path.Combine(testDir, "original.msg");
+            string convertedEmlPath = Path.Combine(testDir, "converted.eml");
 
-            // Create a sample email with an embedded image if it does not exist
-            if (!File.Exists(emlPath))
+            // Ensure the original message with an embedded image exists
+            if (!File.Exists(originalMsgPath))
             {
                 try
                 {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(emlPath, SaveOptions.DefaultEml);
+                        placeholder.Save(originalMsgPath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
                     return;
                 }
 
-                CreateSampleEmail(emlPath);
+                // Create a simple PNG header as dummy image data
+                byte[] imageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+
+                // Build the email message
+                MailMessage message = new MailMessage();
+                message.From = new MailAddress("sender@example.com");
+                message.To.Add(new MailAddress("recipient@example.com"));
+                message.Subject = "Test Message with Embedded Image";
+                message.HtmlBody = "<html><body><p>Here is an image:</p><img src=\"cid:image1\"/></body></html>";
+
+                // Add the image as an inline attachment
+                var inlineAttachment = new Attachment(new MemoryStream(imageData), "image.png");
+                inlineAttachment.ContentId = "image1";
+                inlineAttachment.ContentDisposition.Inline = true;
+                message.Attachments.Add(inlineAttachment);
+
+                // Save the message as MSG
+                message.Save(originalMsgPath);
             }
 
-            // Load the email
-            using (MailMessage message = MailMessage.Load(emlPath))
+            // Load the MSG file using MapiMessage.Load
+            MapiMessage mapMsg = MapiMessage.Load(originalMsgPath);
+
+            // Convert to MailMessage
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            MailMessage convertedMessage = mapMsg.ToMailMessage(conversionOptions);
+
+            // Save the converted message as EML
+            convertedMessage.Save(convertedEmlPath);
+
+            // Load the EML file back
+            MailMessage loadedEml = MailMessage.Load(convertedEmlPath);
+
+            // Find the inline attachment by ContentId
+            Attachment loadedAttachment = null;
+            foreach (Attachment att in loadedEml.Attachments)
             {
-                // Convert to HTML with embedded resources
-                HtmlSaveOptions saveOptions = new HtmlSaveOptions
+                if (att.ContentDisposition.Inline && att.ContentId == "image1")
                 {
-                    ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
-                };
-
-                // Save HTML
-                message.Save(htmlPath, saveOptions);
+                    loadedAttachment = att;
+                    break;
+                }
             }
 
-            // Verify that the HTML contains the embedded image data (base64)
-            if (File.Exists(htmlPath))
+            if (loadedAttachment == null)
             {
-                string htmlContent = File.ReadAllText(htmlPath);
-                if (htmlContent.Contains("data:image/png;base64,"))
+                Console.Error.WriteLine("Embedded image not found after conversion.");
+                return;
+            }
+
+            // Retrieve original embedded image data from the converted message
+            byte[] originalData = null;
+            foreach (Attachment att in convertedMessage.Attachments)
+            {
+                if (att.ContentDisposition.Inline && att.ContentId == "image1")
                 {
-                    Console.WriteLine("Test Passed: Embedded image data preserved in HTML.");
-                }
-                else
-                {
-                    Console.Error.WriteLine("Test Failed: Embedded image data not found in HTML.");
+                    originalData = ReadAllBytes(att.ContentStream);
+                    break;
                 }
             }
+
+            if (originalData == null)
+            {
+                Console.Error.WriteLine("Original embedded image data could not be retrieved.");
+                return;
+            }
+
+            // Retrieve loaded image data
+            byte[] loadedData = ReadAllBytes(loadedAttachment.ContentStream);
+
+            // Compare the data
+            bool dataMatches = originalData.Length == loadedData.Length;
+            if (dataMatches)
+            {
+                for (int i = 0; i < originalData.Length; i++)
+                {
+                    if (originalData[i] != loadedData[i])
+                    {
+                        dataMatches = false;
+                        break;
+                    }
+                }
+            }
+
+            if (dataMatches)
+                Console.WriteLine("Test passed: Embedded image data preserved after conversion.");
             else
-            {
-                Console.Error.WriteLine("Test Failed: HTML output file was not created.");
-            }
+                Console.Error.WriteLine("Test failed: Embedded image data differs after conversion.");
         }
         catch (Exception ex)
         {
@@ -81,35 +134,18 @@ class Program
         }
     }
 
-    // Creates a minimal EML file with an embedded PNG image
-    private static void CreateSampleEmail(string filePath)
+    private static byte[] ReadAllBytes(Stream stream)
     {
-        // 1x1 pixel PNG (transparent) byte array
-        byte[] pngBytes = Convert.FromBase64String(
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAusB9Y6XK6cAAAAASUVORK5CYII=");
-
-        // Create the mail message
-        MailMessage msg = new MailMessage
+        if (stream is MemoryStream ms && ms.CanSeek)
         {
-            From = "sender@example.com",
-            To = "receiver@example.com",
-            Subject = "Test Email with Embedded Image",
-            IsBodyHtml = true,
-            HtmlBody = "<html><body><p>Hello</p><img src=\"cid:image1\"></body></html>"
-        };
-
-        // Create attachment from the PNG bytes
-        using (MemoryStream imgStream = new MemoryStream(pngBytes))
-        {
-            Attachment imgAttachment = new Attachment(imgStream, "image/png")
-            {
-                ContentId = "image1",
-                Name = "image.png"
-            };
-            msg.Attachments.Add(imgAttachment);
+            return ms.ToArray();
         }
 
-        // Save the message as EML
-        msg.Save(filePath);
+        using (var memory = new MemoryStream())
+        {
+            stream.Position = 0;
+            stream.CopyTo(memory);
+            return memory.ToArray();
+        }
     }
 }

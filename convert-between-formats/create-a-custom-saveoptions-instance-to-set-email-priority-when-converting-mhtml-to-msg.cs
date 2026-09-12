@@ -8,10 +8,11 @@ class Program
     {
         try
         {
-            string inputPath = "input.mht";
+            // Input and output file paths
+            string inputPath = "input.mhtml";
             string outputPath = "output.msg";
 
-            // Ensure the input MHTML file exists; create a minimal placeholder if missing.
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
@@ -31,41 +32,35 @@ class Program
                     return;
                 }
 
-                try
-                {
-                    File.WriteAllText(inputPath, "<html><body><p>Placeholder MHTML content</p></body></html>");
-                }
-                catch (Exception ioEx)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MHTML file: {ioEx.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"Input file '{inputPath}' not found.");
+                return;
             }
 
-            // Load the MHTML message.
+            // Ensure output directory exists
+            string outputDir = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            // Load the MHTML message
             using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Set the email priority.
+                // Set email priority
                 message.Priority = MailPriority.High;
 
-                // Create custom save options for MSG format.
-                MsgSaveOptions saveOptions = new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
+                // Create custom SaveOptions for MSG format
+                SaveOptions saveOptions = SaveOptions.CreateSaveOptions(MailMessageSaveType.OutlookMessageFormatUnicode);
 
-                // Save the message as MSG with the specified options.
-                try
-                {
-                    message.Save(outputPath, saveOptions);
-                }
-                catch (Exception saveEx)
-                {
-                    Console.Error.WriteLine($"Failed to save MSG file: {saveEx.Message}");
-                    return;
-                }
+                // Save as MSG with the custom options
+                message.Save(outputPath, saveOptions);
             }
+
+            Console.WriteLine("MHTML to MSG conversion completed successfully.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

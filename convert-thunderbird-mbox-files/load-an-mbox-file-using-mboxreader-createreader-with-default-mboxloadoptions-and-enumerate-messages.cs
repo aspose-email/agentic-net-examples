@@ -1,3 +1,4 @@
+// Author: Aspose.Email example - Load MBOX and enumerate messages
 using System;
 using System.IO;
 using Aspose.Email;
@@ -7,41 +8,38 @@ class Program
 {
     static void Main()
     {
+        // Path to the MBOX file (adjust as needed)
+        string mboxPath = Path.Combine(Environment.CurrentDirectory, "sample.mbox");
+
+        // Guard against missing file
+        if (!File.Exists(mboxPath))
+        {
+            Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
+            return;
+        }
+
         try
         {
-            string mboxPath = "sample.mbox";
-
-            // Verify that the MBOX file exists before attempting to read it.
-            if (!File.Exists(mboxPath))
-            {
-                Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
-                return;
-            }
-
-            // Create the reader with default load options.
+            // Create the MBOX reader with default load options
             using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
             {
-                while (true)
+                MailMessage message;
+                // Read messages sequentially
+                while ((message = reader.ReadNextMessage()) != null)
                 {
-                    // Read the next message sequentially.
-                    MailMessage message = reader.ReadNextMessage();
-                    if (message == null)
-                        break;
-
-                    // Ensure the message is disposed after use.
                     using (message)
                     {
                         Console.WriteLine($"Subject: {message.Subject}");
                         Console.WriteLine($"From: {message.From}");
                         Console.WriteLine($"To: {message.To}");
-                        Console.WriteLine(new string('-', 40));
+                        Console.WriteLine();
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            Console.Error.WriteLine($"Error processing MBOX: {ex.Message}");
         }
     }
 }

@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Calendar;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -10,12 +8,12 @@ class Program
     {
         try
         {
-            // Paths for input MHTML and output ICS files
-            string mhtmlPath = "input.mht";
-            string icsPath = "output.ics";
+            // Author note: This example loads an MHTML email containing a calendar event and saves it as an iCalendar (ICS) file.
+            string inputPath = "event.mhtml";
+            string outputPath = "event.ics";
 
-            // Verify that the input file exists
-            if (!File.Exists(mhtmlPath))
+            // Verify input file exists
+            if (!File.Exists(inputPath))
             {
                 try
                 {
@@ -25,7 +23,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(mhtmlPath, SaveOptions.DefaultEml);
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -34,47 +32,21 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file '{mhtmlPath}' not found.");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
             // Load the MHTML message
-            using (MailMessage message = MailMessage.Load(mhtmlPath))
+            using (MailMessage message = MailMessage.Load(inputPath))
             {
-                // Locate a calendar attachment (text/calendar or .ics file)
-                Attachment calendarAttachment = null;
-                foreach (Attachment att in message.Attachments)
-                {
-                    if (att.ContentType.MediaType.Equals("text/calendar", StringComparison.OrdinalIgnoreCase) ||
-                        (att.Name != null && att.Name.EndsWith(".ics", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        calendarAttachment = att;
-                        break;
-                    }
-                }
-
-                if (calendarAttachment == null)
-                {
-                    Console.Error.WriteLine("No calendar attachment found in the MHTML file.");
-                    return;
-                }
-
-                // Extract the attachment content and load it as an Appointment
-                using (MemoryStream calStream = new MemoryStream())
-                {
-                    calendarAttachment.ContentStream.CopyTo(calStream);
-                    calStream.Position = 0;
-
-                    Appointment appointment = Appointment.Load(calStream);
-                    // Save the appointment as an iCalendar (.ics) file
-                    appointment.Save(icsPath);
-                    Console.WriteLine($"Calendar saved to '{icsPath}'.");
-                }
+                // Save the message as an iCalendar file; the .ics extension infers the correct format
+                message.Save(outputPath);
+                Console.WriteLine($"Calendar event saved to: {outputPath}");
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

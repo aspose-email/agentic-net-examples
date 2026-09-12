@@ -1,19 +1,20 @@
 using System;
 using System.IO;
+using System.Net;
+using System.Text.RegularExpressions;
 using Aspose.Email;
+using Aspose.Email.Tools;
 
 class Program
 {
     static void Main()
     {
-        try
-        {
-            string inputPath = "input.eml";
-            string outputPath = "output.txt";
+        const string inputPath = "input.eml";
+        const string outputPath = "output.txt";
 
-            // Guard input file existence
-            if (!File.Exists(inputPath))
-            {
+        // Ensure the input file exists; create a minimal placeholder if missing.
+        if (!File.Exists(inputPath))
+        {
                 try
                 {
                     using (MailMessage placeholder = new MailMessage(
@@ -31,69 +32,80 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file not found: {inputPath}");
+            try
+            {
+                var placeholder = new MailMessage(
+                    "sender@example.com",
+                    "recipient@example.com",
+                    "Placeholder Subject",
+                    "Placeholder body.");
+                placeholder.Save(inputPath, SaveOptions.DefaultEml);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create placeholder email: {ex.Message}");
                 return;
             }
+        }
 
-            // Ensure output directory exists
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+        try
+        {
+            // Load the email message.
+            MailMessage message = MailMessage.Load(inputPath);
+
+            string plainText;
+
+            if (message.IsBodyHtml)
             {
-                try
+                // Get the HTML body.
+                string html = message.Body;
+
+                // Replace <img> tags with alt text or a generic placeholder.
+                string htmlWithoutImages = Regex.Replace(html, "<img[^>]*>", match =>
                 {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
+                    var altMatch = Regex.Match(match.Value, "alt\\s*=\\s*\"([^\"]*)\"", RegexOptions.IgnoreCase);
+                    if (altMatch.Success)
+                        return altMatch.Groups[1].Value;
+                    return "[image]";
+                }, RegexOptions.IgnoreCase);
+
+                // Convert the cleaned HTML to plain text.
+                plainText = StripHtml(htmlWithoutImages);
+            }
+            else
+            {
+                // Message is already plain text.
+                plainText = message.Body;
             }
 
-            // Load the email message
-            using (MailMessage message = MailMessage.Load(inputPath))
-            {
-                // Work with the HTML body if present; otherwise use plain body
-                string htmlBody = message.HtmlBody ?? message.Body ?? string.Empty;
-
-                // Replace embedded image references with descriptive placeholders
-                foreach (LinkedResource linkedResource in message.LinkedResources)
-                {
-                    string contentId = linkedResource.ContentId;
-                    if (!string.IsNullOrEmpty(contentId))
-                    {
-                        // Use the resource name if available, otherwise the content ID
-                        string placeholderName = !string.IsNullOrEmpty(linkedResource.ContentType?.Name)
-                            ? linkedResource.ContentType.Name
-                            : contentId;
-
-                        string placeholder = $"[Image: {placeholderName}]";
-                        string cidReference = $"cid:{contentId}";
-                        htmlBody = htmlBody.Replace(cidReference, placeholder);
-                    }
-                }
-
-                // Update the message's HTML body with the placeholders
-                message.HtmlBody = htmlBody;
-
-                // Convert the (modified) HTML body to plain text
-                string plainText = message.GetHtmlBodyText(true);
-
-                // Write the plain‑text result to the output file
-                try
-                {
-                    File.WriteAllText(outputPath, plainText);
-                    Console.WriteLine($"Plain‑text email saved to: {outputPath}");
-                }
-                catch (Exception writeEx)
-                {
-                    Console.Error.WriteLine($"Failed to write output file: {writeEx.Message}");
-                }
-            }
+            // Write the plain‑text result to the output file.
+            File.WriteAllText(outputPath, plainText);
+            Console.WriteLine($"Plain‑text email saved to '{outputPath}'.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error processing email: {ex.Message}");
         }
+    }
+
+    // Simple HTML to plain‑text conversion.
+    private static string StripHtml(string html)
+    {
+        if (string.IsNullOrEmpty(html))
+            return string.Empty;
+
+        // Remove script and style blocks.
+        string withoutScripts = Regex.Replace(html, "<(script|style)[^>]*?>.*?</\\1>", string.Empty, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+        // Remove all remaining HTML tags.
+        string withoutTags = Regex.Replace(withoutScripts, "<[^>]+>", string.Empty);
+
+        // Decode HTML entities.
+        string decoded = WebUtility.HtmlDecode(withoutTags);
+
+        // Normalize whitespace.
+        string normalized = Regex.Replace(decoded, @"\s{2,}", " ").Trim();
+
+        return normalized;
     }
 }

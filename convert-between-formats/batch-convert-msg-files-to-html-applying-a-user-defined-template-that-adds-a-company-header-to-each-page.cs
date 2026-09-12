@@ -1,123 +1,80 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Tools.Merging;
 
-class Program
+namespace BatchMsgToHtml
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputDirectory = "InputMsgs";
-            string outputDirectory = "OutputHtml";
-            string headerHtml = "<div style=\"font-weight:bold; font-size:24px;\">Company Header</div>";
-
-            // Verify input directory exists
-            if (!Directory.Exists(inputDirectory))
-            {
-                Console.Error.WriteLine($"Input directory does not exist: {inputDirectory}");
-                return;
-            }
-
-            // Ensure output directory exists
             try
             {
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
-                return;
-            }
+                // Define input and output directories
+                string inputDirectory = "InputMsgs";
+                string outputDirectory = "OutputHtml";
 
-            string[] msgFiles;
-            try
-            {
-                msgFiles = Directory.GetFiles(inputDirectory, "*.msg");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to enumerate MSG files: {ex.Message}");
-                return;
-            }
-
-            foreach (string msgFilePath in msgFiles)
-            {
-                if (!File.Exists(msgFilePath))
+                // Verify input directory exists
+                if (!Directory.Exists(inputDirectory))
                 {
-                try
-                {
-                    using (MailMessage placeholder = new MailMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgFilePath, SaveOptions.DefaultEml);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
+                    Console.Error.WriteLine($"Input directory '{inputDirectory}' does not exist.");
                     return;
                 }
 
-                    Console.Error.WriteLine($"File not found, skipping: {msgFilePath}");
-                    continue;
-                }
-
-                try
+                // Ensure output directory exists
+                if (!Directory.Exists(outputDirectory))
                 {
-                    using (MailMessage mailMessage = MailMessage.Load(msgFilePath))
+                    try
                     {
-                        HtmlSaveOptions htmlOptions = new HtmlSaveOptions
-                        {
-                            ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml,
-                            MailMessageSaveType = MailMessageSaveType.HtmlFormat
-                        };
-
-                        string tempHtmlPath = Path.Combine(outputDirectory,
-                            Path.GetFileNameWithoutExtension(msgFilePath) + ".html");
-
-                        // Save to temporary HTML file
-                        mailMessage.Save(tempHtmlPath, htmlOptions);
-
-                        // Read generated HTML, prepend header, and overwrite file
-                        string htmlContent;
-                        try
-                        {
-                            htmlContent = File.ReadAllText(tempHtmlPath);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to read generated HTML: {ex.Message}");
-                            continue;
-                        }
-
-                        string finalHtml = headerHtml + Environment.NewLine + htmlContent;
-
-                        try
-                        {
-                            File.WriteAllText(tempHtmlPath, finalHtml);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to write final HTML: {ex.Message}");
-                        }
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Failed to create output directory '{outputDirectory}': {ex.Message}");
+                        return;
                     }
                 }
-                catch (Exception ex)
+
+                // Define the HTML header template to prepend to each converted page
+                string headerHtml = "<div style='background:#eee;padding:10px;'><h1>Company Header</h1></div>";
+
+                // Process each MSG file in the input directory
+                string[] msgFiles = Directory.GetFiles(inputDirectory, "*.msg");
+                foreach (string msgPath in msgFiles)
                 {
-                    Console.Error.WriteLine($"Error processing file '{msgFilePath}': {ex.Message}");
+                    try
+                    {
+                        string fileBaseName = Path.GetFileNameWithoutExtension(msgPath);
+                        string htmlPath = Path.Combine(outputDirectory, fileBaseName + ".html");
+
+                        // Load the MSG file as a MailMessage
+                        using (MailMessage message = MailMessage.Load(msgPath, new MsgLoadOptions()))
+                        {
+                            // Save the message as HTML with embedded resources
+                            HtmlSaveOptions htmlOptions = new HtmlSaveOptions
+                            {
+                                ResourceRenderingMode = ResourceRenderingMode.EmbedIntoHtml
+                            };
+                            message.Save(htmlPath, htmlOptions);
+                        }
+
+                        // Read the generated HTML, prepend the header, and overwrite the file
+                        string htmlContent = File.ReadAllText(htmlPath);
+                        string finalContent = headerHtml + Environment.NewLine + htmlContent;
+                        File.WriteAllText(htmlPath, finalContent);
+                    }
+                    catch (Exception exFile)
+                    {
+                        Console.Error.WriteLine($"Error processing file '{msgPath}': {exFile.Message}");
+                        // Continue with next file
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            }
         }
     }
 }

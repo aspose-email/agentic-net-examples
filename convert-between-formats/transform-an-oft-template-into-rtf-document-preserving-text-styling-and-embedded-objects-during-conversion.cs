@@ -1,70 +1,68 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
 
-class Program
+namespace OftToRtfConversion
 {
-    static void Main()
+    // Author: Aspose.Email example - OFT to RTF conversion preserving styling and embedded objects
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string inputPath = "template.oft";
-            string outputPath = "output.rtf";
-
-            // Ensure the input OFT file exists; create a minimal placeholder if missing.
-            if (!File.Exists(inputPath))
+            try
             {
+                // Input OFT template path
+                const string inputPath = "template.oft";
+                // Desired RTF output path
+                const string outputPath = "output.rtf";
+
+                // Verify input file exists
+                if (!File.Exists(inputPath))
+                {
                 try
                 {
-                    using (MapiMessage placeholder = new MapiMessage())
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholder.BodyRtf = @"{\rtf1\ansi This is a placeholder OFT template.}";
-                        placeholder.SaveAsTemplate(inputPath);
-                        Console.WriteLine($"Placeholder OFT created at '{inputPath}'.");
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder OFT: {ex.Message}");
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
-            }
 
-            // Load the OFT template.
-            MapiMessage oftMessage;
-            try
-            {
-                oftMessage = MapiMessage.Load(inputPath);
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
+                    return;
+                }
+
+                // Ensure output directory exists
+                string outputDir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+                {
+                    Directory.CreateDirectory(outputDir);
+                }
+
+                // Load the OFT file preserving RTF body content
+                MsgLoadOptions loadOptions = new MsgLoadOptions
+                {
+                    PreserveRtfContent = true
+                };
+
+                using (MailMessage message = MailMessage.Load(inputPath, loadOptions))
+                {
+                    // Save as RTF; format is inferred from the .rtf extension
+                    message.Save(outputPath);
+                }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Failed to load OFT template: {ex.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
-
-            // Extract the RTF body.
-            string rtfContent = oftMessage.BodyRtf;
-            if (string.IsNullOrEmpty(rtfContent))
-            {
-                Console.Error.WriteLine("The OFT template does not contain RTF body content.");
-                return;
-            }
-
-            // Write the RTF content to the output file.
-            try
-            {
-                File.WriteAllText(outputPath, rtfContent);
-                Console.WriteLine($"RTF document saved to '{outputPath}'.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to write RTF file: {ex.Message}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

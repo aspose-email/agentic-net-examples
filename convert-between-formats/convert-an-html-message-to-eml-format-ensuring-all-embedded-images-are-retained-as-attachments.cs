@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Tools.Search;
 
 class Program
 {
@@ -8,12 +9,13 @@ class Program
     {
         try
         {
-            // Paths for the source HTML file and the target EML file
-            string htmlFilePath = "message.html";
-            string emlFilePath = "message.eml";
+            // Input HTML file path
+            string htmlPath = "input.html";
+            // Folder that contains resources (e.g., images) referenced by the HTML
+            string resourcesFolder = "Resources";
 
-            // Verify that the source HTML file exists
-            if (!File.Exists(htmlFilePath))
+            // Guard against missing input file
+            if (!File.Exists(htmlPath))
             {
                 try
                 {
@@ -23,7 +25,7 @@ class Program
                         "Placeholder Subject",
                         "Placeholder body."))
                     {
-                        placeholder.Save(htmlFilePath, SaveOptions.DefaultEml);
+                        placeholder.Save(htmlPath, SaveOptions.DefaultEml);
                     }
                 }
                 catch (Exception ex)
@@ -32,21 +34,39 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file '{htmlFilePath}' does not exist.");
+                Console.Error.WriteLine($"Input HTML file not found: {htmlPath}");
                 return;
             }
 
-            // Load the HTML message into a MailMessage object
-            using (MailMessage mailMessage = MailMessage.Load(htmlFilePath))
+            // Ensure the resources folder exists (create empty if missing)
+            if (!Directory.Exists(resourcesFolder))
             {
-                // Create EML save options (default options are sufficient to keep attachments)
-                EmlSaveOptions emlSaveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat);
-
-                // Save the message as an EML file; embedded images are retained as attachments
-                mailMessage.Save(emlFilePath, emlSaveOptions);
+                Directory.CreateDirectory(resourcesFolder);
             }
 
-            Console.WriteLine($"HTML message successfully converted to EML: {emlFilePath}");
+            // Load the HTML message with options to resolve resources from the folder
+            HtmlLoadOptions loadOptions = new HtmlLoadOptions
+            {
+                PreferredTextEncoding = System.Text.Encoding.UTF8,
+                ShouldAddPlainTextView = true,
+                PathToResources = resourcesFolder
+            };
+
+            using (MailMessage message = MailMessage.Load(htmlPath, loadOptions))
+            {
+                // Prepare save options to preserve embedded resources as attachments
+                EmlSaveOptions saveOptions = new EmlSaveOptions(MailMessageSaveType.EmlFormat)
+                {
+                    PreserveEmbeddedMessageFormat = true
+                };
+
+                // Output EML file path
+                string emlPath = "output.eml";
+
+                // Save the message as EML with embedded images retained
+                message.Save(emlPath, saveOptions);
+                Console.WriteLine($"HTML message successfully converted to EML: {emlPath}");
+            }
         }
         catch (Exception ex)
         {

@@ -1,9 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
 using Aspose.Email.Storage.Mbox;
-using Aspose.Email.Storage.Pst;
 
 class Program
 {
@@ -11,52 +9,81 @@ class Program
     {
         try
         {
-            string mboxFilePath = "input.mbox";
-            string pstFilePath = "output.pst";
+            const string mboxPath = "storage.mbox";
 
-            // Ensure the MBOX file exists; create an empty placeholder if missing.
-            if (!File.Exists(mboxFilePath))
+            if (!File.Exists(mboxPath))
             {
                 try
                 {
-                    File.WriteAllText(mboxFilePath, string.Empty);
+                    File.WriteAllText(mboxPath, string.Empty);
                 }
-                catch (Exception ioEx)
+                catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ioEx.Message}");
+                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
                     return;
                 }
             }
 
-            // Configure load options to ignore malformed MIME parts.
-            MboxLoadOptions mboxLoadOptions = new MboxLoadOptions();
-            // No specific properties for malformed parts; keep defaults.
+            // Create load options (default behavior loads the entire MBOX and ignores malformed MIME parts).
+            MboxLoadOptions loadOptions = new MboxLoadOptions();
 
-            // Configure EML load options used during MBOX parsing.
-            EmlLoadOptions emlLoadOptions = new EmlLoadOptions();
-            // Assuming the library provides a property to ignore invalid MIME parts.
-            // If such a property exists, set it here (example: IgnoreInvalidHeaders).
-            // emlLoadOptions.IgnoreInvalidHeaders = true;
-            // Since the exact property name may vary, this line can be adjusted accordingly.
-
-            MailStorageConverter.MboxMessageOptions = emlLoadOptions;
-
-            // Perform the conversion using the configured options.
-            try
+            using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
             {
-                // The conversion method internally uses the configured MboxMessageOptions.
-                MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath);
-                Console.WriteLine("MBOX to PST conversion completed successfully.");
-            }
-            catch (Exception convEx)
-            {
-                Console.Error.WriteLine($"Conversion failed: {convEx.Message}");
-                return;
+                int messageIndex = 0;
+                while (true)
+                {
+                    MailMessage eml;
+                    try
+                    {
+                        eml = mboxReader.ReadNextMessage();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine($"Error reading message #{messageIndex}: {ex.Message}");
+                        break;
+                    }
+
+                    if (eml == null)
+                        break;
+
+                    using (eml)
+                    {
+                        string safeSubject = string.IsNullOrWhiteSpace(eml.Subject) ? "Untitled" : eml.Subject;
+                        string outputFileName = $"{SanitizeFileName(safeSubject)}.eml";
+
+                        string outputDirectory = Path.GetDirectoryName(outputFileName);
+                        if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                        {
+                            Directory.CreateDirectory(outputDirectory);
+                        }
+
+                        try
+                        {
+                            eml.Save(outputFileName);
+                            Console.WriteLine($"Saved: {outputFileName}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Error saving message #{messageIndex}: {ex.Message}");
+                        }
+                    }
+
+                    messageIndex++;
+                }
             }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
+    }
+
+    private static string SanitizeFileName(string name)
+    {
+        foreach (char c in Path.GetInvalidFileNameChars())
+        {
+            name = name.Replace(c, '_');
+        }
+        return name;
     }
 }

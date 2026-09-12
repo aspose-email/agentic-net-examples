@@ -1,16 +1,19 @@
 using System;
 using System.IO;
 using Aspose.Email;
+using Aspose.Email.Mime;
 
-class Program
+namespace ExtractVCardFromMhtml
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            string mhtmlPath = "input.mht";
-            string outputVcfPath = "output.vcf";
+            // Author: Aspose.Email example - extract vCard attachments from an MHTML file.
+            string mhtmlPath = "input.mhtml";
+            string outputFolder = "ExtractedVcards";
 
+            // Guard file I/O
             if (!File.Exists(mhtmlPath))
             {
                 try
@@ -30,45 +33,47 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file '{mhtmlPath}' does not exist.");
+                Console.Error.WriteLine($"Input file not found: {mhtmlPath}");
                 return;
             }
 
-            string outputDirectory = Path.GetDirectoryName(outputVcfPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            try
             {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            using (MailMessage message = MailMessage.Load(mhtmlPath))
-            {
-                foreach (Attachment attachment in message.Attachments)
+                // Ensure output directory exists
+                if (!Directory.Exists(outputFolder))
                 {
-                    string attachmentName = attachment.Name;
-                    string mediaType = attachment.ContentType.MediaType;
-
-                    if (string.Equals(mediaType, "text/vcard", StringComparison.OrdinalIgnoreCase) ||
-                        (attachmentName != null && attachmentName.EndsWith(".vcf", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        using (Stream attachmentStream = attachment.ContentStream)
-                        {
-                            using (FileStream fileStream = new FileStream(outputVcfPath, FileMode.Create, FileAccess.Write))
-                            {
-                                attachmentStream.CopyTo(fileStream);
-                            }
-                        }
-
-                        Console.WriteLine($"vCard extracted to '{outputVcfPath}'.");
-                        return;
-                    }
+                    Directory.CreateDirectory(outputFolder);
                 }
 
-                Console.Error.WriteLine("No vCard attachment found in the MHTML file.");
+                // Load the MHTML message
+                using (MailMessage message = MailMessage.Load(mhtmlPath))
+                {
+                    foreach (Attachment attachment in message.Attachments)
+                    {
+                        // Identify vCard attachments by MIME type or file extension
+                        bool isVCard = string.Equals(attachment.ContentType.MediaType, "text/vcard", StringComparison.OrdinalIgnoreCase) ||
+                                       (attachment.Name != null && attachment.Name.EndsWith(".vcf", StringComparison.OrdinalIgnoreCase));
+
+                        if (!isVCard)
+                            continue;
+
+                        string targetPath = Path.Combine(outputFolder, attachment.Name ?? "contact.vcf");
+
+                        // Write the attachment content to a .vcf file
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            attachment.ContentStream.CopyTo(ms);
+                            File.WriteAllBytes(targetPath, ms.ToArray());
+                        }
+
+                        Console.WriteLine($"Extracted vCard to: {targetPath}");
+                    }
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
+            }
         }
     }
 }

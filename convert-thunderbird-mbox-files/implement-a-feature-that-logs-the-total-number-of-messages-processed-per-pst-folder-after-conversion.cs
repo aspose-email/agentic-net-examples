@@ -1,69 +1,103 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
+using Aspose.Email.Mapi;
 using Aspose.Email.Storage.Pst;
 
-class Program
+namespace AsposeEmailPstProcessor
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Define input MBOX and output PST paths
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
-
-            // Guard input file existence
-            if (!File.Exists(mboxPath))
-            {
-                Console.Error.WriteLine($"Input MBOX file not found: {mboxPath}");
-                return;
-            }
-
-            // Ensure output directory exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create directory for PST: {dirEx.Message}");
-                    return;
-                }
-            }
-
-            // Convert MBOX to PST inside a try/catch to handle conversion errors
             try
             {
-                // MailStorageConverter is in Aspose.Email.Storage namespace
-                using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath))
-                {
-                    // Log total items in the PST store
-                    int totalItems = pst.Store.GetTotalItemsCount();
-                    Console.WriteLine($"Total items in PST: {totalItems}");
+                string pstPath = "storage.pst";
 
-                    // Iterate through each subfolder of the root folder
-                    foreach (FolderInfo folder in pst.RootFolder.GetSubFolders())
+                // Verify PST file exists before attempting to load
+                if (!File.Exists(pstPath))
+                {
+                    Console.Error.WriteLine($"PST file not found: {pstPath}");
+                    return;
+                }
+
+                // Base output directory for extracted messages
+                string baseOutputDir = "ExtractedMessages";
+
+                // Ensure the base output directory exists
+                Directory.CreateDirectory(baseOutputDir);
+
+                // Open the PST file
+                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                {
+                    int totalItemsCount = pst.Store.GetTotalItemsCount();
+                    Console.WriteLine($"Total items count: {totalItemsCount}");
+
+                    // Iterate through each subfolder in the root folder
+                    foreach (FolderInfo folderInfo in pst.RootFolder.GetSubFolders())
                     {
-                        Console.WriteLine($"Folder: {folder.DisplayName}");
-                        // ContentCount gives the number of messages in the folder
-                        Console.WriteLine($"Messages processed in folder: {folder.ContentCount}");
+                        Console.WriteLine($"Folder: {folderInfo.DisplayName}");
+                        Console.WriteLine($"Total items: {folderInfo.ContentCount}");
+                        Console.WriteLine($"Total unread items: {folderInfo.ContentUnreadCount}");
+
+                        // Create a subdirectory for this folder's messages
+                        string folderOutputDir = Path.Combine(baseOutputDir, MakeSafeFileName(folderInfo.DisplayName));
+                        Directory.CreateDirectory(folderOutputDir);
+
+                        int processedCount = 0;
+                        int duplicateIndex = 0;
+
+                        // Enumerate messages in the current folder
+                        foreach (MessageInfo messageInfo in folderInfo.EnumerateMessages())
+                        {
+                            try
+                            {
+                                // Extract the full message as a MapiMessage
+                                MapiMessage mapiMsg = pst.ExtractMessage(messageInfo);
+
+                                // Sanitize subject for use as a filename
+                                string safeSubject = string.IsNullOrEmpty(mapiMsg.Subject) ? "NoSubject" : mapiMsg.Subject;
+                                safeSubject = MakeSafeFileName(safeSubject);
+
+                                // Ensure unique filename within the folder
+                                string outputFileName = safeSubject + ".msg";
+                                string outputPath = Path.Combine(folderOutputDir, outputFileName);
+                                while (File.Exists(outputPath))
+                                {
+                                    duplicateIndex++;
+                                    outputFileName = $"{safeSubject}_{duplicateIndex}.msg";
+                                    outputPath = Path.Combine(folderOutputDir, outputFileName);
+                                }
+
+                                // Save the message as a .msg file
+                                mapiMsg.Save(outputPath);
+                                processedCount++;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Failed to process a message in folder '{folderInfo.DisplayName}': {ex.Message}");
+                            }
+                        }
+
+                        // Log the number of processed messages for this folder
+                        Console.WriteLine($"Processed messages in folder '{folderInfo.DisplayName}': {processedCount}");
                     }
                 }
             }
-            catch (Exception convEx)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Conversion failed: {convEx.Message}");
-                return;
+                Console.Error.WriteLine($"Error: {ex.Message}");
             }
         }
-        catch (Exception ex)
+
+        // Helper method to replace invalid filename characters
+        private static string MakeSafeFileName(string name)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            foreach (char invalidChar in Path.GetInvalidFileNameChars())
+            {
+                name = name.Replace(invalidChar, '_');
+            }
+            return name;
         }
     }
 }

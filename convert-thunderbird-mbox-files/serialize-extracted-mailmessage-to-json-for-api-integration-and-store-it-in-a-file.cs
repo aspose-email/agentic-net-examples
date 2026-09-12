@@ -1,125 +1,98 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Aspose.Email;
-using Aspose.Email.Clients.Exchange.Dav;
 
 namespace AsposeEmailJsonExport
 {
+    // Author note: This example loads an email file, converts selected fields to a DTO,
+    // serializes it to JSON, and saves the JSON to disk with proper error handling.
     class Program
     {
         static void Main(string[] args)
         {
             try
             {
-                // Placeholder connection settings
-                string exchangeUri = "https://exchange.example.com/ews/Exchange.asmx";
-                string username = "username";
-                string password = "password";
-                string messageUri = "/mail/inbox/12345";
-                string outputPath = "message.json";
+                // Define input and output file paths
+                string inputPath = "sample.eml";
+                string outputPath = "sample.json";
 
-                // Guard against placeholder credentials
-                if (exchangeUri.Contains("example.com") || username.Equals("username", StringComparison.OrdinalIgnoreCase) || password.Equals("password", StringComparison.OrdinalIgnoreCase))
+                // Verify that the input email file exists
+                if (!File.Exists(inputPath))
                 {
-                    Console.Error.WriteLine("Placeholder credentials detected. Skipping execution.");
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(inputPath, SaveOptions.DefaultEml);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder message: {ex.Message}");
                     return;
                 }
 
-                // Ensure output directory exists
-                try
-                {
-                    string directory = Path.GetDirectoryName(Path.GetFullPath(outputPath));
-                    if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                    {
-                        Directory.CreateDirectory(directory);
-                    }
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to prepare output directory: {dirEx.Message}");
+                    Console.Error.WriteLine($"Input file not found: {inputPath}");
                     return;
                 }
 
-                // Create and use Exchange client
-                try
+                // Ensure the output directory exists
+                string outputDirectory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
                 {
-                    using (ExchangeClient client = new ExchangeClient(exchangeUri, username, password))
-                    {
-                        // Fetch the mail message
-                        MailMessage mailMessage;
-                        try
-                        {
-                            mailMessage = client.FetchMessage(messageUri);
-                        }
-                        catch (Exception fetchEx)
-                        {
-                            Console.Error.WriteLine($"Failed to fetch message: {fetchEx.Message}");
-                            return;
-                        }
-
-                        // Prepare DTO for JSON serialization
-                        MailMessageDto dto = new MailMessageDto();
-                        dto.Subject = mailMessage.Subject ?? string.Empty;
-                        dto.From = mailMessage.From != null ? mailMessage.From.Address : string.Empty;
-
-                        dto.To = new List<string>();
-                        foreach (MailAddress address in mailMessage.To)
-                        {
-                            dto.To.Add(address.Address);
-                        }
-
-                        dto.Body = mailMessage.Body != null ? mailMessage.Body : string.Empty;
-
-                        // Serialize to JSON
-                        string json;
-                        try
-                        {
-                            json = JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true });
-                        }
-                        catch (Exception jsonEx)
-                        {
-                            Console.Error.WriteLine($"JSON serialization failed: {jsonEx.Message}");
-                            return;
-                        }
-
-                        // Write JSON to file
-                        try
-                        {
-                            File.WriteAllText(outputPath, json);
-                            Console.WriteLine($"Message serialized to JSON and saved at: {outputPath}");
-                        }
-                        catch (Exception writeEx)
-                        {
-                            Console.Error.WriteLine($"Failed to write JSON file: {writeEx.Message}");
-                        }
-
-                        // Dispose mailMessage if needed
-                        if (mailMessage is IDisposable disposableMessage)
-                        {
-                            disposableMessage.Dispose();
-                        }
-                    }
+                    Directory.CreateDirectory(outputDirectory);
                 }
-                catch (Exception clientEx)
+
+                // Load the email message
+                using (MailMessage mailMessage = MailMessage.Load(inputPath))
                 {
-                    Console.Error.WriteLine($"Exchange client error: {clientEx.Message}");
+                    // Map the MailMessage to a simple DTO for JSON serialization
+                    MailMessageDto dto = new MailMessageDto
+                    {
+                        Subject = mailMessage.Subject,
+                        Body = mailMessage.Body,
+                        From = mailMessage.From?.ToString(),
+                        To = mailMessage.To?.Select(address => address.ToString()).ToArray()
+                    };
+
+                    // Serialize the DTO to JSON with indentation
+                    JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    };
+                    string jsonContent = JsonSerializer.Serialize(dto, jsonOptions);
+
+                    // Write the JSON content to the output file
+                    try
+                    {
+                        File.WriteAllText(outputPath, jsonContent);
+                        Console.WriteLine($"Message serialized to JSON and saved at: {outputPath}");
+                    }
+                    catch (Exception ioEx)
+                    {
+                        Console.Error.WriteLine($"Failed to write JSON file: {ioEx.Message}");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
             }
         }
     }
 
-    // DTO class for JSON representation of MailMessage
+    // Simple DTO representing the parts of MailMessage we want to export
     public class MailMessageDto
     {
         public string Subject { get; set; }
-        public string From { get; set; }
-        public List<string> To { get; set; }
         public string Body { get; set; }
+        public string From { get; set; }
+        public string[] To { get; set; }
     }
 }

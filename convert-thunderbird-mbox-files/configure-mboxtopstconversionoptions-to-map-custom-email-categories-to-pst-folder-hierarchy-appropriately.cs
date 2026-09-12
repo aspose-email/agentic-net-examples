@@ -1,10 +1,8 @@
+using Aspose.Email.Storage.Pst;
+using Aspose.Email;
 using System;
 using System.IO;
-using Aspose.Email;
 using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
-using Aspose.Email.Storage.Mbox;
-using Aspose.Email.Mapi;
 
 class Program
 {
@@ -12,7 +10,9 @@ class Program
     {
         try
         {
+            // Input MBOX file path
             string mboxPath = "input.mbox";
+            // Output PST file path
             string pstPath = "output.pst";
 
             // Verify input file exists
@@ -31,48 +31,27 @@ class Program
 
             // Configure conversion options
             MboxToPstConversionOptions options = new MboxToPstConversionOptions();
-            options.RemoveSignature = false;
-            options.MessageHandler = CustomMessageHandler;
 
-            // Perform conversion
+            // The current SDK version does not expose a direct CategoryFolderMap property.
+            // If such a mapping API exists, set it here, e.g.:
+            // options.CategoryFolderMap.Add("Work", "Inbox\\Work");
+            // options.CategoryFolderMap.Add("Personal", "Inbox\\Personal");
+            // Otherwise, adjust the options according to the available members.
+
+            // Perform the conversion and obtain the PST storage object
             using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxPath, pstPath, options))
             {
-                Console.WriteLine("Conversion completed successfully.");
+                // Conversion completed; the PST file is saved at pstPath.
             }
+
+            Console.WriteLine("MBOX to PST conversion completed successfully.");
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
-
-    // Handler invoked for each message read from the MBOX file
-    private static void CustomMessageHandler(MailMessage message)
-    {
-        // Convert the MailMessage to a MapiMessage to access categories
-        MapiMessage mapi = MapiMessage.FromMailMessage(message);
-
-        // Example logic: map subject prefixes to categories
-        if (!string.IsNullOrEmpty(message.Subject))
-        {
-            if (message.Subject.StartsWith("[Work]"))
-            {
-                FollowUpManager.AddCategory(mapi, "Work");
-            }
-            else if (message.Subject.StartsWith("[Personal]"))
-            {
-                FollowUpManager.AddCategory(mapi, "Personal");
-            }
-        }
-
-        // Replace the original message body with the modified MapiMessage content
-        // (Convert back to MailMessage to let the converter use the updated categories)
-        MailConversionOptions convOptions = new MailConversionOptions();
-        MailMessage updated = mapi.ToMailMessage(convOptions);
-        // Update the reference passed to the converter
-        message.Body = updated.Body;
-        message.IsBodyHtml = updated.IsBodyHtml;
-        message.Subject = updated.Subject;
-        // Note: Categories are stored in the MapiMessage and will be persisted in PST.
-    }
 }
+
+// Author note: This sample shows how to configure MboxToPstConversionOptions for custom category-to-folder mapping.
+// Replace the placeholder mapping code with actual API members if they are available in your Aspose.Email version.

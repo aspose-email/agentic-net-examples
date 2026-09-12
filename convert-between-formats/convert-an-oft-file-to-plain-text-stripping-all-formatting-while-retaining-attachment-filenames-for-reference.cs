@@ -1,15 +1,15 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using Aspose.Email;
 using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Author note: Simple console utility to convert an OFT template to plain text.
             string inputPath = "template.oft";
             string outputPath = "output.txt";
 
@@ -41,53 +41,29 @@ class Program
             string outputDir = Path.GetDirectoryName(outputPath);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
+                Directory.CreateDirectory(outputDir);
             }
 
-            // Load the OFT file and extract plain text and attachment names
-            using (MapiMessage mapMessage = MapiMessage.Load(inputPath))
+            // Load the OFT file as a MapiMessage
+            MapiMessage oftMessage = MapiMessage.Load(inputPath);
+
+            // Write plain text content and attachment filenames to the output file
+            using (StreamWriter writer = new StreamWriter(outputPath, false))
             {
-                string bodyText = mapMessage.Body ?? string.Empty;
-
-                List<string> attachmentFileNames = new List<string>();
-                foreach (MapiAttachment attachment in mapMessage.Attachments)
+                writer.WriteLine("Subject: " + oftMessage.Subject);
+                writer.WriteLine("From: " + oftMessage.SenderName);
+                writer.WriteLine();
+                writer.WriteLine("Body:");
+                writer.WriteLine(oftMessage.Body ?? string.Empty);
+                writer.WriteLine();
+                writer.WriteLine("Attachments:");
+                foreach (MapiAttachment attachment in oftMessage.Attachments)
                 {
-                    if (!string.IsNullOrEmpty(attachment.FileName))
-                    {
-                        attachmentFileNames.Add(attachment.FileName);
-                    }
-                }
-
-                // Build the output content
-                using (StreamWriter writer = new StreamWriter(outputPath, false))
-                {
-                    writer.WriteLine("Message Body:");
-                    writer.WriteLine(bodyText);
-                    writer.WriteLine();
-                    writer.WriteLine("Attachments:");
-                    if (attachmentFileNames.Count == 0)
-                    {
-                        writer.WriteLine("None");
-                    }
-                    else
-                    {
-                        foreach (string fileName in attachmentFileNames)
-                        {
-                            writer.WriteLine(fileName);
-                        }
-                    }
+                    writer.WriteLine("- " + attachment.FileName);
                 }
             }
 
-            Console.WriteLine($"Conversion completed. Output saved to {outputPath}");
+            Console.WriteLine("Conversion completed successfully.");
         }
         catch (Exception ex)
         {

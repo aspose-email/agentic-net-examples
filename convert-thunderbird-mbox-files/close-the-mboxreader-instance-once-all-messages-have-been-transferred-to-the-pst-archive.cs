@@ -1,118 +1,60 @@
+using Aspose.Email.Mapi;
 using System;
-using System.IO;
 using Aspose.Email;
-using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
 using Aspose.Email.Storage.Mbox;
+using Aspose.Email.Storage.Pst;
 
-class Program
+namespace AsposeEmailMboxToPst
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            // Input and output paths
-            string mboxPath = "input.mbox";
-            string pstPath = "output.pst";
+            // Placeholder file paths – replace with real paths before running
+            string mboxFilePath = "path/to/input.mbox";
+            string pstFilePath = "path/to/output.pst";
 
-            // Ensure MBOX file exists; create a minimal placeholder if missing
-            if (!File.Exists(mboxPath))
+            // Guard: skip processing when placeholders are still present
+            if (mboxFilePath.Contains("path/to") || pstFilePath.Contains("path/to"))
             {
-                try
-                {
-                    using (var placeholder = File.Create(mboxPath)) { }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
-                    return;
-                }
+                Console.WriteLine("Placeholder file paths detected. Skipping MBOX to PST conversion.");
+                return;
             }
 
-            // Ensure the directory for PST exists
-            string pstDirectory = Path.GetDirectoryName(pstPath);
-            if (!string.IsNullOrEmpty(pstDirectory) && !Directory.Exists(pstDirectory))
+            try
             {
-                try
+                // Create PST file (Unicode format)
+                using (PersonalStorage pst = PersonalStorage.Create(pstFilePath, FileFormatVersion.Unicode))
                 {
-                    Directory.CreateDirectory(pstDirectory);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create PST directory: {ex.Message}");
-                    return;
-                }
-            }
+                    // Create a folder in PST to store the messages
+                    FolderInfo inboxFolder = pst.RootFolder.AddSubFolder("Inbox");
 
-            // Create PST file (or open if it already exists)
-            PersonalStorage pst;
-            if (File.Exists(pstPath))
-            {
-                try
-                {
-                    pst = PersonalStorage.FromFile(pstPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to open existing PST file: {ex.Message}");
-                    return;
-                }
-            }
-            else
-            {
-                try
-                {
-                    pst = PersonalStorage.Create(pstPath, FileFormatVersion.Unicode);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create PST file: {ex.Message}");
-                    return;
-                }
-            }
-
-            // Use using to ensure PST is disposed
-            using (pst)
-            {
-                // Create MBOX reader
-                MboxStorageReader mboxReader;
-                try
-                {
-                    mboxReader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions());
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create MBOX reader: {ex.Message}");
-                    return;
-                }
-
-                // Ensure reader is disposed after conversion
-                using (mboxReader)
-                {
-                    // Prepare conversion options with a no‑op handler
-                    var options = new MboxToPstConversionOptions
+                    // Open MBOX reader with load options
+                    using (MboxStorageReader mboxReader = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
                     {
-                        MessageHandler = message => { /* no additional processing */ }
-                    };
+                        while (true)
+                        {
+                            // Read next message; returns null when no more messages are available
+                            MailMessage message = mboxReader.ReadNextMessage();
+                            if (message == null)
+                                break;
 
-                    // Perform conversion; specify the target folder name inside PST
-                    try
-                    {
-                        MailStorageConverter.MboxToPst(mboxReader, pst, "ImportedMbox", options);
+                            // Add the message to the PST folder
+                            inboxFolder.AddMessage(MapiMessage.FromMailMessage(message));
+                        }
+
+                        // MboxStorageReader will be closed automatically by the using statement
                     }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Conversion failed: {ex.Message}");
-                        return;
-                    }
-                } // mboxReader disposed here
-            } // pst disposed here
 
-            Console.WriteLine("MBOX to PST conversion completed successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+                    // PST will be saved and closed automatically by the using statement
+                }
+
+                Console.WriteLine("MBOX file has been successfully converted to PST.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred during conversion: {ex.Message}");
+            }
         }
     }
 }

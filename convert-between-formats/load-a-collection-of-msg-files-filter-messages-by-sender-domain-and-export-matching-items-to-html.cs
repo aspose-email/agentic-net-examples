@@ -5,95 +5,76 @@ using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
         try
         {
-            // Define input and output directories
-            string inputDirectory = "InputMsgs";
-            string outputDirectory = "OutputHtml";
+            // Author: Example code to filter MSG files by sender domain and export to HTML.
 
-            // Ensure input directory exists; if not, create it and exit gracefully
+            string inputDirectory = "msgfiles";
+            string outputDirectory = "output_html";
+            string targetDomain = "@example.com";
+
+            // Verify input directory exists
             if (!Directory.Exists(inputDirectory))
             {
-                Directory.CreateDirectory(inputDirectory);
-                Console.Error.WriteLine($"Input directory '{inputDirectory}' was missing and has been created. Place MSG files there and rerun the program.");
+                Console.Error.WriteLine($"Input directory not found: {inputDirectory}");
                 return;
             }
 
             // Ensure output directory exists
-            if (!Directory.Exists(outputDirectory))
+            try
             {
-                Directory.CreateDirectory(outputDirectory);
+                if (!Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
             }
-
-            // Get all MSG files in the input directory
-            string[] msgFiles = Directory.GetFiles(inputDirectory, "*.msg");
-            if (msgFiles.Length == 0)
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"No MSG files found in '{inputDirectory}'.");
+                Console.Error.WriteLine($"Failed to create output directory: {ex.Message}");
                 return;
             }
 
-            // Define the sender domain to filter by
-            string senderDomain = "@example.com";
+            string[] msgFiles;
+            try
+            {
+                msgFiles = Directory.GetFiles(inputDirectory, "*.msg");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error enumerating MSG files: {ex.Message}");
+                return;
+            }
 
-            foreach (string msgFilePath in msgFiles)
+            foreach (string msgPath in msgFiles)
             {
                 try
                 {
-                    // Guard against missing file (should not happen after GetFiles)
-                    if (!File.Exists(msgFilePath))
+                    // Load the MSG file
+                    MapiMessage mapMsg = MapiMessage.Load(msgPath);
+
+                    // Convert to MailMessage for easier handling
+                    using (MailMessage mail = mapMsg.ToMailMessage(new MailConversionOptions()))
                     {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(msgFilePath);
+                        string senderAddress = mail.From?.Address ?? string.Empty;
+
+                        // Filter by sender domain
+                        if (senderAddress.EndsWith(targetDomain, StringComparison.OrdinalIgnoreCase))
+                        {
+                            string outputFileName = Path.GetFileNameWithoutExtension(msgPath) + ".html";
+                            string outputPath = Path.Combine(outputDirectory, outputFileName);
+
+                            // Save as HTML; format inferred from extension
+                            mail.Save(outputPath);
+                            Console.WriteLine($"Exported: {outputPath}");
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
-
-                        Console.Error.WriteLine($"File not found: {msgFilePath}");
-                        continue;
-                    }
-
-                    // Load the MSG file
-                    using (MapiMessage mapiMessage = MapiMessage.Load(msgFilePath))
-                    {
-                        // Check if the sender email address ends with the desired domain
-                        string senderEmail = mapiMessage.SenderEmailAddress ?? string.Empty;
-                        if (!senderEmail.EndsWith(senderDomain, StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue; // Skip non‑matching messages
-                        }
-
-                        // Convert to MailMessage for HTML export
-                        MailConversionOptions conversionOptions = new MailConversionOptions();
-                        using (MailMessage mailMessage = mapiMessage.ToMailMessage(conversionOptions))
-                        {
-                            // Prepare output HTML file path
-                            string outputFileName = Path.GetFileNameWithoutExtension(msgFilePath) + ".html";
-                            string outputFilePath = Path.Combine(outputDirectory, outputFileName);
-
-                            // Save as HTML
-                            HtmlSaveOptions htmlOptions = new HtmlSaveOptions();
-                            mailMessage.Save(outputFilePath, htmlOptions);
-                            Console.WriteLine($"Exported: {outputFilePath}");
-                        }
-                    }
-                }
-                catch (Exception exFile)
-                {
-                    Console.Error.WriteLine($"Error processing file '{msgFilePath}': {exFile.Message}");
+                    Console.Error.WriteLine($"Failed processing '{msgPath}': {ex.Message}");
+                    // Continue with next file
                 }
             }
         }

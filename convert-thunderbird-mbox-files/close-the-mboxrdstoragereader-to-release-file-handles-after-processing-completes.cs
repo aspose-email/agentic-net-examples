@@ -3,50 +3,66 @@ using System.IO;
 using Aspose.Email;
 using Aspose.Email.Storage.Mbox;
 
-class Program
+namespace MboxReaderExample
 {
-    static void Main()
+    class Program
     {
-        try
+        static void Main()
         {
-            string mboxPath = "sample.mbox";
-
-            // Ensure the MBOX file exists; create an empty placeholder if missing.
-            if (!File.Exists(mboxPath))
+            try
             {
-                try
+                const string mboxFilePath = "storage.mbox";
+                const string outputDir = "output";
+
+                if (!File.Exists(mboxFilePath))
                 {
-                    File.WriteAllText(mboxPath, string.Empty);
-                    Console.Error.WriteLine($"MBOX file not found. Created empty placeholder at '{mboxPath}'.");
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder MBOX file: {ex.Message}");
+                    Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
                     return;
                 }
-                return;
-            }
 
-            // Open the MBOX storage reader with proper load options.
-            using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, new MboxLoadOptions()))
-            {
-                MailMessage message;
-                // Read messages sequentially.
-                while ((message = reader.ReadNextMessage()) != null)
+                // Ensure the output directory exists.
+                Directory.CreateDirectory(outputDir);
+
+                using (MboxStorageReader mbox = MboxStorageReader.CreateReader(mboxFilePath, new MboxLoadOptions()))
                 {
-                    using (message)
+                    int messageIndex = 0;
+                    while (true)
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"To: {message.To}");
-                        Console.WriteLine(new string('-', 40));
+                        MailMessage eml = mbox.ReadNextMessage();
+                        if (eml == null)
+                            break;
+
+                        try
+                        {
+                            string safeSubject = string.IsNullOrWhiteSpace(eml.Subject) ? "NoSubject" : eml.Subject;
+                            foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                            {
+                                safeSubject = safeSubject.Replace(invalidChar, '_');
+                            }
+
+                            string fileName = $"{messageIndex:D5}_{safeSubject}.eml";
+                            string emlFilePath = Path.Combine(outputDir, fileName);
+
+                            eml.Save(emlFilePath);
+                            Console.WriteLine($"Saved: {emlFilePath}");
+                        }
+                        catch (Exception saveEx)
+                        {
+                            Console.Error.WriteLine($"Failed to save message #{messageIndex}: {saveEx.Message}");
+                        }
+                        finally
+                        {
+                            eml.Dispose();
+                        }
+
+                        messageIndex++;
                     }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

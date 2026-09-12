@@ -4,14 +4,15 @@ using Aspose.Email;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string inputPath = "input.eml";
+            // Author note: This sample extracts the email body, strips HTML tags, and saves it as a text file.
+            string inputPath = "sample.eml";
             string outputPath = "output.txt";
 
-            // Verify input file exists; create minimal placeholder if missing
+            // Verify input file exists
             if (!File.Exists(inputPath))
             {
                 try
@@ -31,11 +32,7 @@ class Program
                     return;
                 }
 
-                using (MailMessage placeholder = new MailMessage("placeholder@example.com", "placeholder@example.com", "Placeholder", "This is a placeholder body."))
-                {
-                    placeholder.Save(inputPath);
-                }
-                Console.Error.WriteLine($"Input file not found. Created placeholder at {inputPath}.");
+                Console.Error.WriteLine($"Input file not found: {inputPath}");
                 return;
             }
 
@@ -49,20 +46,17 @@ class Program
             // Load the email message
             using (MailMessage mailMessage = MailMessage.Load(inputPath))
             {
-                string plainBody;
-                if (mailMessage.IsBodyHtml)
-                {
-                    // Convert HTML body to plain text (strips HTML tags)
-                    plainBody = mailMessage.GetHtmlBodyText(true);
-                }
-                else
+                // Convert HTML body to plain text without URLs
+                string plainBody = mailMessage.GetHtmlBodyText(false);
+
+                // Fallback to the Body property if GetHtmlBodyText returns empty
+                if (string.IsNullOrEmpty(plainBody))
                 {
                     plainBody = mailMessage.Body;
                 }
 
                 // Write the plain text body to a .txt file
                 File.WriteAllText(outputPath, plainBody);
-                Console.WriteLine($"Plain text body written to {outputPath}");
             }
         }
         catch (Exception ex)

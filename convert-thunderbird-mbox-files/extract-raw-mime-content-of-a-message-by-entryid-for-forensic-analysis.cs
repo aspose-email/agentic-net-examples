@@ -1,59 +1,62 @@
-using Aspose.Email;
 using System;
 using System.IO;
+using Aspose.Email;
+
 using Aspose.Email.Storage.Pst;
+using Aspose.Email.Mapi;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
-            string pstPath = "sample.pst";
-            string entryId = "EnterMessageEntryIdHere";
-            string outputPath = "extracted_message.eml";
-
-            if (!File.Exists(pstPath))
+            // Author note: This sample extracts the raw MIME content of a message from a PST file using its EntryId.
+            if (args.Length < 2)
             {
-                Console.Error.WriteLine($"PST file not found: {pstPath}");
+                Console.Error.WriteLine("Usage: <exe> <pstFilePath> <messageEntryId>");
                 return;
             }
 
-            string outputDirectory = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+            string pstFilePath = args[0];
+            string entryId = args[1];
+
+            // Verify PST file exists
+            if (!File.Exists(pstFilePath))
             {
-                try
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
-                catch (Exception dirEx)
-                {
-                    Console.Error.WriteLine($"Failed to create output directory: {dirEx.Message}");
-                    return;
-                }
+                Console.Error.WriteLine($"PST file not found: {pstFilePath}");
+                return;
             }
 
-            try
+            // Open the PST storage
+            using (PersonalStorage pst = PersonalStorage.FromFile(pstFilePath))
             {
-                using (PersonalStorage pst = PersonalStorage.FromFile(pstPath))
+                // Extract the message as a MapiMessage using the provided EntryId
+                MapiMessage mapMessage = pst.ExtractMessage(entryId);
+
+                // Convert the MapiMessage to a MailMessage (raw MIME representation)
+                MailConversionOptions conversionOptions = new MailConversionOptions();
+                using (MailMessage mailMessage = mapMessage.ToMailMessage(conversionOptions))
                 {
-                    using (FileStream outputStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                    // Prepare output file path (use EntryId as part of the filename)
+                    string outputFilePath = $"{entryId}.eml";
+
+                    // Ensure the output directory exists
+                    string outputDir = Path.GetDirectoryName(outputFilePath);
+                    if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                     {
-                        pst.SaveMessageToStream(entryId, outputStream);
+                        Directory.CreateDirectory(outputDir);
                     }
-                }
 
-                Console.WriteLine($"Message with EntryId '{entryId}' extracted to '{outputPath}'.");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error extracting message: {ex.Message}");
-                return;
+                    // Save the MIME content to an .eml file
+                    mailMessage.Save(outputFilePath);
+                    Console.WriteLine($"Message saved as raw MIME to: {outputFilePath}");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }

@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using Aspose.Email;
 using Aspose.Email.Mapi;
-using Aspose.Email.Calendar;
-using Aspose.Email.Calendar.Recurrences;
 
 class Program
 {
@@ -11,28 +9,23 @@ class Program
     {
         try
         {
-            string inputPath = "calendar.msg";
-            string outputPath = "calendar.ics";
+            // Author note: Simple console app to convert a calendar MSG to iCalendar (ICS) preserving recurrence.
+            string inputMsgPath = "input.msg";
+            string outputIcsPath = "output.ics";
 
-            if (!File.Exists(inputPath))
+            // Guard file existence
+            if (!File.Exists(inputMsgPath))
             {
                 try
                 {
-                    MapiCalendar placeholderCalendar = new MapiCalendar(
-                        "Placeholder Location",
-                        "Placeholder Summary",
-                        "Placeholder Description",
-                        DateTime.Now,
-                        DateTime.Now.AddHours(1));
-                    if (string.IsNullOrEmpty(placeholderCalendar.Subject))
+                    using (MapiMessage placeholder = new MapiMessage(
+                        "from@example.com",
+                        "to@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
                     {
-                        placeholderCalendar.Subject = "Placeholder Summary";
+                        placeholder.Save(inputMsgPath);
                     }
-                    if (string.IsNullOrEmpty(placeholderCalendar.Body))
-                    {
-                        placeholderCalendar.Body = "Placeholder Description";
-                    }
-                    placeholderCalendar.Save(inputPath, MapiCalendarSaveOptions.DefaultMsg);
                 }
                 catch (Exception ex)
                 {
@@ -40,46 +33,44 @@ class Program
                     return;
                 }
 
-                Console.Error.WriteLine($"Input file '{inputPath}' does not exist.");
+                Console.Error.WriteLine($"Input file not found: {inputMsgPath}");
                 return;
             }
 
+            // Load the MSG file as a MapiMessage
+            MapiMessage mapMsg;
             try
             {
-                using (MapiMessage msg = MapiMessage.Load(inputPath))
-                {
-                    if (msg.SupportedType != MapiItemType.Calendar)
-                    {
-                        Console.Error.WriteLine("The MSG file does not contain a calendar item.");
-                        try
-                        {
-                            File.WriteAllText(outputPath, "BEGIN:VCALENDAR\r\nEND:VCALENDAR");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine($"Failed to write placeholder ICS: {ex.Message}");
-                        }
-                        return;
-                    }
-
-                    MapiCalendar mapiCalendar = msg.ToMapiMessageItem() as MapiCalendar;
-                    if (mapiCalendar == null)
-                    {
-                        Console.Error.WriteLine("Failed to convert MSG to MapiCalendar.");
-                        return;
-                    }
-
-                    using (mapiCalendar)
-                    {
-                        mapiCalendar.Save(outputPath);
-                        Console.WriteLine($"Calendar saved to '{outputPath}'.");
-                    }
-                }
+                mapMsg = MapiMessage.Load(inputMsgPath);
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing MSG file: {ex.Message}");
+                Console.Error.WriteLine($"Failed to load MSG file: {ex.Message}");
                 return;
+            }
+
+            // Convert the MAPI message to a MailMessage (which can represent a calendar item)
+            MailConversionOptions conversionOptions = new MailConversionOptions();
+            MailMessage mailMessage;
+            try
+            {
+                mailMessage = mapMsg.ToMailMessage(conversionOptions);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Conversion to MailMessage failed: {ex.Message}");
+                return;
+            }
+
+            // Save as iCalendar (.ics). The library infers the format from the file extension.
+            try
+            {
+                mailMessage.Save(outputIcsPath);
+                Console.WriteLine($"Successfully saved iCalendar file: {outputIcsPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to save iCalendar file: {ex.Message}");
             }
         }
         catch (Exception ex)

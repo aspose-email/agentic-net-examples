@@ -6,53 +6,59 @@ using Aspose.Email.Storage.Mbox;
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
         try
         {
+            // Path to the multilingual MBOX archive
             string mboxPath = "multilingual.mbox";
 
-            // Verify that the MBOX file exists before attempting to read it.
+            // Verify that the MBOX file exists before proceeding
             if (!File.Exists(mboxPath))
             {
                 Console.Error.WriteLine($"MBOX file not found: {mboxPath}");
                 return;
             }
 
-            // Configure load options to use UTF‑8 encoding.
-            MboxLoadOptions loadOptions = new MboxLoadOptions
-            {
-                PreferredTextEncoding = Encoding.UTF8
-            };
+            // Output directory for extracted .eml files
+            string outputDir = "ExtractedMessages";
+            Directory.CreateDirectory(outputDir);
 
-            // Create the reader using the factory method as required.
+            // Create the MBOX reader with UTF‑8 encoding
+            var loadOptions = new MboxLoadOptions { PreferredTextEncoding = Encoding.UTF8 };
             using (MboxStorageReader reader = MboxStorageReader.CreateReader(mboxPath, loadOptions))
             {
-                // Read messages one by one.
-                MailMessage message = reader.ReadNextMessage();
-                while (message != null)
+                MailMessage message;
+                int index = 0;
+                while ((message = reader.ReadNextMessage()) != null)
                 {
+                    // Prepare a safe file name for the extracted .eml file
+                    string subject = string.IsNullOrEmpty(message.Subject) ? $"NoSubject_{index}" : message.Subject;
+                    foreach (char invalidChar in Path.GetInvalidFileNameChars())
+                    {
+                        subject = subject.Replace(invalidChar, '_');
+                    }
+                    string emlFilePath = Path.Combine(outputDir, $"{subject}_{index}.eml");
+
+                    // Save the extracted message, handling any I/O errors gracefully
                     try
                     {
-                        Console.WriteLine($"Subject: {message.Subject}");
-                        Console.WriteLine($"From: {message.From}");
-                        Console.WriteLine($"To: {message.To}");
-                        Console.WriteLine();
+                        message.Save(emlFilePath);
+                        Console.WriteLine($"Saved: {emlFilePath}");
                     }
-                    finally
+                    catch (Exception saveEx)
                     {
-                        // Ensure each MailMessage is disposed after use.
-                        message.Dispose();
+                        Console.Error.WriteLine($"Failed to save message {index}: {saveEx.Message}");
                     }
 
-                    // Read the next message.
-                    message = reader.ReadNextMessage();
+                    index++;
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: {ex.Message}");
+            // Top‑level exception guard
+            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
         }
     }
 }

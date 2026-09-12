@@ -9,97 +9,67 @@ class Program
 {
     static void Main()
     {
+        const string inputOftPath = "template.oft";
+        const string outputPdfPath = "output.pdf";
+
+        // Ensure the input OFT file exists; create a simple placeholder if it does not.
+        if (!File.Exists(inputOftPath))
+        {
+            try
+            {
+                using (MapiMessage placeholder = new MapiMessage(
+                    "from@example.com",
+                    "to@example.com",
+                    "Placeholder Subject",
+                    "Placeholder body."))
+                {
+                    placeholder.Save(inputOftPath);
+                }
+                Console.WriteLine($"Placeholder OFT created at '{inputOftPath}'.");
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error creating placeholder OFT: {ex.Message}");
+                return;
+            }
+        }
+
         try
         {
-            string oftPath = "template.oft";
-            string mhtmlPath = "temp.mhtml";
-            string pdfPath = "output.pdf";
+            // Load the OFT template as a MAPI message
+            MapiMessage oftMessage = MapiMessage.Load(inputOftPath);
 
-            // Ensure the OFT file exists; create a minimal placeholder if missing
-            if (!File.Exists(oftPath))
-            {
-                try
-                {
-                    using (MapiMessage placeholder = new MapiMessage(
-                        "from@example.com",
-                        "to@example.com",
-                        "Placeholder Subject",
-                        "Placeholder body."))
-                    {
-                        placeholder.Save(oftPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
-                    return;
-                }
+            // Convert to MailMessage for MHTML export
+            MailMessage mailMessage = oftMessage.ToMailMessage(new MailConversionOptions());
 
-                try
-                {
-                    var placeholder = new MapiMessage(
-                        "sender@example.com",
-                        "recipient@example.com",
-                        "Sample OFT",
-                        "This is a placeholder OFT template.");
-                    placeholder.SaveAsTemplate(oftPath);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Failed to create placeholder OFT: {ex.Message}");
-                    return;
-                }
-            }
+            // Export MailMessage to MHTML in memory
+            using (MemoryStream mhtmlStream = new MemoryStream())
+            {
+                mailMessage.Save(mhtmlStream, Aspose.Email.SaveOptions.DefaultMhtml);
+                mhtmlStream.Position = 0;
 
-            // Load the OFT template, convert to MailMessage, and save as MHTML
-            try
-            {
-                using (MapiMessage oftMessage = MapiMessage.Load(oftPath))
-                {
-                    MailMessage mailMessage = oftMessage.ToMailMessage(new MailConversionOptions());
-                    mailMessage.Save(mhtmlPath, Aspose.Email.SaveOptions.DefaultMhtml);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error processing OFT file: {ex.Message}");
-                return;
-            }
+                // Load MHTML into Aspose.Words Document
+                Document doc = new Document(mhtmlStream);
 
-            // Load the MHTML into Aspose.Words and export to PDF (flattening form fields)
-            try
-            {
-                Document doc = new Document(mhtmlPath);
+                // Prepare PDF save options (no explicit form‑field flattening property to maintain compatibility)
                 Aspose.Words.Saving.PdfSaveOptions pdfOptions = new Aspose.Words.Saving.PdfSaveOptions();
-                // By default Aspose.Words flattens form fields when saving to PDF
-                doc.Save(pdfPath, pdfOptions);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error converting to PDF: {ex.Message}");
-                return;
-            }
-            finally
-            {
-                // Clean up temporary MHTML file
-                try
+
+                // Ensure output directory exists
+                string outputDir = Path.GetDirectoryName(outputPdfPath);
+                if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
                 {
-                    if (File.Exists(mhtmlPath))
-                    {
-                        File.Delete(mhtmlPath);
-                    }
+                    Directory.CreateDirectory(outputDir);
                 }
-                catch
-                {
-                    // Suppress any cleanup errors
-                }
+
+                // Save the document as PDF
+                doc.Save(outputPdfPath, pdfOptions);
             }
 
-            Console.WriteLine($"PDF successfully created at: {pdfPath}");
+            Console.WriteLine($"Successfully converted '{inputOftPath}' to PDF.");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+            Console.Error.WriteLine($"Error during conversion: {ex.Message}");
         }
     }
 }

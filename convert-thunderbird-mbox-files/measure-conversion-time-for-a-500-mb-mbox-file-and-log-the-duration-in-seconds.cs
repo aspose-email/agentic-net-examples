@@ -1,52 +1,59 @@
+using Aspose.Email.Storage.Pst;
 using Aspose.Email;
 using System;
 using System.IO;
 using System.Diagnostics;
 using Aspose.Email.Storage;
-using Aspose.Email.Storage.Pst;
 
-class Program
+namespace MboxToPstConversion
 {
-    static void Main(string[] args)
+    // Author: Generated example for measuring MBOX to PST conversion time.
+    class Program
     {
-        try
+        static void Main(string[] args)
         {
-            // Paths for the source MBOX file and the destination PST file
-            string mboxFilePath = "C:\\Data\\500mb.mbox";
-            string pstFilePath = "C:\\Data\\output.pst";
-
-            // Verify that the source MBOX file exists
-            if (!File.Exists(mboxFilePath))
+            try
             {
-                Console.Error.WriteLine($"MBOX file not found: {mboxFilePath}");
-                return;
-            }
+                // Define input MBOX file and output PST file paths.
+                string mboxFilePath = "large_mailbox.mbox";
+                string pstFilePath = "converted_mailbox.pst";
 
-            // Ensure the output directory exists
-            string pstDirectory = Path.GetDirectoryName(pstFilePath);
-            if (!Directory.Exists(pstDirectory))
+                // Guard: ensure the input MBOX file exists.
+                if (!File.Exists(mboxFilePath))
+                {
+                    Console.Error.WriteLine($"Input MBOX file not found: {mboxFilePath}");
+                    return;
+                }
+
+                // Guard: ensure the output directory exists.
+                string outputDirectory = Path.GetDirectoryName(pstFilePath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !Directory.Exists(outputDirectory))
+                {
+                    Directory.CreateDirectory(outputDirectory);
+                }
+
+                // Measure conversion time.
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                // Perform the conversion. The method returns a PersonalStorage instance.
+                PersonalStorage pstStorage = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath);
+
+                stopwatch.Stop();
+
+                // Log the duration in seconds.
+                Console.WriteLine($"Conversion completed in {stopwatch.Elapsed.TotalSeconds:F2} seconds.");
+
+                // Optionally dispose the returned PersonalStorage if needed.
+                if (pstStorage != null)
+                {
+                    pstStorage.Dispose();
+                }
+            }
+            catch (Exception ex)
             {
-                Console.Error.WriteLine($"Output directory does not exist: {pstDirectory}");
-                return;
+                Console.Error.WriteLine($"An error occurred: {ex.Message}");
             }
-
-            // Measure conversion time
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            // Perform the conversion; the returned PersonalStorage must be disposed
-            using (PersonalStorage pst = MailStorageConverter.MboxToPst(mboxFilePath, pstFilePath))
-            {
-                // No additional processing required
-            }
-
-            stopwatch.Stop();
-
-            Console.WriteLine($"Conversion completed in {stopwatch.Elapsed.TotalSeconds} seconds.");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
