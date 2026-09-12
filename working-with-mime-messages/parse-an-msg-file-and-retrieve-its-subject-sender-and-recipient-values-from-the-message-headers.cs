@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Aspose.Email;
-using Aspose.Email.Mapi;
+using System.Collections.Specialized;
 
 class Program
 {
@@ -9,46 +9,52 @@ class Program
     {
         try
         {
-            // Path to the MSG file
-            string msgPath = "message.msg";
+            string msgPath = "sample.msg";
 
-            // Verify that the file exists before attempting to load it
             if (!File.Exists(msgPath))
             {
+                try
+                {
+                    using (MailMessage placeholder = new MailMessage(
+                        "sender@example.com",
+                        "recipient@example.com",
+                        "Placeholder Subject",
+                        "Placeholder body."))
+                    {
+                        placeholder.Save(msgPath, new MsgSaveOptions(MailMessageSaveType.OutlookMessageFormat));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Error creating placeholder MSG: {ex.Message}");
+                    return;
+                }
+
                 Console.Error.WriteLine($"File not found: {msgPath}");
                 return;
             }
 
-            // Load the MSG file inside a using block to ensure proper disposal
-            using (MapiMessage msg = MapiMessage.Load(msgPath))
+            using (MailMessage mail = MailMessage.Load(msgPath))
             {
-                // Retrieve the subject
-                string subject = msg.Subject ?? string.Empty;
-                Console.WriteLine("Subject: " + subject);
+                // Retrieve specific header values
+                string subject = mail.Headers["Subject"];
+                string from = mail.Headers["From"];
+                string to = mail.Headers["To"];
 
-                // Retrieve the sender information
-                string senderName = msg.SenderName ?? string.Empty;
-                string senderEmail = msg.SenderEmailAddress ?? string.Empty;
-                string sender = string.IsNullOrEmpty(senderEmail) ? senderName : $"{senderName} <{senderEmail}>";
-                Console.WriteLine("From: " + sender);
+                Console.WriteLine($"Subject: {subject}");
+                Console.WriteLine($"From: {from}");
+                Console.WriteLine($"To: {to}");
 
-                // Retrieve recipient information from the Recipients collection
-                if (msg.Recipients != null)
+                // Iterate all headers
+                foreach (string key in mail.Headers.Keys)
                 {
-                    foreach (MapiRecipient recipient in msg.Recipients)
-                    {
-                        string recipientName = recipient.DisplayName ?? string.Empty;
-                        string recipientEmail = recipient.EmailAddress ?? string.Empty;
-                        string formattedRecipient = string.IsNullOrEmpty(recipientEmail) ? recipientName : $"{recipientName} <{recipientEmail}>";
-                        Console.WriteLine("To: " + formattedRecipient);
-                    }
+                    Console.WriteLine($"{key}: {mail.Headers[key]}");
                 }
             }
         }
         catch (Exception ex)
         {
-            // Output any unexpected errors
-            Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine($"Error: {ex.Message}");
         }
     }
 }
