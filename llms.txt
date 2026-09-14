@@ -2,33 +2,123 @@
 
 > Build-validated, standalone C# examples for Aspose.Email for .NET and .NET 8.
 
-- Examples: 3076
+- Examples: 3083
 - Categories: 17
+- Framework: net8.0
+- Package: Aspose.Email 26.7.0
+- Last updated: 2026-09-14
 - Coding-agent instructions: ./AGENTS.md
 - Structured index: ./index.json
+- Search discovery index: ./search-index.json
+- Examples index: ./examples-index.md
+- Readiness metadata: ./readiness.json
 - Product documentation: https://docs.aspose.com/email/net/
 - API reference: https://reference.aspose.com/email/net/
+- Agentic examples section: https://metrics.aspose.com/agents/sections/examples
 
 ## Categories
-- [convert-between-formats](./convert-between-formats/): 135 standalone examples; instructions in [AGENTS.md](./convert-between-formats/AGENTS.md)
-- [convert-thunderbird-mbox-files](./convert-thunderbird-mbox-files/): 182 standalone examples; instructions in [AGENTS.md](./convert-thunderbird-mbox-files/AGENTS.md)
-- [programming-email-verification](./programming-email-verification/): 40 standalone examples; instructions in [AGENTS.md](./programming-email-verification/AGENTS.md)
-- [programming-with-gmail](./programming-with-gmail/): 142 standalone examples; instructions in [AGENTS.md](./programming-with-gmail/AGENTS.md)
-- [read-and-export-zimbra-tgz-files](./read-and-export-zimbra-tgz-files/): 30 standalone examples; instructions in [AGENTS.md](./read-and-export-zimbra-tgz-files/AGENTS.md)
-- [working-with-amp-html-emails](./working-with-amp-html-emails/): 44 standalone examples; instructions in [AGENTS.md](./working-with-amp-html-emails/AGENTS.md)
-- [working-with-exchange-ews-client](./working-with-exchange-ews-client/): 557 standalone examples; instructions in [AGENTS.md](./working-with-exchange-ews-client/AGENTS.md)
-- [working-with-exchange-webdav-client](./working-with-exchange-webdav-client/): 156 standalone examples; instructions in [AGENTS.md](./working-with-exchange-webdav-client/AGENTS.md)
-- [working-with-ibm-notes](./working-with-ibm-notes/): 64 standalone examples; instructions in [AGENTS.md](./working-with-ibm-notes/AGENTS.md)
-- [working-with-imap-client](./working-with-imap-client/): 303 standalone examples; instructions in [AGENTS.md](./working-with-imap-client/AGENTS.md)
-- [working-with-microsoft-graph-client](./working-with-microsoft-graph-client/): 38 standalone examples; instructions in [AGENTS.md](./working-with-microsoft-graph-client/AGENTS.md)
-- [working-with-mime-messages](./working-with-mime-messages/): 343 standalone examples; instructions in [AGENTS.md](./working-with-mime-messages/AGENTS.md)
-- [working-with-outlook-items](./working-with-outlook-items/): 511 standalone examples; instructions in [AGENTS.md](./working-with-outlook-items/AGENTS.md)
-- [working-with-outlook-storage-files](./working-with-outlook-storage-files/): 189 standalone examples; instructions in [AGENTS.md](./working-with-outlook-storage-files/AGENTS.md)
-- [working-with-pop3-client](./working-with-pop3-client/): 166 standalone examples; instructions in [AGENTS.md](./working-with-pop3-client/AGENTS.md)
-- [working-with-smtp-client](./working-with-smtp-client/): 167 standalone examples; instructions in [AGENTS.md](./working-with-smtp-client/AGENTS.md)
-- [zimbra](./zimbra/): 9 standalone examples; instructions in [AGENTS.md](./zimbra/AGENTS.md)
+- [convert-between-formats](./convert-between-formats/): 135 standalone examples; instructions in [AGENTS.md](./convert-between-formats/AGENTS.md); guide in [README.md](./convert-between-formats/README.md); common namespaces: System, System.IO, Aspose.Email
+- [convert-thunderbird-mbox-files](./convert-thunderbird-mbox-files/): 189 standalone examples; instructions in [AGENTS.md](./convert-thunderbird-mbox-files/AGENTS.md); guide in [README.md](./convert-thunderbird-mbox-files/README.md); common namespaces: System, Aspose.Email, System.IO
+- [programming-email-verification](./programming-email-verification/): 40 standalone examples; instructions in [AGENTS.md](./programming-email-verification/AGENTS.md); guide in [README.md](./programming-email-verification/README.md); common namespaces: System, Aspose.Email.Tools.Verifications, Aspose.Email
+- [programming-with-gmail](./programming-with-gmail/): 142 standalone examples; instructions in [AGENTS.md](./programming-with-gmail/AGENTS.md); guide in [README.md](./programming-with-gmail/README.md); common namespaces: System, Aspose.Email, Aspose.Email.Clients.Google
+- [read-and-export-zimbra-tgz-files](./read-and-export-zimbra-tgz-files/): 30 standalone examples; instructions in [AGENTS.md](./read-and-export-zimbra-tgz-files/AGENTS.md); guide in [README.md](./read-and-export-zimbra-tgz-files/README.md); common namespaces: System, Aspose.Email, System.IO
+- [working-with-amp-html-emails](./working-with-amp-html-emails/): 44 standalone examples; instructions in [AGENTS.md](./working-with-amp-html-emails/AGENTS.md); guide in [README.md](./working-with-amp-html-emails/README.md); common namespaces: System, Aspose.Email, System.IO
+- [working-with-exchange-ews-client](./working-with-exchange-ews-client/): 557 standalone examples; instructions in [AGENTS.md](./working-with-exchange-ews-client/AGENTS.md); guide in [README.md](./working-with-exchange-ews-client/README.md); common namespaces: System, Aspose.Email, Aspose.Email.Clients.Exchange.WebService
+- [working-with-exchange-webdav-client](./working-with-exchange-webdav-client/): 156 standalone examples; instructions in [AGENTS.md](./working-with-exchange-webdav-client/AGENTS.md); guide in [README.md](./working-with-exchange-webdav-client/README.md); common namespaces: System, Aspose.Email, Aspose.Email.Clients.Exchange.Dav
+- [working-with-ibm-notes](./working-with-ibm-notes/): 64 standalone examples; instructions in [AGENTS.md](./working-with-ibm-notes/AGENTS.md); guide in [README.md](./working-with-ibm-notes/README.md); common namespaces: System, Aspose.Email, System.IO
+- [working-with-imap-client](./working-with-imap-client/): 303 standalone examples; instructions in [AGENTS.md](./working-with-imap-client/AGENTS.md); guide in [README.md](./working-with-imap-client/README.md); common namespaces: System, Aspose.Email, Aspose.Email.Clients.Imap
+- [working-with-microsoft-graph-client](./working-with-microsoft-graph-client/): 38 standalone examples; instructions in [AGENTS.md](./working-with-microsoft-graph-client/AGENTS.md); guide in [README.md](./working-with-microsoft-graph-client/README.md); common namespaces: System, Aspose.Email, Aspose.Email.Clients
+- [working-with-mime-messages](./working-with-mime-messages/): 343 standalone examples; instructions in [AGENTS.md](./working-with-mime-messages/AGENTS.md); guide in [README.md](./working-with-mime-messages/README.md); common namespaces: System, Aspose.Email, System.IO
+- [working-with-outlook-items](./working-with-outlook-items/): 511 standalone examples; instructions in [AGENTS.md](./working-with-outlook-items/AGENTS.md); guide in [README.md](./working-with-outlook-items/README.md); common namespaces: System, Aspose.Email, System.IO
+- [working-with-outlook-storage-files](./working-with-outlook-storage-files/): 189 standalone examples; instructions in [AGENTS.md](./working-with-outlook-storage-files/AGENTS.md); guide in [README.md](./working-with-outlook-storage-files/README.md); common namespaces: System, System.IO, Aspose.Email
+- [working-with-pop3-client](./working-with-pop3-client/): 166 standalone examples; instructions in [AGENTS.md](./working-with-pop3-client/AGENTS.md); guide in [README.md](./working-with-pop3-client/README.md); common namespaces: System, Aspose.Email.Clients.Pop3, Aspose.Email
+- [working-with-smtp-client](./working-with-smtp-client/): 167 standalone examples; instructions in [AGENTS.md](./working-with-smtp-client/AGENTS.md); guide in [README.md](./working-with-smtp-client/README.md); common namespaces: System, Aspose.Email, Aspose.Email.Clients.Smtp
+- [zimbra](./zimbra/): 9 standalone examples; instructions in [AGENTS.md](./zimbra/AGENTS.md); guide in [README.md](./zimbra/README.md); common namespaces: Aspose.Email, System, System.IO
 
-## Related Agentic .NET Repositories
+## Representative Examples
+### convert-between-formats
+- [Batch Convert A Collection of MHTML Files to EML Preserving Original File Timestamps in Metadata](./convert-between-formats/batch-convert-a-collection-of-mhtml-files-to-eml-preserving-original-file-timestamps-in-metadata.cs) - Convert Between Formats; tags: aspose-email, between, convert, csharp, dotnet8, eml
+- [Batch Convert A Collection of OFT Files to PDF Adding A Watermark Text Indicating Confidential Status](./convert-between-formats/batch-convert-a-collection-of-oft-files-to-pdf-adding-a-watermark-text-indicating-confidential-status.cs) - Convert Between Formats; tags: aspose-email, between, convert, csharp, dotnet8, formats
+- [Batch Convert All MHTML Files in A Folder to PST Creating A Folder Hierarchy Based On Filenames](./convert-between-formats/batch-convert-all-mhtml-files-in-a-folder-to-pst-creating-a-folder-hierarchy-based-on-filenames.cs) - Pst; tags: aspose-email, between, convert, csharp, dotnet8, formats
+### convert-thunderbird-mbox-files
+- [Add A Feature to Embed A Custom Comment in The PST File Properties for Identification](./convert-thunderbird-mbox-files/add-a-feature-to-embed-a-custom-comment-in-the-pst-file-properties-for-identification.cs) - Pst; tags: aspose-email, convert, csharp, dotnet8, files, mapi
+- [Add A Feature to Encrypt The Resulting PST File using A User Provided Password](./convert-thunderbird-mbox-files/add-a-feature-to-encrypt-the-resulting-pst-file-using-a-user-provided-password.cs) - Pst; tags: aspose-email, convert, csharp, dotnet8, files, mapi
+- [Add A Feature to Generate A Checksum for The Resulting PST File for Integrity Verification](./convert-thunderbird-mbox-files/add-a-feature-to-generate-a-checksum-for-the-resulting-pst-file-for-integrity-verification.cs) - Pst; tags: aspose-email, convert, csharp, dotnet8, files, mbox
+### programming-email-verification
+- [Add Support for Validating Internationalized Email Addresses using Unicode Domain Handling in Emailvalidator](./programming-email-verification/add-support-for-validating-internationalized-email-addresses-using-unicode-domain-handling-in-emailvalidator.cs) - Programming Email Verification; tags: aspose-email, csharp, dotnet8, email, programming, standalone-example
+- [Configure Emailvalidator Timeout Settings to Limit Mail Server Connection Attempts to Five Seconds](./programming-email-verification/configure-emailvalidator-timeout-settings-to-limit-mail-server-connection-attempts-to-five-seconds.cs) - Programming Email Verification; tags: aspose-email, csharp, dotnet8, email, programming, standalone-example
+- [Configure Emailvalidator to Use A Custom Dns Server for Domain Verification in Restricted Networks](./programming-email-verification/configure-emailvalidator-to-use-a-custom-dns-server-for-domain-verification-in-restricted-networks.cs) - Programming Email Verification; tags: aspose-email, csharp, dotnet8, email, programming, standalone-example
+### programming-with-gmail
+- [Access and Obtain The Metadata Fields of An Email Message Programmatically for Further Processing](./programming-with-gmail/access-and-obtain-the-metadata-fields-of-an-email-message-programmatically-for-further-processing.cs) - Google; tags: aspose-email, clients, csharp, dotnet8, gmail, google
+- [Add A Custom Label to All Gmail Messages Received from A Specific Domain using Igmailclient](./programming-with-gmail/add-a-custom-label-to-all-gmail-messages-received-from-a-specific-domain-using-igmailclient.cs) - Google; tags: aspose-email, clients, csharp, dotnet8, gmail, google
+- [Add A New Appointment Entry to The Calendar Store with Specified Details and Recurrence Settings](./programming-with-gmail/add-a-new-appointment-entry-to-the-calendar-store-with-specified-details-and-recurrence-settings.cs) - Exchange.WebService; tags: aspose-email, calendar, clients, csharp, dotnet8, exchange
+### read-and-export-zimbra-tgz-files
+- [Apply A Naming Convention That Prefixes Exported Filenames with Their Folder Hierarchy for Clarity](./read-and-export-zimbra-tgz-files/apply-a-naming-convention-that-prefixes-exported-filenames-with-their-folder-hierarchy-for-clarity.cs) - Exchange; tags: and, aspose-email, clients, csharp, dav, dotnet8
+- [Call Gettotalitemscount On The Tgzreader Instance to Retrieve Total Email Item Count](./read-and-export-zimbra-tgz-files/call-gettotalitemscount-on-the-tgzreader-instance-to-retrieve-total-email-item-count.cs) - Zimbra; tags: and, aspose-email, csharp, dotnet8, export, files
+- [Configure Tgzreader with A Custom Buffer Size to Improve Performance On Large TGZ Files](./read-and-export-zimbra-tgz-files/configure-tgzreader-with-a-custom-buffer-size-to-improve-performance-on-large-tgz-files.cs) - Zimbra; tags: and, aspose-email, csharp, dotnet8, export, files
+### working-with-amp-html-emails
+- [Add A New Ampform Component with Additional Input Fields to The Loaded Message](./working-with-amp-html-emails/add-a-new-ampform-component-with-additional-input-fields-to-the-loaded-message.cs) - Working With Amp Html Emails; tags: amp, aspose-email, csharp, dotnet8, emails, html
+- [Add A Second Ampimage Component with A Different Source Url to Demonstrate Multiple Images](./working-with-amp-html-emails/add-a-second-ampimage-component-with-a-different-source-url-to-demonstrate-multiple-images.cs) - Working With Amp Html Emails; tags: amp, aspose-email, csharp, dotnet8, emails, html
+- [Apply A Tracking Pixel Ampimage Component with A Click Through Url to The Message Body](./working-with-amp-html-emails/apply-a-tracking-pixel-ampimage-component-with-a-click-through-url-to-the-message-body.cs) - Working With Amp Html Emails; tags: amp, aspose-email, csharp, dotnet8, emails, html
+### working-with-exchange-ews-client
+- [Access Another User Mailbox By Providing Their Email Address to Iewsclient Getmailboxinfo Overload](./working-with-exchange-ews-client/access-another-user-mailbox-by-providing-their-email-address-to-iewsclient-getmailboxinfo-overload.cs) - Exchange; tags: aspose-email, client, clients, csharp, dotnet8, ews
+- [Acquire An Oauth Access Token for Authenticating API Requests using The Appropriate Authorization Flow](./working-with-exchange-ews-client/acquire-an-oauth-access-token-for-authenticating-api-requests-using-the-appropriate-authorization-flow.cs) - Google; tags: aspose-email, client, clients, csharp, dotnet8, ews
+- [Activate Comprehensive Logging to Capture Detailed Diagnostic Information for Troubleshooting and Performance Analysis Within T](./working-with-exchange-ews-client/activate-comprehensive-logging-to-capture-detailed-diagnostic-information-for-troubleshooting-and-performance-analysis-within-t.cs) - Exchange.WebService; tags: aspose-email, client, clients, csharp, dotnet8, ews
+### working-with-exchange-webdav-client
+- [Access and Retrieve Messages from A Different User S Mailbox Programmatically Handling Authentication and Permissions](./working-with-exchange-webdav-client/access-and-retrieve-messages-from-a-different-user-s-mailbox-programmatically-handling-authentication-and-permissions.cs) - Exchange.Dav; tags: aspose-email, client, clients, csharp, dav, dotnet8
+- [Add An Attachment Created from An in Memory Byte Array to A Mailmessage Before Sending Via Exchangeclient](./working-with-exchange-webdav-client/add-an-attachment-created-from-an-in-memory-byte-array-to-a-mailmessage-before-sending-via-exchangeclient.cs) - Exchange.Dav; tags: aspose-email, client, clients, csharp, dav, dotnet8
+- [Add Custom X Custom Header Values to The Mailmessage Before Sending to Provide Application Specific Metadata](./working-with-exchange-webdav-client/add-custom-x-custom-header-values-to-the-mailmessage-before-sending-to-provide-application-specific-metadata.cs) - Exchange.Dav; tags: aspose-email, client, clients, csharp, dav, dotnet8
+### working-with-ibm-notes
+- [Add A Notesattachment to The Document and Assign The MSG File as Its Content](./working-with-ibm-notes/add-a-notesattachment-to-the-document-and-assign-the-msg-file-as-its-content.cs) - Working With Ibm Notes; tags: aspose-email, csharp, dotnet8, ibm, mapi, msg
+- [Call Enumeratemessages to Obtain An Iterator Over All Messages in The Nsf File](./working-with-ibm-notes/call-enumeratemessages-to-obtain-an-iterator-over-all-messages-in-the-nsf-file.cs) - Nsf; tags: aspose-email, csharp, dotnet8, ibm, notes, nsf
+- [Check The Notes Version of The Nsf File to Ensure Compatibility with Version 7 or Higher](./working-with-ibm-notes/check-the-notes-version-of-the-nsf-file-to-ensure-compatibility-with-version-7-or-higher.cs) - Nsf; tags: aspose-email, csharp, dotnet8, ibm, notes, nsf
+### working-with-imap-client
+- [Activate Client Side Logging By Setting The Loggingenabled Boolean Property to True On The Client Instance](./working-with-imap-client/activate-client-side-logging-by-setting-the-loggingenabled-boolean-property-to-true-on-the-client-instance.cs) - Imap; tags: aspose-email, client, clients, csharp, dotnet8, imap
+- [Activate Detailed IMAP Activity Logging to Capture All Client Server Interactions for Diagnostics and Auditing](./working-with-imap-client/activate-detailed-imap-activity-logging-to-capture-all-client-server-interactions-for-diagnostics-and-auditing.cs) - Imap; tags: aspose-email, client, clients, csharp, dotnet8, imap
+- [Add A Custom IMAP Flag to Messages Matching A Subject Pattern Asynchronously for Later Categorization](./working-with-imap-client/add-a-custom-imap-flag-to-messages-matching-a-subject-pattern-asynchronously-for-later-categorization.cs) - Imap; tags: aspose-email, client, clients, csharp, dotnet8, imap
+### working-with-microsoft-graph-client
+- [Assign A Category Named Important to A Message using Client Messages Addcategory Method](./working-with-microsoft-graph-client/assign-a-category-named-important-to-a-message-using-client-messages-addcategory-method.cs) - Working With Microsoft Graph Client; tags: aspose-email, client, csharp, dotnet8, graph, mapi
+- [Authenticate with Azure Active Directory Via Microsoft Graph Client using Office Credentials Extracted from An MSG File](./working-with-microsoft-graph-client/authenticate-with-azure-active-directory-via-microsoft-graph-client-using-office-credentials-extracted-from-an-msg-file.cs) - Graph; tags: aspose-email, client, clients, csharp, dotnet8, graph
+- [Configure Accessparameters Class with Client Id Tenant Id and Client Secret for Authentication](./working-with-microsoft-graph-client/configure-accessparameters-class-with-client-id-tenant-id-and-client-secret-for-authentication.cs) - Graph; tags: aspose-email, client, clients, csharp, dotnet8, graph
+### working-with-mime-messages
+- [Access The Htmlbody Property of An MSG Email Object to Obtain Its HTML Message Content](./working-with-mime-messages/access-the-htmlbody-property-of-an-msg-email-object-to-obtain-its-html-message-content.cs) - Working With Mime Messages; tags: aspose-email, csharp, dotnet8, html, mapi, messages
+- [Add A Custom Header Containing The Checksum of Each Attachment for Integrity Verification](./working-with-mime-messages/add-a-custom-header-containing-the-checksum-of-each-attachment-for-integrity-verification.cs) - Working With Mime Messages; tags: aspose-email, csharp, dotnet8, messages, mime, standalone-example
+- [Add A Custom X Company Header with A Generated Uuid Value to The Email Headers Before Saving](./working-with-mime-messages/add-a-custom-x-company-header-with-a-generated-uuid-value-to-the-email-headers-before-saving.cs) - Working With Mime Messages; tags: aspose-email, csharp, dotnet8, messages, mime, standalone-example
+### working-with-outlook-items
+- [Access The Files Collection from The Cast Drageventargs to Obtain Dropped Items](./working-with-outlook-items/access-the-files-collection-from-the-cast-drageventargs-to-obtain-dropped-items.cs) - Working With Outlook Items; tags: aspose-email, csharp, dotnet8, items, outlook, standalone-example
+- [Add A Cancel Voting Button and Ensure It Appears Correctly in The Outlook Client Preview](./working-with-outlook-items/add-a-cancel-voting-button-and-ensure-it-appears-correctly-in-the-outlook-client-preview.cs) - Working With Outlook Items; tags: aspose-email, csharp, dotnet8, items, mapi, outlook
+- [Add A Custom Disclaimer to The Footer of Every Email in A PST Before Archiving](./working-with-outlook-items/add-a-custom-disclaimer-to-the-footer-of-every-email-in-a-pst-before-archiving.cs) - Pst; tags: aspose-email, csharp, dotnet8, items, mapi, outlook
+### working-with-outlook-storage-files
+- [Access The Standard Rss Feeds Folder and List All Feed Items Contained Within](./working-with-outlook-storage-files/access-the-standard-rss-feeds-folder-and-list-all-feed-items-contained-within.cs) - Pst; tags: aspose-email, csharp, dotnet8, files, mapi, outlook
+- [Add A Default Category to Messages Lacking Any Category Then Save The Updated PST with Changes](./working-with-outlook-storage-files/add-a-default-category-to-messages-lacking-any-category-then-save-the-updated-pst-with-changes.cs) - Pst; tags: aspose-email, csharp, dotnet8, files, mapi, outlook
+- [Add A Digital Signature to Outgoing Messages Before Saving Them into The PST Archive](./working-with-outlook-storage-files/add-a-digital-signature-to-outgoing-messages-before-saving-them-into-the-pst-archive.cs) - Pst; tags: aspose-email, csharp, dotnet8, files, mapi, outlook
+### working-with-pop3-client
+- [Access Messagecount Property from Pop3mailboxinfo to Report Number of Available Messages](./working-with-pop3-client/access-messagecount-property-from-pop3mailboxinfo-to-report-number-of-available-messages.cs) - Pop3; tags: aspose-email, client, clients, csharp, dotnet8, pop3
+- [Add A Pop3diagnosticlog Entry to Appsettings Json to Configure POP3 Activity Logging](./working-with-pop3-client/add-a-pop3diagnosticlog-entry-to-appsettings-json-to-configure-pop3-activity-logging.cs) - Pop3; tags: aspose-email, client, clients, csharp, dotnet8, pop3
+- [Add A Subject Filter Containing Newsletter and Combine It with The Date Filter using and](./working-with-pop3-client/add-a-subject-filter-containing-newsletter-and-combine-it-with-the-date-filter-using-and.cs) - Pop3; tags: aspose-email, client, clients, csharp, dotnet8, models
+### working-with-smtp-client
+- [Add A Custom Reply to Address That Differs from The from Address for Handling Responses](./working-with-smtp-client/add-a-custom-reply-to-address-that-differs-from-the-from-address-for-handling-responses.cs) - Smtp; tags: aspose-email, client, clients, csharp, dotnet8, smtp
+- [Add A Custom X Audit Trail Header Containing A Json Payload with Operation Metadata](./working-with-smtp-client/add-a-custom-x-audit-trail-header-containing-a-json-payload-with-operation-metadata.cs) - Smtp; tags: aspose-email, client, clients, csharp, dotnet8, smtp
+- [Add A Custom X Campaign Id Header to Tag The Email with A Marketing Campaign Identifier](./working-with-smtp-client/add-a-custom-x-campaign-id-header-to-tag-the-email-with-a-marketing-campaign-identifier.cs) - Exchange.Dav; tags: aspose-email, client, clients, csharp, dav, dotnet8
+### zimbra
+- [Calculate The Total Number of Items Contained Within Each ZIMBRA TGZ Archive Without Extracting Files](./zimbra/calculate-the-total-number-of-items-contained-within-each-zimbra-tgz-archive-without-extracting-files.cs) - Zimbra; tags: aspose-email, csharp, dotnet8, standalone-example, storage, tgz
+- [Configure ZIMBRA to Receive Product Update Notifications By Enabling The Subscription Service and Specifying Update Channels](./zimbra/configure-zimbra-to-receive-product-update-notifications-by-enabling-the-subscription-service-and-specifying-update-channels.cs) - Exchange.WebService; tags: aspose-email, clients, csharp, dotnet8, exchange, standalone-example
+- [Convert An Icalendar ICS File into A Microsoft Outlook MSG Message While Preserving Calendar Details](./zimbra/convert-an-icalendar-ics-file-into-a-microsoft-outlook-msg-message-while-preserving-calendar-details.cs) - Zimbra; tags: aspose-email, calendar, csharp, dotnet8, ics, mapi
+
+## Machine-Readable Files
+- `index.json` - full category, namespace, and example metadata
+- `search-index.json` - search, SEO, and agent discovery metadata
+- `examples-index.md` - task-oriented example index with search phrases
+- `readiness.json` - compact scoring/readiness evidence
+- `AGENTS.md` - repository-level coding-agent guidance
+- `<category>/AGENTS.md` - category-specific coding-agent guidance
+- `<category>/README.md` - category-level human and agent navigation
+
+## Agentic .NET Ecosystem
 - Aspose.Words: https://github.com/aspose-words/agentic-net-examples
-- Aspose.Slides: https://github.com/aspose-slides/agentic-net-examples
+- Aspose.Cells: https://github.com/aspose-cells/agentic-net-examples
+- Aspose.PDF: https://github.com/aspose-pdf/agentic-net-examples
 - Aspose.HTML: https://github.com/aspose-html/agentic-net-examples
+- Aspose.Imaging: https://github.com/aspose-imaging/agentic-net-examples
+- Aspose.Slides: https://github.com/aspose-slides/agentic-net-examples
+- Aspose.BarCode: https://github.com/aspose-barcode/agentic-net-examples

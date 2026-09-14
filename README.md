@@ -3,7 +3,7 @@
 Build-validated C# examples for Aspose.Email for .NET, organized for developers, AI coding agents, and LLM-based development tools.
 
 ## About
-Agent-generated C# examples for Aspose.Email for .NET, compiled, executed, and validated by an agentic pipeline. See [AGENTS.md](./AGENTS.md) for coding-agent instructions and [llms.txt](./llms.txt) for a machine-readable repository map.
+Agent-generated C# examples for Aspose.Email for .NET, compiled, executed, and validated by an agentic pipeline. See [AGENTS.md](./AGENTS.md) for coding-agent instructions and [llms.txt](./llms.txt) for a machine-readable repository map. Use [search-index.json](./search-index.json) for search, SEO, and agent discovery metadata, and [examples-index.md](./examples-index.md) for a task-oriented example index.
 
 [products.aspose.com/email/net/](https://products.aspose.com/email/net/)
 
@@ -76,7 +76,7 @@ Load the message, iterate its attachment collection, create output directories b
 
 ### Can these examples be used by AI coding agents like Claude, Copilot, or Cursor?
 
-Yes. The repository includes root and per-category `AGENTS.md`, `llms.txt`, `readiness.json`, and `index.json` files so AI coding agents can navigate examples, categories, namespaces, and validation metadata programmatically.
+Yes. The repository includes root and per-category `AGENTS.md`, `llms.txt`, `readiness.json`, `index.json`, and `search-index.json` files so AI coding agents can navigate examples, categories, namespaces, and validation metadata programmatically.
 
 ### Do I need an Aspose.Email license to run these examples?
 
@@ -135,6 +135,14 @@ catch (Exception ex)
 - Dispose clients/streams with `using` when applicable.
 - Avoid hardcoding secrets or license keys.
 
+## Generation Architecture
+
+This repository is produced by the Aspose.Email product-specific examples generator. It uses the shared Examples RAG/MCP platform for retrieval and skeleton code generation, then applies Aspose.Email-specific rules, validation, compile/run checks, repair, and publishing.
+
+- The shared Task Generator supplies versioned product tasks.
+- The shared Examples RAG/MCP platform retrieves product API context and generates skeleton code.
+- The Aspose.Email generator owns product-specific rules and compile/runtime guardrails.
+
 ## Agentic .NET Ecosystem
 
 Other Aspose products with agentic, build-validated example repositories:
@@ -169,6 +177,8 @@ Other Aspose products with agentic, build-validated example repositories:
 ### AI-Friendly Navigation
 - [Coding Agent Guide](./AGENTS.md) - Instructions for AI coding agents and code-generation tools
 - [LLM Repository Map](./llms.txt) - Compact machine-readable navigation
+- [Examples Index](./examples-index.md) - Task-oriented index for developers, search, and AI tools
+- [Search Discovery Index](./search-index.json) - Machine-readable docs, examples, keywords, and API areas
 
 ### Licensing & Purchase
 - [Purchase](https://purchase.aspose.com/buy) - Commercial license options
@@ -178,4 +188,4 @@ Other Aspose products with agentic, build-validated example repositories:
 All examples use [Aspose.Email for .NET](https://products.aspose.com/email/net/) and require a valid license for production use. See [licensing options](https://purchase.aspose.com/buy).
 
 ---
-*Maintained by an [agentic example generation workflow](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-06-23*
+*Generated and validated by a product-specific examples generator using shared Examples RAG/MCP infrastructure. See the [agentic examples metrics section](https://metrics.aspose.com/agents/sections/examples) | For AI-friendly guidance, see [AGENTS.md](./AGENTS.md) | Last updated: 2026-09-14*
