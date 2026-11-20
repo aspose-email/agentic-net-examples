@@ -3,7 +3,7 @@ name: aspose-email-examples
 description: AI-friendly C# code examples for Aspose.Email for .NET
 language: csharp
 framework: net8.0
-package: Aspose.Email 26.7.0
+package: Aspose.Email 26.7.0 (legacy), 26.10.0 (v4)
 ---
 
 # Aspose.Email for .NET Examples
@@ -18,7 +18,7 @@ When working in this repository:
 - Follow the conventions and anti-patterns below exactly.
 
 ## Repository Overview
-This repository currently contains **3083** working code examples across **17** categories.
+This repository retains **3083 legacy sources** across **17 legacy categories** and adds **15 source-bound native-verified V4 examples** across **3 versioned categories**: **3098 example files** across **20 leaf category groups**. The V4 catalog delivery is partial, not all 3308 tasks. Read [v4/AGENTS.md](v4/AGENTS.md) for its Email26.10 requirement, fixtures and native checks. Legacy package metadata is retained; this V4 delivery does not recertify the older corpus.
 
 ### Category Details
 - **convert-between-formats** — 135 examples. Guide: [AGENTS.md](./convert-between-formats/AGENTS.md)

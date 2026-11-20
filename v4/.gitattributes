@@ -1,0 +1,4 @@
+# Serialized test messages/archives must retain exact CRLF and payload bytes.
+fixtures/** -text
+fixtures/**/*.eml binary
+fixtures/**/*.mbox binary

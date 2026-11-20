@@ -1,0 +1,36 @@
+using System;
+using System.IO;
+using System.Linq;
+using Aspose.Email.Mapi;
+using Aspose.Email.Storage.Pst;
+class Program {
+ static void Require(bool condition,string message){if(!condition)throw new Exception(message);Console.WriteLine("PASS: "+message);}
+ static void Main(string[] args){try{
+  string task=args[0],work=args[1],fixtures=args[2];
+  if(task=="95552") {
+   using(MapiMessage message=MapiMessage.Load(Path.Combine(work,"appointment.msg"))) {
+    Require(message.SupportedType==MapiItemType.Calendar,"Output is a native calendar MSG");
+    MapiCalendar calendar=(MapiCalendar)message.ToMapiMessageItem();
+    Require(calendar.Subject.Contains("HTML meeting"),"Appointment subject retained");
+    Require(calendar.BodyHtml.Contains("Meeting") && calendar.BodyHtml.Contains("<b>details</b>"),"Requested HTML markup retained");
+   }
+  }else if(task=="95608") {
+   using(MapiMessage original=MapiMessage.Load(Path.Combine(work,"input.msg")))using(MapiMessage updated=MapiMessage.Load(Path.Combine(work,"updated.msg"))) {
+    Require(updated.SupportedType==MapiItemType.Calendar,"Updated output is a calendar MSG");
+    MapiCalendar before=(MapiCalendar)original.ToMapiMessageItem(),after=(MapiCalendar)updated.ToMapiMessageItem();
+    Require(before.Subject==after.Subject && before.Body==after.Body,"Existing meeting subject and body unchanged");
+    var recipients=after.Attendees.AppointmentRecipients;
+    Require(recipients.Any(r=>r.EmailAddress=="existing@example.com" && r.RecipientType==MapiRecipientType.MAPI_TO),"Existing attendee preserved");
+    Require(recipients.Any(r=>r.EmailAddress=="new@example.com" && r.RecipientType==MapiRecipientType.MAPI_TO),"New attendee added with MAPI_TO type");
+   }
+  }else if(task=="95699") {
+   using(PersonalStorage pst=PersonalStorage.FromFile(Path.Combine(work,"LegalMails.pst"))) {
+    FolderInfo legal=pst.RootFolder.GetSubFolder("Legal");Require(legal!=null,"Requested Legal folder exists");
+    var subjects=legal.EnumerateMessages().Select(i=>{using(var m=pst.ExtractMessage(i.EntryIdString))return m.Subject;}).OrderBy(s=>s).ToArray();
+    Require(subjects.SequenceEqual(File.ReadAllLines(Path.Combine(work,"expected-legal.txt")).OrderBy(s=>s)),"Two source EML messages imported without loss");
+    var unrelated=pst.RootFolder.GetSubFolder("Unrelated").EnumerateMessages().ToList();Require(unrelated.Count==1,"Existing unrelated message count unchanged");
+    using(var m=pst.ExtractMessage(unrelated[0].EntryIdString))Require(m.Subject==File.ReadAllText(Path.Combine(work,"expected-keep.txt")),"Existing unrelated subject unchanged");
+   }
+  }else throw new Exception("Unknown native checker task: "+task);
+ }catch(Exception e){Console.Error.WriteLine(e);Environment.ExitCode=1;}}
+}
