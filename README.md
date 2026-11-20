@@ -2,6 +2,10 @@
 
 Build-validated C# examples for Aspose.Email for .NET, organized for developers, AI coding agents, and LLM-based development tools.
 
+## Partial V4 delivery (2026-11-20)
+
+[The V4 directory](v4/README.md) adds **15 native-verified standalone sources** in three versioned categories, using **Aspose.Email 26.10.0 / .NET 8**. This is a partial selection from 3,308 V4 tasks. All 3,083 legacy sources and their 17 categories are preserved: **3,098 example files total**, across 20 leaf category groups. This update does not recertify the legacy corpus or claim every V4 task passes. See the [V4 manifest](v4/manifest.json), fixture requirements, native checks and validation limits before running.
+
 ## About
 Agent-generated C# examples for Aspose.Email for .NET, compiled, executed, and validated by an agentic pipeline. See [AGENTS.md](./AGENTS.md) for coding-agent instructions and [llms.txt](./llms.txt) for a machine-readable repository map. Use [search-index.json](./search-index.json) for search, SEO, and agent discovery metadata, and [examples-index.md](./examples-index.md) for a task-oriented example index.
 

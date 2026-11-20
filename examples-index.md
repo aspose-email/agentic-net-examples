@@ -5,10 +5,10 @@ Search-friendly index of compile-and-run validated C# examples for Aspose.Email 
 ## Discovery Metadata
 - Product: Aspose.Email
 - Framework: net8.0
-- Package: Aspose.Email 26.7.0
-- Examples: 3083
-- Categories: 17
-- Last updated: 2026-09-14
+- Package: Aspose.Email 26.7.0 legacy metadata; V4 uses 26.10.0
+- Examples: 3098 (3083 preserved legacy + 15 partial V4)
+- Categories: 20 leaf groups (17 legacy + 3 V4)
+- Last updated: 2026-11-20
 - Validation: compile-and-run passed before publication
 
 ## How To Use This Index
@@ -3217,3 +3217,23 @@ Category path: [`zimbra/`](./zimbra/)
 | [Read All Email Messages Stored in ZIMBRA TGZ Archives Programmatically for Processing and Analysis](./zimbra/read-all-email-messages-stored-in-zimbra-tgz-archives-programmatically-for-processing-and-analysis.cs) | Zimbra | Read All Email Messages Stored in ZIMBRA TGZ Archives Programmatically for Processing and Analysis in C#<br>Read All Email Messages Stored in ZIMBRA TGZ Archives Programmatically for Processing and Analysis using Aspose.Email for .NET<br>Read All Email Messages Stored in ZIMBRA TGZ Archives Programmatically for Processing and Analysis Aspose.Email .NET example<br>AI generated .net code to Read All Email Messages Stored in ZIMBRA TGZ Archives Programmatically for Processing and Analysis |
 | [Render A Consolidated View of Email Calendar Entries and TGZ File Handling Within The Interface](./zimbra/render-a-consolidated-view-of-email-calendar-entries-and-tgz-file-handling-within-the-interface.cs) | Pst | Render A Consolidated View of Email Calendar Entries and TGZ File Handling Within The Interface in C#<br>Render A Consolidated View of Email Calendar Entries and TGZ File Handling Within The Interface using Aspose.Email for .NET<br>Render A Consolidated View of Email Calendar Entries and TGZ File Handling Within The Interface Aspose.Email .NET example<br>AI generated .net code to Render A Consolidated View of Email Calendar Entries and TGZ File Handling Within The Interface |
 | [Retrieve Comprehensive Configuration Settings User Statistics and Service Status Data from The Hosted Mail Collaboration Server](./zimbra/retrieve-comprehensive-configuration-settings-user-statistics-and-service-status-data-from-the-hosted-mail-collaboration-server.cs) | Exchange | Retrieve Comprehensive Configuration Settings User Statistics and Service Status Data from The Hosted Mail Collaboration Server in C#<br>Retrieve Comprehensive Configuration Settings User Statistics and Service Status Data from The Hosted Mail Collaboration Server using Aspose.Email for .NET<br>Retrieve Comprehensive Configuration Settings User Statistics and Service Status Data from The Hosted Mail Collaboration Server Aspose.Email .NET example<br>AI generated .net code to Retrieve Comprehensive Configuration Settings User Statistics and Service Status Data from The Hosted Mail Collaboration Server |
+
+## Partial V4 delivery
+
+15 sources from 3308 catalog tasks; [scope and fixtures](v4/README.md), [manifest](v4/manifest.json).
+
+- [95676: Instantiate AmpMessage, set HtmlBody with style block, add AmpAccordion with three panels, save as amp_styled_accordion.eml.](v4/amp-emails/95676.cs) — amp-emails; Aspose.Email26.10; source-bound native verified.
+- [95679: Instantiate AmpMessage, set HtmlBody with meta viewport tag, add AmpFitText component, save as amp_viewport_fittext.eml.](v4/amp-emails/95679.cs) — amp-emails; Aspose.Email26.10; source-bound native verified.
+- [95681: Create AmpForm with submit button labeled Subscribe, method POST, add to message, save as amp_form_subscribe.eml.](v4/amp-emails/95681.cs) — amp-emails; Aspose.Email26.10; source-bound native verified.
+- [95683: Create AmpMessage, add AmpCarousel with three images, then add AmpForm below carousel, save as amp_carousel_form.eml.](v4/amp-emails/95683.cs) — amp-emails; Aspose.Email26.10; source-bound native verified.
+- [95685: Instantiate AmpMessage, set HtmlBody with header element, add AmpAccordion with two panels, save as amp_header_accordion.eml.](v4/amp-emails/95685.cs) — amp-emails; Aspose.Email26.10; source-bound native verified.
+- [95686: Create AmpForm with CSRF token hidden field, email text field, and submit button, save as amp_form_csrf.eml.](v4/amp-emails/95686.cs) — amp-emails; Aspose.Email26.10; source-bound native verified.
+- [95699: Load messages from "LegalMails" directory using a local GetMessages iterator and add them to "Legal" folder.](v4/archives/95699.cs) — archives; Aspose.Email26.10; source-bound native verified.
+- [95799: Retrieve only subject and date fields using EnumerateMessageInfo and write them to a summary text file.](v4/archives/95799.cs) — archives; Aspose.Email26.10; source-bound native verified.
+- [95805: Create a MailMessage with To, Cc, and Bcc fields and store it in Messages.mbox.](v4/archives/95805.cs) — archives; Aspose.Email26.10; source-bound native verified.
+- [95837: Append a MailMessage with IsDraft set to false to an existing MBOX file to ensure draft restriction compliance.](v4/archives/95837.cs) — archives; Aspose.Email26.10; source-bound native verified.
+- [95552: Create a new appointment with HTML description and save it as a .msg file using AppointmentMsgSaveOptions.](v4/calendar/95552.cs) — calendar; Aspose.Email26.10; source-bound native verified.
+- [95562: Collect a set of appointment objects and write them all to one .ics file using CalendarWriter.](v4/calendar/95562.cs) — calendar; Aspose.Email26.10; source-bound native verified.
+- [95584: Use CalendarWriter to write a collection of appointments that include display and audio reminders to a .ics file.](v4/calendar/95584.cs) — calendar; Aspose.Email26.10; source-bound native verified.
+- [95608: Load a local MSG meeting as MapiCalendar, add attendees with MapiRecipientCollection and MapiRecipientType.MAPI_TO, and save the updated MSG.](v4/calendar/95608.cs) — calendar; Aspose.Email26.10; source-bound native verified.
+- [95610: Load a local MSG meeting as MapiCalendar and save it as ICS with default options.](v4/calendar/95610.cs) — calendar; Aspose.Email26.10; source-bound native verified.

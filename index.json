@@ -4,9 +4,9 @@
   "framework": "net8.0",
   "package": "Aspose.Email",
   "package_version": "26.7.0",
-  "total_examples": 3083,
-  "total_categories": 17,
-  "last_updated": "2026-09-14",
+  "total_examples": 3098,
+  "total_categories": 20,
+  "last_updated": "2026-11-20",
   "categories": [
     {
       "name": "convert-between-formats",
@@ -128653,6 +128653,626 @@
         "Aspose.Email.PersonalInfo",
         "Aspose.Email.Storage.Pst"
       ]
+    },
+    {
+      "name": "v4/amp-emails",
+      "file_count": 6,
+      "files": [
+        "95676.cs",
+        "95679.cs",
+        "95681.cs",
+        "95683.cs",
+        "95685.cs",
+        "95686.cs"
+      ],
+      "examples": [
+        {
+          "file": "95676.cs",
+          "task_id": "95676",
+          "title": "Instantiate AmpMessage, set HtmlBody with style block, add AmpAccordion with three panels, save as amp_styled_accordion.eml.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "c6c8ad1ceab40d222924252c3ccc06c4d183e2442d129e4fcf9c5c7b06820df4",
+          "path": "v4/amp-emails/95676.cs",
+          "category": "v4/amp-emails",
+          "api_area": "amp-emails",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Instantiate AmpMessage, set HtmlBody with style block, add AmpAccordion with three panels, save as amp_styled_accordion.eml.",
+            "Instantiate AmpMessage, set HtmlBody with style block, add AmpAccordion with three panels, save as amp_styled_accordion.eml. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System",
+            "System.IO",
+            "Aspose.Email",
+            "Aspose.Email.Amp"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95679.cs",
+          "task_id": "95679",
+          "title": "Instantiate AmpMessage, set HtmlBody with meta viewport tag, add AmpFitText component, save as amp_viewport_fittext.eml.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "e4c61aee84526b979faef4f330258f9226c8aa3958932b40cf3a29268c3fcb8f",
+          "path": "v4/amp-emails/95679.cs",
+          "category": "v4/amp-emails",
+          "api_area": "amp-emails",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Instantiate AmpMessage, set HtmlBody with meta viewport tag, add AmpFitText component, save as amp_viewport_fittext.eml.",
+            "Instantiate AmpMessage, set HtmlBody with meta viewport tag, add AmpFitText component, save as amp_viewport_fittext.eml. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System",
+            "System.IO",
+            "Aspose.Email",
+            "Aspose.Email.Amp"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95681.cs",
+          "task_id": "95681",
+          "title": "Create AmpForm with submit button labeled Subscribe, method POST, add to message, save as amp_form_subscribe.eml.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "8b94d3c5054d1debb9a9f38cc0bb7ffbb82489aae1fbbb1f68cefc772b3cf9c9",
+          "path": "v4/amp-emails/95681.cs",
+          "category": "v4/amp-emails",
+          "api_area": "amp-emails",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Create AmpForm with submit button labeled Subscribe, method POST, add to message, save as amp_form_subscribe.eml.",
+            "Create AmpForm with submit button labeled Subscribe, method POST, add to message, save as amp_form_subscribe.eml. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "Aspose.Email",
+            "System",
+            "System.IO",
+            "Aspose.Email.Amp"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95683.cs",
+          "task_id": "95683",
+          "title": "Create AmpMessage, add AmpCarousel with three images, then add AmpForm below carousel, save as amp_carousel_form.eml.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "975a6930855680017fd8678172e9e3b52f246d629078e6192d55522fd5f85b1f",
+          "path": "v4/amp-emails/95683.cs",
+          "category": "v4/amp-emails",
+          "api_area": "amp-emails",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Create AmpMessage, add AmpCarousel with three images, then add AmpForm below carousel, save as amp_carousel_form.eml.",
+            "Create AmpMessage, add AmpCarousel with three images, then add AmpForm below carousel, save as amp_carousel_form.eml. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System",
+            "System.IO",
+            "Aspose.Email",
+            "Aspose.Email.Amp"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95685.cs",
+          "task_id": "95685",
+          "title": "Instantiate AmpMessage, set HtmlBody with header element, add AmpAccordion with two panels, save as amp_header_accordion.eml.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "c607996099501c31bef4b8025ec1f1a194595d4d4b7ca99bd4ad1b89e74d59b3",
+          "path": "v4/amp-emails/95685.cs",
+          "category": "v4/amp-emails",
+          "api_area": "amp-emails",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Instantiate AmpMessage, set HtmlBody with header element, add AmpAccordion with two panels, save as amp_header_accordion.eml.",
+            "Instantiate AmpMessage, set HtmlBody with header element, add AmpAccordion with two panels, save as amp_header_accordion.eml. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "Aspose.Email",
+            "System",
+            "System.IO",
+            "Aspose.Email.Amp"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95686.cs",
+          "task_id": "95686",
+          "title": "Create AmpForm with CSRF token hidden field, email text field, and submit button, save as amp_form_csrf.eml.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "d2403b0f25796d2aa436b98407abc29770afdb4db5c8d306e68914ef7fa30430",
+          "path": "v4/amp-emails/95686.cs",
+          "category": "v4/amp-emails",
+          "api_area": "amp-emails",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Create AmpForm with CSRF token hidden field, email text field, and submit button, save as amp_form_csrf.eml.",
+            "Create AmpForm with CSRF token hidden field, email text field, and submit button, save as amp_form_csrf.eml. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System",
+            "System.IO",
+            "Aspose.Email",
+            "Aspose.Email.Mime",
+            "Aspose.Email.Amp"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        }
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 6
+        },
+        {
+          "name": "System.IO",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Amp",
+          "count": 6
+        },
+        {
+          "name": "Aspose.Email.Mime",
+          "count": 1
+        }
+      ],
+      "key_apis": [
+        "Aspose.Email",
+        "Aspose.Email.Amp",
+        "Aspose.Email.Mime"
+      ],
+      "catalog_version": "4.0",
+      "package_version": "26.10.0"
+    },
+    {
+      "name": "v4/archives",
+      "file_count": 4,
+      "files": [
+        "95699.cs",
+        "95799.cs",
+        "95805.cs",
+        "95837.cs"
+      ],
+      "examples": [
+        {
+          "file": "95699.cs",
+          "task_id": "95699",
+          "title": "Load messages from \"LegalMails\" directory using a local GetMessages iterator and add them to \"Legal\" folder.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "b05ea5427e68c9400846e49a399ec861a390d875a3567b8584b85b2b25c0d81b",
+          "path": "v4/archives/95699.cs",
+          "category": "v4/archives",
+          "api_area": "archives",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Load messages from \"LegalMails\" directory using a local GetMessages iterator and add them to \"Legal\" folder.",
+            "Load messages from \"LegalMails\" directory using a local GetMessages iterator and add them to \"Legal\" folder. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System",
+            "Aspose.Email"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95799.cs",
+          "task_id": "95799",
+          "title": "Retrieve only subject and date fields using EnumerateMessageInfo and write them to a summary text file.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "1bb211043ac3d7a754e94bfa0c6b6bb7f047ac03acfb681226862abdb676ab6e",
+          "path": "v4/archives/95799.cs",
+          "category": "v4/archives",
+          "api_area": "archives",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Retrieve only subject and date fields using EnumerateMessageInfo and write them to a summary text file.",
+            "Retrieve only subject and date fields using EnumerateMessageInfo and write them to a summary text file. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "Aspose.Email",
+            "System"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95805.cs",
+          "task_id": "95805",
+          "title": "Create a MailMessage with To, Cc, and Bcc fields and store it in Messages.mbox.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "34ac04c2b88c24bcb43094b098eff51d7d1caa42524f9c47078ff7d4f072770f",
+          "path": "v4/archives/95805.cs",
+          "category": "v4/archives",
+          "api_area": "archives",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Create a MailMessage with To, Cc, and Bcc fields and store it in Messages.mbox.",
+            "Create a MailMessage with To, Cc, and Bcc fields and store it in Messages.mbox. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95837.cs",
+          "task_id": "95837",
+          "title": "Append a MailMessage with IsDraft set to false to an existing MBOX file to ensure draft restriction compliance.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "bf8154f4a4ff5a5bd596199f46e37b368f4961e1a6240e94aa18c3f97d65cd3b",
+          "path": "v4/archives/95837.cs",
+          "category": "v4/archives",
+          "api_area": "archives",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Append a MailMessage with IsDraft set to false to an existing MBOX file to ensure draft restriction compliance.",
+            "Append a MailMessage with IsDraft set to false to an existing MBOX file to ensure draft restriction compliance. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        }
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 2
+        }
+      ],
+      "key_apis": [
+        "Aspose.Email"
+      ],
+      "catalog_version": "4.0",
+      "package_version": "26.10.0"
+    },
+    {
+      "name": "v4/calendar",
+      "file_count": 5,
+      "files": [
+        "95552.cs",
+        "95562.cs",
+        "95584.cs",
+        "95608.cs",
+        "95610.cs"
+      ],
+      "examples": [
+        {
+          "file": "95552.cs",
+          "task_id": "95552",
+          "title": "Create a new appointment with HTML description and save it as a .msg file using AppointmentMsgSaveOptions.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "c58ca97a66c9add9cc794077af3e73e3bd7ef3c88f3bf4ece5b324df0bdfdb95",
+          "path": "v4/calendar/95552.cs",
+          "category": "v4/calendar",
+          "api_area": "calendar",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Create a new appointment with HTML description and save it as a .msg file using AppointmentMsgSaveOptions.",
+            "Create a new appointment with HTML description and save it as a .msg file using AppointmentMsgSaveOptions. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System",
+            "System.IO",
+            "Aspose.Email",
+            "Aspose.Email.Calendar"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95562.cs",
+          "task_id": "95562",
+          "title": "Collect a set of appointment objects and write them all to one .ics file using CalendarWriter.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "3f62d0aa95d70bfa99f00907df9976b278af052f90b28c01d8088418efaf46f4",
+          "path": "v4/calendar/95562.cs",
+          "category": "v4/calendar",
+          "api_area": "calendar",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Collect a set of appointment objects and write them all to one .ics file using CalendarWriter.",
+            "Collect a set of appointment objects and write them all to one .ics file using CalendarWriter. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System",
+            "System.Collections.Generic",
+            "System.IO",
+            "Aspose.Email",
+            "Aspose.Email.Calendar"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95584.cs",
+          "task_id": "95584",
+          "title": "Use CalendarWriter to write a collection of appointments that include display and audio reminders to a .ics file.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "2720436abb5002b09bff4fd2fd78923785f1078d120fa62139922ff67e9e6301",
+          "path": "v4/calendar/95584.cs",
+          "category": "v4/calendar",
+          "api_area": "calendar",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Use CalendarWriter to write a collection of appointments that include display and audio reminders to a .ics file.",
+            "Use CalendarWriter to write a collection of appointments that include display and audio reminders to a .ics file. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System",
+            "System.Collections.Generic",
+            "System.IO",
+            "Aspose.Email",
+            "Aspose.Email.Calendar"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95608.cs",
+          "task_id": "95608",
+          "title": "Load a local MSG meeting as MapiCalendar, add attendees with MapiRecipientCollection and MapiRecipientType.MAPI_TO, and save the updated MSG.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "35a6338249014c9f9b06ce5f6104471377629988774ffa9040349a0cee144063",
+          "path": "v4/calendar/95608.cs",
+          "category": "v4/calendar",
+          "api_area": "calendar",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Load a local MSG meeting as MapiCalendar, add attendees with MapiRecipientCollection and MapiRecipientType.MAPI_TO, and save the updated MSG.",
+            "Load a local MSG meeting as MapiCalendar, add attendees with MapiRecipientCollection and MapiRecipientType.MAPI_TO, and save the updated MSG. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "Aspose.Email",
+            "System",
+            "System.IO",
+            "Aspose.Email.Mapi",
+            "Aspose.Email.Calendar"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        },
+        {
+          "file": "95610.cs",
+          "task_id": "95610",
+          "title": "Load a local MSG meeting as MapiCalendar and save it as ICS with default options.",
+          "validated": true,
+          "validation_scope": "compile-runtime-native-operation",
+          "sha256": "0d58135d27848ccded0601c10dd807854dd7651698f237582679332822f8dc06",
+          "path": "v4/calendar/95610.cs",
+          "category": "v4/calendar",
+          "api_area": "calendar",
+          "tags": [
+            "aspose-email",
+            "csharp",
+            "dotnet8",
+            "v4",
+            "native-verified"
+          ],
+          "formats": [],
+          "search_phrases": [
+            "Load a local MSG meeting as MapiCalendar and save it as ICS with default options.",
+            "Load a local MSG meeting as MapiCalendar and save it as ICS with default options. using Aspose.Email 26.10.0"
+          ],
+          "namespaces": [
+            "System",
+            "System.IO",
+            "Aspose.Email.Mapi"
+          ],
+          "standalone": true,
+          "framework": "net8.0",
+          "package": "Aspose.Email",
+          "package_version": "26.10.0"
+        }
+      ],
+      "required_namespaces": [
+        {
+          "name": "System",
+          "count": 5
+        },
+        {
+          "name": "System.IO",
+          "count": 5
+        },
+        {
+          "name": "Aspose.Email",
+          "count": 4
+        },
+        {
+          "name": "Aspose.Email.Calendar",
+          "count": 4
+        },
+        {
+          "name": "System.Collections.Generic",
+          "count": 2
+        },
+        {
+          "name": "Aspose.Email.Mapi",
+          "count": 2
+        }
+      ],
+      "key_apis": [
+        "Aspose.Email",
+        "Aspose.Email.Calendar",
+        "Aspose.Email.Mapi"
+      ],
+      "catalog_version": "4.0",
+      "package_version": "26.10.0"
     }
-  ]
+  ],
+  "versioned_catalogs": {
+    "legacy": {
+      "examples": 3083,
+      "categories": 17,
+      "package_version": "26.7.0",
+      "validation_scope": "historical; not recertified by V4 delivery"
+    },
+    "v4": {
+      "catalog_task_total": 3308,
+      "published_examples": 15,
+      "categories": 3,
+      "package_version": "26.10.0",
+      "status": "partial",
+      "manifest": "v4/manifest.json"
+    }
+  }
 }

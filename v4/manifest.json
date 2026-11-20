@@ -1,0 +1,435 @@
+{
+  "schema_version": 1,
+  "product": "Aspose.Email",
+  "catalog_version": "4.0",
+  "framework": "net8.0",
+  "package": "Aspose.Email",
+  "package_version": "26.10.0",
+  "catalog_task_total": 3308,
+  "published_examples": 15,
+  "publication_status": "partial",
+  "legacy_examples_preserved": 3083,
+  "legacy_categories_preserved": 17,
+  "source_selection": "Only task-specific source-bound native-verified repairs; no guard-only or unverified network examples",
+  "validation_date": "2026-11-20",
+  "limitations": [
+    "Partial delivery, not the full V4 catalog and not all stopped-run failures.",
+    "Local fixtures do not certify email-client rendering, delivery, real form endpoints, or production CSRF validation.",
+    "Evaluation SDK may append its evaluation marker; native checks require original content and structure.",
+    "Legacy examples were preserved; this delivery does not recertify their historical validation."
+  ],
+  "examples": [
+    {
+      "task_id": "95676",
+      "category": "amp-emails",
+      "task": "Instantiate AmpMessage, set HtmlBody with style block, add AmpAccordion with three panels, save as amp_styled_accordion.eml.",
+      "path": "v4/amp-emails/95676.cs",
+      "sha256": "c6c8ad1ceab40d222924252c3ccc06c4d183e2442d129e4fcf9c5c7b06820df4",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "c6c8ad1ceab40d222924252c3ccc06c4d183e2442d129e4fcf9c5c7b06820df4",
+      "native_assertions": [
+        "static",
+        "compile_runtime",
+        "amp_mime_part",
+        "accordion",
+        "section_count",
+        "panel_titles",
+        "html_css_preserved"
+      ],
+      "repair_kind": "explicit task-specific correction after existing normalization; not a general automatic rewrite",
+      "fixtures": [],
+      "upstream_evidence_id": "amp-proofs/operation-verification.json"
+    },
+    {
+      "task_id": "95679",
+      "category": "amp-emails",
+      "task": "Instantiate AmpMessage, set HtmlBody with meta viewport tag, add AmpFitText component, save as amp_viewport_fittext.eml.",
+      "path": "v4/amp-emails/95679.cs",
+      "sha256": "e4c61aee84526b979faef4f330258f9226c8aa3958932b40cf3a29268c3fcb8f",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "e4c61aee84526b979faef4f330258f9226c8aa3958932b40cf3a29268c3fcb8f",
+      "native_assertions": [
+        "static",
+        "compile_runtime",
+        "amp_mime_part",
+        "fit_text",
+        "html_viewport_preserved"
+      ],
+      "repair_kind": "explicit task-specific correction after existing normalization; not a general automatic rewrite",
+      "fixtures": [],
+      "upstream_evidence_id": "amp-proofs/operation-verification.json"
+    },
+    {
+      "task_id": "95681",
+      "category": "amp-emails",
+      "task": "Create AmpForm with submit button labeled Subscribe, method POST, add to message, save as amp_form_subscribe.eml.",
+      "path": "v4/amp-emails/95681.cs",
+      "sha256": "8b94d3c5054d1debb9a9f38cc0bb7ffbb82489aae1fbbb1f68cefc772b3cf9c9",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "8b94d3c5054d1debb9a9f38cc0bb7ffbb82489aae1fbbb1f68cefc772b3cf9c9",
+      "native_assertions": [
+        "static",
+        "compile_runtime",
+        "amp_mime_part",
+        "post_form",
+        "subscribe_submit"
+      ],
+      "repair_kind": "explicit task-specific correction after existing normalization; not a general automatic rewrite",
+      "fixtures": [],
+      "upstream_evidence_id": "amp-proofs/operation-verification.json"
+    },
+    {
+      "task_id": "95683",
+      "category": "amp-emails",
+      "task": "Create AmpMessage, add AmpCarousel with three images, then add AmpForm below carousel, save as amp_carousel_form.eml.",
+      "path": "v4/amp-emails/95683.cs",
+      "sha256": "975a6930855680017fd8678172e9e3b52f246d629078e6192d55522fd5f85b1f",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "975a6930855680017fd8678172e9e3b52f246d629078e6192d55522fd5f85b1f",
+      "native_assertions": [
+        "image_count",
+        "cid_preserved",
+        "disposition_preserved",
+        "payload_preserved",
+        "html_cid_references",
+        "amp_mime_part",
+        "three_active_amp_images",
+        "carousel_before_form",
+        "form_post_submit",
+        "exact_output_filename"
+      ],
+      "repair_kind": "Task-specific offline repair retaining AMP operation and CID fallback images",
+      "fixtures": [
+        {
+          "path": "v4/fixtures/95683/image1.png",
+          "runtime_path": "image1.png",
+          "sha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        },
+        {
+          "path": "v4/fixtures/95683/image2.png",
+          "runtime_path": "image2.png",
+          "sha256": "619b0e8b0c8741604b8628c64323444df334846a0dfe13963662586a3603f14c",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        },
+        {
+          "path": "v4/fixtures/95683/image3.png",
+          "runtime_path": "image3.png",
+          "sha256": "6a34118ba2e0bf5da5ab14cb63b121e2e8b2987a876668a9b2f9c30e1357470b",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        }
+      ],
+      "upstream_evidence_id": "attachment-proof/results.json"
+    },
+    {
+      "task_id": "95685",
+      "category": "amp-emails",
+      "task": "Instantiate AmpMessage, set HtmlBody with header element, add AmpAccordion with two panels, save as amp_header_accordion.eml.",
+      "path": "v4/amp-emails/95685.cs",
+      "sha256": "c607996099501c31bef4b8025ec1f1a194595d4d4b7ca99bd4ad1b89e74d59b3",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "c607996099501c31bef4b8025ec1f1a194595d4d4b7ca99bd4ad1b89e74d59b3",
+      "native_assertions": [
+        "static",
+        "compile_runtime",
+        "amp_mime_part",
+        "accordion",
+        "section_count",
+        "panel_titles",
+        "html_heading_preserved"
+      ],
+      "repair_kind": "explicit task-specific correction after existing normalization; not a general automatic rewrite",
+      "fixtures": [],
+      "upstream_evidence_id": "amp-proofs/operation-verification.json"
+    },
+    {
+      "task_id": "95686",
+      "category": "amp-emails",
+      "task": "Create AmpForm with CSRF token hidden field, email text field, and submit button, save as amp_form_csrf.eml.",
+      "path": "v4/amp-emails/95686.cs",
+      "sha256": "d2403b0f25796d2aa436b98407abc29770afdb4db5c8d306e68914ef7fa30430",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "d2403b0f25796d2aa436b98407abc29770afdb4db5c8d306e68914ef7fa30430",
+      "native_assertions": [
+        "static",
+        "compile_runtime",
+        "amp_mime_part",
+        "post_form",
+        "csrf_hidden",
+        "email_field",
+        "submit_field"
+      ],
+      "repair_kind": "explicit task-specific correction after existing normalization; not a general automatic rewrite",
+      "fixtures": [],
+      "runtime_environment": {
+        "AMP_CSRF_TOKEN": "local-fixture-token-95686"
+      },
+      "runtime_environment_scope": "Synthetic local test fixture only; production requires a server-issued token",
+      "upstream_evidence_id": "amp-proofs/operation-verification.json"
+    },
+    {
+      "task_id": "95699",
+      "category": "archives",
+      "task": "Load messages from \"LegalMails\" directory using a local GetMessages iterator and add them to \"Legal\" folder.",
+      "path": "v4/archives/95699.cs",
+      "sha256": "b05ea5427e68c9400846e49a399ec861a390d875a3567b8584b85b2b25c0d81b",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "b05ea5427e68c9400846e49a399ec861a390d875a3567b8584b85b2b25c0d81b",
+      "native_assertions": [
+        "Two real EML inputs imported into Legal PST folder",
+        "Existing unrelated PST message preserved"
+      ],
+      "repair_kind": "explicit task-specific source repair; generator adds verified binding and precompile PstFile guidance, not a blind type rename",
+      "fixtures": [
+        {
+          "path": "v4/fixtures/95699/expected-legal.txt",
+          "runtime_path": "expected-legal.txt",
+          "sha256": "9234c80783fc2a414f56093cf4d692b2d1da2815b33a3f466f96e30217d2836c",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        },
+        {
+          "path": "v4/fixtures/95699/expected-keep.txt",
+          "runtime_path": "expected-keep.txt",
+          "sha256": "60912c5e6322f7a66984be6cf34e2acd6e3b1e76d2cedb57e565037cf2606121",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        },
+        {
+          "path": "v4/fixtures/95699/LegalMails.pst",
+          "runtime_path": "LegalMails.pst",
+          "sha256": "61135655f27cc2abe08f10aaebeba8ffff5c7261c019a1c6965b53ad4095d9e5",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        },
+        {
+          "path": "v4/fixtures/95699/LegalMails/1.eml",
+          "runtime_path": "LegalMails/1.eml",
+          "sha256": "9f21beb8d9fbb8476b4f1ec43b25482e6d531d371eba67665ae4dff7349413d0",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        },
+        {
+          "path": "v4/fixtures/95699/LegalMails/2.eml",
+          "runtime_path": "LegalMails/2.eml",
+          "sha256": "f9f89b4e6167677ff7cec6b4797c106d5ed1bce8d5dc5446cc31f0b5604a5737",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        }
+      ],
+      "upstream_evidence_id": "archive-proof/results.json"
+    },
+    {
+      "task_id": "95799",
+      "category": "archives",
+      "task": "Retrieve only subject and date fields using EnumerateMessageInfo and write them to a summary text file.",
+      "path": "v4/archives/95799.cs",
+      "sha256": "1bb211043ac3d7a754e94bfa0c6b6bb7f047ac03acfb681226862abdb676ab6e",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "1bb211043ac3d7a754e94bfa0c6b6bb7f047ac03acfb681226862abdb676ab6e",
+      "native_assertions": [
+        "Summary contains exactly one line: Archive seed(Aspose.Email Evaluation) | 2024-01-02 03:04:05Z, matching the input MBOX subject and UTC date."
+      ],
+      "repair_kind": "Source-bound overnight native repair",
+      "fixtures": [
+        {
+          "path": "v4/fixtures/95799/Messages.mbox",
+          "runtime_path": "Messages.mbox",
+          "sha256": "1d8e77964ddb9b743f7665df0b7c8078c30fd3129eabd32a191658e983cd8f6b",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        }
+      ],
+      "upstream_evidence_id": "ops/worker_sessions/email-overnight-codex-20261120_080503/evidence/archive_checks/95799/verification.json"
+    },
+    {
+      "task_id": "95805",
+      "category": "archives",
+      "task": "Create a MailMessage with To, Cc, and Bcc fields and store it in Messages.mbox.",
+      "path": "v4/archives/95805.cs",
+      "sha256": "34ac04c2b88c24bcb43094b098eff51d7d1caa42524f9c47078ff7d4f072770f",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "34ac04c2b88c24bcb43094b098eff51d7d1caa42524f9c47078ff7d4f072770f",
+      "native_assertions": [
+        "MBOX parses as exactly one message; To, Cc, Bcc equal to@example.com, cc@example.com, bcc@example.com respectively.",
+        "Subject equals Archive seed(Aspose.Email Evaluation), date equals 2024-01-02 03:04:05 UTC."
+      ],
+      "repair_kind": "Source-bound overnight native repair",
+      "fixtures": [],
+      "upstream_evidence_id": "ops/worker_sessions/email-overnight-codex-20261120_080503/evidence/archive_checks/95805/verification.json"
+    },
+    {
+      "task_id": "95837",
+      "category": "archives",
+      "task": "Append a MailMessage with IsDraft set to false to an existing MBOX file to ensure draft restriction compliance.",
+      "path": "v4/archives/95837.cs",
+      "sha256": "bf8154f4a4ff5a5bd596199f46e37b368f4961e1a6240e94aa18c3f97d65cd3b",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "bf8154f4a4ff5a5bd596199f46e37b368f4961e1a6240e94aa18c3f97d65cd3b",
+      "native_assertions": [
+        "Appended MBOX starts byte-for-byte with the original archive and parses as exactly two messages.",
+        "Second message subject equals Appended message(Aspose.Email Evaluation) and X-Unsent equals 0, indicating non-draft."
+      ],
+      "repair_kind": "Source-bound overnight native repair",
+      "fixtures": [
+        {
+          "path": "v4/fixtures/95837/Messages.mbox",
+          "runtime_path": "Messages.mbox",
+          "sha256": "1d8e77964ddb9b743f7665df0b7c8078c30fd3129eabd32a191658e983cd8f6b",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        }
+      ],
+      "upstream_evidence_id": "ops/worker_sessions/email-overnight-codex-20261120_080503/evidence/archive_checks/95837/verification.json"
+    },
+    {
+      "task_id": "95552",
+      "category": "calendar",
+      "task": "Create a new appointment with HTML description and save it as a .msg file using AppointmentMsgSaveOptions.",
+      "path": "v4/calendar/95552.cs",
+      "sha256": "c58ca97a66c9add9cc794077af3e73e3bd7ef3c88f3bf4ece5b324df0bdfdb95",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "c58ca97a66c9add9cc794077af3e73e3bd7ef3c88f3bf4ece5b324df0bdfdb95",
+      "native_assertions": [
+        "Reloaded MSG is a calendar item and its subject contains HTML meeting.",
+        "Reloaded calendar BodyHtml contains Meeting and the exact <b>details</b> markup."
+      ],
+      "repair_kind": "Source-bound overnight native repair",
+      "fixtures": [],
+      "upstream_evidence_id": "ops/worker_sessions/email-overnight-codex-20261120_071904/evidence/95552/verification.json"
+    },
+    {
+      "task_id": "95562",
+      "category": "calendar",
+      "task": "Collect a set of appointment objects and write them all to one .ics file using CalendarWriter.",
+      "path": "v4/calendar/95562.cs",
+      "sha256": "3f62d0aa95d70bfa99f00907df9976b278af052f90b28c01d8088418efaf46f4",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "3f62d0aa95d70bfa99f00907df9976b278af052f90b28c01d8088418efaf46f4",
+      "native_assertions": [
+        "Output contains exactly one VCALENDAR and two VEVENT components.",
+        "First and second VEVENT contain their respective First meeting/Second meeting summaries and UTC starts 20270102T100000Z/20270103T100000Z."
+      ],
+      "repair_kind": "Source-bound overnight native repair",
+      "fixtures": [],
+      "upstream_evidence_id": "ops/worker_sessions/email-overnight-codex-20261120_071904/evidence/95562/verification.json"
+    },
+    {
+      "task_id": "95584",
+      "category": "calendar",
+      "task": "Use CalendarWriter to write a collection of appointments that include display and audio reminders to a .ics file.",
+      "path": "v4/calendar/95584.cs",
+      "sha256": "2720436abb5002b09bff4fd2fd78923785f1078d120fa62139922ff67e9e6301",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "2720436abb5002b09bff4fd2fd78923785f1078d120fa62139922ff67e9e6301",
+      "native_assertions": [
+        "Output contains one VCALENDAR and two VEVENT components with the expected subjects and UTC start dates.",
+        "First event has one DISPLAY VALARM with -PT15M start trigger; second has one AUDIO VALARM with -PT10M start trigger."
+      ],
+      "repair_kind": "Source-bound overnight native repair",
+      "fixtures": [],
+      "upstream_evidence_id": "ops/worker_sessions/email-overnight-codex-20261120_071904/evidence/95584/verification.json"
+    },
+    {
+      "task_id": "95608",
+      "category": "calendar",
+      "task": "Load a local MSG meeting as MapiCalendar, add attendees with MapiRecipientCollection and MapiRecipientType.MAPI_TO, and save the updated MSG.",
+      "path": "v4/calendar/95608.cs",
+      "sha256": "35a6338249014c9f9b06ce5f6104471377629988774ffa9040349a0cee144063",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "35a6338249014c9f9b06ce5f6104471377629988774ffa9040349a0cee144063",
+      "native_assertions": [
+        "Reloaded output MSG is a calendar item; its subject and body exactly equal the input calendar subject and body.",
+        "Reloaded recipients contain both existing@example.com and new@example.com with MAPI_TO type."
+      ],
+      "repair_kind": "Source-bound overnight native repair",
+      "fixtures": [
+        {
+          "path": "v4/fixtures/95608/input.msg",
+          "runtime_path": "input.msg",
+          "sha256": "ecada7269876dec144b34b0c074f58df4256bf041816bdb68ab3a087ab333ae3",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        }
+      ],
+      "upstream_evidence_id": "ops/worker_sessions/email-overnight-codex-20261120_071904/evidence/95608/verification.json"
+    },
+    {
+      "task_id": "95610",
+      "category": "calendar",
+      "task": "Load a local MSG meeting as MapiCalendar and save it as ICS with default options.",
+      "path": "v4/calendar/95610.cs",
+      "sha256": "0d58135d27848ccded0601c10dd807854dd7651698f237582679332822f8dc06",
+      "package": "Aspose.Email",
+      "package_version": "26.10.0",
+      "framework": "net8.0",
+      "catalog_version": "4.0",
+      "validation_scope": "compile-runtime-native-operation",
+      "original_source_sha256": "0d58135d27848ccded0601c10dd807854dd7651698f237582679332822f8dc06",
+      "native_assertions": [
+        "Output contains BEGIN:VCALENDAR and BEGIN:VEVENT.",
+        "Output SUMMARY starts with Planning and LOCATION is Room 4 (evaluation builds may append a marker).",
+        "Output DTSTART is 20250501T130000Z and DTEND is 20250501T140000Z, matching the local MSG fixture."
+      ],
+      "repair_kind": "Source-bound overnight native repair",
+      "fixtures": [
+        {
+          "path": "v4/fixtures/95610/meeting.msg",
+          "runtime_path": "meeting.msg",
+          "sha256": "15e7f7dd5495a62aee75fbab3e4701b5e002e7b9ef8c7bdaadb26362be8450dd",
+          "provenance": "Synthetic local SDK/test fixture; reserved example.com identities; no customer data"
+        }
+      ],
+      "upstream_evidence_id": "ops/worker_sessions/email-overnight-codex-20261120_073416/evidence/95610/verification.json"
+    }
+  ],
+  "validation_report": "v4/validation/local-report.json"
+}

@@ -5,9 +5,9 @@
   "framework": "net8.0",
   "package": "Aspose.Email",
   "package_version": "26.7.0",
-  "total_examples": 3083,
-  "total_categories": 17,
-  "last_updated": "2026-09-14",
+  "total_examples": 3098,
+  "total_categories": 20,
+  "last_updated": "2026-11-20",
   "generated_assets": {
     "readme": "README.md",
     "agents": "AGENTS.md",
@@ -27,5 +27,29 @@
     "machine_readable_readiness": true,
     "ai_friendly_navigation": true
   },
-  "agentic_examples_section": "https://metrics.aspose.com/agents/sections/examples"
+  "agentic_examples_section": "https://metrics.aspose.com/agents/sections/examples",
+  "versioned_catalogs": {
+    "legacy": {
+      "examples": 3083,
+      "categories": 17,
+      "package_version": "26.7.0",
+      "validation_scope": "historical; not recertified by V4 delivery"
+    },
+    "v4": {
+      "catalog_task_total": 3308,
+      "published_examples": 15,
+      "categories": 3,
+      "package_version": "26.10.0",
+      "status": "partial",
+      "manifest": "v4/manifest.json"
+    }
+  },
+  "v4_readiness": {
+    "published_examples": 15,
+    "catalog_total": 3308,
+    "partial_delivery": true,
+    "compile_runtime_and_native_operation_verified": true,
+    "manifest": "v4/manifest.json",
+    "reproduce": "python3 v4/validation/run.py"
+  }
 }

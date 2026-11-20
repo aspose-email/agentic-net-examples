@@ -83,10 +83,21 @@ jobs:
             fi
 
             cp "$f" "$workdir/Program.cs"
+            EXAMPLE_PKG_VERSION="$PKG_VERSION"
+            V4_TASK_ID=""
+            if [[ "$f" == v4/* ]]; then
+              EXAMPLE_PKG_VERSION=26.10.0
+              V4_TASK_ID="${f##*/}"
+              V4_TASK_ID="${V4_TASK_ID%.cs}"
+              fixture_dir="$GITHUB_WORKSPACE/v4/fixtures/$V4_TASK_ID"
+              if [ -d "$fixture_dir" ]; then
+                cp -R "$fixture_dir/." "$workdir/"
+              fi
+            fi
             pushd "$workdir" >/dev/null
 
             echo "Adding packages..."
-            dotnet add package Aspose.Email --version "$PKG_VERSION"
+            dotnet add package Aspose.Email --version "$EXAMPLE_PKG_VERSION"
             dotnet add package Aspose.Words --version "$WORDS_PKG_VERSION"
             dotnet add package System.Security.Cryptography.Pkcs
             dotnet add package HtmlAgilityPack
@@ -112,10 +123,20 @@ jobs:
             fi
 
             echo "Running..."
-            if ! dotnet run -c Release --no-build; then
+            if ! (
+              if [ "$V4_TASK_ID" = "95686" ]; then
+                export AMP_CSRF_TOKEN="local-fixture-token-95686"
+              fi
+              dotnet run -c Release --no-build
+            ); then
               echo "::error file=$f::dotnet run failed"
               echo "- Run failed" >> "$GITHUB_STEP_SUMMARY"
               exit 1
+            fi
+
+            if [ -n "$V4_TASK_ID" ]; then
+              echo "Checking V4 native operation..."
+              python3 "$GITHUB_WORKSPACE/v4/validation/check.py" "$V4_TASK_ID" "$workdir"
             fi
 
             popd >/dev/null

@@ -1,0 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Aspose.Email;
+using Aspose.Email.Calendar;
+class Program {
+ static void Main() {
+  try {
+   string output = Path.Combine(Environment.CurrentDirectory, "appointments.ics");
+   Directory.CreateDirectory(Path.GetDirectoryName(output)!);
+   var attendees = new MailAddressCollection();
+   attendees.Add(new MailAddress("attendee@example.com"));
+   var appointments = new List<Appointment> {
+    new Appointment("Room A", new DateTime(2027,1,2,10,0,0,DateTimeKind.Utc), new DateTime(2027,1,2,11,0,0,DateTimeKind.Utc), new MailAddress("organizer@example.com"), attendees) { Summary = "First meeting" },
+    new Appointment("Room B", new DateTime(2027,1,3,10,0,0,DateTimeKind.Utc), new DateTime(2027,1,3,11,0,0,DateTimeKind.Utc), new MailAddress("organizer@example.com"), attendees) { Summary = "Second meeting" }
+   };
+   appointments[0].Reminders.Add(new AppointmentReminder { Action = ReminderAction.Display, Description = "Display reminder", Trigger = new ReminderTrigger(new ReminderDuration(TimeSpan.FromMinutes(-15)), ReminderRelated.Start) });
+   appointments[1].Reminders.Add(new AppointmentReminder { Action = ReminderAction.Audio, Trigger = new ReminderTrigger(new ReminderDuration(TimeSpan.FromMinutes(-10)), ReminderRelated.Start) });
+   using (var writer = new CalendarWriter(output)) {
+    foreach (Appointment appointment in appointments) writer.Write(appointment);
+   }
+  } catch (Exception ex) { Console.Error.WriteLine(ex.Message); Environment.ExitCode = 1; }
+ }
+}

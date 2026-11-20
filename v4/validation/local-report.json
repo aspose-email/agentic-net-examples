@@ -1,0 +1,256 @@
+{
+  "framework": "net8.0",
+  "package_version": "26.10.0",
+  "catalog_version": "4.0",
+  "selected_source_count": 15,
+  "all_passed": true,
+  "examples": [
+    {
+      "task_id": "95676",
+      "source_sha256": "c6c8ad1ceab40d222924252c3ccc06c4d183e2442d129e4fcf9c5c7b06820df4",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Real AMP MIME part saved",
+        "Accordion has requested section count",
+        "Panel titles retained",
+        "HTML/CSS retained"
+      ]
+    },
+    {
+      "task_id": "95679",
+      "source_sha256": "e4c61aee84526b979faef4f330258f9226c8aa3958932b40cf3a29268c3fcb8f",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Real AMP MIME part saved",
+        "FitText component retained",
+        "Viewport metadata retained"
+      ]
+    },
+    {
+      "task_id": "95681",
+      "source_sha256": "8b94d3c5054d1debb9a9f38cc0bb7ffbb82489aae1fbbb1f68cefc772b3cf9c9",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Real AMP MIME part saved",
+        "Form uses POST",
+        "Submit label retained"
+      ]
+    },
+    {
+      "task_id": "95683",
+      "source_sha256": "975a6930855680017fd8678172e9e3b52f246d629078e6192d55522fd5f85b1f",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Committed fixture hash: image1.png",
+        "Committed fixture hash: image2.png",
+        "Committed fixture hash: image3.png",
+        "Real AMP MIME part saved",
+        "Three active HTTPS carousel images",
+        "Carousel appears before form",
+        "Form below carousel uses POST",
+        "All CID fallback attachments retained",
+        "Inline CID/payload preserved: image1",
+        "Inline CID/payload preserved: image2",
+        "Inline CID/payload preserved: image3"
+      ]
+    },
+    {
+      "task_id": "95685",
+      "source_sha256": "c607996099501c31bef4b8025ec1f1a194595d4d4b7ca99bd4ad1b89e74d59b3",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Real AMP MIME part saved",
+        "Accordion has requested section count",
+        "Panel titles retained",
+        "HTML header retained"
+      ]
+    },
+    {
+      "task_id": "95686",
+      "source_sha256": "d2403b0f25796d2aa436b98407abc29770afdb4db5c8d306e68914ef7fa30430",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Real AMP MIME part saved",
+        "Form uses POST",
+        "Submit label retained",
+        "Synthetic local CSRF field retained",
+        "Required email field retained"
+      ]
+    },
+    {
+      "task_id": "95699",
+      "source_sha256": "b05ea5427e68c9400846e49a399ec861a390d875a3567b8584b85b2b25c0d81b",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Committed fixture hash: expected-legal.txt",
+        "Committed fixture hash: expected-keep.txt",
+        "Committed fixture hash: LegalMails.pst",
+        "Committed fixture hash: LegalMails/1.eml",
+        "Committed fixture hash: LegalMails/2.eml",
+        "Native inspector compiles",
+        "Native MSG/PST assertions: PASS: Requested Legal folder exists\nPASS: Two source EML messages imported without loss\nPASS: Existing unrelated message count unchanged\nPASS: Existing unrelated subject unchanged\n"
+      ]
+    },
+    {
+      "task_id": "95799",
+      "source_sha256": "1bb211043ac3d7a754e94bfa0c6b6bb7f047ac03acfb681226862abdb676ab6e",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Committed fixture hash: Messages.mbox",
+        "MBOX subject/date metadata report matches input"
+      ]
+    },
+    {
+      "task_id": "95805",
+      "source_sha256": "34ac04c2b88c24bcb43094b098eff51d7d1caa42524f9c47078ff7d4f072770f",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Expected MBOX message count",
+        "To/Cc/Bcc retained",
+        "Original MBOX subject/date retained"
+      ]
+    },
+    {
+      "task_id": "95837",
+      "source_sha256": "bf8154f4a4ff5a5bd596199f46e37b368f4961e1a6240e94aa18c3f97d65cd3b",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Committed fixture hash: Messages.mbox",
+        "Expected MBOX message count",
+        "To/Cc/Bcc retained",
+        "Original MBOX subject/date retained",
+        "Existing MBOX bytes preserved exactly",
+        "Non-draft appended message retained"
+      ]
+    },
+    {
+      "task_id": "95552",
+      "source_sha256": "c58ca97a66c9add9cc794077af3e73e3bd7ef3c88f3bf4ece5b324df0bdfdb95",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Native inspector compiles",
+        "Native MSG/PST assertions: PASS: Output is a native calendar MSG\nPASS: Appointment subject retained\nPASS: Requested HTML markup retained\n"
+      ]
+    },
+    {
+      "task_id": "95562",
+      "source_sha256": "3f62d0aa95d70bfa99f00907df9976b278af052f90b28c01d8088418efaf46f4",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "One complete VCALENDAR",
+        "Two complete VEVENT components",
+        "Both event subjects/start times retained"
+      ]
+    },
+    {
+      "task_id": "95584",
+      "source_sha256": "2720436abb5002b09bff4fd2fd78923785f1078d120fa62139922ff67e9e6301",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "One complete VCALENDAR",
+        "Two complete VEVENT components",
+        "Both event subjects/start times retained",
+        "First event display reminder retained",
+        "Second event audio reminder retained"
+      ]
+    },
+    {
+      "task_id": "95608",
+      "source_sha256": "35a6338249014c9f9b06ce5f6104471377629988774ffa9040349a0cee144063",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Committed fixture hash: input.msg",
+        "Native inspector compiles",
+        "Native MSG/PST assertions: PASS: Updated output is a calendar MSG\nPASS: Existing meeting subject and body unchanged\nPASS: Existing attendee preserved\nPASS: New attendee added with MAPI_TO type\n"
+      ]
+    },
+    {
+      "task_id": "95610",
+      "source_sha256": "0d58135d27848ccded0601c10dd807854dd7651698f237582679332822f8dc06",
+      "framework": "net8.0",
+      "package_version": "26.10.0",
+      "compile_success": true,
+      "runtime_success": true,
+      "native_operation_verified": true,
+      "checks": [
+        "Published source matches manifest hash",
+        "Committed fixture hash: meeting.msg",
+        "One complete VCALENDAR",
+        "MSG event fields and UTC times retained"
+      ]
+    }
+  ],
+  "validation_date": "2026-11-20",
+  "source_selection": "Only unchanged source hashes matching prior native operation evidence",
+  "scope": "Fresh compile, runtime and saved-operation assertions for fifteen V4 sources; no legacy recertification or complete catalog claim"
+}
